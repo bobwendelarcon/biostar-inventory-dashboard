@@ -1,38 +1,46 @@
 ﻿@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 }
-<div class="col-md-2 sidebar p-4">
+
+<nav class="navbar navbar-light bg-light d-md-none px-3">
+    <span class="navbar-brand fw-bold">Inventory</span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</nav>
+
+<div class="collapse d-md-none px-3 pb-3" id="mobileMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">Inventory</a>
+        </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">Transactions</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Settings" ? "active fw-bold" : "")" href="/Settings">Settings</a>
+        </li>
+    </ul>
+</div>
+
+<div class="d-none d-md-block sidebar p-4">
     <h4 class="fw-bold mb-4">Inventory</h4>
 
     <ul class="nav flex-column">
-
         <li class="nav-item mb-3">
-            <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")"
-               href="/Dashboard">
-                Dashboard
-            </a>
+            <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">Dashboard</a>
         </li>
-
         <li class="nav-item mb-3">
-            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")"
-               href="/Inventory">
-                Inventory
-            </a>
+            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">Inventory</a>
         </li>
-
         <li class="nav-item mb-3">
-            <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")"
-               href="/Transactions">
-                Transactions
-            </a>
+            <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">Transactions</a>
         </li>
-
         <li class="nav-item mt-5">
-            <a class="nav-link @(currentController == "Settings" ? "active fw-bold" : "")"
-               href="/Settings">
-                Settings
-            </a>
+            <a class="nav-link @(currentController == "Settings" ? "active fw-bold" : "")" href="/Settings">Settings</a>
         </li>
-
     </ul>
 </div>
