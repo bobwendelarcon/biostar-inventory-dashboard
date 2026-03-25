@@ -6,7 +6,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient<ApiService>(client =>
 {
-    client.BaseAddress = new Uri("https://inventory-api-vsoh.onrender.com/");
+   // client.BaseAddress = new Uri("https://inventory-api-vsoh.onrender.com/");
+    client.BaseAddress = new Uri("https://inventory-api-loha.onrender.com/");
     client.Timeout = TimeSpan.FromSeconds(60);
 });
 
