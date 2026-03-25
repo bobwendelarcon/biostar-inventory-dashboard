@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Transactions";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <small class="text-muted">Dashboard &gt; Transactions</small>
+        <h2 class="fw-bold mt-2">Transactions</h2>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Transaction #</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Warehouse</th>
+                        <th>Product ID</th>
+                        <th>Type</th>
+                        <th>Lot No</th>
+                        <th>Qty</th>
+                        <th>Scanned By</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTable">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Loading transaction data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/transaction.js" asp-append-version="true"></script>
+}

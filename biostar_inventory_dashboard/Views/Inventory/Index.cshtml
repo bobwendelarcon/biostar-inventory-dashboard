@@ -1,0 +1,105 @@
+﻿@{
+    ViewData["Title"] = "Inventory List";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
+}
+
+<div class="container-fluid">
+    <div class="row g-0">
+
+      
+
+        <div class="col-md-10 p-4 main-content">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <small class="text-muted">Dashboard &gt; Inventory</small>
+                    <h2 class="fw-bold mt-2">Inventory List</h2>
+                </div>
+                <div>
+                    <button class="btn btn-outline-primary me-2">Import</button>
+                    <button class="btn btn-primary">Export</button>
+                </div>
+            </div>
+
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Warehouse</label>
+                            <select class="form-select" id="warehouseFilter">
+                                <option value="">All Warehouses</option>
+                                <option value="Main">Main</option>
+                                <option value="Branch 1">Branch 1</option>
+                                <option value="Branch 2">Branch 2</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Order</label>
+                            <select class="form-select" id="orderFilter">
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Filter Applied</label>
+                            <select class="form-select" id="filterApplied">
+                                <option value="">None</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Lot No</th>
+                                    <th>Description</th>
+                                    <th>UOM</th>
+                                    <th>Qty</th>
+                                    <th>Stock Level</th>
+                                    <th>Warehouse</th>
+                                    @* <th>Date</th>
+                              
+                                    <th>Product ID</th> *@
+                                    
+                                 
+                                   
+                                  
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTable">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Loading inventory data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventory.js" asp-append-version="true"></script>
+}

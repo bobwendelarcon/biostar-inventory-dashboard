@@ -1,0 +1,40 @@
+body {
+    background-color: #f7f8fc;
+    font-family: Arial, sans-serif;
+}
+
+.sidebar {
+    background: #ffffff;
+    min-height: 100vh;
+    border-right: 1px solid #e9ecef;
+}
+
+.main-content {
+    background-color: #f7f8fc;
+}
+
+.card {
+    background: #fff;
+}
+
+.nav-link.active {
+    border-left: 3px solid #1d2a7a;
+    padding-left: 10px;
+}
+
+.table thead th {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.table tbody td {
+    font-size: 14px;
+}
+.top-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+}
+
+    .top-header .btn {
+        border-radius: 8px;
+    }

@@ -1,0 +1,46 @@
+﻿body {
+    background-color: #f7f8fc;
+    font-family: Arial, sans-serif;
+}
+
+.sidebar {
+    background: #ffffff;
+    min-height: 100vh;
+    border-right: 1px solid #e9ecef;
+}
+
+.main-content {
+    background-color: #f7f8fc;
+}
+
+.card {
+    background: #fff;
+}
+
+.sidebar .nav-link {
+    color: #212529;
+    padding: 10px 12px;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+    .sidebar .nav-link:hover {
+        background-color: #f8f9fa;
+    }
+
+    .sidebar .nav-link.active {
+        border-left: 3px solid #1d2a7a;
+        padding-left: 9px;
+        font-weight: 700;
+        color: #1d2a7a !important;
+        background-color: transparent;
+    }
+
+.table thead th {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.table tbody td {
+    font-size: 14px;
+}
