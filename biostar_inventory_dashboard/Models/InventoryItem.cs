@@ -30,6 +30,8 @@ namespace biostar_inventory_dashboard.Models
         public int qty { get; set; }
         public int stock_level { get; set; }
         public string? date { get; set; }
+        public string? expiration_date { get; set; }
+        public string? manufacturing_date { get; set; }
     }
 
 

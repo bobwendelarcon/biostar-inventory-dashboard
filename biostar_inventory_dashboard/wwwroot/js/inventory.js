@@ -3,13 +3,21 @@
 
     if (typeof timestamp === "object" && timestamp.seconds) {
         const date = new Date(timestamp.seconds * 1000);
-        return date.toLocaleString();
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "2-digit"
+        });
     }
 
     if (typeof timestamp === "string") {
         const date = new Date(timestamp);
         if (!isNaN(date.getTime())) {
-            return date.toLocaleString();
+            return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "2-digit"
+            });
         }
         return timestamp;
     }
@@ -28,9 +36,9 @@ function getStatusBadge(quantity) {
         return `<span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">In Stock</span>`;
     }
 }
-     //<td>${item.date ?? ""}</td>
-                  
-     //<td>${item.product_id ?? ""}</td>
+//<td>${item.date ?? ""}</td>
+
+//<td>${item.product_id ?? ""}</td>
 
 async function loadInventory() {
     try {
@@ -68,6 +76,8 @@ async function loadInventory() {
                     <td>${item.uom ?? ""}</td>
                      <td>${item.qty ?? 0}</td>
                       <td>${item.stock_level ?? 0}</td>
+                      <td>${formatDate(item.manufacturing_date)}</td>
+                        <td>${formatDate(item.expiration_date)}</td>
                        <td>${item.warehouse ?? ""}</td>
                
               
@@ -90,5 +100,5 @@ async function loadInventory() {
 
 document.addEventListener("DOMContentLoaded", function () {
     loadInventory();
-   // setInterval(loadInventory, 5000);
+    // setInterval(loadInventory, 5000);
 });
