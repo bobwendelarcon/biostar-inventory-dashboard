@@ -80,5 +80,5 @@ async function loadTransactions() {
 
 document.addEventListener("DOMContentLoaded", function () {
     loadTransactions();
-    setInterval(loadTransactions, 2000);
+  //  setInterval(loadTransactions, 2000);
 });

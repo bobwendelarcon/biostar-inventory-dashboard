@@ -90,5 +90,5 @@ async function loadInventory() {
 
 document.addEventListener("DOMContentLoaded", function () {
     loadInventory();
-    setInterval(loadInventory, 5000);
+   // setInterval(loadInventory, 5000);
 });
