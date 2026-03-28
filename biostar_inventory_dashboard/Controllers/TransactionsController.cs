@@ -18,9 +18,9 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTransactions()
+        public async Task<IActionResult> GetTransactions(int page = 1, int pageSize = 30)
         {
-            var data = await _apiService.GetTransactionsAsync();
+            var data = await _apiService.GetTransactionsAsync(page, pageSize);
             return Json(data);
         }
     }
