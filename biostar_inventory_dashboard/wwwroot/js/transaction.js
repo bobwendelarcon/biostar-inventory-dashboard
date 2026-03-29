@@ -84,9 +84,11 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 let currentPage = 1;
-const pageSize = 30;
+let pageSize = 30;
+let totalRecords = 0;
 
-
+//<td>${item.transaction_id ?? ""}</td>
+//<td>${item.product_id ?? ""}</td>
 async function loadTransactions(page = 1) {
     try {
         currentPage = page;
@@ -100,16 +102,12 @@ async function loadTransactions(page = 1) {
         }
 
         const result = await response.json();
-        // 👇 ADD HERE
-        console.log("API RESULT:", result);
+      
 
         const data = result.data;
+        totalRecords = Number(result.total) || 0;
 
-        // 👇 ADD THIS ALSO
-        console.log("RESULT:", result);
-        console.log("DATA:", data);
-        console.log("FIRST ROW:", data[0]);
-        console.log("FIRST CELL:", data[0][0]);
+      
 
 
         const tableBody = document.getElementById("transactionTable");
@@ -129,13 +127,15 @@ async function loadTransactions(page = 1) {
         data.forEach(item => {
             tableBody.innerHTML += `
                 <tr>
-                    <td>${item.transaction_id ?? ""}</td>
+              
+                    <td>${item.lot_no ?? ""}</td>
+                    <td>${item.product_name ?? ""}</td>
+                    <td>${"Biostar, Nutriproduct Inc."}</td>
+                     <td>${"Biostar, Nutriproduct Inc."}</td>
                     <td>${formatDateOnly(item.timestamp)}</td>
                     <td>${formatTimeOnly(item.timestamp)}</td>
                     <td>${item.branch_id ?? ""}</td>
-                    <td>${item.product_id ?? ""}</td>
                     <td>${item.transaction_type ?? ""}</td>
-                    <td>${item.lot_no ?? ""}</td>
                     <td>${item.quantity ?? ""}</td>
                     <td>${item.scanned_by ?? ""}</td>
                 </tr>
@@ -165,9 +165,12 @@ function renderPagination(total) {
     const totalCount = Number(total) || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    const pageInfo = document.getElementById("pageInfo");
-    if (pageInfo) {
-        pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+    const start = totalCount === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+    const end = Math.min(currentPage * pageSize, totalCount);
+
+    const rangeText = document.getElementById("rangeText");
+    if (rangeText) {
+        rangeText.innerText = `${start}-${end} of ${totalCount.toLocaleString()}`;
     }
 
     const prevBtn = document.getElementById("prevBtn");
@@ -178,10 +181,10 @@ function renderPagination(total) {
 }
 
 function nextPage() {
+    const totalCountText = document.getElementById("rangeText")?.innerText || "";
     currentPage++;
     loadTransactions(currentPage);
 }
-
 function prevPage() {
     if (currentPage > 1) {
         currentPage--;

@@ -11,36 +11,31 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row g-0">
 
-            <div class="col-12 col-md-2">
-                @Html.Partial("_Sidebar")
+    @Html.Partial("_Sidebar")
+
+    <div class="main-content">
+
+        <div class="top-header d-flex justify-content-end align-items-center px-3 px-md-4 py-2">
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                    <span class="fw-semibold">Admin</span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">My Account</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/Account/Logout">Logout</a></li>
+                </ul>
             </div>
+        </div>
 
-            <div class="col-12 col-md-10 main-content">
-
-                <div class="top-header d-flex justify-content-end align-items-center px-3 px-md-4 py-2">
-                    <div class="dropdown">
-                        <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2"
-                                type="button"
-                                data-bs-toggle="dropdown">
-                            <span class="fw-semibold">Admin</span>
-                        </button>
-
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">My Account</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="/Account/Logout">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="p-3 p-md-4">
-                    @RenderBody()
-                </div>
-
+        <div class="content-wrapper">
+            <div class="page-scroll-area">
+                @RenderBody()
             </div>
         </div>
     </div>

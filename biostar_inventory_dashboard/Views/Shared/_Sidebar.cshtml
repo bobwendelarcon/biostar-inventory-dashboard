@@ -1,46 +1,473 @@
 ﻿@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    var isPlanningOpen = currentController == "DailyOrder";
+    var isProductionOpen = currentController == "RawMaterialRequest" || currentController == "ReceiveTransmittal";
+    var isReceivingOpen = currentController == "Otherlines" || currentController == "RequestTransmittal";
+    var isDispatchOpen = currentController == "DeliveryChecklist";
+    var isControlOpen = currentController == "Approval";
+    var isLogisticsOpen = currentController == "Logistics";
+    var isInventoryOpen = currentController == "Inventory" || currentController == "Transactions";
+    var isReturnOpen = currentController == "Return";
+    var isReportOpen = currentController == "Report";
+    var isMasterDataOpen = currentController == "Product"
+                        || currentController == "Category"
+                        || currentController == "Branch"
+                        || currentController == "User"
+                        || currentController == "Supplier"
+                        || currentController == "Client";
 }
 
-<nav class="navbar navbar-light bg-light d-md-none px-3">
-    <span class="navbar-brand fw-bold">Inventory</span>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+<!-- ================= MOBILE NAVBAR ================= -->
+<nav class="navbar navbar-light bg-light d-md-none px-3 shadow-sm">
+    <span class="navbar-brand fw-bold mb-0">Inventory System</span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu"
+            aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
 </nav>
 
-<div class="collapse d-md-none px-3 pb-3" id="mobileMenu">
-    <ul class="nav flex-column">
-        @* <li class="nav-item mb-2">
-            <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">Dashboard</a>
-        </li> *@
-        <li class="nav-item mb-2">
-            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">Inventory</a>
-        </li>
-        <li class="nav-item mb-2">
-            <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">Transactions</a>
-        </li>
-        @* <li class="nav-item">
-            <a class="nav-link @(currentController == "Settings" ? "active fw-bold" : "")" href="/Settings">Settings</a>
-        </li> *@
-    </ul>
+<div class="collapse d-md-none bg-white border-bottom shadow-sm" id="mobileMenu">
+    <div class="p-3">
+        <ul class="nav flex-column mobile-sidebar-menu">
+
+            <!-- Dashboard -->
+            <li class="nav-item mb-2">
+                <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">
+                    Dashboard
+                </a>
+            </li>
+
+            <!-- Planning -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobilePlanningMenu"
+                   role="button"
+                   aria-expanded="@(isPlanningOpen.ToString().ToLower())"
+                   aria-controls="mobilePlanningMenu">
+                    <span>Planning</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isPlanningOpen ? "show" : "")" id="mobilePlanningMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "DailyOrder" ? "active fw-bold" : "")" href="/DailyOrder">
+                                Daily Orders
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Dispatch -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobileDispatchMenu"
+                   role="button"
+                   aria-expanded="@(isDispatchOpen.ToString().ToLower())"
+                   aria-controls="mobileDispatchMenu">
+                    <span>Dispatch</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isDispatchOpen ? "show" : "")" id="mobileDispatchMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "DeliveryChecklist" ? "active fw-bold" : "")" href="/DeliveryChecklist">
+                                Delivery Checklist
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Control -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobileControlMenu"
+                   role="button"
+                   aria-expanded="@(isControlOpen.ToString().ToLower())"
+                   aria-controls="mobileControlMenu">
+                    <span>Control</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isControlOpen ? "show" : "")" id="mobileControlMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Approval" ? "active fw-bold" : "")" href="/Approval">
+                                Approval Queue
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Logistics -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobileLogisticsMenu"
+                   role="button"
+                   aria-expanded="@(isLogisticsOpen.ToString().ToLower())"
+                   aria-controls="mobileLogisticsMenu">
+                    <span>Logistics</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isLogisticsOpen ? "show" : "")" id="mobileLogisticsMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Logistics" ? "active fw-bold" : "")" href="/Logistics">
+                                Track Logistics
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Inventory -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobileInventoryMenu"
+                   role="button"
+                   aria-expanded="@(isInventoryOpen.ToString().ToLower())"
+                   aria-controls="mobileInventoryMenu">
+                    <span>Inventory</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isInventoryOpen ? "show" : "")" id="mobileInventoryMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
+                                Stock Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">
+                                Transaction History
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Reports -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobileReportMenu"
+                   role="button"
+                   aria-expanded="@(isReportOpen.ToString().ToLower())"
+                   aria-controls="mobileReportMenu">
+                    <span>Reports</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isReportOpen ? "show" : "")" id="mobileReportMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Report" ? "active fw-bold" : "")" href="/Report">
+                                Summary Reports
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Master Data -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#mobileMasterMenu"
+                   role="button"
+                   aria-expanded="@(isMasterDataOpen.ToString().ToLower())"
+                   aria-controls="mobileMasterMenu">
+                    <span>Master Data</span>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isMasterDataOpen ? "show" : "")" id="mobileMasterMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")" href="/Product">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Category" ? "active fw-bold" : "")" href="/Category">Category</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")" href="/Branch">Branches</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "User" ? "active fw-bold" : "")" href="/User">Users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Supplier" ? "active fw-bold" : "")" href="/Supplier">Suppliers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Client" ? "active fw-bold" : "")" href="/Client">Clients</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+        </ul>
+    </div>
 </div>
 
-<div class="d-none d-md-block sidebar p-4">
-    @* <h4 class="fw-bold mb-4">Warehouse Inventory</h4> *@
+<!-- ================= DESKTOP SIDEBAR ================= -->
+<div class="d-none d-md-block sidebar">
+    <h5 class="fw-bold mb-4">Inventory System</h5>
 
-    <ul class="nav flex-column">
-        @* <li class="nav-item mb-3">
-            <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">Dashboard</a>
-        </li> *@
-        <li class="nav-item mb-3">
-            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">Inventory</a>
+    <ul class="nav flex-column desktop-sidebar-menu">
+
+        <!-- Dashboard -->
+        <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">
+                Dashboard
+            </a>
         </li>
-        <li class="nav-item mb-3">
-            <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">Transactions</a>
+
+        <!-- Planning -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#planningMenu"
+               role="button"
+               aria-expanded="@(isPlanningOpen.ToString().ToLower())"
+               aria-controls="planningMenu">
+                <span>Planning</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isPlanningOpen ? "show" : "")" id="planningMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "DailyOrder" ? "active fw-bold" : "")" href="/DailyOrder">
+                            Daily Orders
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
-        @* <li class="nav-item mt-5">
-            <a class="nav-link @(currentController == "Settings" ? "active fw-bold" : "")" href="/Settings">Settings</a>
-        </li> *@
+        <!-- Production -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#productionMenu"
+               role="button"
+               aria-expanded="@(isProductionOpen.ToString().ToLower())"
+               aria-controls="productionMenu">
+                <span>Production</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "RawMaterialRequest" ? "active fw-bold" : "")">
+                            Raw Material Request
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Request Transmittal" ? "active fw-bold" : "")">
+                            Request Transmittal
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Receiving -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#receivingMenu"
+               role="button"
+               aria-expanded="@(isReceivingOpen.ToString().ToLower())"
+               aria-controls="receivingMenu">
+                <span>Receiving</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isReceivingOpen ? "show" : "")" id="receivingMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Otherlines" ? "active fw-bold" : "")">
+                            Other Lines
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="collapse @(isReceivingOpen ? "show" : "")" id="receivingMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Receive Transmittal" ? "active fw-bold" : "")">
+                           Receive Transmittal
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+        </li>
+
+        <!-- Dispatch -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#dispatchMenu"
+               role="button"
+               aria-expanded="@(isDispatchOpen.ToString().ToLower())"
+               aria-controls="dispatchMenu">
+                <span>Dispatch</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isDispatchOpen ? "show" : "")" id="dispatchMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "DeliveryChecklist" ? "active fw-bold" : "")" href="/DeliveryChecklist">
+                            Delivery Checklist
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Control -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#controlMenu"
+               role="button"
+               aria-expanded="@(isControlOpen.ToString().ToLower())"
+               aria-controls="controlMenu">
+                <span>Control</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isControlOpen ? "show" : "")" id="controlMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Approval" ? "active fw-bold" : "")" href="/Approval">
+                            Approval Queue
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Logistics -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#logisticsMenu"
+               role="button"
+               aria-expanded="@(isLogisticsOpen.ToString().ToLower())"
+               aria-controls="logisticsMenu">
+                <span>Logistics</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isLogisticsOpen ? "show" : "")" id="logisticsMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Logistics" ? "active fw-bold" : "")" href="/Logistics">
+                            Track Logistics
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Inventory -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#inventoryMenu"
+               role="button"
+               aria-expanded="@(isInventoryOpen.ToString().ToLower())"
+               aria-controls="inventoryMenu">
+                <span>Inventory</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isInventoryOpen ? "show" : "")" id="inventoryMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
+                            Stock Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">
+                            Transaction History
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Return -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#returnMenu"
+               role="button">
+                <span>Return</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(currentController == "Return" ? "show" : "")" id="returnMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Return" ? "active fw-bold" : "")" href="/Return">
+                            Return Items
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#reportMenu"
+               role="button"
+               aria-expanded="@(isReportOpen.ToString().ToLower())"
+               aria-controls="reportMenu">
+                <span>Reports</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isReportOpen ? "show" : "")" id="reportMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Report" ? "active fw-bold" : "")" href="/Report">
+                            Summary Reports
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- Master Data -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#masterMenu"
+               role="button"
+               aria-expanded="@(isMasterDataOpen.ToString().ToLower())"
+               aria-controls="masterMenu">
+                <span>Master Data</span>
+                <span class="menu-arrow">▾</span>
+            </a>
+            <div class="collapse @(isMasterDataOpen ? "show" : "")" id="masterMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")" href="/Product">Products</a></li>
+                    <li class="nav-item"><a class="nav-link @(currentController == "Category" ? "active fw-bold" : "")" href="/Category">Category</a></li>
+                    <li class="nav-item"><a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")" href="/Branch">Branches</a></li>
+                    <li class="nav-item"><a class="nav-link @(currentController == "User" ? "active fw-bold" : "")" href="/User">Users</a></li>
+                    <li class="nav-item"><a class="nav-link @(currentController == "Supplier" ? "active fw-bold" : "")" href="/Supplier">Suppliers</a></li>
+                    <li class="nav-item"><a class="nav-link @(currentController == "Client" ? "active fw-bold" : "")" href="/Client">Clients</a></li>
+                </ul>
+            </div>
+        </li>
+
     </ul>
 </div>

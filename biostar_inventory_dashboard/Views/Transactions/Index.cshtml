@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="~/css/inventory.css" asp-append-version="true" />
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header-row">
     <div>
         <small class="text-muted">Dashboard &gt; Transactions</small>
         <h2 class="fw-bold mt-2">Transactions</h2>
@@ -15,36 +15,40 @@
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th>Transaction #</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Warehouse</th>
-                        <th>Product ID</th>
-                        <th>Type</th>
-                        <th>Lot No</th>
-                        <th>Qty</th>
-                        <th>Scanned By</th>
-                        <th>DR #</th>
-                        <th>INV #</th>
-                        <th>PO #</th>
-                    </tr>
-                </thead>
-                <div class="d-flex justify-content-center align-items-center mt-3">
-                    <button id="prevBtn" type="button" class="btn btn-primary me-2">Prev</button>
-                    <span id="pageInfo" class="mx-2">Page 1 of 1</span>
-                    <button id="nextBtn" type="button" class="btn btn-primary ms-2">Next</button>
-                </div>
+        <div class="pagination-container">
+            <span id="rangeText">0–0 of 0</span>
+            <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
+            <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
+        </div>
 
-                <tbody id="transactionTable">
-                    <tr>
-                        <td colspan="9" class="text-center text-muted">Loading transaction data...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="table-scroll-box">
+            <div class="table-responsive">
+                <table class="table transaction-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Lot No</th>
+                            <th>Product</th>
+                            <th>Supplier</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Warehouse</th>
+                            @* <th>Product ID</th> *@
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Scanned By</th>
+                            <th>DR #</th>
+                            <th>INV #</th>
+                            <th>PO #</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionTable">
+                        <tr>
+                            <td colspan="12" class="empty-state-cell">Loading transaction data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

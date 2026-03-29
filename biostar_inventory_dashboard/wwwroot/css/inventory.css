@@ -1,72 +1,73 @@
-﻿body {
-    background-color: #f7f8fc;
-    font-family: Arial, sans-serif;
+﻿/* Page-specific overrides only */
+
+.page-header-row {
+    margin-bottom: 1.5rem;
 }
 
-.sidebar {
-    background: #ffffff;
-    min-height: 100vh;
-    border-right: 1px solid #e9ecef;
+.filter-card {
+    margin-bottom: 1.5rem;
 }
 
-.main-content {
-    background-color: #f7f8fc;
-}
-
-.card {
-    background: #fff;
-}
-
-.sidebar .nav-link {
-    color: #212529;
-    padding: 10px 12px;
-    border-radius: 0;
-    transition: all 0.2s ease;
-}
-
-    .sidebar .nav-link:hover {
-        background-color: #f8f9fa;
+    .filter-card .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
     }
 
-    .sidebar .nav-link.active {
-        border-left: 3px solid #1d2a7a;
-        padding-left: 9px;
-        font-weight: 700;
-        color: #1d2a7a !important;
-        background-color: transparent;
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.inventory-table td,
+.inventory-table th,
+.transaction-table td,
+.transaction-table th {
+    white-space: nowrap;
+}
+
+    .inventory-table td:nth-child(2),
+    .transaction-table td:nth-child(2) {
+        white-space: normal;
+        min-width: 220px;
     }
 
-.table thead th {
-    font-size: 14px;
+    .transaction-table td:nth-child(3),
+    .transaction-table td:nth-child(4),
+    .inventory-table td:nth-child(6),
+    .inventory-table td:nth-child(7) {
+        white-space: nowrap;
+    }
+
+.empty-state-cell {
+    text-align: center;
     color: #6c757d;
 }
 
-.table tbody td {
-    font-size: 14px;
-}
-#prevBtn,
-#nextBtn {
-    display: inline-block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #fff !important;
-    background-color: #0d6efd !important;
-    border: 1px solid #0d6efd !important;
-    min-width: 80px !important;
-    padding: 8px 16px !important;
+@media (max-width: 991.98px) {
+    .action-buttons {
+        justify-content: flex-start;
+        margin-top: 1rem;
+    }
+
+    .inventory-table td:nth-child(2),
+    .transaction-table td:nth-child(2) {
+        min-width: 180px;
+    }
 }
 
-#pageInfo {
-    display: inline-block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #212529 !important;
-}
+@media (max-width: 767.98px) {
+    .page-header-row {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
 
-.d-flex.justify-content-center.align-items-center.mt-3 {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 10px !important;
-    margin-top: 20px !important;
+    .action-buttons {
+        width: 100%;
+    }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
 }

@@ -8,6 +8,10 @@ namespace biostar_inventory_dashboard.Models
         public string? product_id { get; set; }
         public string? branch_id { get; set; }
         public string? transaction_type { get; set; }
+
+        public string? product_name { get; set; }
+
+
         public string? lot_no { get; set; }
         public string? expiration_date { get; set; }
         public string? manufacturing_date { get; set; }
