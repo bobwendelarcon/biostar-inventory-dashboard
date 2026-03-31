@@ -13,6 +13,57 @@
     </div>
 </div>
 
+<div class="card border-0 shadow-sm rounded-4 filter-card">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Company</label>
+                <select class="form-select" id="companyFilter">
+                    <option value="">All Company</option>
+
+                    <option value="Biostar Nutriproduct, Inc.">Biostar Nutriproduct, Inc.</option>
+                    <option value="Animal Pharma Corp.">Animal Pharma Corp.</option>
+                </select>
+            </div>
+
+
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Warehouse</label>
+                <select class="form-select" id="warehouseFilter">
+                    <option value="">All Warehouses</option>
+                    <option value="Main">Main</option>
+                    <option value="Branch 1">Branch 1</option>
+                    <option value="Branch 2">Branch 2</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Order</label>
+                <select class="form-select" id="orderFilter">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Filter Applied</label>
+                <select class="form-select" id="filterApplied">
+                    <option value="">None</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body">
         <div class="pagination-container">

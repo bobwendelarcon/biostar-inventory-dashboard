@@ -259,7 +259,7 @@
                 <span>Production</span>
                 <span class="menu-arrow">▾</span>
             </a>
-            <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
+            @* <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li class="nav-item">
                         <a class="nav-link @(currentController == "RawMaterialRequest" ? "active fw-bold" : "")">
@@ -267,12 +267,12 @@
                         </a>
                     </li>
                 </ul>
-            </div>
+            </div> *@
             <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li class="nav-item">
                         <a class="nav-link @(currentController == "Request Transmittal" ? "active fw-bold" : "")">
-                            Request Transmittal
+                            Product To Produce
                         </a>
                     </li>
                 </ul>
@@ -334,7 +334,7 @@
         </li>
 
         <!-- Control -->
-        <li class="nav-item mb-2">
+        @* <li class="nav-item mb-2">
             <a class="nav-link d-flex justify-content-between align-items-center"
                data-bs-toggle="collapse"
                href="#controlMenu"
@@ -353,7 +353,7 @@
                     </li>
                 </ul>
             </div>
-        </li>
+        </li> *@
 
         <!-- Logistics -->
         <li class="nav-item mb-2">

@@ -1,0 +1,109 @@
+﻿body {
+    background-color: #f7f8fc;
+}
+
+.dailyorder-page {
+    padding-bottom: 20px;
+}
+
+.summary-card {
+    transition: all 0.2s ease;
+}
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+    }
+
+.summary-label {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+.summary-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.dailyorder-table-wrapper {
+    max-height: 500px; /* only table scrolls */
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 0 0 1rem 1rem;
+}
+
+.dailyorder-table {
+    min-width: 1500px;
+    margin-bottom: 0;
+}
+
+    .dailyorder-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #1d4ed8;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        border-bottom: none;
+        padding: 14px 12px;
+    }
+
+    .dailyorder-table tbody td {
+        font-size: 14px;
+        white-space: nowrap;
+        padding: 12px;
+        vertical-align: middle;
+    }
+
+    .dailyorder-table tbody tr:nth-child(even) {
+        background-color: #f8fbff;
+    }
+
+    .dailyorder-table tbody tr:hover {
+        background-color: #eef5ff;
+    }
+
+.status-badge {
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.card.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.form-label {
+    font-size: 14px;
+}
+
+.table-responsive::-webkit-scrollbar,
+.dailyorder-table-wrapper::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb,
+.dailyorder-table-wrapper::-webkit-scrollbar-thumb {
+    background-color: #cfd8e3;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track,
+.dailyorder-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f3f7;
+}
+
+@media (max-width: 991.98px) {
+    .summary-value {
+        font-size: 24px;
+    }
+
+    .dailyorder-table-wrapper {
+        max-height: 420px;
+    }
+}
