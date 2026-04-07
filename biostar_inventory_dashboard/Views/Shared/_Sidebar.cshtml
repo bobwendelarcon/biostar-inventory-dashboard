@@ -11,7 +11,7 @@
     var isReturnOpen = currentController == "Return";
     var isReportOpen = currentController == "Report";
     var isMasterDataOpen = currentController == "Product"
-                        || currentController == "Category"
+                        || currentController == "Categories"
                         || currentController == "Branch"
                         || currentController == "User"
                         || currentController == "Supplier"
@@ -459,8 +459,8 @@
             </a>
             <div class="collapse @(isMasterDataOpen ? "show" : "")" id="masterMenu">
                 <ul class="nav flex-column ms-3 mt-1">
+                    <li class="nav-item"><a class="nav-link @(currentController == "Categories" ? "active fw-bold" : "")" href="/Categories">Category</a></li>
                     <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")" href="/Product">Products</a></li>
-                    <li class="nav-item"><a class="nav-link @(currentController == "Category" ? "active fw-bold" : "")" href="/Category">Category</a></li>
                     <li class="nav-item"><a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")" href="/Branch">Branches</a></li>
                     <li class="nav-item"><a class="nav-link @(currentController == "User" ? "active fw-bold" : "")" href="/User">Users</a></li>
                     <li class="nav-item"><a class="nav-link @(currentController == "Supplier" ? "active fw-bold" : "")" href="/Supplier">Suppliers</a></li>

@@ -1,6 +1,7 @@
 ﻿using biostar_inventory_dashboard.Models;
 
 using System.Text.Json;
+using System.Text;
 
 namespace biostar_inventory_dashboard.Services
 {
@@ -50,6 +51,44 @@ namespace biostar_inventory_dashboard.Services
             var result = JsonSerializer.Deserialize<PagedTransactionResponse>(json, options);
 
             return result ?? new PagedTransactionResponse();
+        }
+
+        //categories management api
+        public async Task<List<Categories>> GetCategoriesAsync()
+        {
+            var response = await _httpClient.GetAsync("api/Category");
+
+            if (!response.IsSuccessStatusCode)
+                return new List<Categories>();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            return JsonSerializer.Deserialize<List<Categories>>(json, options) ?? new List<Categories>();
+        }
+
+        public async Task<bool> AddCategoryAsync(Categories category)
+        {
+            var json = JsonSerializer.Serialize(category);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("api/Category", content);
+
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> UpdateCategoryAsync(Categories category)
+        {
+            var json = JsonSerializer.Serialize(category);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"api/Category/{category.catg_id}", content);
+
+            return response.IsSuccessStatusCode;
         }
     }
 

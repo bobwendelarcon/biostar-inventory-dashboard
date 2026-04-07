@@ -19,5 +19,14 @@ namespace biostar_inventory_dashboard.Models
         public string? scanned_by { get; set; }
         public string? timestamp { get; set; }
         public string? notes { get; set; }
+
+        public string? partner_id { get; set; }
+
+        //transaction out 
+        public string? dr_no { get; set; }
+        public string? inv_no { get; set; }
+        public string? po_no { get; set; }
+
+
     }
 }

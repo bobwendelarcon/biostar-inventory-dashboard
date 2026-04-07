@@ -1,3 +1,4 @@
+wwwroot\css\dailyorder.css
 wwwroot\css\inventory.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
@@ -61,4 +62,4 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\css\dailyorder.css
+wwwroot\js\categories.js

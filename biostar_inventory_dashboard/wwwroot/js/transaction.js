@@ -131,13 +131,16 @@ async function loadTransactions(page = 1) {
                     <td>${item.lot_no ?? ""}</td>
                     <td>${item.product_name ?? ""}</td>
                     <td>${"Biostar, Nutriproduct Inc."}</td>
-                     <td>${"Biostar, Nutriproduct Inc."}</td>
+                     <td>${item.partner_id ?? ""}</td>
                     <td>${formatDateOnly(item.timestamp)}</td>
                     <td>${formatTimeOnly(item.timestamp)}</td>
                     <td>${item.branch_id ?? ""}</td>
                     <td>${item.transaction_type ?? ""}</td>
                     <td>${item.quantity ?? ""}</td>
                     <td>${item.scanned_by ?? ""}</td>
+                    <td>${item.dr_no ?? ""}</td>
+                    <td>${item.inv_no ?? ""}</td>
+                    <td>${item.po_no ?? ""}</td>
                 </tr>
             `;
         });
