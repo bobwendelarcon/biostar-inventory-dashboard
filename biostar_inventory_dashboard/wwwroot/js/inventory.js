@@ -1,30 +1,72 @@
-﻿function formatDate(timestamp) {
+﻿function formatMonthYear(timestamp) {
     if (!timestamp) return "";
+
+    const options = {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "long"
+    };
 
     if (typeof timestamp === "object" && timestamp.seconds) {
         const date = new Date(timestamp.seconds * 1000);
-        return date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "2-digit"
-        });
+        return date.toLocaleDateString("en-US", options);
     }
 
     if (typeof timestamp === "string") {
         const date = new Date(timestamp);
         if (!isNaN(date.getTime())) {
-            return date.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "2-digit"
-            });
+            return date.toLocaleDateString("en-US", options);
         }
         return timestamp;
     }
 
     return "";
 }
+function getRemainingMonths(expiration_date) {
+    if (!expiration_date) return "-";
 
+    const today = new Date();
+    const exp = new Date(String(expiration_date).replace(" ", "T"));
+
+    let years = exp.getFullYear() - today.getFullYear();
+    let months = exp.getMonth() - today.getMonth();
+
+    let totalMonths = years * 12 + months;
+
+    if (exp.getDate() < today.getDate()) {
+        totalMonths--;
+    }
+
+    if (totalMonths < 0) return "Expired";
+
+    return totalMonths + " mo";
+}
+function getRemainingMonthsDisplay(expiration_date) {
+    if (!expiration_date) {
+        return `<span class="badge bg-secondary">-</span>`;
+    }
+
+    const today = new Date();
+    const exp = new Date(String(expiration_date).replace(" ", "T"));
+
+    let years = exp.getFullYear() - today.getFullYear();
+    let months = exp.getMonth() - today.getMonth();
+    let totalMonths = years * 12 + months;
+
+    if (exp.getDate() < today.getDate()) {
+        totalMonths--;
+    }
+
+    if (totalMonths < 0) {
+        return `<span class="badge bg-danger">Expired</span>`;
+    }
+
+    if (totalMonths <= 2) {
+        return `<span class="badge bg-warning text-dark">${totalMonths} months left</span>`;
+    }
+
+    return `<span class="badge bg-success">${totalMonths} months left</span>`;
+}
 function getStatusBadge(quantity) {
     const qty = parseInt(quantity) || 0;
 
@@ -39,6 +81,27 @@ function getStatusBadge(quantity) {
 //<td>${item.date ?? ""}</td>
 
 //<td>${item.product_id ?? ""}</td>
+
+function formatPack(qty, packQty, packUom, baseUom) {
+    if (!qty || !packQty) return "-";
+
+    const fullPacks = Math.floor(qty / packQty);
+    const remainder = qty % packQty;
+
+    let result = "";
+
+    if (fullPacks > 0) {
+        result += `${fullPacks} ${packUom}`;
+    }
+
+    if (remainder > 0) {
+        if (result !== "") result += " & "; // 🔥 CHANGE HERE
+        result += `${remainder} ${baseUom}`;
+    }
+
+
+    return result || `0 ${baseUom}`;
+}
 
 async function loadInventory() {
     try {
@@ -69,21 +132,23 @@ async function loadInventory() {
 
         data.forEach(item => {
             tableBody.innerHTML += `
-                <tr>
-                   <td>${item.lot_no ?? ""}</td>
-                    <td>${item.description ?? ""}</td>
+        <tr>
+            <td>${item.lot_no ?? ""}</td>
+            <td>${item.description ?? ""}</td>
+            <td>${(item.qty ?? 0) + " " + (item.uom ?? "")}</td>
 
-                    <td>${item.uom ?? ""}</td>
-                     <td>${item.qty ?? 0}</td>
-                      <td>${item.stock_level ?? 0}</td>
-                      <td>${formatDate(item.manufacturing_date)}</td>
-                        <td>${formatDate(item.expiration_date)}</td>
-                       <td>${item.warehouse ?? ""}</td>
-               
-              
-                   
-                </tr>
-            `;
+            <td>
+                ${formatPack(item.qty, item.pack_qty, item.pack_uom, item.uom)}
+            </td>
+            <td>${item.stock_level ?? 0}</td>
+
+        
+            <td>${formatMonthYear(item.manufacturing_date) +" - "+formatMonthYear(item.expiration_date)}</td>
+            <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
+
+            <td>${item.warehouse ?? ""}</td>
+        </tr>
+    `;
         });
 
     } catch (error) {
@@ -100,5 +165,5 @@ async function loadInventory() {
 
 document.addEventListener("DOMContentLoaded", function () {
     loadInventory();
-    // setInterval(loadInventory, 5000);
+     setInterval(loadInventory, 5000);
 });

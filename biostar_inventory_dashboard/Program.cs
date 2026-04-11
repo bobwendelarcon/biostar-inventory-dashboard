@@ -6,9 +6,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient<ApiService>(client =>
 {
-   // client.BaseAddress = new Uri("https://inventory-api-vsoh.onrender.com/");
-    client.BaseAddress = new Uri("https://inventory-api-loha.onrender.com/");
-    client.Timeout = TimeSpan.FromSeconds(60);
+    var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!);
 });
 
 var app = builder.Build();
@@ -26,6 +25,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Inventory}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

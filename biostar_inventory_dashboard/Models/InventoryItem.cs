@@ -28,6 +28,8 @@ namespace biostar_inventory_dashboard.Models
         public string? lot_no { get; set; }
         public string? warehouse { get; set; }
         public int qty { get; set; }
+        public int? pack_qty { get; set; }
+        public String? pack_uom { get; set; }
         public int stock_level { get; set; }
         public string? date { get; set; }
         public string? expiration_date { get; set; }

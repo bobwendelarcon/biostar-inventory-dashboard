@@ -2,7 +2,7 @@ wwwroot\css\dailyorder.css
 wwwroot\css\inventory.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
-wwwroot\js\inventory.js
+wwwroot\js\categories.js
 wwwroot\js\site.js
 wwwroot\js\transaction.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
@@ -62,4 +62,4 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\js\categories.js
+wwwroot\js\inventory.js

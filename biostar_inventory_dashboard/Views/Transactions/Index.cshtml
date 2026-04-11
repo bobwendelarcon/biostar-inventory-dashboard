@@ -15,50 +15,101 @@
 
 <div class="card border-0 shadow-sm rounded-4 filter-card">
     <div class="card-body">
-        <div class="row g-3 align-items-end">
+        <div class="row g-2 align-items-end">
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Company</label>
-                <select class="form-select" id="companyFilter">
-                    <option value="">All Company</option>
-
-                    <option value="Biostar Nutriproduct, Inc.">Biostar Nutriproduct, Inc.</option>
-                    <option value="Animal Pharma Corp.">Animal Pharma Corp.</option>
-                </select>
-            </div>
-
-
-
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Warehouse</label>
-                <select class="form-select" id="warehouseFilter">
-                    <option value="">All Warehouses</option>
-                    <option value="Main">Main</option>
-                    <option value="Branch 1">Branch 1</option>
-                    <option value="Branch 2">Branch 2</option>
-                </select>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Lot No</label>
+                <input type="text" class="form-control" id="lotNoFilter" placeholder="Lot no">
             </div>
 
             <div class="col-md-3">
-                <label class="form-label fw-semibold">Order</label>
-                <select class="form-select" id="orderFilter">
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
+                <label class="form-label fw-semibold">Product</label>
+                <input type="text" class="form-control" id="productFilter" placeholder="Product">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Type</label>
+                <select class="form-select" id="typeFilter">
+                    <option value="">All</option>
+                    <option value="IN">IN</option>
+                    <option value="OUT">OUT</option>
                 </select>
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Filter Applied</label>
-                <select class="form-select" id="filterApplied">
-                    <option value="">None</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                </select>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">From</label>
+                <input type="date" class="form-control" id="dateFromFilter">
             </div>
 
-            <div class="col-md-3">
-                <button class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">To</label>
+                <input type="date" class="form-control" id="dateToFilter">
+            </div>
+
+            <div class="col-md-1 d-grid">
+                <label class="form-label fw-semibold invisible">Apply</label>
+                <button class="btn btn-primary" id="applyFilters" type="button">Go</button>
+            </div>
+        </div>
+
+        <div class="mt-2 d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                Advanced Filters
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="clearFilters" type="button">
+                Clear
+            </button>
+        </div>
+
+        <div class="collapse mt-3" id="advancedFilters">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Company</label>
+                    <select class="form-select" id="companyFilter">
+                        <option value="">All Company</option>
+                        <option value="Biostar Nutriproduct, Inc.">Biostar Nutriproduct, Inc.</option>
+                        <option value="Animal Pharma Corp.">Animal Pharma Corp.</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Warehouse</label>
+                    <select class="form-select" id="warehouseFilter">
+                        <option value="">All Warehouses</option>
+                        <option value="Main">Main</option>
+                        <option value="Branch 1">Branch 1</option>
+                        <option value="Branch 2">Branch 2</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Order</label>
+                    <select class="form-select" id="orderFilter">
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                       
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Scanned By</label>
+                    <input type="text" class="form-control" id="scannedByFilter" placeholder="User">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Quick Filter</label>
+                    <select class="form-select" id="filterApplied">
+                        <option value="">None</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">DR / INV / PO</label>
+                    <input type="text" class="form-control" id="referenceFilter" placeholder="Reference">
+                </div>
             </div>
         </div>
     </div>
@@ -95,7 +146,7 @@
                     </thead>
                     <tbody id="transactionTable">
                         <tr>
-                            <td colspan="12" class="empty-state-cell">Loading transaction data...</td>
+                            <td colspan="13" class="empty-state-cell">Loading transaction data...</td>
                         </tr>
                     </tbody>
                 </table>
