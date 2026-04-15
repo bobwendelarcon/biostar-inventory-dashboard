@@ -228,3 +228,4 @@ D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debu
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.pdb
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.genruntimeconfig.cache
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\ref\biostar_inventory_dashboard.dll
+D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
