@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using biostar_inventory_dashboard.Services;
+﻿using biostar_inventory_dashboard.Services;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace biostar_inventory_dashboard.Controllers
 {
@@ -17,6 +18,20 @@ namespace biostar_inventory_dashboard.Controllers
             return View();
         }
 
+        [HttpPut]
+        public async Task<IActionResult> UpdateReference([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.UpdateTransactionReferenceAsync(data.GetRawText());
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetTransactions(
             int page = 1,
@@ -27,6 +42,7 @@ namespace biostar_inventory_dashboard.Controllers
             string from = "",
             string to = "",
             string scanned_by = "",
+            string full_name = "",
             string reference = "",
             string warehouse = "",
             string order = "desc"
@@ -41,6 +57,7 @@ namespace biostar_inventory_dashboard.Controllers
                 from,
                 to,
                 scanned_by,
+                full_name,
                 reference,
                 warehouse,
                 order

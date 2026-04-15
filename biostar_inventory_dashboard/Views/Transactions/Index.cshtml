@@ -64,11 +64,18 @@
         <div class="collapse mt-3" id="advancedFilters">
             <div class="row g-2">
                 <div class="col-md-2">
-                    <label class="form-label fw-semibold">Company</label>
-                    <select class="form-select" id="companyFilter">
-                        <option value="">All Company</option>
+                    <label class="form-label fw-semibold">Supplier</label>
+                    <select class="form-select" id="supplierFilter">
+                        <option value="">All Supplier</option>
                         <option value="Biostar Nutriproduct, Inc.">Biostar Nutriproduct, Inc.</option>
                         <option value="Animal Pharma Corp.">Animal Pharma Corp.</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Customer</label>
+                    <select class="form-select" id="customerFilter">
+                        <option value="">All Customer</option>
                     </select>
                 </div>
 
@@ -87,7 +94,6 @@
                     <select class="form-select" id="orderFilter">
                         <option value="desc">Descending</option>
                         <option value="asc">Ascending</option>
-                       
                     </select>
                 </div>
 
@@ -117,7 +123,7 @@
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body">
-        <div class="pagination-container">
+        <div class="pagination-container d-flex justify-content-end align-items-center gap-2 mb-3">
             <span id="rangeText">0–0 of 0</span>
             <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
             <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
@@ -135,21 +141,62 @@
                             <th>Date</th>
                             <th>Time</th>
                             <th>Warehouse</th>
-                            @* <th>Product ID</th> *@
                             <th>Type</th>
                             <th>Qty</th>
                             <th>Scanned By</th>
                             <th>DR #</th>
                             <th>INV #</th>
                             <th>PO #</th>
+                            <th>Remarks</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody id="transactionTable">
                         <tr>
-                            <td colspan="13" class="empty-state-cell">Loading transaction data...</td>
+                            <td colspan="14" class="empty-state-cell text-center">Loading transaction data...</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editReferenceModal" tabindex="-1" aria-labelledby="editReferenceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editReferenceModalLabel">Edit Reference Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="editTransactionId" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Customer</label>
+                    <input type="text" class="form-control" id="editCustomer" placeholder="Enter customer">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">DR #</label>
+                    <input type="text" class="form-control" id="editDrNo" placeholder="Enter DR number">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">INV #</label>
+                    <input type="text" class="form-control" id="editInvNo" placeholder="Enter invoice number">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">PO #</label>
+                    <input type="text" class="form-control" id="editPoNo" placeholder="Enter PO number">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSaveReference">Save</button>
             </div>
         </div>
     </div>

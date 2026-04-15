@@ -20,50 +20,99 @@
 
 <div class="card border-0 shadow-sm rounded-4 filter-card">
     <div class="card-body">
-        <div class="row g-3 align-items-end">
+        <div class="row g-2 align-items-end">
 
             <div class="col-md-3">
-                <label class="form-label fw-semibold">Company</label>
-                <select class="form-select" id="companyFilter">
-                    <option value="">All Company</option>
-                    
-                    <option value="Biostar Nutriproduct, Inc.">Biostar Nutriproduct, Inc.</option>
-                    <option value="Animal Pharma Corp.">Animal Pharma Corp.</option>
-                </select>
+                <label class="form-label fw-semibold">Lot No</label>
+                <input type="text" class="form-control" id="lotNoFilter" placeholder="Lot no">
             </div>
 
-
-
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Warehouse</label>
-                <select class="form-select" id="warehouseFilter">
-                    <option value="">All Warehouses</option>
-                    <option value="Main">Main</option>
-                    <option value="Branch 1">Branch 1</option>
-                    <option value="Branch 2">Branch 2</option>
-                </select>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Product</label>
+                <input type="text" class="form-control" id="productFilter" placeholder="Product">
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Order</label>
-                <select class="form-select" id="orderFilter">
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">From</label>
+                <input type="date" class="form-control" id="dateFromFilter">
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Filter Applied</label>
-                <select class="form-select" id="filterApplied">
-                    <option value="">None</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                </select>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">To</label>
+                <input type="date" class="form-control" id="dateToFilter">
             </div>
 
-            <div class="col-md-3">
-                <button class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+            <div class="col-md-1 d-grid">
+                <label class="form-label fw-semibold invisible">Apply</label>
+                <button class="btn btn-primary" id="applyFilters" type="button">Go</button>
+            </div>
+        </div>
+
+        <div class="mt-2 d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                Advanced Filters
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="clearFilters" type="button">
+                Clear
+            </button>
+        </div>
+
+        <div class="collapse mt-3" id="advancedFilters">
+            <div class="row g-2">
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Warehouse</label>
+                    <select class="form-select" id="warehouseFilter">
+                        <option value="">All Warehouses</option>
+                        <option value="Main">Main</option>
+                        <option value="Branch 1">Branch 1</option>
+                        <option value="Branch 2">Branch 2</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Order</label>
+                    <select class="form-select" id="orderFilter">
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Stock Status</label>
+                    <select class="form-select" id="stockStatusFilter">
+                        <option value="">All</option>
+                        <option value="zero">Zero Stock</option>
+                        <option value="low">Low Stock</option>
+                        <option value="normal">Normal</option>
+                        <option value="over">Over Stock</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Expiry Status</label>
+                    <select class="form-select" id="expiryStatusFilter">
+                        <option value="" >All</option>
+                        <option value="available" selected>Available (Not Expired + With Stock)</option>
+                        <option value="expired">Expired</option>
+                        <option value="near">Expiring Soon</option>
+                        <option value="safe">Safe</option>
+                        <option value="noexp">No Expiry Date</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Months Left</label>
+                    <select class="form-select" id="monthsFilter">
+                        <option value="">All</option>
+                        <option value="0">0 month</option>
+                        <option value="1">Up to 1 month</option>
+                        <option value="3">Up to 3 months</option>
+                        <option value="6">Up to 6 months</option>
+                        <option value="12">Up to 12 months</option>
+                    </select>
+                </div>
+
             </div>
         </div>
     </div>
@@ -71,6 +120,11 @@
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body">
+        <div class="pagination-container">
+            <span id="rangeText">0–0 of 0</span>
+            <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
+            <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
+        </div>
         <div class="table-scroll-box">
             <div class="table-responsive">
                 <table class="table inventory-table align-middle">
@@ -78,21 +132,44 @@
                         <tr>
                             <th>Lot No</th>
                             <th>Description</th>
-                            
                             <th>Qty</th>
                             <th>Pack</th>
                             <th>Stock Level</th>
                             <th>MFG. & EXP. Date</th>
                             <th>EXPIRES IN</th>
                             <th>Warehouse</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTable">
                         <tr>
-                            <td colspan="8" class="empty-state-cell">Loading inventory data...</td>
+                            <td colspan="9" class="empty-state-cell">Loading inventory data...</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="transferModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Transfer Stock</h5>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="transferProduct">
+                <input type="hidden" id="transferLot">
+                <input type="hidden" id="transferFromBranch">
+
+                <div>From Branch: <span id="transferFromBranchLabel"></span></div>
+                <div>Available Qty: <span id="transferAvailableQty"></span></div>
+
+                <input type="number" id="transferQty" class="form-control">
+                <select id="transferBranch" class="form-control"></select>
+
+                <button id="btnConfirmTransfer">Confirm</button>
             </div>
         </div>
     </div>

@@ -31,6 +31,7 @@ let currentPage = 1;
 let pageSize = 30;
 let totalRecords = 0;
 let lotSearchTimeout;
+let isEditing = false;
 
 async function loadTransactions(page = 1) {
     try {
@@ -45,6 +46,9 @@ async function loadTransactions(page = 1) {
         const reference = document.getElementById("referenceFilter")?.value.trim() || "";
         const warehouse = document.getElementById("warehouseFilter")?.value || "";
         const order = document.getElementById("orderFilter")?.value || "desc";
+        const supplier = document.getElementById("supplierFilter")?.value || "";
+        const customer = document.getElementById("customerFilter")?.value || "";
+        const quickFilter = document.getElementById("filterApplied")?.value || "";
 
         let url = `/Transactions/GetTransactions?page=${page}&pageSize=${pageSize}`;
 
@@ -57,6 +61,9 @@ async function loadTransactions(page = 1) {
         if (reference) url += `&reference=${encodeURIComponent(reference)}`;
         if (warehouse) url += `&warehouse=${encodeURIComponent(warehouse)}`;
         if (order) url += `&order=${encodeURIComponent(order)}`;
+        if (supplier) url += `&supplier=${encodeURIComponent(supplier)}`;
+        if (customer) url += `&customer=${encodeURIComponent(customer)}`;
+        if (quickFilter) url += `&quickFilter=${encodeURIComponent(quickFilter)}`;
 
         console.log("FILTER URL:", url);
 
@@ -77,7 +84,7 @@ async function loadTransactions(page = 1) {
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="13" class="text-center text-muted">
+                    <td colspan="14" class="text-center text-muted">
                         No transactions found.
                     </td>
                 </tr>
@@ -87,6 +94,9 @@ async function loadTransactions(page = 1) {
         }
 
         data.forEach(item => {
+            const transactionType = (item.transaction_type || "").toUpperCase();
+            const isOut = transactionType === "OUT";
+
             tableBody.innerHTML += `
                 <tr>
                     <td>${item.lot_no ?? ""}</td>
@@ -95,23 +105,40 @@ async function loadTransactions(page = 1) {
                     <td>${item.customer_name ?? ""}</td>
                     <td>${formatDateOnly(item.created_at)}</td>
                     <td>${formatTimeOnly(item.created_at)}</td>
-                    <td>${item.branch_id ?? ""}</td>
+                    <td>${item.branch_name ?? item.branch_id ?? ""}</td>
                     <td>${item.transaction_type ?? ""}</td>
                     <td>${item.quantity ?? ""}</td>
                     <td>${item.scanned_by ?? ""}</td>
                     <td>${item.dr_no ?? ""}</td>
                     <td>${item.inv_no ?? ""}</td>
                     <td>${item.po_no ?? ""}</td>
+                    <td>${item.remarks ?? ""}</td>
+                    <td class="text-center">
+                        ${isOut
+                    ? `
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary btn-edit"
+                                        data-id="${item.transaction_id ?? ""}"
+                                        data-customer="${escapeHtml(item.customer_name ?? "")}"
+                                        data-dr="${escapeHtml(item.dr_no ?? "")}"
+                                        data-inv="${escapeHtml(item.inv_no ?? "")}"
+                                        data-po="${escapeHtml(item.po_no ?? "")}">
+                                        Edit
+                                    </button>
+                                `
+                    : `<span class="text-muted">-</span>`
+                }
+                    </td>
                 </tr>
             `;
         });
 
         renderPagination(totalRecords);
-
     } catch (error) {
         document.getElementById("transactionTable").innerHTML = `
             <tr>
-                <td colspan="13" class="text-center text-danger">
+                <td colspan="14" class="text-center text-danger">
                     ${error.message}
                 </td>
             </tr>
@@ -154,46 +181,66 @@ function prevPage() {
     }
 }
 
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".btn-edit");
+    if (!btn) return;
+
+    isEditing = true;
+
+    document.getElementById("editTransactionId").value = btn.dataset.id || "";
+    document.getElementById("editCustomer").value = btn.dataset.customer || "";
+    document.getElementById("editDrNo").value = btn.dataset.dr || "";
+    document.getElementById("editInvNo").value = btn.dataset.inv || "";
+    document.getElementById("editPoNo").value = btn.dataset.po || "";
+
+    const modalElement = document.getElementById("editReferenceModal");
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
 
-    const applyBtn = document.getElementById("applyFilters");
-    if (applyBtn) {
-        applyBtn.addEventListener("click", function () {
-            console.log("Apply Filters clicked");
-            loadTransactions(1);
+    document.getElementById("applyFilters")?.addEventListener("click", function () {
+        loadTransactions(1);
+    });
+
+    document.getElementById("clearFilters")?.addEventListener("click", function () {
+        const ids = [
+            "lotNoFilter",
+            "productFilter",
+            "typeFilter",
+            "dateFromFilter",
+            "dateToFilter",
+            "scannedByFilter",
+            "referenceFilter",
+            "warehouseFilter",
+            "orderFilter",
+            "supplierFilter",
+            "customerFilter",
+            "filterApplied"
+        ];
+
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
         });
-    }
 
-    
+        const orderEl = document.getElementById("orderFilter");
+        if (orderEl) orderEl.value = "desc";
 
-    const clearBtn = document.getElementById("clearFilters");
-    if (clearBtn) {
-        clearBtn.addEventListener("click", function () {
-            const ids = [
-                "lotNoFilter",
-                "productFilter",
-                "typeFilter",
-                "dateFromFilter",
-                "dateToFilter",
-                "scannedByFilter",
-                "referenceFilter",
-                "warehouseFilter",
-                "orderFilter"
-            ];
-
-            ids.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = "";
-            });
-
-            const orderEl = document.getElementById("orderFilter");
-            if (orderEl) orderEl.value = "desc";
-
-            loadTransactions(1);
-        });
-    }
+        loadTransactions(1);
+    });
 
     document.getElementById("lotNoFilter")?.addEventListener("input", function () {
         clearTimeout(lotSearchTimeout);
@@ -202,9 +249,56 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 500);
     });
 
+    document.getElementById("btnSaveReference")?.addEventListener("click", async function () {
+        const payload = {
+            transaction_id: parseInt(document.getElementById("editTransactionId").value, 10),
+            customer: document.getElementById("editCustomer").value.trim(),
+            dr_no: document.getElementById("editDrNo").value.trim(),
+            inv_no: document.getElementById("editInvNo").value.trim(),
+            po_no: document.getElementById("editPoNo").value.trim()
+        };
+
+        console.log("UPDATE PAYLOAD:", payload);
+
+        try {
+            const res = await fetch("/Transactions/UpdateReference", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const text = await res.text();
+            console.log("UPDATE RESPONSE STATUS:", res.status);
+            console.log("UPDATE RESPONSE BODY:", text);
+
+            if (!res.ok) {
+                throw new Error(text || "Failed to update reference.");
+            }
+
+            const modalElement = document.getElementById("editReferenceModal");
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) modalInstance.hide();
+
+            isEditing = false;
+            loadTransactions(currentPage);
+            alert("Reference updated successfully.");
+        } catch (err) {
+            console.error("UPDATE ERROR:", err);
+            alert("Error: " + err.message);
+        }
+    });
+
+    document.getElementById("editReferenceModal")?.addEventListener("hidden.bs.modal", function () {
+        isEditing = false;
+    });
+
     loadTransactions(1);
 
     setInterval(() => {
-        loadTransactions(currentPage);
-    }, 5000); // every 10 seconds
+        if (!isEditing) {
+            loadTransactions(currentPage);
+        }
+    }, 5000);
 });

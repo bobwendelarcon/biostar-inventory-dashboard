@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Branches";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <small class="text-muted">Dashboard &gt; Master Data &gt; Branches</small>
+        <h2 class="fw-bold mt-2 mb-0">Branch Management</h2>
+    </div>
+    <button class="btn btn-primary rounded-3" id="btnAddBranch" data-bs-toggle="modal" data-bs-target="#branchModal">
+        + Add Branch
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Search</label>
+                <input type="text" class="form-control" id="searchBranch" placeholder="Search branch..." />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Status</label>
+                <select class="form-select" id="filterBranchStatus">
+                    <option value="">All</option>
+                    <option value="false">Active</option>
+                    <option value="true">Inactive</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" id="btnFilterBranches" type="button">Filter</button>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" id="btnClearBranches" type="button">Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Branch ID</th>
+                        <th>Branch Name</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="branchTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Loading branches...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="branchModalLabel">Add Branch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body pt-0">
+                <input type="hidden" id="branchMode" value="add" />
+                <input type="hidden" id="originalBranchId" />
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Branch ID</label>
+                        <input type="text" class="form-control" id="branch_id" placeholder="e.g. BR001" />
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Branch Name</label>
+                        <input type="text" class="form-control" id="branch_name" placeholder="Enter branch name" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Location</label>
+                        <textarea class="form-control" id="branch_loc" rows="3" placeholder="Enter branch location"></textarea>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select class="form-select" id="branch_status">
+                            <option value="false">Active</option>
+                            <option value="true">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-3" id="btnSaveBranch">Save Branch</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/branch.js" asp-append-version="true"></script>
+}

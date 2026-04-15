@@ -53,6 +53,13 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, $"Error updating category: {ex.Message}");
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCategories()
+        {
+            var data = await _apiService.GetCategoriesAsync();
+            return Json(data);
+        }
     }
 
 

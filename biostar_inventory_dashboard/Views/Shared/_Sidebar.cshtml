@@ -14,8 +14,8 @@
                         || currentController == "Categories"
                         || currentController == "Branch"
                         || currentController == "User"
-                        || currentController == "Supplier"
-                        || currentController == "Client";
+                        || currentController == "Partner";
+
 }
 
 <!-- ================= MOBILE NAVBAR ================= -->
@@ -463,8 +463,8 @@
                     <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")" href="/Product">Products</a></li>
                     <li class="nav-item"><a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")" href="/Branch">Branches</a></li>
                     <li class="nav-item"><a class="nav-link @(currentController == "User" ? "active fw-bold" : "")" href="/User">Users</a></li>
-                    <li class="nav-item"><a class="nav-link @(currentController == "Supplier" ? "active fw-bold" : "")" href="/Supplier">Suppliers</a></li>
-                    <li class="nav-item"><a class="nav-link @(currentController == "Client" ? "active fw-bold" : "")" href="/Client">Clients</a></li>
+                    <li class="nav-item"><a class="nav-link @(currentController == "Partners" ? "active fw-bold" : "")" href="/Partner">Partners</a></li>
+                    @* <li class="nav-item"><a class="nav-link @(currentController == "Client" ? "active fw-bold" : "")" href="/Client">Clients</a></li> *@
                 </ul>
             </div>
         </li>
