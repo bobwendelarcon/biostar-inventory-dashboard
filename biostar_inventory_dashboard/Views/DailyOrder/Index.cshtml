@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Daily Order";
+    ViewData["Title"] = "Daily Order Planning";
 }
 
 @section Styles {
@@ -9,8 +9,9 @@
 <div class="dailyorder-page">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <small class="text-muted">Dashboard &gt; Daily Order</small>
-            <h2 class="fw-bold mt-2 mb-0">Daily Order</h2>
+            <small class="text-muted">Dashboard &gt; Planning &gt; Daily Order</small>
+            <h2 class="fw-bold mt-2 mb-0">Daily Order Planning</h2>
+            <small class="text-muted">Plan customer orders, run FEFO allocation, and prepare dispatch.</small>
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
@@ -30,7 +31,7 @@
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Class</label>
                     <select class="form-select" id="classFilter">
                         <option value="">All Class</option>
@@ -45,7 +46,7 @@
                     <label class="form-label fw-semibold">Year</label>
                     <select class="form-select" id="yearFilter">
                         <option value="">All Year</option>
-                        <option>2026</option>
+                        <option selected>2026</option>
                         <option>2025</option>
                         <option>2024</option>
                     </select>
@@ -70,7 +71,23 @@
                     </select>
                 </div>
 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option>Draft</option>
+                        <option>For Allocation</option>
+                        <option>Allocated</option>
+                        <option>Partially Allocated</option>
+                        <option>Ready for Dispatch</option>
+                        <option>Partially Dispatched</option>
+                        <option>Completed</option>
+                        <option>Overdue</option>
+                        <option>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Search</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="Customer / Product / DR#" />
                 </div>
@@ -86,8 +103,8 @@
 
     <!-- SUMMARY CARDS -->
     <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card">
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">Total Orders</div>
                     <div class="summary-value">125</div>
@@ -95,26 +112,44 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card">
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
                 <div class="card-body">
-                    <div class="summary-label">Pending</div>
-                    <div class="summary-value text-warning">42</div>
+                    <div class="summary-label">For Allocation</div>
+                    <div class="summary-value text-warning">24</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card">
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
                 <div class="card-body">
-                    <div class="summary-label">Delivered</div>
-                    <div class="summary-value text-success">68</div>
+                    <div class="summary-label">Allocated</div>
+                    <div class="summary-value text-success">41</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card">
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+                <div class="card-body">
+                    <div class="summary-label">Partial</div>
+                    <div class="summary-value text-info">18</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+                <div class="card-body">
+                    <div class="summary-label">Ready Dispatch</div>
+                    <div class="summary-value text-primary">27</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">Overdue</div>
                     <div class="summary-value text-danger">15</div>
@@ -128,7 +163,7 @@
         <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h5 class="fw-bold mb-1">Daily Order List</h5>
-                <small class="text-muted">Manage customer daily orders and delivery schedule</small>
+                <small class="text-muted">Manage planning, FEFO allocation, and dispatch readiness</small>
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
@@ -140,6 +175,8 @@
         <div class="card-body p-0">
             <div class="table-responsive dailyorder-table-wrapper">
                 <table class="table align-middle mb-0 dailyorder-table">
+
+
                     <thead>
                         <tr>
                             <th>Class</th>
@@ -148,38 +185,61 @@
                             <th>DR#/SI#</th>
                             <th>Customer</th>
                             <th>Product</th>
-                            <th>Quantity</th>
+
+                            <!-- PLANNING -->
+                            <th>Required Qty</th>
+                            <th>Allocated Qty</th>
+                            <th>Remaining</th>
+                            <th>Allocation</th>
+
+                            <!-- DATES -->
                             <th>Date Ordered</th>
                             <th>Delivery Date</th>
                             <th>Date Delivered</th>
+
+                            <!-- STATUS -->
                             <th>Status</th>
+
                             <th>Special Instructions</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
+
+                        <!-- FULLY COMPLETED -->
                         <tr>
                             <td>ANDREA</td>
                             <td>2026</td>
                             <td>March</td>
                             <td>DO-0001</td>
-                            <td>JBT FARM RANCH CORP.</td>
-                            <td>HOG MINERAL PREMIX</td>
-                            <td>34 BAGS X 25KGS</td>
+                            <td>ABCD FARM</td>
+                            <td>FENBENDAZOLE FP</td>
+
+                            <td>50 BAGS</td>
+                            <td>50 BAGS</td>
+                            <td>0</td>
+                            <td><span class="badge bg-success-subtle text-success">Fully Allocated</span></td>
+
                             <td>March 12, 2026</td>
                             <td>March 13, 2026</td>
                             <td>March 13, 2026</td>
-                            <td><span class="badge status-badge bg-success-subtle text-success">Delivered</span></td>
-                            <td>SOLID</td>
+
+                            <td><span class="badge bg-success-subtle text-success">Completed</span></td>
+
+                            <td>-</td>
+
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary">View</button>
+                                <div class="btn-group btn-group-sm flex-wrap">
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewOrderModal">
+                                        View
+                                    </button>
                                     <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-success">Done</button>
                                 </div>
                             </td>
                         </tr>
 
+                        <!-- PARTIALLY ALLOCATED -->
                         <tr>
                             <td>ANDREA</td>
                             <td>2026</td>
@@ -187,21 +247,32 @@
                             <td>DO-0002</td>
                             <td>KURT JOHN</td>
                             <td>GBB FP POULTRY</td>
-                            <td>110 BAGS</td>
+
+                            <td>100 BAGS</td>
+                            <td>50 BAGS</td>
+                            <td>50</td>
+                            <td><span class="badge bg-warning-subtle text-warning">Partial</span></td>
+
                             <td>March 13, 2026</td>
                             <td>March 14, 2026</td>
                             <td>-</td>
-                            <td><span class="badge status-badge bg-warning-subtle text-warning">Pending</span></td>
+
+                            <td><span class="badge bg-warning-subtle text-warning">Partially Allocated</span></td>
+
                             <td>SOLID</td>
+
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary">View</button>
+                                <div class="btn-group btn-group-sm flex-wrap">
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewOrderModal">
+                                        View
+                                    </button>
                                     <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-success">Done</button>
+                                    <button class="btn btn-outline-info">Allocate</button>
                                 </div>
                             </td>
                         </tr>
 
+                        <!-- READY FOR DISPATCH -->
                         <tr>
                             <td>ANDREA</td>
                             <td>2026</td>
@@ -209,21 +280,30 @@
                             <td>DO-0003</td>
                             <td>WS MARKETING</td>
                             <td>NATOX LIQUID</td>
-                            <td>10 BOXES</td>
+
+                            <td>30 BOXES</td>
+                            <td>30 BOXES</td>
+                            <td>0</td>
+                            <td><span class="badge bg-success-subtle text-success">Fully Allocated</span></td>
+
                             <td>March 13, 2026</td>
-                            <td>March 13, 2026</td>
+                            <td>March 14, 2026</td>
                             <td>-</td>
-                            <td><span class="badge status-badge bg-danger-subtle text-danger">Overdue</span></td>
-                            <td>SOLID</td>
+
+                            <td><span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span></td>
+
+                            <td>-</td>
+
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
+                                <div class="btn-group btn-group-sm flex-wrap">
                                     <button class="btn btn-outline-primary">View</button>
                                     <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-success">Done</button>
+                                    <button class="btn btn-outline-success">Dispatch</button>
                                 </div>
                             </td>
                         </tr>
 
+                        <!-- OVERDUE -->
                         <tr>
                             <td>ANDREA</td>
                             <td>2026</td>
@@ -231,43 +311,33 @@
                             <td>DO-0004</td>
                             <td>PROCHEM</td>
                             <td>AMOXI PRO 50 FP</td>
-                            <td>6 BAGS</td>
-                            <td>March 14, 2026</td>
-                            <td>March 16, 2026</td>
+
+                            <td>20 BAGS</td>
+                            <td>0</td>
+                            <td>20</td>
+                            <td><span class="badge bg-danger-subtle text-danger">Not Allocated</span></td>
+
+                            <td>March 10, 2026</td>
+                            <td>March 12, 2026</td>
                             <td>-</td>
-                            <td><span class="badge status-badge bg-info-subtle text-info">For Delivery</span></td>
-                            <td>Priority delivery</td>
+
+                            <td><span class="badge bg-danger-subtle text-danger">Overdue</span></td>
+
+                            <td>Priority</td>
+
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
+                                <div class="btn-group btn-group-sm flex-wrap">
                                     <button class="btn btn-outline-primary">View</button>
                                     <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-success">Done</button>
+                                    <button class="btn btn-outline-info">Allocate</button>
                                 </div>
                             </td>
                         </tr>
 
-                        <tr>
-                            <td>ANDREA</td>
-                            <td>2026</td>
-                            <td>March</td>
-                            <td>DO-0005</td>
-                            <td>GEO FARM(KURT JOHN)</td>
-                            <td>LAYER BASEMIX</td>
-                            <td>8 BAGS</td>
-                            <td>March 16, 2026</td>
-                            <td>March 17, 2026</td>
-                            <td>-</td>
-                            <td><span class="badge status-badge bg-warning-subtle text-warning">Pending</span></td>
-                            <td>-</td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary">View</button>
-                                    <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-success">Done</button>
-                                </div>
-                            </td>
-                        </tr>
                     </tbody>
+
+
+
                 </table>
             </div>
         </div>
@@ -285,6 +355,123 @@
                         <li class="page-item"><a class="page-link" href="#">Next</a></li>
                     </ul>
                 </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VIEW ORDER MODAL -->
+<div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="viewOrderModalLabel">Order Details</h5>
+                    <small class="text-muted">Review order lines, FEFO allocation, and dispatch readiness</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- ORDER HEADER -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1">Order No</label>
+                        <div class="fw-semibold">DO-0004</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1">Customer</label>
+                        <div class="fw-semibold">PROCHEM</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1">Delivery Date</label>
+                        <div class="fw-semibold">March 16, 2026</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small mb-1">Status</label>
+                        <div><span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span></div>
+                    </div>
+                </div>
+
+                <!-- ORDER LINE SUMMARY -->
+                <div class="card border-0 bg-light rounded-4 mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Order Line Summary</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Required Qty</th>
+                                        <th>Allocated Qty</th>
+                                        <th>Available Before Allocation</th>
+                                        <th>Allocation Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>AMOXI PRO 50 FP</td>
+                                        <td>6 BAGS</td>
+                                        <td>6 BAGS</td>
+                                        <td>20 BAGS</td>
+                                        <td><span class="badge bg-success-subtle text-success">Fully Allocated</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEFO LOT BREAKDOWN -->
+                <div class="card border-0 bg-light rounded-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">FEFO Lot Allocation</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Lot No</th>
+                                        <th>MFG Date</th>
+                                        <th>Expiry Date</th>
+                                        <th>On Hand</th>
+                                        <th>Reserved</th>
+                                        <th>Available</th>
+                                        <th>Allocated to Order</th>
+                                        <th>Priority</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>LOT-AP50-001</td>
+                                        <td>January 10, 2026</td>
+                                        <td>May 10, 2026</td>
+                                        <td>10</td>
+                                        <td>4</td>
+                                        <td>6</td>
+                                        <td>6</td>
+                                        <td><span class="badge bg-success-subtle text-success">1st FEFO</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>LOT-AP50-002</td>
+                                        <td>January 20, 2026</td>
+                                        <td>July 20, 2026</td>
+                                        <td>14</td>
+                                        <td>0</td>
+                                        <td>14</td>
+                                        <td>0</td>
+                                        <td><span class="badge bg-light text-dark border">Next</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-info">Re-run FEFO Allocation</button>
+                <button class="btn btn-outline-warning">Edit Order</button>
+                <button class="btn btn-primary">Send to Dispatch</button>
             </div>
         </div>
     </div>

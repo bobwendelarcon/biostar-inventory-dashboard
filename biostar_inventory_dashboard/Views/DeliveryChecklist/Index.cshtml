@@ -1,0 +1,332 @@
+﻿@{
+    ViewData["Title"] = "Delivery Checklist";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dispatch.css" />
+}
+
+<div class="dispatch-page">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <small class="text-muted">Dashboard > Dispatch</small>
+            <h2 class="fw-bold mb-0">Delivery Checklist</h2>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createChecklistModal">
+                <i class="bi bi-plus-circle"></i> Create Checklist
+            </button>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Checklist No</th>
+                            <th>Date</th>
+                            <th>Route</th>
+                            <th>Truck</th>
+                            <th>Driver</th>
+                            <th>Total Customers</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>DC-0001</td>
+                            <td>April 16, 2026</td>
+                            <td>Laguna Route</td>
+                            <td>TRUCK-01</td>
+                            <td>Juan Dela Cruz</td>
+                            <td>3</td>
+                            <td><span class="badge bg-primary-subtle text-primary">Ready for Loading</span></td>
+
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewChecklistModal">View</button>
+                                    <button class="btn btn-outline-success">Load</button>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- ============================= -->
+<!-- CREATE CHECKLIST MODAL -->
+<!-- ============================= -->
+
+<div class="modal fade" id="createChecklistModal">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content rounded-4">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+                <div>
+                    <h5 class="fw-bold mb-0">Create Delivery Checklist</h5>
+                    <small class="text-muted">Select orders to include in this trip</small>
+                </div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <!-- CHECKLIST INFO -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Delivery Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Route</label>
+                        <input type="text" class="form-control" placeholder="e.g Laguna">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Truck</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Driver</label>
+                        <input type="text" class="form-control">
+                    </div>
+                </div>
+
+                <!-- FILTER (OPTIONAL BUT USEFUL) -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" placeholder="Search customer / order">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select">
+                            <option>All Routes</option>
+                            <option>Laguna</option>
+                            <option>Batangas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ORDER SELECTION TABLE -->
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox"></th>
+                                <th>Order No</th>
+                                <th>Customer</th>
+                                <th>Route</th>
+                                <th>Product</th>
+                                <th>Required</th>
+                                <th>Allocated</th>
+                                <th>Delivery Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>DO-0001</td>
+                                <td>ABCD FARM</td>
+                                <td>Laguna</td>
+                                <td>FENBENDAZOLE FP</td>
+                                <td>50</td>
+                                <td>50</td>
+                                <td>April 16</td>
+                                <td><span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span></td>
+                            </tr>
+
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>DO-0002</td>
+                                <td>KURT JOHN</td>
+                                <td>Laguna</td>
+                                <td>GBB FP POULTRY</td>
+                                <td>100</td>
+                                <td>50</td>
+                                <td>April 16</td>
+                                <td><span class="badge bg-warning-subtle text-warning">Partially Allocated</span></td>
+                            </tr>
+
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>DO-0003</td>
+                                <td>WS MARKETING</td>
+                                <td>Batangas</td>
+                                <td>NATOX LIQUID</td>
+                                <td>30</td>
+                                <td>30</td>
+                                <td>April 16</td>
+                                <td><span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span></td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button class="btn btn-primary">
+                    Create Checklist
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ============================= -->
+<!-- VIEW CHECKLIST MODAL -->
+<!-- ============================= -->
+
+<div class="modal fade" id="viewChecklistModal">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content rounded-4">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+                <div>
+                    <h5 class="fw-bold mb-0">Checklist Details</h5>
+                    <small class="text-muted">Multi-customer delivery</small>
+                </div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <!-- HEADER INFO -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <small class="text-muted">Checklist No</small>
+                        <div class="fw-semibold">DC-0001</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Route</small>
+                        <div class="fw-semibold">Laguna</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Truck</small>
+                        <div class="fw-semibold">TRUCK-01</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Driver</small>
+                        <div class="fw-semibold">Juan Dela Cruz</div>
+                    </div>
+                </div>
+
+                <!-- DELIVERY LINES -->
+                <div class="card border-0 bg-light rounded-4">
+                    <div class="card-body">
+
+                        <h6 class="fw-bold mb-3">Delivery Lines</h6>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Product</th>
+                                        <th>Lot No</th>
+                                        <th>Expiry</th>
+                                        <th>Qty</th>
+                                        <th>DR</th>
+                                        <th>SI</th>
+                                        <th>COA</th>
+                                        <th>Match</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    <tr>
+                                        <td>ABCD FARM</td>
+                                        <td>FENBENDAZOLE FP</td>
+                                        <td>LOT-001</td>
+                                        <td>May 2026</td>
+                                        <td>50</td>
+                                        <td>✔</td>
+                                        <td>✔</td>
+                                        <td>✔</td>
+                                        <td>✔</td>
+                                        <td><span class="badge bg-success">Loaded</span></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>KURT JOHN</td>
+                                        <td>GBB FP POULTRY</td>
+                                        <td>LOT-002</td>
+                                        <td>June 2026</td>
+                                        <td>40</td>
+                                        <td>✔</td>
+                                        <td>✔</td>
+                                        <td>✖</td>
+                                        <td>✔</td>
+                                        <td><span class="badge bg-warning">Partial</span></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>WS MARKETING</td>
+                                        <td>NATOX LIQUID</td>
+                                        <td>LOT-003</td>
+                                        <td>July 2026</td>
+                                        <td>30</td>
+                                        <td>✖</td>
+                                        <td>✖</td>
+                                        <td>✖</td>
+                                        <td>✖</td>
+                                        <td><span class="badge bg-danger">Pending</span></td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary">Print</button>
+                <button class="btn btn-success">Confirm Loading</button>
+            </div>
+
+        </div>
+    </div>
+</div>

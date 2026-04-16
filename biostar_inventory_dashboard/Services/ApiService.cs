@@ -342,6 +342,34 @@ namespace biostar_inventory_dashboard.Services
             return responseBody;
         }
 
+        //login 
+
+        public async Task<User?> LoginAsync(string username, string password)
+        {
+            var payload = new
+            {
+                username = username,
+                password = password
+            };
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(payload),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync("api/User/login", content);
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<User>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+
 
     }
 }

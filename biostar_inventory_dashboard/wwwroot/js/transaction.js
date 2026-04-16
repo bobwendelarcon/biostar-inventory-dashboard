@@ -123,7 +123,9 @@ async function loadTransactions(page = 1) {
                                         data-customer="${escapeHtml(item.customer_name ?? "")}"
                                         data-dr="${escapeHtml(item.dr_no ?? "")}"
                                         data-inv="${escapeHtml(item.inv_no ?? "")}"
-                                        data-po="${escapeHtml(item.po_no ?? "")}">
+                                        data-po="${escapeHtml(item.po_no ?? "")}"
+                                        data-remarks="${escapeHtml(item.remarks ?? "")}"
+                                        >
                                         Edit
                                     </button>
                                 `
@@ -201,6 +203,7 @@ document.addEventListener("click", function (e) {
     document.getElementById("editDrNo").value = btn.dataset.dr || "";
     document.getElementById("editInvNo").value = btn.dataset.inv || "";
     document.getElementById("editPoNo").value = btn.dataset.po || "";
+    document.getElementById("editRemarks").value = btn.dataset.remarks || "";
 
     const modalElement = document.getElementById("editReferenceModal");
     const modal = new bootstrap.Modal(modalElement);
@@ -255,7 +258,8 @@ document.addEventListener("DOMContentLoaded", function () {
             customer: document.getElementById("editCustomer").value.trim(),
             dr_no: document.getElementById("editDrNo").value.trim(),
             inv_no: document.getElementById("editInvNo").value.trim(),
-            po_no: document.getElementById("editPoNo").value.trim()
+            po_no: document.getElementById("editPoNo").value.trim(),
+              remarks: document.getElementById("editRemarks").value.trim()
         };
 
         console.log("UPDATE PAYLOAD:", payload);

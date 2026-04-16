@@ -99,9 +99,11 @@
                             <input type="text" class="form-control" id="username" placeholder="Enter username" />
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Password</label>
-                            <input type="text" class="form-control" id="passwordHash" placeholder="Enter password" />
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="passwordHash" placeholder="Enter new password (leave blank to keep current)" />
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                👁
+                            </button>
                         </div>
 
                         <div class="col-md-6">

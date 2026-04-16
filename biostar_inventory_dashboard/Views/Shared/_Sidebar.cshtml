@@ -197,7 +197,7 @@
 </div>
 
 
-       <script>
+<script>
     document.addEventListener("DOMContentLoaded", function () {
         const sidebar = document.getElementById("desktopSidebar");
         const toggleBtn = document.getElementById("sidebarToggleBtn");
@@ -206,7 +206,10 @@
         if (!sidebar || !toggleBtn || !mainContent) return;
 
         const savedState = localStorage.getItem("sidebarState");
+        const activeMenu = localStorage.getItem("activeMenu");
+        const savedScroll = localStorage.getItem("sidebarScrollTop");
 
+        // Restore sidebar collapsed/expanded state
         if (savedState === "collapsed") {
             sidebar.classList.add("collapsed");
             mainContent.classList.add("sidebar-collapsed");
@@ -215,6 +218,22 @@
             mainContent.classList.remove("sidebar-collapsed");
         }
 
+        // Restore opened submenu
+        if (activeMenu) {
+            const menu = document.querySelector(activeMenu);
+            if (menu) {
+                menu.classList.add("show");
+            }
+        }
+
+        // Restore scroll position
+        if (savedScroll !== null) {
+            setTimeout(() => {
+                sidebar.scrollTop = parseInt(savedScroll, 10) || 0;
+            }, 50);
+        }
+
+        // Toggle sidebar using hamburger button
         toggleBtn.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -225,40 +244,40 @@
             localStorage.setItem("sidebarState", isCollapsed ? "collapsed" : "expanded");
         });
 
-        // Save currently opened collapse menu
+        // Handle menu items with submenu
         document.querySelectorAll('.sidebar .nav-link[data-bs-toggle="collapse"]').forEach(link => {
-            link.addEventListener("click", function () {
+            link.addEventListener("click", function (e) {
                 const target = this.getAttribute("href");
-                localStorage.setItem("activeMenu", target);
+                if (!target) return;
 
-                // Save sidebar scroll position too
+                localStorage.setItem("activeMenu", target);
                 localStorage.setItem("sidebarScrollTop", sidebar.scrollTop);
+
+                // If sidebar is collapsed, expand first then open submenu
+                if (sidebar.classList.contains("collapsed")) {
+                    e.preventDefault();
+
+                    sidebar.classList.remove("collapsed");
+                    mainContent.classList.remove("sidebar-collapsed");
+                    localStorage.setItem("sidebarState", "expanded");
+
+                    setTimeout(() => {
+                        const menu = document.querySelector(target);
+                        if (menu) {
+                            new bootstrap.Collapse(menu, {
+                                toggle: true
+                            });
+                        }
+                    }, 200);
+                }
             });
         });
 
-        // Save scroll position before navigating to another page
+        // Save scroll position when clicking normal links
         document.querySelectorAll('.sidebar a[href]:not([data-bs-toggle="collapse"])').forEach(link => {
             link.addEventListener("click", function () {
                 localStorage.setItem("sidebarScrollTop", sidebar.scrollTop);
             });
         });
-
-        // Restore opened menu
-        const activeMenu = localStorage.getItem("activeMenu");
-        if (activeMenu) {
-            const menu = document.querySelector(activeMenu);
-            if (menu) {
-                menu.classList.add("show");
-            }
-        }
-
-        // Restore sidebar scroll position AFTER menu is restored
-        const savedScroll = localStorage.getItem("sidebarScrollTop");
-        if (savedScroll !== null) {
-            // small delay so the collapse menu is already expanded before scrolling
-            setTimeout(() => {
-                sidebar.scrollTop = parseInt(savedScroll, 10) || 0;
-            }, 50);
-        }
     });
 </script>

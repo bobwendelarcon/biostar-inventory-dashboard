@@ -23,7 +23,10 @@ function debounceLoad() {
         loadUsers();
     }, 400);
 }
-
+function togglePassword() {
+    const input = document.getElementById("passwordHash");
+    input.type = input.type === "password" ? "text" : "password";
+}
 async function loadUsers() {
     try {
         const response = await fetch("/User/GetUsers");
@@ -136,7 +139,7 @@ function openEditUserModal(user) {
     document.getElementById("userId").value = user.user_id ?? "";
     document.getElementById("fullName").value = user.full_name ?? "";
     document.getElementById("username").value = user.username ?? "";
-    document.getElementById("passwordHash").value = user.password_hash ?? "";
+    document.getElementById("passwordHash").value = "";
     document.getElementById("roleName").value = user.role_name ?? "";
     document.getElementById("userStatus").value = String(user.is_deleted ?? false);
 
@@ -148,17 +151,20 @@ async function saveUser() {
     try {
         const mode = document.getElementById("userFormMode").value;
 
+        const passwordValue = document.getElementById("passwordHash")?.value.trim();
+
         const payload = {
             user_id: document.getElementById("userId")?.value.trim() || "",
             full_name: document.getElementById("fullName")?.value.trim() || "",
             username: document.getElementById("username")?.value.trim() || "",
-            password_hash: document.getElementById("passwordHash")?.value.trim() || "",
             role_name: document.getElementById("roleName")?.value.trim() || "",
             is_deleted: document.getElementById("userStatus")?.value === "true"
         };
 
-        console.log("USER PAYLOAD:", payload);
-
+        // ✅ ONLY send password if user typed something
+        if (passwordValue) {
+            payload.password_hash = passwordValue;
+        }
         if (!payload.user_id) {
             alert("User ID is required.");
             return;

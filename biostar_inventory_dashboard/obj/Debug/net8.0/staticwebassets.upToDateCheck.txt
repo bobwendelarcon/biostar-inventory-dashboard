@@ -1,5 +1,6 @@
 wwwroot\css\dailyorder.css
 wwwroot\css\inventory.css
+wwwroot\css\login.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\js\branch.js
