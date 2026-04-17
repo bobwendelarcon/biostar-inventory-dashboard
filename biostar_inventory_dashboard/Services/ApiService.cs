@@ -369,6 +369,111 @@ namespace biostar_inventory_dashboard.Services
                 PropertyNameCaseInsensitive = true
             });
         }
+        // daily order
+
+        public async Task<string> GetDailyOrdersAsync(
+    string? className,
+    int? year,
+    string? month,
+    string? status,
+    string? search)
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(className))
+                query.Add($"className={Uri.EscapeDataString(className)}");
+
+            if (year.HasValue)
+                query.Add($"year={year.Value}");
+
+            if (!string.IsNullOrWhiteSpace(month))
+                query.Add($"month={Uri.EscapeDataString(month)}");
+
+            if (!string.IsNullOrWhiteSpace(status))
+                query.Add($"status={Uri.EscapeDataString(status)}");
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add($"search={Uri.EscapeDataString(search)}");
+
+            var url = "api/DailyOrders";
+            if (query.Any())
+                url += "?" + string.Join("&", query);
+
+            return await _httpClient.GetStringAsync(url);
+        }
+
+        public async Task<string> GetDailyOrderDetailsAsync(long orderId)
+        {
+            return await _httpClient.GetStringAsync($"api/DailyOrders/{orderId}");
+        }
+
+        public async Task<string> AllocateDailyOrderAsync(long orderId)
+        {
+            var response = await _httpClient.PostAsync($"api/DailyOrders/{orderId}/allocate", null);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> MarkDailyOrderReadyForDispatchAsync(long orderId)
+        {
+            var response = await _httpClient.PostAsync($"api/DailyOrders/{orderId}/ready-for-dispatch", null);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> UpdateDailyOrderAsync(long orderId, object request)
+        {
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"api/DailyOrders/{orderId}", content);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> DeleteDailyOrderAsync(long orderId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/DailyOrders/{orderId}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateDailyOrderAsync(object request)
+        {
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("api/DailyOrders", content);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+
+
+        public async Task<List<ProductLookupDto>> GetProductsLookupAsync(string? categoryId, string? search)
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(categoryId))
+                query.Add($"categoryId={Uri.EscapeDataString(categoryId)}");
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add($"search={Uri.EscapeDataString(search)}");
+
+            var url = "api/Products/lookup";
+            if (query.Any())
+                url += "?" + string.Join("&", query);
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return new List<ProductLookupDto>();
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<ProductLookupDto>>(json, _jsonOptions) ?? new List<ProductLookupDto>();
+        }
 
 
     }

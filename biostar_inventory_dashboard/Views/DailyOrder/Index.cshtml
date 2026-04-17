@@ -21,7 +21,7 @@
             <button class="btn btn-outline-success">
                 <i class="bi bi-download"></i> Export
             </button>
-            <button class="btn btn-primary">
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addOrderModal">
                 <i class="bi bi-plus-circle"></i> Add Order
             </button>
         </div>
@@ -55,10 +55,10 @@
                 <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Month</label>
                     <select class="form-select" id="monthFilter">
-                        <option value="">All Month</option>
+                        <option value="" selected>All Month</option>
                         <option>January</option>
                         <option>February</option>
-                        <option selected>March</option>
+                        <option >March</option>
                         <option>April</option>
                         <option>May</option>
                         <option>June</option>
@@ -75,7 +75,7 @@
                     <label class="form-label fw-semibold">Status</label>
                     <select class="form-select" id="statusFilter">
                         <option value="">All Status</option>
-                        <option>Draft</option>
+                        @* <option>Draft</option> *@
                         <option>For Allocation</option>
                         <option>Allocated</option>
                         <option>Partially Allocated</option>
@@ -168,15 +168,13 @@
 
             <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-outline-secondary btn-sm">Column Settings</button>
-                <button class="btn btn-outline-dark btn-sm">Refresh</button>
+                <button class="btn btn-outline-dark btn-sm" id="btnRefreshOrders">Refresh</button>
             </div>
         </div>
 
         <div class="card-body p-0">
             <div class="table-responsive dailyorder-table-wrapper">
                 <table class="table align-middle mb-0 dailyorder-table">
-
-
                     <thead>
                         <tr>
                             <th>Class</th>
@@ -201,158 +199,28 @@
                             <th>Status</th>
 
                             <th>Special Instructions</th>
-                            <th class="text-center">Actions</th>
+                            <th >Actions</th>
                         </tr>
                     </thead>
 
-                    <tbody>
-
-                        <!-- FULLY COMPLETED -->
+                    <tbody id="dailyOrderTableBody">
                         <tr>
-                            <td>ANDREA</td>
-                            <td>2026</td>
-                            <td>March</td>
-                            <td>DO-0001</td>
-                            <td>ABCD FARM</td>
-                            <td>FENBENDAZOLE FP</td>
-
-                            <td>50 BAGS</td>
-                            <td>50 BAGS</td>
-                            <td>0</td>
-                            <td><span class="badge bg-success-subtle text-success">Fully Allocated</span></td>
-
-                            <td>March 12, 2026</td>
-                            <td>March 13, 2026</td>
-                            <td>March 13, 2026</td>
-
-                            <td><span class="badge bg-success-subtle text-success">Completed</span></td>
-
-                            <td>-</td>
-
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm flex-wrap">
-                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewOrderModal">
-                                        View
-                                    </button>
-                                    <button class="btn btn-outline-warning">Edit</button>
-                                </div>
-                            </td>
+                            <td colspan="16" class="text-center text-muted py-4">Loading orders...</td>
                         </tr>
-
-                        <!-- PARTIALLY ALLOCATED -->
-                        <tr>
-                            <td>ANDREA</td>
-                            <td>2026</td>
-                            <td>March</td>
-                            <td>DO-0002</td>
-                            <td>KURT JOHN</td>
-                            <td>GBB FP POULTRY</td>
-
-                            <td>100 BAGS</td>
-                            <td>50 BAGS</td>
-                            <td>50</td>
-                            <td><span class="badge bg-warning-subtle text-warning">Partial</span></td>
-
-                            <td>March 13, 2026</td>
-                            <td>March 14, 2026</td>
-                            <td>-</td>
-
-                            <td><span class="badge bg-warning-subtle text-warning">Partially Allocated</span></td>
-
-                            <td>SOLID</td>
-
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm flex-wrap">
-                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewOrderModal">
-                                        View
-                                    </button>
-                                    <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-info">Allocate</button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- READY FOR DISPATCH -->
-                        <tr>
-                            <td>ANDREA</td>
-                            <td>2026</td>
-                            <td>March</td>
-                            <td>DO-0003</td>
-                            <td>WS MARKETING</td>
-                            <td>NATOX LIQUID</td>
-
-                            <td>30 BOXES</td>
-                            <td>30 BOXES</td>
-                            <td>0</td>
-                            <td><span class="badge bg-success-subtle text-success">Fully Allocated</span></td>
-
-                            <td>March 13, 2026</td>
-                            <td>March 14, 2026</td>
-                            <td>-</td>
-
-                            <td><span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span></td>
-
-                            <td>-</td>
-
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm flex-wrap">
-                                    <button class="btn btn-outline-primary">View</button>
-                                    <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-success">Dispatch</button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- OVERDUE -->
-                        <tr>
-                            <td>ANDREA</td>
-                            <td>2026</td>
-                            <td>March</td>
-                            <td>DO-0004</td>
-                            <td>PROCHEM</td>
-                            <td>AMOXI PRO 50 FP</td>
-
-                            <td>20 BAGS</td>
-                            <td>0</td>
-                            <td>20</td>
-                            <td><span class="badge bg-danger-subtle text-danger">Not Allocated</span></td>
-
-                            <td>March 10, 2026</td>
-                            <td>March 12, 2026</td>
-                            <td>-</td>
-
-                            <td><span class="badge bg-danger-subtle text-danger">Overdue</span></td>
-
-                            <td>Priority</td>
-
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm flex-wrap">
-                                    <button class="btn btn-outline-primary">View</button>
-                                    <button class="btn btn-outline-warning">Edit</button>
-                                    <button class="btn btn-outline-info">Allocate</button>
-                                </div>
-                            </td>
-                        </tr>
-
                     </tbody>
-
-
-
                 </table>
             </div>
         </div>
 
         <div class="card-footer bg-white border-0 px-4 py-3">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <small class="text-muted">Showing 1 to 5 of 125 entries</small>
+                <small class="text-muted">Showing current results</small>
 
                 <nav>
                     <ul class="pagination pagination-sm mb-0">
                         <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
                         <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
                     </ul>
                 </nav>
             </div>
@@ -377,19 +245,19 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Order No</label>
-                        <div class="fw-semibold">DO-0004</div>
+                        <div class="fw-semibold" id="modalOrderNo">-</div>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Customer</label>
-                        <div class="fw-semibold">PROCHEM</div>
+                        <div class="fw-semibold" id="modalCustomerName">-</div>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Delivery Date</label>
-                        <div class="fw-semibold">March 16, 2026</div>
+                        <div class="fw-semibold" id="modalDeliveryDate">-</div>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Status</label>
-                        <div><span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span></div>
+                        <div id="modalStatusBadge">-</div>
                     </div>
                 </div>
 
@@ -408,13 +276,9 @@
                                         <th>Allocation Result</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="modalLineSummaryBody">
                                     <tr>
-                                        <td>AMOXI PRO 50 FP</td>
-                                        <td>6 BAGS</td>
-                                        <td>6 BAGS</td>
-                                        <td>20 BAGS</td>
-                                        <td><span class="badge bg-success-subtle text-success">Fully Allocated</span></td>
+                                        <td colspan="5" class="text-center text-muted">No order lines found.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -440,26 +304,9 @@
                                         <th>Priority</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="modalLotAllocationBody">
                                     <tr>
-                                        <td>LOT-AP50-001</td>
-                                        <td>January 10, 2026</td>
-                                        <td>May 10, 2026</td>
-                                        <td>10</td>
-                                        <td>4</td>
-                                        <td>6</td>
-                                        <td>6</td>
-                                        <td><span class="badge bg-success-subtle text-success">1st FEFO</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>LOT-AP50-002</td>
-                                        <td>January 20, 2026</td>
-                                        <td>July 20, 2026</td>
-                                        <td>14</td>
-                                        <td>0</td>
-                                        <td>14</td>
-                                        <td>0</td>
-                                        <td><span class="badge bg-light text-dark border">Next</span></td>
+                                        <td colspan="8" class="text-center text-muted">No FEFO allocation yet.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -469,10 +316,179 @@
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-outline-info">Re-run FEFO Allocation</button>
-                <button class="btn btn-outline-warning">Edit Order</button>
-                <button class="btn btn-primary">Send to Dispatch</button>
+                <button class="btn btn-outline-info" id="btnModalRerunAllocation" type="button">Re-run FEFO Allocation</button>
+                <button class="btn btn-outline-warning btn-edit-order" data-id="">
+                    Edit Order
+                </button>
+                <button class="btn btn-primary" id="btnModalSendToDispatch" type="button">Send to Dispatch</button>
             </div>
         </div>
     </div>
 </div>
+<!-- EDIT ORDER MODAL -->
+<div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="editOrderModalLabel">Edit Daily Order</h5>
+                    <small class="text-muted">Update planning header details</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="editOrderId" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Customer</label>
+                        <input type="text" class="form-control" id="editCustomerName" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Class</label>
+                        <input type="text" class="form-control" id="editClassName" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Route</label>
+                        <input type="text" class="form-control" id="editRouteName" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Delivery Date</label>
+                        <input type="date" class="form-control" id="editDeliveryDate" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Special Instructions</label>
+                        <textarea class="form-control" id="editSpecialInstructions" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" id="btnSaveEditOrder" type="button">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="floatingActionMenu" class="floating-action-menu d-none"></div>
+<!-- ADD ORDER MODAL -->
+<div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold" id="addOrderModalLabel">Add Daily Order</h5>
+                    <small class="text-muted">Create planning order and order lines</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- HEADER -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Customer</label>
+                        <input type="text" class="form-control" id="addCustomerName" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Class</label>
+                        <input type="text" class="form-control" id="addClassName" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Route</label>
+                        <input type="text" class="form-control" id="addRouteName" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Date Ordered</label>
+                        <input type="date" class="form-control" id="addDateOrdered" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Delivery Date</label>
+                        <input type="date" class="form-control" id="addDeliveryDate" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Created By</label>
+                        <input type="text" class="form-control" id="addCreatedBy" value="admin" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Special Instructions</label>
+                        <textarea class="form-control" id="addSpecialInstructions" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">Order Lines</h6>
+                </div>
+
+                <!-- PRODUCT PICKER -->
+                <div class="card border-0 bg-light rounded-4 mb-3">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Category</label>
+                                <select class="form-select" id="addLineCategory">
+                                    <option value="">Select category</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Product</label>
+                                <input type="text" class="form-control mb-2" id="addLineProductSearch" placeholder="Search product name" />
+                                <select class="form-select" id="addLineProduct">
+                                    <option value="">Select product</option>
+                                </select>
+                                <small class="text-muted d-block mt-2" id="addLineProductInfo"></small>
+                            </div>
+
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-primary w-100" id="btnAddSelectedProductLine">
+                                    Add Line
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ORDER LINE TABLE -->
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 220px;">Product</th>
+                                <th style="min-width: 140px;">Qty Input</th>
+                                <th style="min-width: 160px;">UOM Type</th>
+                                <th style="min-width: 180px;">Equivalent Base Qty</th>
+                                <th style="width: 90px;" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="addOrderLinesBody">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No order lines added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+               
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" id="btnSaveAddOrder" type="button">Save Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/dailyorder.js" asp-append-version="true"></script>
+}
