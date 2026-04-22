@@ -77,5 +77,35 @@ namespace biostar_inventory_dashboard.Controllers
 
             return Json(items);
         }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> Adjust([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.AdjustAsync(data.GetRawText());
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetHistory(string product_id, string lot_no, string branch_id)
+        {
+            try
+            {
+                var result = await _apiService.GetHistoryAsync(product_id, lot_no, branch_id);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
+        }
     }
 }

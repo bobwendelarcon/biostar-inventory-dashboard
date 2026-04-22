@@ -130,45 +130,59 @@ async function loadInventory(page = currentPage) {
             const qty = Number(item.qty ?? 0);
             const disableTransfer = qty <= 0 ? "disabled" : "";
 
+            const today = new Date();
+            const expDate = item.expiration_date ? new Date(item.expiration_date) : null;
+            const isExpired = expDate && expDate < today;
+
+            const disableAdjust = (qty <= 0 || isExpired) ? "disabled" : "";
+
+            const adjustTitle =
+                qty <= 0 ? "No stock" :
+                    isExpired ? "Expired stock" : "";
+
             tableBody.innerHTML += `
-                <tr>
-                    <td>${item.lot_no ?? ""}</td>
-                    <td>${item.description ?? ""}</td>
-                    <td>${qty} ${item.uom ?? ""}</td>
-                    <td>${formatPack(item.qty, item.pack_qty, item.pack_uom, item.uom)}</td>
-                    <td>${getStatusBadge(item.qty)}</td>
-                    <td>${formatMonthYear(item.manufacturing_date)} - ${formatMonthYear(item.expiration_date)}</td>
-                    <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
-                    <td>${item.warehouse ?? ""}</td>
-                    <td class="text-center">
-                        <button
-                            class="btn btn-sm btn-outline-primary btn-transfer"
-                            data-product="${item.product_id ?? ""}"
-                            data-lot="${item.lot_no ?? ""}"
-                            data-qty="${qty}"
-                            data-branch="${item.branch_id ?? ""}"
-                            data-warehouse="${item.warehouse ?? ""}"
-                            data-uom="${item.uom ?? ""}"
-                            ${disableTransfer}>
-                            Transfer
-                        </button>
+        <tr>
+            <td>${item.lot_no ?? ""}</td>
+            <td>${item.description ?? ""}</td>
+            <td>${qty} ${item.uom ?? ""}</td>
+            <td>${formatPack(item.qty, item.pack_qty, item.pack_uom, item.uom)}</td>
+            <td>${getStatusBadge(item.qty)}</td>
+            <td>${formatMonthYear(item.manufacturing_date)} - ${formatMonthYear(item.expiration_date)}</td>
+            <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
+            <td>${item.warehouse ?? ""}</td>
+            <td class="text-center">
+                <button
+                    class="btn btn-sm btn-outline-primary btn-transfer"
+                    data-product="${item.product_id ?? ""}"
+                    data-lot="${item.lot_no ?? ""}"
+                    data-qty="${qty}"
+                    data-branch="${item.branch_id ?? ""}"
+                    data-warehouse="${item.warehouse ?? ""}"
+                    data-uom="${item.uom ?? ""}"
+                    ${disableTransfer}>
+                    Transfer
+                </button>
 
-                        <button
-                            class="btn btn-sm btn-outline-warning btn-adjust"
-                            data-product="${item.product_id ?? ""}"
-                            data-lot="${item.lot_no ?? ""}"
-                            data-qty="${qty}">
-                            Adjust
-                        </button>
+                <button
+                    class="btn btn-sm btn-outline-warning btn-adjust"
+                    data-product="${item.product_id ?? ""}"
+                    data-lot="${item.lot_no ?? ""}"
+                    data-branch="${item.branch_id ?? ""}"
+                    data-qty="${qty}"
+                    ${disableAdjust}
+                    title="${adjustTitle}">
+                    Adjust
+                </button>
 
-                        <button
-                            class="btn btn-sm btn-outline-secondary btn-history"
-                            data-product="${item.product_id ?? ""}"
-                            data-lot="${item.lot_no ?? ""}">
-                            History
-                        </button>
-                    </td>
-                </tr>`;
+                <button
+                    class="btn btn-sm btn-outline-secondary btn-history"
+                    data-product="${item.product_id ?? ""}"
+                    data-lot="${item.lot_no ?? ""}"
+                    data-branch="${item.branch_id ?? ""}">
+                    History
+                </button>
+            </td>
+        </tr>`;
         });
 
         renderPagination();
@@ -279,15 +293,25 @@ document.addEventListener("click", function (e) {
         return;
     }
 
-    const historyBtn = e.target.closest(".btn-history");
-    if (historyBtn) {
-        alert("History modal next.");
+    const adjustBtn = e.target.closest(".btn-adjust");
+    if (adjustBtn) {
+        document.getElementById("adjustProduct").value = adjustBtn.dataset.product;
+        document.getElementById("adjustLot").value = adjustBtn.dataset.lot;
+        document.getElementById("adjustBranch").value = adjustBtn.dataset.branch;
+
+        document.getElementById("adjustCurrentQty").innerText = adjustBtn.dataset.qty;
+
+        new bootstrap.Modal(document.getElementById("adjustModal")).show();
         return;
     }
 
-    const adjustBtn = e.target.closest(".btn-adjust");
-    if (adjustBtn) {
-        alert("Adjust modal next.");
+    const historyBtn = e.target.closest(".btn-history");
+    if (historyBtn) {
+        loadHistory(
+            historyBtn.dataset.product,
+            historyBtn.dataset.lot,
+            historyBtn.dataset.branch
+        );
         return;
     }
 });
@@ -377,6 +401,8 @@ document.addEventListener("DOMContentLoaded", function () {
         loadInventory(1);
     });
 
+  
+
     document.getElementById("btnConfirmTransfer")?.addEventListener("click", async function () {
         const fromBranch = document.getElementById("transferFromBranch").value;
         const toBranch = document.getElementById("transferBranch").value;
@@ -459,3 +485,105 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, 5000);
 });
+
+async function saveAdjust() {
+    const quantity = parseFloat(document.getElementById("adjustQty").value || "0");
+    const remarks = document.getElementById("adjustRemarks").value.trim();
+    const type = document.getElementById("adjustType").value;
+
+    const currentQty = parseFloat(document.getElementById("adjustCurrentQty").innerText || "0");
+
+    if (!quantity || quantity <= 0) {
+        alert("Quantity must be greater than 0.");
+        return;
+    }
+
+    if (!remarks) {
+        alert("Remarks is required.");
+        return;
+    }
+
+    if (type === "DEDUCT" && quantity > currentQty) {
+        alert("Cannot deduct more than current stock.");
+        return;
+    }
+
+    const body = {
+        product_id: document.getElementById("adjustProduct").value,
+        lot_no: document.getElementById("adjustLot").value,
+        branch_id: document.getElementById("adjustBranch").value,
+        adjustment_type: type,
+        quantity: quantity,
+        adjusted_by: "admin",
+        remarks: remarks
+    };
+
+    try {
+        const res = await fetch("/Inventory/Adjust", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) throw new Error(result.message);
+
+        alert(result.message || "Adjusted successfully");
+
+        bootstrap.Modal.getInstance(document.getElementById("adjustModal")).hide();
+
+        document.getElementById("adjustQty").value = "";
+        document.getElementById("adjustRemarks").value = "";
+
+        loadInventory(currentPage);
+
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function loadHistory(productId, lotNo, branchId) {
+    try {
+        const res = await fetch(`/Inventory/GetHistory?product_id=${encodeURIComponent(productId)}&lot_no=${encodeURIComponent(lotNo)}&branch_id=${encodeURIComponent(branchId)}`);
+
+        const text = await res.text();
+        console.log("HISTORY STATUS:", res.status);
+        console.log("HISTORY BODY:", text);
+
+        if (!res.ok) {
+            throw new Error(text || "Failed to load history.");
+        }
+
+        const data = JSON.parse(text);
+
+        const table = document.getElementById("historyTable");
+        table.innerHTML = "";
+
+        if (!Array.isArray(data) || data.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No history found.</td>
+                </tr>`;
+        } else {
+            data.forEach(x => {
+                table.innerHTML += `
+        <tr>
+            <td>${x.created_at ?? ""}</td>
+            <td>${x.transaction_type ?? ""}</td>
+            <td>${x.quantity ?? ""}</td>
+            <td>${x.reference ?? ""}</td>
+            <td>${x.warehouse ?? ""}</td>
+            <td>${x.remarks ?? ""}</td>
+            <td>${x.scanned_by ?? ""}</td>
+        </tr>`;
+            });
+        }
+
+        new bootstrap.Modal(document.getElementById("historyModal")).show();
+
+    } catch (err) {
+        console.error("LOAD HISTORY ERROR:", err);
+        alert(err.message);
+    }
+}

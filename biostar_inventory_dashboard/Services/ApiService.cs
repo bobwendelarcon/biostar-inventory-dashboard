@@ -98,7 +98,35 @@ namespace biostar_inventory_dashboard.Services
         }
 
 
+        public async Task<string> AdjustAsync(string jsonData)
+        {
+            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
+            var response = await _httpClient.PostAsync("api/Inventory/adjust", content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+        public async Task<string> GetHistoryAsync(string product_id, string lot_no, string branch_id)
+        {
+            var url =
+                $"api/Inventory/history?product_id={Uri.EscapeDataString(product_id)}" +
+                $"&lot_no={Uri.EscapeDataString(lot_no)}" +
+                $"&branch_id={Uri.EscapeDataString(branch_id)}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
 
         public async Task<PagedTransactionResponse> GetTransactionsAsync(
      int page = 1,
@@ -581,6 +609,9 @@ namespace biostar_inventory_dashboard.Services
 
             return content;
         }
+
+
+
 
     }
 }

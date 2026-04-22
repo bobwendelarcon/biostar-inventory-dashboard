@@ -175,6 +175,82 @@
     </div>
 </div>
 
+<div class="modal fade" id="adjustModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adjust Inventory</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adjustProduct">
+                <input type="hidden" id="adjustLot">
+                <input type="hidden" id="adjustBranch">
+
+                <div class="mb-2">
+                    <label class="form-label">Current Qty</label>
+                    <div id="adjustCurrentQty" class="form-control bg-light"></div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Adjustment Type</label>
+                    <select id="adjustType" class="form-control">
+                        <option value="ADD">Add</option>
+                        <option value="DEDUCT">Deduct</option>
+                        <option value="SET">Set Exact Qty</option>
+                    </select>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" id="adjustQty" class="form-control" min="0" step="0.01">
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Remarks</label>
+                    <input type="text" id="adjustRemarks" class="form-control" placeholder="Reason for adjustment">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" onclick="saveAdjust()">Save Adjustment</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inventory History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Qty</th>
+                                <th>Reference</th>
+                                <th>Warehouse</th>
+                                <th>Remarks</th>
+                                <th>User</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No history loaded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/inventory.js" asp-append-version="true"></script>
 }

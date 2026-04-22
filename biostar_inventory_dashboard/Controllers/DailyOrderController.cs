@@ -14,9 +14,13 @@ namespace biostar_inventory_dashboard.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.CurrentUser =
+                User.Claims.FirstOrDefault(c => c.Type == "full_name")?.Value
+                ?? User.Identity?.Name
+                ?? "admin";
+
             return View();
         }
-
         [HttpGet]
         public async Task<IActionResult> GetOrders(
             string? className,
