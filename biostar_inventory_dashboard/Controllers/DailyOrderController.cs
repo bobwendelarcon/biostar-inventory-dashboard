@@ -161,5 +161,19 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBranches()
+        {
+            try
+            {
+                var result = await _apiService.GetBranchesAsync();
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

@@ -285,21 +285,29 @@
             <div class="modal-body">
                 <!-- ORDER HEADER -->
                 <div class="row g-3 mb-4">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label text-muted small mb-1">Order No</label>
                         <div class="fw-semibold" id="modalOrderNo">-</div>
                     </div>
+
                     <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Customer</label>
                         <div class="fw-semibold" id="modalCustomerName">-</div>
                     </div>
-                    <div class="col-md-3">
+
+                    <div class="col-md-2">
                         <label class="form-label text-muted small mb-1">Delivery Date</label>
                         <div class="fw-semibold" id="modalDeliveryDate">-</div>
                     </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small mb-1">Source Branch</label>
+                        <div class="fw-semibold" id="modalSourceBranch">-</div>
+                    </div>
+
                     <div class="col-md-3">
                         <label class="form-label text-muted small mb-1">Status</label>
-                        <div id="modalStatusBadge">-</div>
+                        <div class="pt-1" id="modalStatusBadge">-</div>
                     </div>
                 </div>
 
@@ -336,6 +344,7 @@
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
                                     <tr>
+                                        <th>Branch</th>
                                         <th>Lot No</th>
                                         <th>MFG Date</th>
                                         <th>Expiry Date</th>
@@ -348,7 +357,7 @@
                                 </thead>
                                 <tbody id="modalLotAllocationBody">
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted">No FEFO allocation yet.</td>
+                                        <td colspan="9" class="text-center text-muted">No FEFO allocation yet.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -390,7 +399,32 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Class</label>
-                        <input type="text" class="form-control" id="editClassName" />
+                        <select class="form-select" id="editClassName">
+                            <option value="">Select Class</option>
+                            <option>ADM</option>
+                            <option>ANDREA</option>
+                            <option>ANIMAL P.</option>
+                            <option>BATANGAS AP</option>
+                            <option>BULACA AP</option>
+                            <option>CDO ANIMAL P.</option>
+                            <option>DAVAO AP</option>
+                            <option>DGS LAYER</option>
+                            <option>DGS PIGGERY</option>
+                            <option>DGS ZOO</option>
+                            <option>EDA</option>
+                            <option>HOUSE</option>
+                            <option>JDC</option>
+                            <option>JKGM</option>
+                            <option>LONGNO</option>
+                            <option>MMJA MKTG</option>
+                            <option>MYKIMAX</option>
+                            <option>PIDV</option>
+                            <option>QPLC</option>
+                            <option>RANDY A</option>
+                            <option>TDS</option>
+                            <option>VISAYAS AP</option>
+                            <option>WGS MKTG</option>
+                        </select>
                     </div>
 
                     <div class="col-md-6">
@@ -433,18 +467,6 @@
             <div class="modal-body">
                 <!-- HEADER -->
                 <div class="row g-3 mb-4">
-                    @* <div class="col-md-4">
-                        <label class="form-label fw-semibold">Customer</label>
-                        <input type="text" class="form-control" id="addCustomerName" />
-                    </div> *@
-
-                   
-
-                    @* <div class="col-md-4">
-                        <label class="form-label fw-semibold">Class</label>
-                        <input type="text" class="form-control" id="addClassName" />
-                    </div> *@
-
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label fw-semibold">Class</label>
                         <select class="form-select" id="addClassName">
@@ -475,14 +497,21 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-lg-3 col-md-6">
                         <label class="form-label fw-semibold">Customer</label>
                         <select class="form-select" id="addCustomerName">
                             <option value="">Loading customers...</option>
                         </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">Source Branch</label>
+                        <select class="form-select" id="addSourceBranch">
+                            <option value="">Select source branch</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
                         <label class="form-label fw-semibold">Route</label>
                         <input type="text" class="form-control" id="addRouteName" />
                     </div>

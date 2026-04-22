@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("addOrderModal")?.addEventListener("shown.bs.modal", async function () {
         await loadAddOrderCategories();
         await loadCustomers();
-
+        await loadBranches();
         // ✅ DISABLE PAST DATES (Delivery Date)
         const deliveryInput = document.getElementById("addDeliveryDate");
         //addDateOrdered
@@ -198,7 +198,40 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+async function loadBranches() {
+    try {
+        const select = document.getElementById("addSourceBranch");
+        if (!select) return;
 
+        select.innerHTML = `<option value="">Loading branches...</option>`;
+
+        const response = await fetch("/DailyOrder/GetBranches");
+        if (!response.ok) {
+            throw new Error("Failed to load branches.");
+        }
+
+        const data = await response.json();
+
+        if (!data || data.length === 0) {
+            select.innerHTML = `<option value="">No branches found</option>`;
+            return;
+        }
+
+        let options = `<option value="">Select source branch</option>`;
+
+        data.forEach(item => {
+            options += `
+                <option value="${item.branch_id}">
+                    ${item.branch_name}
+                </option>
+            `;
+        });
+
+        select.innerHTML = options;
+    } catch (error) {
+        console.error("Error loading branches:", error);
+    }
+}
 function startDailyOrderAutoRefresh() {
     stopDailyOrderAutoRefresh();
 
@@ -299,11 +332,24 @@ async function saveEditOrder() {
     }
 }
 
+//function toInputDate(dateStr) {
+//    if (!dateStr) return "";
+//    const date = new Date(dateStr);
+//    if (isNaN(date.getTime())) return "";
+//    return date.toISOString().split("T")[0];
+//}
+
 function toInputDate(dateStr) {
     if (!dateStr) return "";
+
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return "";
-    return date.toISOString().split("T")[0];
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+
+    return `${yyyy}-${mm}-${dd}`;
 }
 
 async function loadDailyOrders() {
@@ -447,6 +493,7 @@ async function openViewModal(orderId) {
         document.getElementById("modalOrderNo").textContent = data.orderNo || "-";
         document.getElementById("modalCustomerName").textContent = data.customerName || "-";
         document.getElementById("modalDeliveryDate").textContent = formatDate(data.deliveryDate);
+        document.getElementById("modalSourceBranch").textContent = data.sourceBranchName || data.sourceBranchId || "-";
         document.getElementById("modalStatusBadge").innerHTML = renderStatusBadge(data.status);
 
 
@@ -510,7 +557,7 @@ function renderModalLotAllocations(lines) {
     if (!allocations.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted">No FEFO allocation yet.</td>
+                <td colspan="9" class="text-center text-muted">No FEFO allocation yet.</td>
             </tr>
         `;
         return;
@@ -519,6 +566,7 @@ function renderModalLotAllocations(lines) {
     allocations.forEach(item => {
         tbody.innerHTML += `
             <tr>
+            <td>${safe(item.branchId || "-")}</td>
                 <td>${safe(item.lotNo)}</td>
                 <td>${formatDate(item.manufacturingDate)}</td>
                 <td>${formatDate(item.expirationDate)}</td>
@@ -752,6 +800,7 @@ async function saveAddOrder() {
     const customerSelect = document.getElementById("addCustomerName");
     const customerId = customerSelect?.value || "";
     const customerName = customerSelect?.selectedOptions[0]?.text || "";
+    const sourceBranchId = document.getElementById("addSourceBranch")?.value || "";
     const className = document.getElementById("addClassName")?.value.trim() || "";
     const routeName = document.getElementById("addRouteName")?.value.trim() || "";
     const dateOrdered = document.getElementById("addDateOrdered")?.value || null;
@@ -794,6 +843,11 @@ async function saveAddOrder() {
         return;
     }
 
+    if (!sourceBranchId) {
+        alert("Source branch is required.");
+        return;
+    }
+
     const payload = {
         customerId,
         customerName,
@@ -803,6 +857,7 @@ async function saveAddOrder() {
         deliveryDate,
         specialInstructions,
         createdBy,
+        sourceBranchId,
         lines
     };
 
@@ -884,6 +939,7 @@ function resetAddOrderForm() {
     document.getElementById("addSpecialInstructions").value = "";
     document.getElementById("addLineProductSearch").value = "";
     document.getElementById("addLineProductInfo").textContent = "";
+    document.getElementById("addSourceBranch").value = "";
 
     const productSelect = document.getElementById("addLineProduct");
     if (productSelect) {
