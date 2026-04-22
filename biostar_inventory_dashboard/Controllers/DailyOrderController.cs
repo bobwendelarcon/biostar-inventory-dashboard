@@ -147,5 +147,19 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomers()
+        {
+            try
+            {
+                var result = await _apiService.GetPartnersAsync();
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

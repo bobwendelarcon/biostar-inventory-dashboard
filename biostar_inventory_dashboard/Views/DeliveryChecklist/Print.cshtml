@@ -1,0 +1,96 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delivery Checklist</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            font-size: 12px;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .sub-header {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        @@media print {
+            button
+
+        {
+            display: none;
+        }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">DELIVERY CHECKLIST</div>
+
+    <div class="sub-header">
+        Date: <span id="print_date"></span><br />
+        Truck: <span id="print_truck"></span><br />
+        Driver: <span id="print_driver"></span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Product</th>
+                <th>Lot No (Mfg/Exp)</th>
+                <th>Qty</th>
+                <th>SI</th>
+                <th>DR</th>
+                <th>COA</th>
+                <th>Match</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody id="printBody">
+        </tbody>
+    </table>
+
+    <br />
+
+    <button onclick="window.print()">Print</button>
+
+    <script src="~/js/delivery-checklist-print.js"></script>
+
+    <script>
+        const checklistId = @ViewBag.ChecklistId;
+    </script>
+
+</body>
+</html>

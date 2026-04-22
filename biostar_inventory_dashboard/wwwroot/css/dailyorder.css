@@ -19,7 +19,9 @@
     color: #6c757d;
     margin-bottom: 6px;
 }
-
+.summary-card {
+    min-width: 140px;
+}
 .summary-value {
     font-size: 28px;
     font-weight: 700;

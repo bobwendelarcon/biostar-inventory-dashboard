@@ -112,9 +112,9 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold">DR / INV / PO</label>
-                    <input type="text" class="form-control" id="referenceFilter" placeholder="Reference">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Reference</label>
+                    <input type="text" class="form-control" id="referenceFilter" placeholder="DR / INV / PO / Order No / Checklist No / Remarks">
                 </div>
             </div>
         </div>
@@ -130,30 +130,26 @@
         </div>
 
         <div class="table-scroll-box">
-            <div class="table-responsive">
+            <div class="table-responsive transaction-scroll-area" id="transactionScrollArea">
                 <table class="table transaction-table align-middle">
                     <thead>
                         <tr>
                             <th>Lot No</th>
                             <th>Product</th>
-                            <th>Supplier</th>
                             <th>Customer</th>
                             <th>Date</th>
                             <th>Time</th>
                             <th>Warehouse</th>
                             <th>Type</th>
                             <th>Qty</th>
-                            <th>Scanned By</th>
-                            <th>DR #</th>
-                            <th>INV #</th>
-                            <th>PO #</th>
+                            <th>Reference</th>
                             <th>Remarks</th>
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody id="transactionTable">
                         <tr>
-                            <td colspan="14" class="empty-state-cell text-center">Loading transaction data...</td>
+                            <td colspan="11" class="empty-state-cell text-center">Loading transaction data...</td>
                         </tr>
                     </tbody>
                 </table>

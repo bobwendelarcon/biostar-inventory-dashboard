@@ -475,6 +475,112 @@ namespace biostar_inventory_dashboard.Services
             return JsonSerializer.Deserialize<List<ProductLookupDto>>(json, _jsonOptions) ?? new List<ProductLookupDto>();
         }
 
+        public async Task<string> GetChecklistListAsync(
+     DateTime? date,
+     string? status,
+     string? truck,
+     string? search)
+        {
+            var query = new List<string>();
+
+            if (date.HasValue)
+                query.Add($"date={date.Value:yyyy-MM-dd}");
+
+            if (!string.IsNullOrWhiteSpace(status))
+                query.Add($"status={Uri.EscapeDataString(status)}");
+
+            if (!string.IsNullOrWhiteSpace(truck))
+                query.Add($"truck={Uri.EscapeDataString(truck)}");
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add($"search={Uri.EscapeDataString(search)}");
+
+            var url = "api/DeliveryChecklist/list";
+
+            if (query.Any())
+                url += "?" + string.Join("&", query);
+
+            var response = await _httpClient.GetAsync(url);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> GetChecklistListAsync()
+        {
+            return await GetChecklistListAsync(null, null, null, null);
+        }
+
+        public async Task<string> GetReadyForChecklistAsync()
+        {
+            var response = await _httpClient.GetAsync("api/DeliveryChecklist/ready-for-checklist");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetChecklistDetailsAsync(long id)
+        {
+            var response = await _httpClient.GetAsync($"api/DeliveryChecklist/{id}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateChecklistAsync(object data)
+        {
+            var json = JsonSerializer.Serialize(data);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("api/DeliveryChecklist/create", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(responseBody);
+            }
+
+            return responseBody;
+        }
+
+        public async Task<string> DeleteChecklistAsync(long id)
+        {
+            var response = await _httpClient.PostAsync($"api/DeliveryChecklist/delete/{id}", null);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(responseBody);
+            }
+
+            return responseBody;
+        }
+
+        //confirm loading
+        public async Task<string> ConfirmLoadingAsync(long id)
+        {
+            var response = await _httpClient.PostAsync($"api/DeliveryChecklist/confirm-loading/{id}", null);
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(body);
+
+            return body;
+        }
+
+        public async Task<string> ReopenChecklistAsync(long checklistId)
+        {
+            var response = await _httpClient.PostAsync($"api/ChecklistOut/reopen/{checklistId}", null);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(content);
+
+            return content;
+        }
 
     }
 }

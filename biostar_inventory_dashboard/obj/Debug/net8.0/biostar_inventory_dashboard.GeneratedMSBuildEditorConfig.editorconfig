@@ -48,6 +48,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVsaXZlcnlDaGVja2xpc3RcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/DeliveryChecklist/Print.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVsaXZlcnlDaGVja2xpc3RcUHJpbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

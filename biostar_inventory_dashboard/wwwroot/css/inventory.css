@@ -71,3 +71,31 @@
             width: 100%;
         }
 }
+.transaction-scroll-area {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+.transaction-table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
+}
+
+.reference-stack {
+    min-width: 170px;
+    line-height: 1.35;
+    white-space: normal;
+}
+
+.transaction-table td,
+.transaction-table th {
+    vertical-align: middle;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    overflow-y: auto;
+}

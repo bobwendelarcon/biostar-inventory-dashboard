@@ -9,9 +9,10 @@
 <div class="dailyorder-page">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <small class="text-muted">Dashboard &gt; Planning &gt; Daily Order</small>
+            <small class="text-muted"> Planning &gt; Daily Order</small>
             <h2 class="fw-bold mt-2 mb-0">Daily Order Planning</h2>
-            <small class="text-muted">Plan customer orders, run FEFO allocation, and prepare dispatch.</small>
+            <small id="lastUpdatedText" class="text-muted"></small>
+            @* <small class="text-muted">Plan customer orders, run FEFO allocation, and prepare dispatch.</small> *@
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
@@ -35,10 +36,29 @@
                     <label class="form-label fw-semibold">Class</label>
                     <select class="form-select" id="classFilter">
                         <option value="">All Class</option>
-                        <option>ANDREA</option>
                         <option>ADM</option>
+                        <option>ANDREA</option>
                         <option>ANIMAL P.</option>
                         <option>BATANGAS AP</option>
+                        <option>BULACA AP</option>
+                        <option>CDO ANIMAL P.</option>
+                        <option>DAVAO AP</option>
+                        <option>DGS LAYER</option>
+                        <option>DGS PIGGERY</option>
+                        <option>DGS ZOO</option>
+                        <option>EDA</option>
+                        <option>HOUSE</option>
+                        <option>JDC</option>
+                        <option>JKGM</option>
+                        <option>LONGNO</option>
+                        <option>MMJA MKTG</option>
+                        <option>MYKIMAX</option>
+                        <option>PIDV</option>
+                        <option>QPLC</option>
+                        <option>RANDY A</option>
+                        <option>TDS</option>
+                        <option>VISAYAS AP</option>
+                        <option>WGS MKTG</option>
                     </select>
                 </div>
 
@@ -81,7 +101,7 @@
                         <option>Partially Allocated</option>
                         <option>Ready for Dispatch</option>
                         <option>Partially Dispatched</option>
-                        <option>Completed</option>
+                        <option>COMPLETED</option>
                         <option>Overdue</option>
                         <option>Cancelled</option>
                     </select>
@@ -103,74 +123,94 @@
 
     <!-- SUMMARY CARDS -->
     <div class="row g-3 mb-4">
-        <div class="col-lg-2 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+
+        <div class="col">
+            <div class="card summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">Total Orders</div>
-                    <div class="summary-value">125</div>
+                    <div class="summary-value" id="summaryTotalOrders">0</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+        <div class="col">
+            <div class="card summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">For Allocation</div>
-                    <div class="summary-value text-warning">24</div>
+                    <div class="summary-value text-warning" id="summaryForAllocation">0</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+        <div class="col">
+            <div class="card summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">Allocated</div>
-                    <div class="summary-value text-success">41</div>
+                    <div class="summary-value text-success" id="summaryAllocated">0</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+        <div class="col">
+            <div class="card summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">Partial</div>
-                    <div class="summary-value text-info">18</div>
+                    <div class="summary-value text-info" id="summaryPartial">0</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
+        <div class="col">
+            <div class="card summary-card h-100">
                 <div class="card-body">
                     <div class="summary-label">Ready Dispatch</div>
-                    <div class="summary-value text-primary">27</div>
+                    <div class="summary-value text-primary" id="summaryReadyDispatch">0</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
+        <div class="col">
             <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
                 <div class="card-body">
-                    <div class="summary-label">Overdue</div>
-                    <div class="summary-value text-danger">15</div>
+                    <div class="summary-label">Partially Delivered</div>
+                    <div class="summary-value text-warning" id="summaryPartiallyDelivered">0</div>
                 </div>
             </div>
         </div>
+
+        <div class="col">
+            <div class="card summary-card h-100">
+                <div class="card-body">
+                    <div class="summary-label">Completed</div>
+                    <div class="summary-value text-success" id="summaryCompleted">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card summary-card h-100">
+                <div class="card-body">
+                    <div class="summary-label">Overdue</div>
+                    <div class="summary-value text-danger" id="summaryOverdue">0</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- TABLE SECTION -->
     <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h5 class="fw-bold mb-1">Daily Order List</h5>
-                <small class="text-muted">Manage planning, FEFO allocation, and dispatch readiness</small>
+        @* <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2"> *@
+            @* <div> *@
+                @* <h5 class="fw-bold mb-1">Daily Order List</h5>  *@
+        @*         <small class="text-muted">Manage planning, FEFO allocation, and dispatch readiness</small>
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-outline-secondary btn-sm">Column Settings</button>
                 <button class="btn btn-outline-dark btn-sm" id="btnRefreshOrders">Refresh</button>
             </div>
-        </div>
+        </div> *@
 
         <div class="card-body p-0">
             <div class="table-responsive dailyorder-table-wrapper">
@@ -180,7 +220,7 @@
                             <th>Class</th>
                             <th>Year</th>
                             <th>Month</th>
-                            <th>DR#/SI#</th>
+                            <th>DO#</th>
                             <th>Customer</th>
                             <th>Product</th>
 
@@ -188,12 +228,14 @@
                             <th>Required Qty</th>
                             <th>Allocated Qty</th>
                             <th>Remaining</th>
+                            <th>Dispatched Qty</th>
                             <th>Allocation</th>
 
                             <!-- DATES -->
                             <th>Date Ordered</th>
                             <th>Delivery Date</th>
                             <th>Date Delivered</th>
+                            <th>Aging</th>
 
                             <!-- STATUS -->
                             <th>Status</th>
@@ -205,7 +247,7 @@
 
                     <tbody id="dailyOrderTableBody">
                         <tr>
-                            <td colspan="16" class="text-center text-muted py-4">Loading orders...</td>
+                            <td colspan="18" class="text-center text-muted py-4">Loading orders...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -391,14 +433,53 @@
             <div class="modal-body">
                 <!-- HEADER -->
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4">
+                    @* <div class="col-md-4">
                         <label class="form-label fw-semibold">Customer</label>
                         <input type="text" class="form-control" id="addCustomerName" />
+                    </div> *@
+
+                   
+
+                    @* <div class="col-md-4">
+                        <label class="form-label fw-semibold">Class</label>
+                        <input type="text" class="form-control" id="addClassName" />
+                    </div> *@
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">Class</label>
+                        <select class="form-select" id="addClassName">
+                            <option value="">All Class</option>
+                            <option>ADM</option>
+                            <option>ANDREA</option>
+                            <option>ANIMAL P.</option>
+                            <option>BATANGAS AP</option>
+                            <option>BULACA AP</option>
+                            <option>CDO ANIMAL P.</option>
+                            <option>DAVAO AP</option>
+                            <option>DGS LAYER</option>
+                            <option>DGS PIGGERY</option>
+                            <option>DGS ZOO</option>
+                            <option>EDA</option>
+                            <option>HOUSE</option>
+                            <option>JDC</option>
+                            <option>JKGM</option>
+                            <option>LONGNO</option>
+                            <option>MMJA MKTG</option>
+                            <option>MYKIMAX</option>
+                            <option>PIDV</option>
+                            <option>QPLC</option>
+                            <option>RANDY A</option>
+                            <option>TDS</option>
+                            <option>VISAYAS AP</option>
+                            <option>WGS MKTG</option>
+                        </select>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Class</label>
-                        <input type="text" class="form-control" id="addClassName" />
+                        <label class="form-label fw-semibold">Customer</label>
+                        <select class="form-select" id="addCustomerName">
+                            <option value="">Loading customers...</option>
+                        </select>
                     </div>
 
                     <div class="col-md-4">
@@ -489,6 +570,7 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script src="~/js/dailyorder.js" asp-append-version="true"></script>
 }

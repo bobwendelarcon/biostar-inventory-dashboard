@@ -1,8 +1,8 @@
 ﻿function formatDateOnly(created_at) {
     if (!created_at) return "-";
 
-    const fixed = String(created_at).replace(" ", "T");
-    const date = new Date(fixed);
+    const utcString = String(created_at).replace(" ", "T") + "Z";
+    const date = new Date(utcString);
 
     return date.toLocaleDateString("en-US", {
         timeZone: "Asia/Manila",
@@ -15,8 +15,8 @@
 function formatTimeOnly(created_at) {
     if (!created_at) return "-";
 
-    const fixed = String(created_at).replace(" ", "T");
-    const date = new Date(fixed);
+    const utcString = String(created_at).replace(" ", "T") + "Z";
+    const date = new Date(utcString);
 
     return date.toLocaleTimeString("en-US", {
         timeZone: "Asia/Manila",
@@ -32,6 +32,29 @@ let pageSize = 30;
 let totalRecords = 0;
 let lotSearchTimeout;
 let isEditing = false;
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+function buildReferenceHtml(item) {
+    const refs = [];
+
+    if (item.dr_no) refs.push(`<div><strong>DR:</strong> ${escapeHtml(item.dr_no)}</div>`);
+    if (item.inv_no) refs.push(`<div><strong>INV:</strong> ${escapeHtml(item.inv_no)}</div>`);
+    if (item.po_no) refs.push(`<div><strong>PO:</strong> ${escapeHtml(item.po_no)}</div>`);
+    if (item.order_no) refs.push(`<div><strong>DO:</strong> ${escapeHtml(item.order_no)}</div>`);
+    if (item.checklist_no) refs.push(`<div><strong>DC:</strong> ${escapeHtml(item.checklist_no)}</div>`);
+
+    return refs.length > 0
+        ? `<div class="reference-stack">${refs.join("")}</div>`
+        : `<span class="text-muted">-</span>`;
+}
 
 async function loadTransactions(page = 1) {
     try {
@@ -84,7 +107,7 @@ async function loadTransactions(page = 1) {
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="14" class="text-center text-muted">
+                    <td colspan="11" class="text-center text-muted">
                         No transactions found.
                     </td>
                 </tr>
@@ -99,36 +122,31 @@ async function loadTransactions(page = 1) {
 
             tableBody.innerHTML += `
                 <tr>
-                    <td>${item.lot_no ?? ""}</td>
-                    <td>${item.product_name ?? ""}</td>
-                    <td>${item.supplier_name ?? ""}</td>
-                    <td>${item.customer_name ?? ""}</td>
+                    <td>${escapeHtml(item.lot_no ?? "")}</td>
+                    <td>${escapeHtml(item.product_name ?? "")}</td>
+                    <td>${escapeHtml(item.customer_name ?? "")}</td>
                     <td>${formatDateOnly(item.created_at)}</td>
                     <td>${formatTimeOnly(item.created_at)}</td>
-                    <td>${item.branch_name ?? item.branch_id ?? ""}</td>
-                    <td>${item.transaction_type ?? ""}</td>
-                    <td>${item.quantity ?? ""}</td>
-                    <td>${item.scanned_by ?? ""}</td>
-                    <td>${item.dr_no ?? ""}</td>
-                    <td>${item.inv_no ?? ""}</td>
-                    <td>${item.po_no ?? ""}</td>
-                    <td>${item.remarks ?? ""}</td>
+                    <td>${escapeHtml(item.branch_name ?? item.branch_id ?? "")}</td>
+                    <td>${escapeHtml(item.transaction_type ?? "")}</td>
+                    <td>${escapeHtml(item.quantity ?? "")}</td>
+                    <td>${buildReferenceHtml(item)}</td>
+                    <td>${escapeHtml(item.remarks ?? "")}</td>
                     <td class="text-center">
                         ${isOut
                     ? `
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-primary btn-edit"
-                                        data-id="${item.transaction_id ?? ""}"
-                                        data-customer="${escapeHtml(item.customer_name ?? "")}"
-                                        data-dr="${escapeHtml(item.dr_no ?? "")}"
-                                        data-inv="${escapeHtml(item.inv_no ?? "")}"
-                                        data-po="${escapeHtml(item.po_no ?? "")}"
-                                        data-remarks="${escapeHtml(item.remarks ?? "")}"
-                                        >
-                                        Edit
-                                    </button>
-                                `
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-primary btn-edit"
+                                    data-id="${item.transaction_id ?? ""}"
+                                    data-customer="${escapeHtml(item.customer_name ?? "")}"
+                                    data-dr="${escapeHtml(item.dr_no ?? "")}"
+                                    data-inv="${escapeHtml(item.inv_no ?? "")}"
+                                    data-po="${escapeHtml(item.po_no ?? "")}"
+                                    data-remarks="${escapeHtml(item.remarks ?? "")}">
+                                    Edit
+                                </button>
+                            `
                     : `<span class="text-muted">-</span>`
                 }
                     </td>
@@ -140,7 +158,7 @@ async function loadTransactions(page = 1) {
     } catch (error) {
         document.getElementById("transactionTable").innerHTML = `
             <tr>
-                <td colspan="14" class="text-center text-danger">
+                <td colspan="11" class="text-center text-danger">
                     ${error.message}
                 </td>
             </tr>
@@ -181,15 +199,6 @@ function prevPage() {
         currentPage--;
         loadTransactions(currentPage);
     }
-}
-
-function escapeHtml(value) {
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
 }
 
 document.addEventListener("click", function (e) {
@@ -259,7 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
             dr_no: document.getElementById("editDrNo").value.trim(),
             inv_no: document.getElementById("editInvNo").value.trim(),
             po_no: document.getElementById("editPoNo").value.trim(),
-              remarks: document.getElementById("editRemarks").value.trim()
+            remarks: document.getElementById("editRemarks").value.trim()
         };
 
         console.log("UPDATE PAYLOAD:", payload);
@@ -297,6 +306,16 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("editReferenceModal")?.addEventListener("hidden.bs.modal", function () {
         isEditing = false;
     });
+
+    //const scrollArea = document.getElementById("transactionScrollArea");
+    //if (scrollArea) {
+    //    scrollArea.addEventListener("wheel", function (e) {
+    //        if (e.deltaY !== 0) {
+    //            e.preventDefault();
+    //            scrollArea.scrollLeft += e.deltaY;
+    //        }
+    //    }, { passive: false });
+    //}
 
     loadTransactions(1);
 

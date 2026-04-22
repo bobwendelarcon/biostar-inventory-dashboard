@@ -1,5 +1,18 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿let dailyOrderAutoRefresh = null;
+let isTypingFilter = false;
+
+document.addEventListener("DOMContentLoaded", function () {
     loadDailyOrders();
+    startDailyOrderAutoRefresh();
+
+    document.getElementById("searchInput")?.addEventListener("input", function () {
+        isTypingFilter = true;
+
+        clearTimeout(window.dailyOrderTypingTimeout);
+        window.dailyOrderTypingTimeout = setTimeout(() => {
+            isTypingFilter = false;
+        }, 1000);
+    });
 
     const btnFilter = document.getElementById("btnFilter");
     if (btnFilter) {
@@ -8,8 +21,62 @@
         });
     }
 
+    document.getElementById("addOrderModal")?.addEventListener("shown.bs.modal", stopDailyOrderAutoRefresh);
+    document.getElementById("addOrderModal")?.addEventListener("hidden.bs.modal", startDailyOrderAutoRefresh);
+
+    document.getElementById("editOrderModal")?.addEventListener("shown.bs.modal", stopDailyOrderAutoRefresh);
+    document.getElementById("editOrderModal")?.addEventListener("hidden.bs.modal", startDailyOrderAutoRefresh);
+
+    document.getElementById("viewOrderModal")?.addEventListener("shown.bs.modal", stopDailyOrderAutoRefresh);
+    document.getElementById("viewOrderModal")?.addEventListener("hidden.bs.modal", startDailyOrderAutoRefresh);
+
     document.getElementById("addOrderModal")?.addEventListener("shown.bs.modal", async function () {
         await loadAddOrderCategories();
+        await loadCustomers();
+
+        // ✅ DISABLE PAST DATES (Delivery Date)
+        const deliveryInput = document.getElementById("addDeliveryDate");
+        //addDateOrdered
+        const dateOrderedInput = document.getElementById("addDateOrdered");
+        //editDeliveryDate
+        const editDeliveryDateInput = document.getElementById("editDeliveryDate");
+
+        if (deliveryInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+
+            deliveryInput.min = todayStr;     // ❌ disable yesterday
+            deliveryInput.value = todayStr;   // ✔ default today (optional but recommended)
+
+        }
+        if (dateOrderedInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+
+           // dateOrderedInput.min = todayStr;     // ❌ disable yesterday
+            dateOrderedInput.value = todayStr;   // ✔ default today (optional but recommended)
+
+        }
+        if (editDeliveryDateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+
+             editDeliveryDateInput.min = todayStr;     // ❌ disable yesterday
+            editDeliveryDateInput.value = todayStr;   // ✔ default today (optional but recommended)
+
+        }
     });
 
     document.getElementById("addLineCategory")?.addEventListener("change", loadAddOrderProducts);
@@ -77,6 +144,17 @@
         await openViewModal(window.currentOrderId); // refresh modal
     });
 
+    document.getElementById("btnModalSendToDispatch")?.addEventListener("click", async function () {
+        if (!window.currentOrderId) {
+            alert("No order selected.");
+            return;
+        }
+
+        await markReadyForDispatch(window.currentOrderId);
+        await openViewModal(window.currentOrderId); // refresh modal
+        await loadDailyOrders(); // refresh table
+    });
+
     document.addEventListener("click", async function (e) {
         if (e.target.closest(".dropdown-item")) {
             e.preventDefault();
@@ -120,6 +198,33 @@
         }
     });
 });
+
+function startDailyOrderAutoRefresh() {
+    stopDailyOrderAutoRefresh();
+
+    dailyOrderAutoRefresh = setInterval(() => {
+
+        if (document.hidden) return;
+
+        const addOrderModalOpen = document.getElementById("addOrderModal")?.classList.contains("show");
+        const editOrderModalOpen = document.getElementById("editOrderModal")?.classList.contains("show");
+        const viewOrderModalOpen = document.getElementById("viewOrderModal")?.classList.contains("show");
+
+        if (addOrderModalOpen || editOrderModalOpen || viewOrderModalOpen) return;
+
+        if (isTypingFilter) return;
+
+        loadDailyOrders();
+
+    }, 30000);
+}
+
+function stopDailyOrderAutoRefresh() {
+    if (dailyOrderAutoRefresh) {
+        clearInterval(dailyOrderAutoRefresh);
+        dailyOrderAutoRefresh = null;
+    }
+}
 
 async function openEditModal(orderId) {
     try {
@@ -216,12 +321,22 @@ async function loadDailyOrders() {
     if (status) params.append("status", status);
     if (search) params.append("search", search);
 
+    document.getElementById("lastUpdatedText").textContent =
+        "Last updated: " + new Date().toLocaleTimeString();
+
     try {
         const response = await fetch(`/DailyOrder/GetOrders?${params.toString()}`);
         if (!response.ok) throw new Error(await response.text());
 
-        const data = await response.json();
-        renderDailyOrderTable(data);
+        //const data = await response.json();
+        //renderDailyOrderTable(data);
+
+        const result = await response.json();
+
+        renderDailyOrderSummary(result.summary);
+        renderDailyOrderTable(result.data || []);
+
+
     } catch (err) {
         console.error(err);
         document.getElementById("dailyOrderTableBody").innerHTML = `
@@ -233,6 +348,17 @@ async function loadDailyOrders() {
         `;
     }
 }
+
+function renderDailyOrderSummary(summary) {
+    document.getElementById("summaryTotalOrders").textContent = summary?.totalOrders ?? 0;
+    document.getElementById("summaryForAllocation").textContent = summary?.forAllocation ?? 0;
+    document.getElementById("summaryAllocated").textContent = summary?.allocated ?? 0;
+    document.getElementById("summaryPartial").textContent = summary?.partial ?? 0;
+    document.getElementById("summaryReadyDispatch").textContent = summary?.readyDispatch ?? 0;
+    document.getElementById("summaryPartiallyDelivered").textContent = summary?.partiallyDelivered ?? 0;
+    document.getElementById("summaryOverdue").textContent = summary?.overdue ?? 0;
+    document.getElementById("summaryCompleted").textContent = summary?.completed ?? 0;
+}
 function renderDailyOrderTable(data) {
     const tbody = document.getElementById("dailyOrderTableBody");
     tbody.innerHTML = "";
@@ -240,7 +366,7 @@ function renderDailyOrderTable(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="16" class="text-center text-muted py-4">
+                <td colspan="18" class="text-center text-muted py-4">
                     No orders found.
                 </td>
             </tr>
@@ -287,10 +413,12 @@ function renderDailyOrderTable(data) {
                 <td>${formatQty(order.requiredQty)}</td>
                 <td>${formatQty(order.allocatedQty)}</td>
                 <td>${formatQty(order.remainingQty)}</td>
+                <td>${formatQty(order.dispatchedQty)}</td>
                 <td>${renderAllocationBadge(order.allocationStatus)}</td>
                 <td>${formatDate(order.dateOrdered)}</td>
                 <td>${formatDate(order.deliveryDate)}</td>
                 <td>${formatDate(order.dateDelivered)}</td>
+                <td>${getAgingBadge(order.agingDays)}</td>
                 <td>${renderStatusBadge(order.status)}</td>
                 <td>${safe(order.specialInstructions || "-")}</td>
                 <td class="text-center">
@@ -301,7 +429,11 @@ function renderDailyOrderTable(data) {
     });
 }
 
-
+function getAgingBadge(days) {
+    if (days <= 0) return `<span class="text-success">${days}</span>`;
+    if (days <= 2) return `<span class="text-warning">${days}</span>`;
+    return `<span class="text-danger fw-bold">${days}</span>`;
+}
 
 async function openViewModal(orderId) {
     window.currentOrderId = orderId;
@@ -316,6 +448,10 @@ async function openViewModal(orderId) {
         document.getElementById("modalCustomerName").textContent = data.customerName || "-";
         document.getElementById("modalDeliveryDate").textContent = formatDate(data.deliveryDate);
         document.getElementById("modalStatusBadge").innerHTML = renderStatusBadge(data.status);
+
+
+
+
 
         renderModalLineSummary(data.lines || []);
         renderModalLotAllocations(data.lines || []);
@@ -404,14 +540,28 @@ async function allocateOrder(orderId) {
             method: "POST"
         });
 
-        if (!response.ok) throw new Error(await response.text());
+        const resultText = await response.text();
+        let result = null;
 
-        const result = await response.json();
+        try {
+            result = JSON.parse(resultText);
+        } catch {
+            result = { message: resultText };
+        }
+
+        if (!response.ok) {
+            throw new Error(result?.message || resultText || "Failed to allocate order.");
+        }
+
         alert(result.message || "Allocation completed.");
-        loadDailyOrders();
+        await loadDailyOrders();
+
+        if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
+            await openViewModal(orderId);
+        }
     } catch (err) {
-        console.error(err);
-        alert("Failed to allocate order.");
+        console.error("allocateOrder error:", err);
+        alert(err.message || "Failed to allocate order.");
     }
 }
 
@@ -599,7 +749,9 @@ function addOrderLineRow() {
 }
 
 async function saveAddOrder() {
-    const customerName = document.getElementById("addCustomerName")?.value.trim() || "";
+    const customerSelect = document.getElementById("addCustomerName");
+    const customerId = customerSelect?.value || "";
+    const customerName = customerSelect?.selectedOptions[0]?.text || "";
     const className = document.getElementById("addClassName")?.value.trim() || "";
     const routeName = document.getElementById("addRouteName")?.value.trim() || "";
     const dateOrdered = document.getElementById("addDateOrdered")?.value || null;
@@ -619,6 +771,8 @@ async function saveAddOrder() {
 
         let requiredQty = qtyInput;
 
+
+
         if (uomType === "PACK" && packQty > 0) {
             requiredQty = qtyInput * packQty;
         }
@@ -630,7 +784,7 @@ async function saveAddOrder() {
         };
     }).filter(x => x.productId && x.productName && x.requiredQty > 0);
 
-    if (!customerName) {
+    if (!customerId) {
         alert("Customer is required.");
         return;
     }
@@ -641,6 +795,7 @@ async function saveAddOrder() {
     }
 
     const payload = {
+        customerId,
         customerName,
         className,
         routeName,
@@ -678,6 +833,46 @@ async function saveAddOrder() {
     } catch (err) {
         console.error("saveAddOrder error:", err);
         alert("Failed to create order: " + err.message);
+    }
+}
+
+async function loadCustomers() {
+    try {
+        const select = document.getElementById("addCustomerName");
+        if (!select) return;
+
+        select.innerHTML = `<option value="">Loading...</option>`;
+
+        const response = await fetch("/DailyOrder/GetCustomers");
+
+        if (!response.ok) {
+            throw new Error("Failed to load customers.");
+        }
+
+        const data = await response.json();
+
+        // ✅ FILTER ONLY CUSTOMERS
+        const customers = data.filter(x => x.partner_type === "CUSTOMER");
+
+        if (customers.length === 0) {
+            select.innerHTML = `<option value="">No customers found</option>`;
+            return;
+        }
+
+        let options = `<option value="">Select Customer</option>`;
+
+        customers.forEach(item => {
+            options += `
+                <option value="${item.partner_id}">
+                    ${item.partner_name}
+                </option>
+            `;
+        });
+
+        select.innerHTML = options;
+
+    } catch (error) {
+        console.error("Error loading customers:", error);
     }
 }
 function resetAddOrderForm() {
@@ -726,7 +921,7 @@ async function loadAddOrderCategories() {
                 <option value="${safe(c.catg_id)}">${safe(c.catg_name)}</option>
             `;
         });
-     
+
     } catch (err) {
         console.error("loadAddOrderCategories error:", err);
         alert("Failed to load categories: " + err.message);
