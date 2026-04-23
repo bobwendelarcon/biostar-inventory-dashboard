@@ -444,6 +444,10 @@ async function loadReadyForChecklist() {
                             data-customer-name="${escapeAttribute(item.customer_name ?? "")}"
                             data-product-id="${escapeAttribute(item.product_id ?? "")}"
                             data-product-name="${escapeAttribute(item.product_name ?? "")}"
+
+                            data-uom="${escapeAttribute(item.uom ?? "")}"
+data-pack-uom="${escapeAttribute(item.pack_uom ?? "")}"
+data-pack-qty="${toNumber(item.pack_qty)}"
                            
                             data-required-qty="${toNumber(item.required_qty)}"
                             data-allocated-qty="${toNumber(item.allocated_qty)}"
@@ -507,6 +511,9 @@ async function submitCreateChecklist() {
             customer_name: cb.dataset.customerName || "",
             product_id: cb.dataset.productId || "",
             product_name: cb.dataset.productName || "",
+            uom: cb.dataset.uom || "",
+            pack_uom: cb.dataset.packUom || "",
+            pack_qty: parseFloat(cb.dataset.packQty || "0") || null,
            
             required_qty: parseFloat(cb.dataset.requiredQty || "0"),
             allocated_qty: parseFloat(cb.dataset.allocatedQty || "0"),
@@ -623,7 +630,7 @@ async function openViewChecklistModal(id) {
                 <td>${escapeHtml(line.lot_no ?? "-")}</td>
                 <td>${formatDate(line.manufacturing_date)}</td>
                 <td>${formatDate(line.expiration_date)}</td>
-                <td>${toDisplayNumber(line.checklist_qty)}</td>
+            <td>${formatChecklistQty(line)}</td>
                 <td>${getStatusBadge(line.status)}</td>
             </tr>
         `;
@@ -658,6 +665,35 @@ function formatDate(dateString) {
         day: "numeric"
     });
 }
+
+function formatChecklistQty(line) {
+    const qty = Number(line.checklist_qty || 0);
+    const packQty = Number(line.pack_qty || 0);
+    const packUom = (line.pack_uom || "").toUpperCase();
+    const uom = line.uom || "";
+
+    const qtyText = toDisplayNumber(qty);
+
+    if (!packQty || packQty <= 0) {
+        return escapeHtml(`${qtyText} ${uom}`.trim());
+    }
+
+    const packs = Math.floor(qty / packQty);
+    const remainder = qty % packQty;
+
+    let breakdown = "";
+
+    if (packs > 0 && remainder > 0) {
+        breakdown = `${packs} ${packUom} + ${toDisplayNumber(remainder)} ${uom}`;
+    } else if (packs > 0) {
+        breakdown = `${packs} ${packUom}`;
+    } else {
+        breakdown = `${toDisplayNumber(remainder)} ${uom}`;
+    }
+
+    return escapeHtml(`${qtyText} ${uom} = (${breakdown})`.trim());
+}
+
 
 function getStatusBadge(status) {
     if (!status) return `<span class="badge bg-secondary">Unknown</span>`;

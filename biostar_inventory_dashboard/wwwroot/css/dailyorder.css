@@ -35,6 +35,13 @@
     border-radius: 0 0 1rem 1rem;
 }
 
+.qty-pack-cell small {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
 .dailyorder-table {
     min-width: 1500px;
     margin-bottom: 0;

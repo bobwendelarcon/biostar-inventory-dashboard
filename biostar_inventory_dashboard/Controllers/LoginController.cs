@@ -1,11 +1,13 @@
-﻿using System.Security.Claims;
-using biostar_inventory_dashboard.Services;
+﻿using biostar_inventory_dashboard.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace biostar_inventory_dashboard.Controllers
 {
+    [AllowAnonymous]
     public class LoginController : Controller
     {
         private readonly ApiService _apiService;
@@ -37,30 +39,45 @@ namespace biostar_inventory_dashboard.Controllers
 
             var user = await _apiService.LoginAsync(username, password);
 
-            if (user != null)
+            if (user == null)
             {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.full_name),
-                    new Claim("UserId", user.user_id),
-                    new Claim(ClaimTypes.Role, user.role_name ?? "")
-                };
-
-                var identity = new ClaimsIdentity(
-                    claims,
-                    CookieAuthenticationDefaults.AuthenticationScheme);
-
-                var principal = new ClaimsPrincipal(identity);
-
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    principal);
-
-                return RedirectToAction("Index", "Dashboard");
+                ViewBag.Error = "Invalid username or password.";
+                return View();
             }
 
-            ViewBag.Error = "Invalid username or password.";
-            return View();
+            var role = (user.role_name ?? "").Trim().ToUpper();
+
+            if (role == "WAREHOUSE")
+            {
+                ViewBag.Error = "Warehouse account is for Android use only.";
+                return View();
+            }
+
+            var fullName = string.IsNullOrWhiteSpace(user.full_name) ? username : user.full_name;
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, fullName),
+                new Claim("full_name", fullName),
+                new Claim("username", user.username ?? username),
+                new Claim("user_id", user.user_id?.ToString() ?? ""),
+                new Claim("UserId", user.user_id?.ToString() ?? ""),
+                new Claim(ClaimTypes.Role, role),
+                new Claim("role", role),
+                new Claim("profile_image", user.profile_image ?? "")
+            };
+
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal);
+
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [HttpPost]

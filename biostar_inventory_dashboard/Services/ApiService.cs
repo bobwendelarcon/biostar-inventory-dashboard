@@ -397,6 +397,67 @@ namespace biostar_inventory_dashboard.Services
                 PropertyNameCaseInsensitive = true
             });
         }
+
+
+
+
+        //MyAccount
+
+        public async Task<UserAccountDto?> GetUserByIdAsync(string userId)
+        {
+            var response = await _httpClient.GetAsync($"api/User/{Uri.EscapeDataString(userId)}");
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<UserAccountDto>(json, _jsonOptions);
+        }
+
+        public async Task<bool> UpdateMyAccountAsync(string userId, UpdateMyAccountDto dto)
+        {
+            var json = JsonSerializer.Serialize(dto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(
+                $"api/User/UpdateMyAccount/{Uri.EscapeDataString(userId)}",
+                content);
+
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<string?> UploadProfileImageAsync(string userId, IFormFile file)
+        {
+            using var form = new MultipartFormDataContent();
+
+            using var stream = file.OpenReadStream();
+            using var fileContent = new StreamContent(stream);
+
+            fileContent.Headers.ContentType =
+                new System.Net.Http.Headers.MediaTypeHeaderValue(
+                    string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType);
+
+            form.Add(fileContent, "file", file.FileName);
+
+            var response = await _httpClient.PostAsync(
+                $"api/User/UploadProfileImage/{Uri.EscapeDataString(userId)}",
+                form);
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("profile_image", out var profileImageProp))
+            {
+                return profileImageProp.GetString();
+            }
+
+            return null;
+        }
+
         // daily order
 
         public async Task<string> GetDailyOrdersAsync(
@@ -608,6 +669,24 @@ namespace biostar_inventory_dashboard.Services
                 throw new Exception(content);
 
             return content;
+        }
+
+
+        public async Task<string> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+        {
+            var json = JsonSerializer.Serialize(dto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(
+                $"api/User/ChangePassword/{Uri.EscapeDataString(userId)}",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
         }
 
 

@@ -1,5 +1,10 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value
+                ?? User.FindFirst("role")?.Value
+                ?? "";
 
     var isPlanningOpen = currentController == "DailyOrder";
     var isProductionOpen = currentController == "RawMaterialRequest" || currentController == "ReceiveTransmittal";
@@ -172,26 +177,34 @@
         </li>
 
         <!-- Master Data -->
-        <li class="nav-item mb-2">
-            <a class="nav-link d-flex justify-content-between align-items-center"
-               data-bs-toggle="collapse"
-               href="#masterMenu">
-                <div>
-                    <i class="bi bi-database me-2"></i>
-                    <span>Master Data</span>
+        @if (userRole == "ADMIN" || userRole == "STAFF")
+        {
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#masterMenu">
+                    <div>
+                        <i class="bi bi-database me-2"></i>
+                        <span>Master Data</span>
+                    </div>
+                    <span class="menu-arrow">▾</span>
+                </a>
+                <div class="collapse @(isMasterDataOpen ? "show" : "")" id="masterMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+                        <li><a class="nav-link" href="/Categories"><span>Category</span></a></li>
+                        <li><a class="nav-link" href="/Product"><span>Products</span></a></li>
+                        <li><a class="nav-link" href="/Branch"><span>Branches</span></a></li>
+
+                        @if (userRole == "ADMIN")
+                        {
+                            <li><a class="nav-link" href="/User"><span>Users</span></a></li>
+                        }
+
+                        <li><a class="nav-link" href="/Partner"><span>Partners</span></a></li>
+                    </ul>
                 </div>
-                <span class="menu-arrow">▾</span>
-            </a>
-            <div class="collapse @(isMasterDataOpen ? "show" : "")" id="masterMenu">
-                <ul class="nav flex-column ms-3 mt-1">
-                    <li><a class="nav-link" href="/Categories"><span>Category</span></a></li>
-                    <li><a class="nav-link" href="/Product"><span>Products</span></a></li>
-                    <li><a class="nav-link" href="/Branch"><span>Branches</span></a></li>
-                    <li><a class="nav-link" href="/User"><span>Users</span></a></li>
-                    <li><a class="nav-link" href="/Partner"><span>Partners</span></a></li>
-                </ul>
-            </div>
-        </li>
+            </li>
+        }
 
     </ul>
 </div>

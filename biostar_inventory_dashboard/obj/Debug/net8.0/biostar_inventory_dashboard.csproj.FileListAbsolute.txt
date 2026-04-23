@@ -222,10 +222,10 @@ D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debu
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\staticwebassets.development.json
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_.D0424D4D.Up2Date
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.dll
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\refint\biostar_inventory_dashboard.dll
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.pdb
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.genruntimeconfig.cache
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\ref\biostar_inventory_dashboard.dll
-D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

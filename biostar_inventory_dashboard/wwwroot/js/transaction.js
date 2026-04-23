@@ -42,6 +42,17 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;");
 }
 
+function toDisplayNumber(value) {
+    const num = Number(value || 0);
+
+    if (Number.isInteger(num)) {
+        return num.toString();
+    }
+
+    return num.toFixed(2);
+}
+
+
 function buildReferenceHtml(item) {
     const refs = [];
 
@@ -117,6 +128,7 @@ async function loadTransactions(page = 1) {
         }
 
         data.forEach(item => {
+            console.log(item);
             const transactionType = (item.transaction_type || "").toUpperCase();
             const isOut = transactionType === "OUT";
 
@@ -129,7 +141,8 @@ async function loadTransactions(page = 1) {
                     <td>${formatTimeOnly(item.created_at)}</td>
                     <td>${escapeHtml(item.branch_name ?? item.branch_id ?? "")}</td>
                     <td>${escapeHtml(item.transaction_type ?? "")}</td>
-                    <td>${escapeHtml(item.quantity ?? "")}</td>
+                    <td>${escapeHtml(`${toDisplayNumber(item.quantity)} ${item.uom || ""}`)}</td>
+                    <td>${escapeHtml(formatPackOnly(item))}</td>
                     <td>${buildReferenceHtml(item)}</td>
                     <td>${escapeHtml(item.remarks ?? "")}</td>
                     <td class="text-center">
@@ -201,6 +214,59 @@ function prevPage() {
     }
 }
 
+function formatTransactionQty(item) {
+    const qty = Number(item.quantity || 0);
+    const packQty = Number(item.pack_qty || 0);
+    const packUom = (item.pack_uom || "").toUpperCase();
+    const uom = item.uom || "";
+
+    const qtyText = toDisplayNumber(qty);
+
+    if (!packQty || packQty <= 0) {
+        return escapeHtml(`${qtyText} ${uom}`.trim());
+    }
+
+    const packs = Math.floor(qty / packQty);
+    const remainder = qty % packQty;
+
+    let breakdown = "";
+
+    if (packs > 0 && remainder > 0) {
+        breakdown = `${packs} ${packUom} + ${toDisplayNumber(remainder)} ${uom}`;
+    } else if (packs > 0) {
+        breakdown = `${packs} ${packUom}`;
+    } else {
+        breakdown = `${toDisplayNumber(remainder)} ${uom}`;
+    }
+
+    return escapeHtml(`${qtyText} ${uom} = (${breakdown})`);
+}
+
+function formatPackOnly(item) {
+    const qty = Number(item.quantity || 0);
+    const packQty = Number(item.pack_qty || 0);
+    const packUom = (item.pack_uom || "").toUpperCase();
+    const uom = item.uom || "";
+
+    if (!packQty || packQty <= 0) {
+        return "-";
+    }
+
+    const packs = Math.floor(qty / packQty);
+    const remainder = qty % packQty;
+
+    if (packs > 0 && remainder > 0) {
+        return `${packs} ${packUom} + ${toDisplayNumber(remainder)} ${uom}`;
+    } else if (packs > 0) {
+        return `${packs} ${packUom}`;
+    } else {
+        return `${toDisplayNumber(remainder)} ${uom}`;
+    }
+}
+
+
+
+
 document.addEventListener("click", function (e) {
     const btn = e.target.closest(".btn-edit");
     if (!btn) return;
@@ -208,7 +274,7 @@ document.addEventListener("click", function (e) {
     isEditing = true;
 
     document.getElementById("editTransactionId").value = btn.dataset.id || "";
-    document.getElementById("editCustomer").value = btn.dataset.customer || "";
+  
     document.getElementById("editDrNo").value = btn.dataset.dr || "";
     document.getElementById("editInvNo").value = btn.dataset.inv || "";
     document.getElementById("editPoNo").value = btn.dataset.po || "";
@@ -264,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnSaveReference")?.addEventListener("click", async function () {
         const payload = {
             transaction_id: parseInt(document.getElementById("editTransactionId").value, 10),
-            customer: document.getElementById("editCustomer").value.trim(),
+            //customer: document.getElementById("editCustomer").value.trim(),
             dr_no: document.getElementById("editDrNo").value.trim(),
             inv_no: document.getElementById("editInvNo").value.trim(),
             po_no: document.getElementById("editPoNo").value.trim(),

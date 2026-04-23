@@ -38,7 +38,7 @@ async function loadUsers() {
         const data = await response.json();
 
         const searchValue = (document.getElementById("searchUser")?.value || "").toLowerCase().trim();
-        const roleValue = (document.getElementById("filterRole")?.value || "").toLowerCase().trim();
+        const roleValue = document.getElementById("filterRole")?.value || "";
         const statusValue = document.getElementById("filterStatus")?.value ?? "";
 
         let filteredData = data;
@@ -53,7 +53,7 @@ async function loadUsers() {
 
         if (roleValue) {
             filteredData = filteredData.filter(x =>
-                (x.role_name ?? "").toLowerCase().includes(roleValue)
+                (x.role_name ?? "").toUpperCase() === roleValue
             );
         }
 
@@ -88,7 +88,7 @@ function renderUserTable(data) {
         return;
     }
 
-    data.forEach(user => {
+    data.forEach((user, index) => {
         const statusText = String(user.is_deleted) === "true" ? "Inactive" : "Active";
 
         tableBody.innerHTML += `
@@ -99,13 +99,32 @@ function renderUserTable(data) {
                 <td>${user.role_name ?? ""}</td>
                 <td>${statusText}</td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary rounded-3"
-                        onclick='openEditUserModal(${JSON.stringify(user).replace(/'/g, "&apos;")})'>
+                    <button 
+                        class="btn btn-sm btn-outline-primary rounded-3 edit-user-btn"
+                        data-user-id="${user.user_id ?? ""}"
+                        data-full-name="${user.full_name ?? ""}"
+                        data-username="${user.username ?? ""}"
+                        data-role-name="${user.role_name ?? ""}"
+                        data-is-deleted="${String(user.is_deleted ?? false)}">
                         Edit
                     </button>
                 </td>
             </tr>
         `;
+    });
+
+    document.querySelectorAll(".edit-user-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const user = {
+                user_id: this.dataset.userId,
+                full_name: this.dataset.fullName,
+                username: this.dataset.username,
+                role_name: this.dataset.roleName,
+                is_deleted: this.dataset.isDeleted === "true"
+            };
+
+            openEditUserModal(user);
+        });
     });
 }
 
@@ -132,18 +151,36 @@ function openAddUserModal() {
 }
 
 function openEditUserModal(user) {
-    document.getElementById("userModalLabel").innerText = "Edit User";
-    document.getElementById("userFormMode").value = "edit";
-    document.getElementById("originalUserId").value = user.user_id ?? "";
+    const userModalLabel = document.getElementById("userModalLabel");
+    const userFormMode = document.getElementById("userFormMode");
+    const originalUserId = document.getElementById("originalUserId");
+    const userId = document.getElementById("userId");
+    const fullName = document.getElementById("fullName");
+    const username = document.getElementById("username");
+    const passwordHash = document.getElementById("passwordHash");
+    const roleName = document.getElementById("roleName");
+    const userStatus = document.getElementById("userStatus");
 
-    document.getElementById("userId").value = user.user_id ?? "";
-    document.getElementById("fullName").value = user.full_name ?? "";
-    document.getElementById("username").value = user.username ?? "";
-    document.getElementById("passwordHash").value = "";
-    document.getElementById("roleName").value = user.role_name ?? "";
-    document.getElementById("userStatus").value = String(user.is_deleted ?? false);
+    console.log("openEditUserModal user:", user);
+    console.log("roleName element:", roleName);
 
-    document.getElementById("userId").disabled = true;
+    if (!userModalLabel || !userFormMode || !originalUserId || !userId || !fullName || !username || !passwordHash || !roleName || !userStatus) {
+        console.error("One or more modal elements were not found.");
+        return;
+    }
+
+    userModalLabel.innerText = "Edit User";
+    userFormMode.value = "edit";
+    originalUserId.value = user.user_id ?? "";
+
+    userId.value = user.user_id ?? "";
+    fullName.value = user.full_name ?? "";
+    username.value = user.username ?? "";
+    passwordHash.value = "";
+    roleName.value = (user.role_name ?? "").toUpperCase();
+    userStatus.value = String(user.is_deleted ?? false);
+
+    userId.disabled = true;
     userModal.show();
 }
 
@@ -172,6 +209,10 @@ async function saveUser() {
 
         if (!payload.full_name) {
             alert("Full Name is required.");
+            return;
+        }
+        if (!payload.role_name) {
+            alert("Role is required.");
             return;
         }
 

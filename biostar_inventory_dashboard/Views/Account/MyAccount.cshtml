@@ -1,0 +1,97 @@
+﻿@model biostar_inventory_dashboard.Models.UserAccountDto
+
+@{
+    ViewData["Title"] = "My Account";
+    var profileImage = string.IsNullOrWhiteSpace(Model.profile_image)
+        ? "/images/default-user.png"
+        : Model.profile_image;
+}
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <small class="text-muted">Dashboard &gt; My Account</small>
+        <h2 class="fw-bold mt-2 mb-0">My Account</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <div class="row g-4 align-items-start">
+                <div class="col-md-4 text-center">
+                    <img src="@profileImage"
+                         alt="Profile Image"
+                         class="rounded-circle border shadow-sm mb-3"
+                         style="width: 180px; height: 180px; object-fit: cover;" />
+
+                    <form asp-controller="Account" asp-action="UploadProfileImage" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <input type="file"
+                               name="file"
+                               class="form-control mb-2"
+                               accept=".jpg,.jpeg,.png,.webp" />
+
+                        <button type="submit" class="btn btn-outline-primary w-100 rounded-3">
+                            Upload Photo
+                        </button>
+                    </form>
+                </div>
+
+                <div class="col-md-8">
+                    <form asp-controller="Account" asp-action="UpdateMyAccount" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">User ID</label>
+                                <input type="text" class="form-control" value="@Model.user_id" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Role</label>
+                                <input type="text" class="form-control" value="@Model.role_name" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Full Name</label>
+                                <input type="text" class="form-control" name="full_name" value="@Model.full_name" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Username</label>
+                                <input type="text" class="form-control" name="username" value="@Model.username" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">New Password</label>
+                                <input type="password"
+                                       class="form-control"
+                                       name="password_hash"
+                                       placeholder="Leave blank to keep current password" />
+                            </div>
+
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary rounded-3 w-100">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success mt-3 mb-0">
+                            @TempData["Success"]
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">
+                            @TempData["Error"]
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

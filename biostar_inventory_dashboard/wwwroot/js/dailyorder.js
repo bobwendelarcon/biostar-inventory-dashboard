@@ -456,10 +456,10 @@ function renderDailyOrderTable(data) {
                 <td>${safe(order.orderNo)}</td>
                 <td>${safe(order.customerName)}</td>
                 <td>${safe(order.productName)}</td>
-                <td>${formatQty(order.requiredQty)}</td>
-                <td>${formatQty(order.allocatedQty)}</td>
-                <td>${formatQty(order.remainingQty)}</td>
-                <td>${formatQty(order.dispatchedQty)}</td>
+                <td>${formatQtyWithPack(order.requiredQty, order.uom, order.packQty, order.packUom)}</td>
+<td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
+<td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
+<td>${formatQtyWithPack(order.dispatchedQty, order.uom, order.packQty, order.packUom)}</td>
                 <td>${renderAllocationBadge(order.allocationStatus)}</td>
                 <td>${formatDate(order.dateOrdered)}</td>
                 <td>${formatDate(order.deliveryDate)}</td>
@@ -539,9 +539,9 @@ function renderModalLineSummary(lines) {
         tbody.innerHTML += `
             <tr>
                 <td>${safe(line.productName)}</td>
-                <td>${formatQty(line.requiredQty)}</td>
-                <td>${formatQty(line.allocatedQty)}</td>
-                <td>${formatQty(line.availableBeforeAllocation)}</td>
+               <td>${formatQtyWithPack(line.requiredQty, line.uom, line.packQty, line.packUom)}</td>
+<td>${formatQtyWithPack(line.allocatedQty, line.uom, line.packQty, line.packUom)}</td>
+<td>${formatQtyWithPack(line.availableBeforeAllocation, line.uom, line.packQty, line.packUom)}</td>
                 <td>${renderAllocationBadge(line.allocationResult)}</td>
             </tr>
         `;
@@ -570,10 +570,10 @@ function renderModalLotAllocations(lines) {
                 <td>${safe(item.lotNo)}</td>
                 <td>${formatDate(item.manufacturingDate)}</td>
                 <td>${formatDate(item.expirationDate)}</td>
-                <td>${formatQty(item.onHandQty)}</td>
-                <td>${formatQty(item.reservedQty)}</td>
-                <td>${formatQty(item.availableQty)}</td>
-                <td>${formatQty(item.allocatedQty)}</td>
+              <td>${formatQtyWithPack(item.onHandQty, item.uom, item.packQty, item.packUom)}</td>
+<td>${formatQtyWithPack(item.reservedQty, item.uom, item.packQty, item.packUom)}</td>
+<td>${formatQtyWithPack(item.availableQty, item.uom, item.packQty, item.packUom)}</td>
+<td>${formatQtyWithPack(item.allocatedQty, item.uom, item.packQty, item.packUom)}</td>
                 <td>${renderPriorityBadge(item.priorityRank)}</td>
             </tr>
         `;
@@ -680,6 +680,49 @@ function formatQty(value) {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2
     });
+}
+
+function formatQtyValue(value) {
+    if (value === null || value === undefined) return "0";
+
+    return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+}
+
+function formatPackBreakdown(qty, packQty, packUom, uom) {
+    const qtyNum = Number(qty || 0);
+    const packQtyNum = Number(packQty || 0);
+    const packLabel = (packUom || "").toUpperCase();
+    const uomLabel = uom || "";
+
+    if (!packQtyNum || packQtyNum <= 0) {
+        return "-";
+    }
+
+    const packs = Math.floor(qtyNum / packQtyNum);
+    const remainder = qtyNum % packQtyNum;
+
+    if (packs > 0 && remainder > 0) {
+        return `${packs} ${packLabel} + ${formatQtyValue(remainder)} ${uomLabel}`.trim();
+    } else if (packs > 0) {
+        return `${packs} ${packLabel}`.trim();
+    } else {
+        return `${formatQtyValue(remainder)} ${uomLabel}`.trim();
+    }
+}
+
+function formatQtyWithPack(qty, uom, packQty, packUom) {
+    const qtyText = `${formatQtyValue(qty)} ${uom || ""}`.trim();
+    const packText = formatPackBreakdown(qty, packQty, packUom, uom);
+
+    return `
+    <div class="qty-pack-cell">
+        <div>${safe(qtyText)}</div>
+        <small class="text-muted">${safe(packText)}</small>
+    </div>
+`;
 }
 
 function safe(value) {
