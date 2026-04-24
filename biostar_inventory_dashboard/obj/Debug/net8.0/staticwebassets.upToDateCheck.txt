@@ -7,6 +7,7 @@ wwwroot\images\default-user.png
 wwwroot\js\branch.js
 wwwroot\js\categories.js
 wwwroot\js\dailyorder.js
+wwwroot\js\dashboard.js
 wwwroot\js\delivery-checklist-print.js
 wwwroot\js\delivery-checklist.js
 wwwroot\js\inventory.js

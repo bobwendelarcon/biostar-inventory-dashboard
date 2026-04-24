@@ -14,16 +14,16 @@ namespace biostar_inventory_dashboard.Controllers
             _apiService = apiService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var model = await _apiService.GetDashboardAsync();
+            return View(model);
         }
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetInventory()
-        //{
-        //    var items = await _apiService.GetInventoryAsync();
-        //    return Json(items);
-        //}
+        [HttpGet]
+        public async Task<IActionResult> GetDashboardData()
+        {
+            var data = await _apiService.GetDashboardAsync();
+            return Json(data);
+        }
     }
 }

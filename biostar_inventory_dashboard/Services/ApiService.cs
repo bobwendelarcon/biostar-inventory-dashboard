@@ -18,6 +18,25 @@ namespace biostar_inventory_dashboard.Services
             };
         }
 
+        //Dashboard
+
+        public async Task<DashboardDto> GetDashboardAsync()
+        {
+            var response = await _httpClient.GetAsync("api/Dashboard");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new DashboardDto();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<DashboardDto>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? new DashboardDto();
+        }
+
         public async Task<PagedInventoryResponse> GetInventoryAsync(
       int page = 1,
       int pageSize = 30,

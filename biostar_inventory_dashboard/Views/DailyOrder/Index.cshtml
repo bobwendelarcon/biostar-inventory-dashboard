@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Daily Order Planning";
 }
 
@@ -91,12 +92,12 @@
                     </select>
                 </div>
 
-                <div class="col-lg-2 col-md-6">
+                @* <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Status</label>
                     <select class="form-select" id="statusFilter">
                         <option value="">All Status</option>
                         @* <option>Draft</option> *@
-                        <option>For Allocation</option>
+                      @*  <option>For Allocation</option>
                         <option>Allocated</option>
                         <option>Partially Allocated</option>
                         <option>Ready for Dispatch</option>
@@ -105,7 +106,24 @@
                         <option>Overdue</option>
                         <option>Cancelled</option>
                     </select>
-                </div>
+                </div> *@
+
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label fw-semibold">Status</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="ALL_EXCL_COMPLETED" selected>All Status (Excl. Completed)</option>
+                    <option value="ALL">All Status</option>
+
+                    <option value="FOR ALLOCATION">For Allocation</option>
+                    <option value="ALLOCATED">Allocated</option>
+                    <option value="PARTIALLY ALLOCATED">Partially Allocated</option>
+                    <option value="READY FOR DISPATCH">Ready for Dispatch</option>
+                    <option value="PARTIALLY DISPATCHED">Partially Dispatched</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="OVERDUE">Overdue</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+            </div>
 
                 <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Search</label>
@@ -154,7 +172,7 @@
         <div class="col">
             <div class="card summary-card h-100">
                 <div class="card-body">
-                    <div class="summary-label">Partial</div>
+                    <div class="summary-label">Partially Delivered</div>
                     <div class="summary-value text-info" id="summaryPartial">0</div>
                 </div>
             </div>
@@ -322,7 +340,8 @@
                                         <th>Product</th>
                                         <th>Required Qty</th>
                                         <th>Allocated Qty</th>
-                                        <th>Available Before Allocation</th>
+                                        @* <th>Available Before Allocation</th> *@
+                                       <th> Available Stock (Excl. Reserved)</th>
                                         <th>Allocation Result</th>
                                     </tr>
                                 </thead>

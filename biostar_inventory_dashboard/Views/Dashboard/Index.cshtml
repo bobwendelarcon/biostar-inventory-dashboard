@@ -1,6 +1,7 @@
-﻿@{
+﻿@model biostar_inventory_dashboard.Models.DashboardDto
+@{
     ViewData["Title"] = "Dashboard";
-    ViewData["Subtitle"] = "Overview of planning, dispatch, logistics, inventory, and returns";
+    ViewData["Subtitle"] = "Overview of planning, delivery checklist, dispatch, and inventory";
 }
 
 @section Styles {
@@ -14,79 +15,88 @@
         <h2 class="fw-bold mt-2">Dashboard</h2>
     </div>
     <div>
-        <button class="btn btn-outline-primary me-2">Refresh</button>
+        <button class="btn btn-outline-primary me-2" onclick="location.reload()">Refresh</button>
         <button class="btn btn-primary">Export Summary</button>
     </div>
 </div>
 
 <!-- SUMMARY CARDS -->
+<!-- SUMMARY CARDS -->
 <div class="row g-3 mb-4">
 
-    <div class="col-md-4 col-lg-2">
+    <div class="col-md-4 col-lg">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <small class="text-muted">Daily Orders</small>
-                <h3 class="fw-bold mt-2 mb-0">120</h3>
+                <small class="text-muted">Open Orders</small>
+                <h3 id="openOrdersCount" class="fw-bold mt-2 mb-0">@Model.DailyOrders</h3>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 col-lg-2">
+    <div class="col-md-4 col-lg">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <small class="text-muted">Approval Queue</small>
-                <h3 class="fw-bold mt-2 mb-0 text-warning">8</h3>
+                <small class="text-muted">Ready for Checklist</small>
+                <h3 id="readyForChecklistCount" class="fw-bold mt-2 mb-0 text-primary">@Model.ReadyForChecklist</h3>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 col-lg-2">
+    <div class="col-md-4 col-lg">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <small class="text-muted">Dispatched Today</small>
-                <h3 class="fw-bold mt-2 mb-0 text-primary">15</h3>
+                <small class="text-muted">Checklist Queue</small>
+                <h3 id="checklistQueueCount" class="fw-bold mt-2 mb-0 text-warning">@Model.ChecklistQueue</h3>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 col-lg-2">
+    <div class="col-md-4 col-lg">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <small class="text-muted">Partial Deliveries</small>
-                <h3 class="fw-bold mt-2 mb-0 text-info">6</h3>
+                <small class="text-muted">Released Today</small>
+                <h3 id="releasedTodayCount" class="fw-bold mt-2 mb-0 text-info">@Model.ReleasedToday</h3>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 col-lg-2">
+    <div class="col-md-4 col-lg">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body">
+                <small class="text-muted">Partial Delivery</small>
+                <h3 id="partialDeliveryCount" class="fw-bold mt-2 mb-0 text-warning">@Model.PartialDispatch</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-lg">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
                 <small class="text-muted">Low Stock</small>
-                <h3 class="fw-bold mt-2 mb-0 text-danger">12</h3>
+                <h3 id="lowStockCount" class="fw-bold mt-2 mb-0 text-danger">@Model.LowStock</h3>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4 col-lg-2">
+    <div class="col-md-4 col-lg">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <small class="text-muted">Returns Today</small>
-                <h3 class="fw-bold mt-2 mb-0 text-secondary">3</h3>
+                <small class="text-muted">Completed Today</small>
+                <h3 id="completedTodayCount" class="fw-bold mt-2 mb-0 text-success">@Model.CompletedOrders</h3>
             </div>
         </div>
     </div>
 
 </div>
-
 <div class="row g-4">
 
-    <!-- Pending Approvals -->
+    <!-- Delivery Checklist -->
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">Pending Approvals</h5>
-                    <a href="/Approval" class="btn btn-sm btn-outline-primary">View All</a>
+                    <h5 class="fw-bold mb-0">Delivery Checklist</h5>
+                    <a href="/DeliveryChecklist" class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
 
                 <div class="table-responsive">
@@ -94,30 +104,32 @@
                         <thead>
                             <tr>
                                 <th>Checklist No</th>
-                                <th>Date</th>
+                                <th>Delivery Date</th>
                                 <th>Truck</th>
                                 <th>Status</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>CHK-0001</td>
-                                <td>2026-03-29</td>
-                                <td>Truck 1</td>
-                                <td><span class="badge bg-warning text-dark">For Approval</span></td>
-                            </tr>
-                            <tr>
-                                <td>CHK-0002</td>
-                                <td>2026-03-29</td>
-                                <td>Truck 2</td>
-                                <td><span class="badge bg-warning text-dark">For Approval</span></td>
-                            </tr>
-                            <tr>
-                                <td>CHK-0003</td>
-                                <td>2026-03-29</td>
-                                <td>Truck 3</td>
-                                <td><span class="badge bg-warning text-dark">For Approval</span></td>
-                            </tr>
+                            </thead>
+                        <tbody id="dashboardChecklistBody">
+                            @if (Model.Checklist != null && Model.Checklist.Any())
+                            {
+                                foreach (var item in Model.Checklist)
+                                {
+                                    <tr>
+                                        <td>@item.ChecklistNo</td>
+                                        <td>@item.DeliveryDate?.ToString("yyyy-MM-dd")</td>
+                                        <td>@item.TruckName</td>
+                                        <td>
+                                            <span class="badge bg-primary">@item.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No checklist data</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -125,44 +137,44 @@
         </div>
     </div>
 
-    <!-- Logistics Status -->
-    <div class="col-lg-6">
+    <!-- Dispatch Status -->
+    @* <div class="col-lg-6">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">Logistics Status</h5>
-                    <a href="/Logistics" class="btn btn-sm btn-outline-primary">Track</a>
+                    <h5 class="fw-bold mb-0">Dispatch Status</h5>
+                    <a href="/DeliveryChecklist" class="btn btn-sm btn-outline-primary">Track</a>
                 </div>
 
                 <div class="row text-center g-3">
                     <div class="col-6 col-md-3">
                         <div class="border rounded-3 p-3">
-                            <small class="text-muted d-block">Approved</small>
+                            <small class="text-muted d-block">Ready</small>
                             <h4 class="fw-bold mb-0">5</h4>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="border rounded-3 p-3">
-                            <small class="text-muted d-block">Dispatched</small>
+                            <small class="text-muted d-block">Loading</small>
                             <h4 class="fw-bold mb-0">7</h4>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="border rounded-3 p-3">
-                            <small class="text-muted d-block">In Transit</small>
+                            <small class="text-muted d-block">Partial</small>
                             <h4 class="fw-bold mb-0">4</h4>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="border rounded-3 p-3">
-                            <small class="text-muted d-block">Delivered</small>
+                            <small class="text-muted d-block">Completed</small>
                             <h4 class="fw-bold mb-0">11</h4>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div> *@
 
     <!-- Partial Orders -->
     <div class="col-lg-6">
@@ -178,30 +190,32 @@
                         <thead>
                             <tr>
                                 <th>Order No</th>
-                                <th>Client</th>
+                                <th>Customer</th>
                                 <th>Remaining</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>DO-0001</td>
-                                <td>Client A</td>
-                                <td>12</td>
-                                <td><span class="badge bg-info text-dark">Partial</span></td>
-                            </tr>
-                            <tr>
-                                <td>DO-0002</td>
-                                <td>Client B</td>
-                                <td>7</td>
-                                <td><span class="badge bg-info text-dark">Partial</span></td>
-                            </tr>
-                            <tr>
-                                <td>DO-0003</td>
-                                <td>Client C</td>
-                                <td>20</td>
-                                <td><span class="badge bg-info text-dark">Partial</span></td>
-                            </tr>
+                        <tbody id="dashboardPartialOrdersBody">
+                            @if (Model.PartialOrders != null && Model.PartialOrders.Any())
+                            {
+                                foreach (var item in Model.PartialOrders)
+                                {
+                                    <tr>
+                                        <td>@item.OrderNo</td>
+                                        <td>@item.CustomerName</td>
+                                        <td>@item.RemainingQty</td>
+                                        <td>
+                                            <span class="badge bg-info text-dark">@item.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No partial orders</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -218,75 +232,50 @@
                     <a href="/Inventory" class="btn btn-sm btn-outline-primary">Open Inventory</a>
                 </div>
 
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span>Biovit 50kg</span>
-                        <span class="badge bg-danger">Low Stock</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span>Layer Basemix</span>
-                        <span class="badge bg-danger">Out of Stock</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between px-0">
-                        <span>Vitamin Premix</span>
-                        <span class="badge bg-warning text-dark">Expiring Soon</span>
-                    </li>
+                <ul class="list-group list-group-flush" id="dashboardInventoryAlertsBody">
+                    @if (Model.InventoryAlerts != null && Model.InventoryAlerts.Any())
+                    {
+                        foreach (var item in Model.InventoryAlerts)
+                        {
+                            var alertType = (item.AlertType ?? "").ToUpper();
+
+                            var badgeClass = alertType == "OUT OF STOCK"
+                            ? "bg-danger"
+                            : "bg-warning text-dark";
+
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span>
+                                    @item.ProductName
+
+                                    @if (alertType == "PLANNING SHORTAGE")
+                                    {
+                                        <small class="text-muted">
+                                            @($"({item.AvailableQty} stock, {item.ReservedQty} reserved, {item.RequiredQty} required) → Short {item.ShortageQty} {item.Uom}")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">
+                                            (@item.Quantity @item.Uom available / Stock Level: @item.StockLevel @item.Uom)
+                                        </small>
+                                    }
+                                </span>
+
+                                <span class="badge @badgeClass">@item.AlertType</span>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="list-group-item px-0 text-center text-muted">
+                            No inventory alerts
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
     </div>
-
-    <!-- Recent Transactions -->
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">Recent Transactions</h5>
-                    <a href="/Transactions" class="btn btn-sm btn-outline-primary">View History</a>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Reference</th>
-                                <th>Product</th>
-                                <th>Qty</th>
-                                <th>Type</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>2026-03-29 08:30</td>
-                                <td>CHK-0001</td>
-                                <td>Biovit</td>
-                                <td>20</td>
-                                <td><span class="badge bg-danger">OUT</span></td>
-                            </tr>
-                            <tr>
-                                <td>2026-03-29 09:15</td>
-                                <td>RET-0001</td>
-                                <td>Layer Basemix</td>
-                                <td>5</td>
-                                <td><span class="badge bg-success">RETURN IN</span></td>
-                            </tr>
-                            <tr>
-                                <td>2026-03-29 09:40</td>
-                                <td>CHK-0002</td>
-                                <td>Mineral Mix</td>
-                                <td>12</td>
-                                <td><span class="badge bg-danger">OUT</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Returns -->
-    <div class="col-lg-4">
+    <div class="col-lg-6">
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -295,21 +284,119 @@
                 </div>
 
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item px-0">
-                        <div class="fw-semibold">RET-0001</div>
-                        <small class="text-muted">Client A - 5 pcs - Wrong Item</small>
-                    </li>
-                    <li class="list-group-item px-0">
-                        <div class="fw-semibold">RET-0002</div>
-                        <small class="text-muted">Client B - 2 pcs - Damaged</small>
-                    </li>
-                    <li class="list-group-item px-0">
-                        <div class="fw-semibold">RET-0003</div>
-                        <small class="text-muted">Client C - 3 pcs - Undelivered</small>
-                    </li>
+                    @if (Model.RecentReturns != null && Model.RecentReturns.Any())
+                    {
+                        foreach (var item in Model.RecentReturns)
+                        {
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-semibold">@item.ReturnNo</div>
+                                        <small class="text-muted">
+                                            @item.CustomerName - @item.Quantity pcs - @item.Reason
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-secondary">@item.Status</span>
+                                </div>
+                            </li>
+                        }
+                    }
                 </ul>
             </div>
         </div>
     </div>
 
+    <!-- Recent Transactions -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Recent Inventory Transactions</h5>
+                    <a href="/Transactions" class="btn btn-sm btn-outline-primary">View History</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Reference</th>
+                                <th>Lot No</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTransactionsBody">
+                            @if (Model.RecentTransactions != null && Model.RecentTransactions.Any())
+                            {
+                                @foreach (var item in Model.RecentTransactions)
+                                {
+                                    <tr>
+                                        <td>@item.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+
+                                        <!-- Customer -->
+                                        <td class="fw-semibold">@item.CustomerName</td>
+
+                                        <!-- Reference (Improved UI) -->
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @if (!string.IsNullOrWhiteSpace(item.DrNo))
+                                                {
+                                                    <span class="badge bg-secondary">DR: @item.DrNo</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.InvNo))
+                                                {
+                                                    <span class="badge bg-dark">INV: @item.InvNo</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.PoNo))
+                                                {
+                                                    <span class="badge bg-warning text-dark">PO: @item.PoNo</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.OrderNo))
+                                                {
+                                                    <span class="badge bg-primary">DO: @item.OrderNo</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.ChecklistNo))
+                                                {
+                                                    <span class="badge bg-info text-dark">DC: @item.ChecklistNo</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(item.LotNo))
+                                            {
+                                                <small class="text-muted">@item.LotNo</small>
+                                            }
+                                        </td>
+                                        <!-- Product -->
+                                        <td>@item.ProductName</td>
+
+                                        <!-- Quantity -->
+                                        <td>@item.Quantity @item.Uom</td>
+
+                                        <!-- Type -->
+                                        <td>
+                                            <span class="badge @(item.Type == "OUT" ? "bg-danger" : "bg-success")">
+                                                @item.Type
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <!-- Recent Returns -->
+   
+
 </div>
+@section Scripts {
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+}

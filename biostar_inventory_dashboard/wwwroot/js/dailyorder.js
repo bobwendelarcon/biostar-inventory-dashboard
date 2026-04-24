@@ -433,10 +433,16 @@ function renderDailyOrderTable(data) {
             `;
         }
 
-        if (order.status === "Allocated" || order.status === "Partially Allocated") {
+        const orderStatus = (order.status || "").toUpperCase();
+
+        if (
+            orderStatus === "ALLOCATED" ||
+            orderStatus === "PARTIALLY ALLOCATED" ||
+            orderStatus === "PARTIALLY DELIVERED"
+        ) {
             menuItems += `
-                <button type="button" class="floating-action-item btn-dispatch-order text-success" data-id="${order.orderId}">Dispatch</button>
-            `;
+        <button type="button" class="floating-action-item btn-dispatch-order text-success" data-id="${order.orderId}">Dispatch</button>
+    `;
         }
 
         const actionButtons = `
@@ -460,7 +466,7 @@ function renderDailyOrderTable(data) {
 <td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
 <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
 <td>${formatQtyWithPack(order.dispatchedQty, order.uom, order.packQty, order.packUom)}</td>
-                <td>${renderAllocationBadge(order.allocationStatus)}</td>
+           <td>${formatAllocationStatus(order.allocationStatus, order.remainingQty, order.allocatedQty)}</td>
                 <td>${formatDate(order.dateOrdered)}</td>
                 <td>${formatDate(order.deliveryDate)}</td>
                 <td>${formatDate(order.dateDelivered)}</td>
@@ -539,7 +545,7 @@ function renderModalLineSummary(lines) {
         tbody.innerHTML += `
             <tr>
                 <td>${safe(line.productName)}</td>
-               <td>${formatQtyWithPack(line.requiredQty, line.uom, line.packQty, line.packUom)}</td>
+               <td>${formatQtyWithPack(line.remainingQty, line.uom, line.packQty, line.packUom)}</td>
 <td>${formatQtyWithPack(line.allocatedQty, line.uom, line.packQty, line.packUom)}</td>
 <td>${formatQtyWithPack(line.availableBeforeAllocation, line.uom, line.packQty, line.packUom)}</td>
                 <td>${renderAllocationBadge(line.allocationResult)}</td>
@@ -633,27 +639,46 @@ async function markReadyForDispatch(orderId) {
 }
 
 function renderAllocationBadge(status) {
-    const value = status || "";
-    if (value === "Fully Allocated")
-        return `<span class="badge bg-success-subtle text-success">Fully Allocated</span>`;
-    if (value === "Partial")
-        return `<span class="badge bg-warning-subtle text-warning">Partial</span>`;
-    return `<span class="badge bg-danger-subtle text-danger">Not Allocated</span>`;
+    const value = (status || "").trim().toUpperCase();
+
+    if (value === "FULLY ALLOCATED") {
+        return `<span class="badge bg-success text-white">Fully Allocated</span>`; // stronger green
+    }
+
+    if (value === "PARTIAL") {
+        return `<span class="badge bg-warning text-dark">Partial</span>`; // clearer yellow
+    }
+
+    if (value === "NO STOCK") {
+        return `<span class="badge bg-danger text-white">No Stock</span>`; // strong red
+    }
+
+    if (value === "NOT ALLOCATED") {
+        return `<span class="badge bg-danger text-white">Not Allocated</span>`; // strong red
+    }
+
+    return `<span class="badge bg-secondary-subtle text-secondary">${safe(status || "Draft")}</span>`;
 }
 
 function renderStatusBadge(status) {
     const value = status || "";
+
     if (value === "Completed")
-        return `<span class="badge bg-success-subtle text-success">Completed</span>`;
+        return `<span class="badge bg-success text-white px-3 py-1">Completed</span>`;
+
     if (value === "Ready for Dispatch")
-        return `<span class="badge bg-primary-subtle text-primary">Ready for Dispatch</span>`;
+        return `<span class="badge bg-primary text-white px-3 py-1">Ready for Dispatch</span>`;
+
     if (value === "Allocated")
-        return `<span class="badge bg-success-subtle text-success">Allocated</span>`;
+        return `<span class="badge bg-success text-white px-3 py-1">Allocated</span>`;
+
     if (value === "Partially Allocated")
-        return `<span class="badge bg-warning-subtle text-warning">Partially Allocated</span>`;
+        return `<span class="badge bg-warning text-dark px-3 py-1">Partially Allocated</span>`;
+
     if (value === "Overdue")
-        return `<span class="badge bg-danger-subtle text-danger">Overdue</span>`;
-    return `<span class="badge bg-secondary-subtle text-secondary">${safe(value || "Draft")}</span>`;
+        return `<span class="badge bg-danger text-white px-3 py-1">Overdue</span>`;
+
+    return `<span class="badge bg-secondary text-white px-3 py-1">${safe(value || "Draft")}</span>`;
 }
 
 function renderPriorityBadge(rank) {
@@ -714,15 +739,68 @@ function formatPackBreakdown(qty, packQty, packUom, uom) {
 }
 
 function formatQtyWithPack(qty, uom, packQty, packUom) {
-    const qtyText = `${formatQtyValue(qty)} ${uom || ""}`.trim();
-    const packText = formatPackBreakdown(qty, packQty, packUom, uom);
+    const qtyNum = Number(qty || 0);
+    const packQtyNum = Number(packQty || 0);
+
+    const qtyText = `${formatQtyValue(qtyNum)} ${uom || ""}`.trim();
+
+    if (qtyNum <= 0) {
+        return `<div>${safe(qtyText)}</div>`;
+    }
+
+    // no pack setup
+    if (!packQtyNum || packQtyNum <= 0 || !packUom) {
+        return `<div>${safe(qtyText)}</div>`;
+    }
+
+    const packs = Math.floor(qtyNum / packQtyNum);
+    const remainder = qtyNum % packQtyNum;
+
+    // qty is smaller than 1 pack → hide pack line
+    if (packs === 0) {
+        return `<div>${safe(qtyText)}</div>`;
+    }
+
+    let packText = "";
+
+    if (remainder > 0) {
+        packText = `${packs} ${packUom} + ${formatQtyValue(remainder)} ${uom || ""}`.trim();
+    } else {
+        packText = `${packs} ${packUom}`.trim();
+    }
 
     return `
-    <div class="qty-pack-cell">
         <div>${safe(qtyText)}</div>
         <small class="text-muted">${safe(packText)}</small>
-    </div>
-`;
+    `;
+}
+
+function formatAllocationStatus(status, remainingQty, allocatedQty) {
+    const normalizedStatus = (status || "").trim().toUpperCase();
+    const remaining = Number(remainingQty || 0);
+    const allocated = Number(allocatedQty || 0);
+
+    if (remaining <= 0) {
+        return `<span class="text-success fw-bold">✔ Completed</span>`;
+    }
+
+    if (normalizedStatus === "NOT ALLOCATED") {
+        return `<span class="text-danger fw-bold">⚠ Needs allocation</span>`;
+    }
+
+    if (normalizedStatus === "NO STOCK") {
+        return `<span class="text-danger fw-bold">⚠ No stock</span>`;
+    }
+
+    if (normalizedStatus === "PARTIAL") {
+        return `<span class="text-warning fw-bold">⚠ Insufficient</span>`;
+    }
+
+    if (normalizedStatus === "FULLY ALLOCATED") {
+        return `<span class="text-success fw-bold">✔ Allocated</span>`;
+    }
+
+    return renderAllocationBadge(status);
 }
 
 function safe(value) {
