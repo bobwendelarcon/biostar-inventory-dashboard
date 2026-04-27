@@ -37,6 +37,37 @@ namespace biostar_inventory_dashboard.Services
             }) ?? new DashboardDto();
         }
 
+
+        //PTP
+
+        public async Task<string> GetPlanningShortagesAsync()
+        {
+            var response = await _httpClient.GetAsync("api/ProductToProduce/planning-shortages");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateProductToProduceAsync(string json)
+        {
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("api/ProductToProduce", content);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetProductToProduceByIdAsync(long id)
+        {
+            var response = await _httpClient.GetAsync($"api/ProductToProduce/{id}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception(error);
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         public async Task<PagedInventoryResponse> GetInventoryAsync(
       int page = 1,
       int pageSize = 30,

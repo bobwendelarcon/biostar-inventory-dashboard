@@ -1,0 +1,79 @@
+﻿.ptp-page .card {
+    border-radius: 1rem;
+}
+
+.ptp-page table th {
+    font-size: 0.85rem;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.ptp-page table td {
+    vertical-align: middle;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #printArea,
+    #printArea * {
+        visibility: visible;
+    }
+
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 24px;
+        background: white;
+    }
+
+    .print-document {
+        font-family: Arial, sans-serif;
+        color: #000;
+    }
+
+    .print-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 24px 0;
+        font-size: 14px;
+    }
+
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+        .print-table th,
+        .print-table td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        .print-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+    .text-end {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .signature-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 24px;
+        margin-top: 60px;
+        font-size: 13px;
+    }
+}

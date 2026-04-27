@@ -7,7 +7,7 @@
                 ?? "";
 
     var isPlanningOpen = currentController == "DailyOrder";
-    var isProductionOpen = currentController == "RawMaterialRequest" || currentController == "ReceiveTransmittal";
+//var isProductionOpen = currentController == "RawMaterialRequest" || currentController == "ReceiveTransmittal";
     var isReceivingOpen = currentController == "Otherlines" || currentController == "ReceiveTransmittal";
     var isDispatchOpen = currentController == "DeliveryChecklist";
     var isLogisticsOpen = currentController == "Logistics";
@@ -19,6 +19,11 @@
                         || currentController == "Branch"
                         || currentController == "User"
                         || currentController == "Partner";
+    var isProductionOpen =
+currentController == "ProductToProduce" ||
+currentController == "RawMaterialRequest" ||
+currentController == "ReceiveTransmittal";
+
 }
 
 <!-- ================= DESKTOP SIDEBAR ================= -->
@@ -76,8 +81,10 @@
             <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li>
-                        <a class="nav-link" href="#">
-                            <span>Product To Produce</span>
+                        <a class="nav-link @(currentController == "ProductToProduce" ? "active fw-bold" : "")"
+                           asp-controller="ProductToProduce"
+                           asp-action="Index">
+                            <span>Product to Produce</span>
                         </a>
                     </li>
                 </ul>

@@ -20,10 +20,17 @@ namespace biostar_inventory_dashboard.Controllers
             return View(model);
         }
         [HttpGet]
-        public async Task<IActionResult> GetDashboardData()
+        public async Task<IActionResult> GetById(long id)
         {
-            var data = await _apiService.GetDashboardAsync();
-            return Json(data);
+            try
+            {
+                var result = await _apiService.GetProductToProduceByIdAsync(id);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }
