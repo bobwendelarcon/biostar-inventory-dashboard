@@ -86,7 +86,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Document",
@@ -100,31 +100,6 @@
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-24T02:31:05.379Z",
               "IsPinned": true
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "delivery-checklist.js",
-              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "ViewState": "AgIAAEkAAAAAAAAAAAAIwMYAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-27T23:56:05.444Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "_Sidebar.cshtml",
-              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
-              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAaAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-24T07:01:44.69Z"
             },
             {
               "$type": "Document",
@@ -205,11 +180,36 @@
               "Title": "dashboard.js",
               "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\dashboard.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\dashboard.js",
-              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\dashboard.js*",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\dashboard.js*",
-              "ViewState": "AgIAACUAAAAAAAAAAAAkwEIAAAAAAAAAAAAAAA==",
+              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\dashboard.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\dashboard.js",
+              "ViewState": "AgIAAFIAAAAAAAAAAAAgwG0AAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-04-24T02:34:12.713Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "_Sidebar.cshtml",
+              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
+              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-24T07:01:44.69Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "delivery-checklist.js",
+              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAIwMYAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-04-27T23:56:05.444Z",
               "EditorCaption": ""
             },
             {
