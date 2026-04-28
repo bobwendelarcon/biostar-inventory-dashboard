@@ -94,7 +94,9 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     // ✅ DEFAULT DATE = TODAY
-    const today = new Date().toISOString().split('T')[0];
+  
+
+    const today = getPHDateInputValue();
     const filterDate = document.getElementById("filterDate");
 
     if (filterDate && !filterDate.value) {
@@ -191,6 +193,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+
+function getPHDateInputValue() {
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(new Date());
+}
 
 
 function resetFilters() {

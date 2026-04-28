@@ -2,11 +2,6 @@
 
 
 
-document.addEventListener("DOMContentLoaded", function () {
-    refreshDashboardData(); // ✅ ADD THIS
-    startDashboardAutoRefresh();
-    trackDashboardActivity();
-});
 
 
 
@@ -53,54 +48,46 @@ function updateDashboardInventoryAlerts(items) {
 
 let dashboardRefreshTimer = null;
         let isRefreshingDashboard = false;
-        let lastUserActivity = Date.now();
+   
 
         const REFRESH_INTERVAL = 3000; // 10 seconds
-        const ACTIVITY_GRACE_PERIOD = 1000; // don't refresh within 3 sec of user activity
+   
 
-        document.addEventListener("DOMContentLoaded", function () {
-            startDashboardAutoRefresh();
-        trackDashboardActivity();
-    });
 
-        function startDashboardAutoRefresh() {
-            dashboardRefreshTimer = setInterval(async function () {
-                const userRecentlyActive = Date.now() - lastUserActivity < ACTIVITY_GRACE_PERIOD;
 
-                if (userRecentlyActive) {
-                    return;
-                }
+document.addEventListener("DOMContentLoaded", function () {
+    refreshDashboardData();
+    startDashboardAutoRefresh();
+});
 
-                await refreshDashboardData();
-            }, REFRESH_INTERVAL);
+function startDashboardAutoRefresh() {
+    if (dashboardRefreshTimer) {
+        clearInterval(dashboardRefreshTimer);
     }
 
-        function trackDashboardActivity() {
-            ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(eventName => {
-                document.addEventListener(eventName, function () {
-                    lastUserActivity = Date.now();
-                }, { passive: true });
-            });
-    }
+    dashboardRefreshTimer = setInterval(function () {
+        refreshDashboardData();
+    }, REFRESH_INTERVAL);
+}
 
-        async function refreshDashboardData() {
-        if (isRefreshingDashboard) return;
+async function refreshDashboardData() {
+    if (isRefreshingDashboard) return;
 
-        isRefreshingDashboard = true;
+    isRefreshingDashboard = true;
 
-        try {
-            const response = await fetch("/Dashboard/GetDashboardData", {
+    try {
+        const response = await fetch("/Dashboard/GetDashboardData?_=" + Date.now(), {
             method: "GET",
-        headers: {
-            "Accept": "application/json"
-                },
-        cache: "no-store"
-            });
+            headers: {
+                "Accept": "application/json"
+            },
+            cache: "no-store"
+        });
 
         if (!response.ok) {
             console.warn("Dashboard refresh failed:", response.status);
-        return;
-            }
+            return;
+        }
 
         const data = await response.json();
 
@@ -108,15 +95,22 @@ let dashboardRefreshTimer = null;
         updateDashboardChecklist(data.checklist || []);
         updateDashboardPartialOrders(data.partialOrders || []);
         updateDashboardTransactions(data.recentTransactions || []);
-            updateDashboardReturns(data.recentReturns || []);
-            updateDashboardInventoryAlerts(data.inventoryAlerts || []);
 
-        } catch (error) {
-            console.error("Dashboard refresh error:", error);
-        } finally {
-            isRefreshingDashboard = false;
+        // only call this if the function exists
+        if (typeof updateDashboardReturns === "function") {
+            updateDashboardReturns(data.recentReturns || []);
         }
+
+        updateDashboardInventoryAlerts(data.inventoryAlerts || []);
+
+        console.log("Dashboard refreshed:", new Date().toLocaleTimeString());
+
+    } catch (error) {
+        console.error("Dashboard refresh error:", error);
+    } finally {
+        isRefreshingDashboard = false;
     }
+}
 
         function updateDashboardCards(data) {
             setText("openOrdersCount", data.dailyOrders);

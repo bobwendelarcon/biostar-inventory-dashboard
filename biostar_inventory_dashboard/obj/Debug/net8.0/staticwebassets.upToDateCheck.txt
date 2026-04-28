@@ -8,12 +8,12 @@ wwwroot\images\default-user.png
 wwwroot\js\branch.js
 wwwroot\js\categories.js
 wwwroot\js\dailyorder.js
-wwwroot\js\dashboard.js
 wwwroot\js\delivery-checklist-print.js
 wwwroot\js\delivery-checklist.js
 wwwroot\js\inventory.js
 wwwroot\js\partner.js
 wwwroot\js\products.js
+wwwroot\js\producttoproduce.js
 wwwroot\js\site.js
 wwwroot\js\transaction.js
 wwwroot\js\user.js
@@ -75,4 +75,4 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
-wwwroot\js\producttoproduce.js
+wwwroot\js\dashboard.js
