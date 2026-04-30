@@ -1,0 +1,51 @@
+﻿/* ===== DASHBOARD GENERAL ===== */
+.card {
+    margin-bottom: 16px;
+}
+
+/* ===== RECENT RETURNS ===== */
+#dashboardRecentReturns .list-group-item {
+    padding: 12px 0;
+}
+
+    #dashboardRecentReturns .list-group-item:not(:last-child) {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+#dashboardRecentReturns .badge {
+    font-size: 0.7rem;
+}
+
+/* ===== INVENTORY ALERTS ===== */
+#dashboardInventoryAlertsBody .list-group-item {
+    padding: 10px 0;
+}
+
+/* ===== TABLE IMPROVEMENTS ===== */
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* ===== BADGES ===== */
+.badge {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+/* ===== OPTIONAL: SOFT COLORS ===== */
+.bg-danger-soft {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.dashboard-return-status {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.dashboard-card-auto {
+    height: auto;
+}

@@ -67,6 +67,29 @@ function buildReferenceHtml(item) {
         : `<span class="text-muted">-</span>`;
 }
 
+function applyQuickDateFilter(value) {
+    const now = new Date();
+
+    if (!value) return { from: "", to: "" };
+
+    const to = now.toISOString().slice(0, 10);
+    let fromDate = new Date(now);
+
+    if (value === "today") {
+        fromDate = new Date(now);
+    } else if (value === "week") {
+        const day = now.getDay(); // Sunday = 0
+        const diff = day === 0 ? 6 : day - 1; // Monday start
+        fromDate.setDate(now.getDate() - diff);
+    } else if (value === "month") {
+        fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    const from = fromDate.toISOString().slice(0, 10);
+
+    return { from, to };
+}
+
 async function loadTransactions(page = 1) {
     try {
         currentPage = page;
@@ -74,8 +97,10 @@ async function loadTransactions(page = 1) {
         const lotNo = document.getElementById("lotNoFilter")?.value.trim() || "";
         const product = document.getElementById("productFilter")?.value.trim() || "";
         const type = document.getElementById("typeFilter")?.value || "";
-        const from = document.getElementById("dateFromFilter")?.value || "";
-        const to = document.getElementById("dateToFilter")?.value || "";
+
+        let from = document.getElementById("dateFromFilter")?.value || "";
+        let to = document.getElementById("dateToFilter")?.value || "";
+
         const scannedBy = document.getElementById("scannedByFilter")?.value.trim() || "";
         const reference = document.getElementById("referenceFilter")?.value.trim() || "";
         const warehouse = document.getElementById("warehouseFilter")?.value || "";
@@ -84,6 +109,15 @@ async function loadTransactions(page = 1) {
         const customer = document.getElementById("customerFilter")?.value || "";
         const quickFilter = document.getElementById("filterApplied")?.value || "";
 
+        if (quickFilter) {
+            const range = applyQuickDateFilter(quickFilter);
+            from = range.from;
+            to = range.to;
+
+            document.getElementById("dateFromFilter").value = from;
+            document.getElementById("dateToFilter").value = to;
+        }
+
         let url = `/Transactions/GetTransactions?page=${page}&pageSize=${pageSize}`;
 
         if (lotNo) url += `&lot_no=${encodeURIComponent(lotNo)}`;
@@ -91,16 +125,18 @@ async function loadTransactions(page = 1) {
         if (type) url += `&type=${encodeURIComponent(type)}`;
         if (from) url += `&from=${encodeURIComponent(from)}`;
         if (to) url += `&to=${encodeURIComponent(to)}`;
-        if (scannedBy) url += `&scanned_by=${encodeURIComponent(scannedBy)}`;
+
+        // Search by full name, example: Bob
+        if (scannedBy) {
+            url += `&scanned_by=${encodeURIComponent(scannedBy)}`;
+            url += `&full_name=${encodeURIComponent(scannedBy)}`;
+        }
+
         if (reference) url += `&reference=${encodeURIComponent(reference)}`;
         if (warehouse) url += `&warehouse=${encodeURIComponent(warehouse)}`;
         if (order) url += `&order=${encodeURIComponent(order)}`;
-        if (supplier) url += `&supplier=${encodeURIComponent(supplier)}`;
-        if (customer) url += `&customer=${encodeURIComponent(customer)}`;
-        if (quickFilter) url += `&quickFilter=${encodeURIComponent(quickFilter)}`;
 
         console.log("FILTER URL:", url);
-
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -118,7 +154,7 @@ async function loadTransactions(page = 1) {
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="11" class="text-center text-muted">
+                    <td colspan="13" class="text-center text-muted">
                         No transactions found.
                     </td>
                 </tr>
@@ -142,8 +178,16 @@ async function loadTransactions(page = 1) {
                     <td>${escapeHtml(item.branch_name ?? item.branch_id ?? "")}</td>
                     <td>${escapeHtml(item.transaction_type ?? "")}</td>
                     <td>${escapeHtml(`${toDisplayNumber(item.quantity)} ${item.uom || ""}`)}</td>
-                    <td>${escapeHtml(formatPackOnly(item))}</td>
-                    <td>${buildReferenceHtml(item)}</td>
+         <td>${escapeHtml(formatPackOnly(item))}</td>
+
+<td>
+    <span class="badge bg-secondary">
+        ${escapeHtml(item.full_name || item.scanned_by || "-")}
+    </span>
+</td>
+
+<td>${buildReferenceHtml(item)}</td>
+
                     <td>${escapeHtml(item.remarks ?? "")}</td>
                     <td class="text-center">
                         ${isOut
@@ -264,7 +308,30 @@ function formatPackOnly(item) {
     }
 }
 
+async function loadWarehouses() {
+    const select = document.getElementById("warehouseFilter");
+    if (!select) return;
 
+    try {
+        const res = await fetch("/Transactions/GetBranches");
+        const data = await res.json();
+
+        console.log("WAREHOUSES:", data);
+
+        select.innerHTML = `<option value="">All Warehouses</option>`;
+
+        data.forEach(x => {
+            select.innerHTML += `
+                <option value="${x.branch_id}">
+                    ${x.branch_name}
+                </option>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Failed to load warehouses", err);
+    }
+}
 
 
 document.addEventListener("click", function (e) {
@@ -288,7 +355,10 @@ document.addEventListener("click", function (e) {
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
-
+    loadWarehouses();
+    document.getElementById("filterApplied")?.addEventListener("change", function () {
+        loadTransactions(1);
+    });
     document.getElementById("applyFilters")?.addEventListener("click", function () {
         loadTransactions(1);
     });
@@ -368,6 +438,11 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Error: " + err.message);
         }
     });
+
+
+
+
+
 
     document.getElementById("editReferenceModal")?.addEventListener("hidden.bs.modal", function () {
         isEditing = false;

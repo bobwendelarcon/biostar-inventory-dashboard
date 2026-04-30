@@ -64,9 +64,6 @@
                     <label class="form-label fw-semibold">Warehouse</label>
                     <select class="form-select" id="warehouseFilter">
                         <option value="">All Warehouses</option>
-                        <option value="Main">Main</option>
-                        <option value="Branch 1">Branch 1</option>
-                        <option value="Branch 2">Branch 2</option>
                     </select>
                 </div>
 
@@ -105,11 +102,11 @@
                     <label class="form-label fw-semibold">Months Left</label>
                     <select class="form-select" id="monthsFilter">
                         <option value="">All</option>
-                        <option value="0">0 month</option>
-                        <option value="1">Up to 1 month</option>
+                        <option value="1">Less than / up to 1 month</option>
                         <option value="3">Up to 3 months</option>
                         <option value="6">Up to 6 months</option>
                         <option value="12">Up to 12 months</option>
+                        <option value="over12">More than 12 months</option>
                     </select>
                 </div>
 
@@ -120,7 +117,7 @@
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body">
-        <div class="pagination-container">
+        <div class="pagination-container d-flex justify-content-end align-items-center gap-2 mb-3">
             <span id="rangeText">0–0 of 0</span>
             <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
             <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
@@ -236,7 +233,7 @@
                                 <th>Reference</th>
                                 <th>Warehouse</th>
                                 <th>Remarks</th>
-                                <th>User</th>
+                               
                             </tr>
                         </thead>
                         <tbody id="historyTable">

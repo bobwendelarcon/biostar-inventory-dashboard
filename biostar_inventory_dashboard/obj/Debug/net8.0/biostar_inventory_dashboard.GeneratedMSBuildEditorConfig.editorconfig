@@ -76,6 +76,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5caW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/ManualStockIn/index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFudWFsU3RvY2tJblxpbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/Partner/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFydG5lclxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -86,6 +90,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/Product/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdFxpbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/Reports/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/Returns/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmV0dXJuc1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/source/repos/biostar_inventory_dashboard/biostar_inventory_dashboard/Views/Shared/Error.cshtml]

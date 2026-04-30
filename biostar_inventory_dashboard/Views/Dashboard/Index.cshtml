@@ -224,8 +224,9 @@
     </div>
 
     <!-- Inventory Alerts -->
+    <!-- Inventory Alerts -->
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card border-0 shadow-sm rounded-4 dashboard-card-auto">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0">Inventory Alerts</h5>
@@ -283,20 +284,82 @@
                     <a href="/Return" class="btn btn-sm btn-outline-primary">View Return</a>
                 </div>
 
-                <ul class="list-group list-group-flush">
+                <ul class="list-group list-group-flush" id="dashboardRecentReturns">
                     @if (Model.RecentReturns != null && Model.RecentReturns.Any())
                     {
                         foreach (var item in Model.RecentReturns)
                         {
-                            <li class="list-group-item px-0">
-                                <div class="d-flex justify-content-between">
+                            <li class="list-group-item px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
                                     <div>
                                         <div class="fw-semibold">@item.ReturnNo</div>
-                                        <small class="text-muted">
-                                            @item.CustomerName - @item.Quantity pcs - @item.Reason
+                                        <small class="text-muted d-block">
+                                            @item.CustomerName
+                                        </small>
+
+                                        <div class="d-flex flex-wrap gap-1 mt-1">
+
+                                            @if (!string.IsNullOrWhiteSpace(item.DrNo))
+                                            {
+                                                <span class="badge bg-secondary">DR: @item.DrNo</span>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(item.InvNo))
+                                            {
+                                                <span class="badge bg-dark">INV: @item.InvNo</span>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(item.PoNo))
+                                            {
+                                                <span class="badge bg-warning text-dark">PO: @item.PoNo</span>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(item.OrderNo))
+                                            {
+                                                <span class="badge bg-primary">DO: @item.OrderNo</span>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(item.ChecklistNo))
+                                            {
+                                                <span class="badge bg-info text-dark">DC: @item.ChecklistNo</span>
+                                            }
+
+                                        </div>
+
+                                        <small class="text-muted d-block mt-1">
+                                            Qty: @item.Quantity @item.Uom • @item.Reason
                                         </small>
                                     </div>
-                                    <span class="badge bg-secondary">@item.Status</span>
+                                    @{
+                                        var status = (item.Status ?? "").ToUpper();
+                                        var cls = "bg-secondary";
+                                        var display = item.Status; // default
+
+                                        if (status == "QUARANTINE")
+                                        {
+                                            cls = "bg-info text-dark";
+                                            display = "QUARANTINE";
+                                        }
+                                        else if (status == "PARTIALLY RELEASED")
+                                        {
+                                            cls = "bg-warning text-dark";
+                                            display = "PARTIAL";
+                                        }
+                                        else if (status == "RELEASED FOR REPROCESS")
+                                        {
+                                            cls = "bg-success";
+                                            display = "RELEASED"; // ✅ SHORT TEXT
+                                        }
+                                        else if (status == "CANCELLED")
+                                        {
+                                            cls = "bg-danger";
+                                            display = "CANCELLED";
+                                        }
+                                    }
+
+                                    <div class="text-end">
+                                        <span class="badge @cls dashboard-return-status">@display</span>
+                                    </div>
                                 </div>
                             </li>
                         }

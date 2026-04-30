@@ -15,25 +15,18 @@ async function loadPrintData() {
 
         let rows = "";
 
-        data.lines.forEach(line => {
-            rows += `
-                <tr>
-                    <td>${line.customer_name ?? "-"}</td>
-                    <td>${line.product_name ?? "-"}</td>
-                    <td>
-                        ${line.lot_no ?? "-"}<br/>
-                        MFG: ${formatDate(line.manufacturing_date)}<br/>
-                        EXP: ${formatDate(line.expiration_date)}
-                    </td>
-                    <td>${line.checklist_qty}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            `;
+        const lines = data.lines ?? [];
+
+        lines.forEach(line => {
+            rows += generateRow(line);
         });
+
+        // add blank rows like the paper form
+        const totalRows = 15;
+
+        for (let i = lines.length; i < totalRows; i++) {
+            rows += generateRow(null);
+        }
 
         tbody.innerHTML = rows;
 
@@ -43,8 +36,34 @@ async function loadPrintData() {
     }
 }
 
+function generateRow(line) {
+    return `
+        <tr>
+            <td>${line?.customer_name ?? ""}</td>
+            <td>${line?.product_name ?? ""}</td>
+            <td>
+                ${line?.lot_no ?? ""}<br/>
+                ${line ? formatDate(line.manufacturing_date) : ""}<br/>
+                ${line ? formatDate(line.expiration_date) : ""}
+            </td>
+            <td>${line?.checklist_qty ?? ""}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+
+            <td></td>
+            <td></td>
+
+            <td></td>
+        </tr>
+    `;
+}
+
 function formatDate(dateString) {
-    if (!dateString) return "-";
+    if (!dateString) return "";
     const d = new Date(dateString);
     return d.toLocaleDateString("en-PH");
 }

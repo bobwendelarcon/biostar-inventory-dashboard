@@ -21,12 +21,25 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProducts()
+        public async Task<IActionResult> GetProducts(
+    int page = 1,
+    int pageSize = 50,
+    string? search = null,
+    string? categoryId = null,
+    bool? status = null,
+    string? source = null)
         {
-            var data = await _apiService.GetProductsAsync();
-            return Json(data);
-        }
+            var result = await _apiService.GetProductsAsync(
+                page,
+                pageSize,
+                search,
+                categoryId,
+                status,
+                source
+            );
 
+            return Json(result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> AddProduct([FromBody] object dto)

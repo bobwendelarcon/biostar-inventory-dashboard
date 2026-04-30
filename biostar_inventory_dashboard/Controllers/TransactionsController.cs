@@ -34,6 +34,8 @@ namespace biostar_inventory_dashboard.Controllers
             }
         }
 
+       
+
         [HttpGet]
         public async Task<IActionResult> GetTransactions(
             int page = 1,
@@ -66,6 +68,21 @@ namespace biostar_inventory_dashboard.Controllers
             );
 
             return Json(data);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetBranches()
+        {
+            try
+            {
+                var result = await _apiService.GetBranchesAsync();
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

@@ -1,0 +1,73 @@
+﻿.reports-page {
+    padding-bottom: 40px;
+}
+
+.summary-card {
+    border: 0;
+    border-radius: 16px;
+}
+
+    .summary-card .card-body {
+        padding: 18px;
+    }
+
+    .summary-card h3 {
+        font-size: 1.6rem;
+    }
+
+.report-print-area {
+    border-radius: 16px;
+}
+
+.report-table th {
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.report-table td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 6px 9px;
+}
+
+@media print {
+    .no-print,
+    .nav-tabs,
+    .sidebar,
+    .topbar,
+    .navbar,
+    .btn {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+    }
+
+    .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .card-body {
+        padding: 0 !important;
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    .summary-card {
+        border: 1px solid #ddd !important;
+    }
+}

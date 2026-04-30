@@ -25,6 +25,12 @@ namespace biostar_inventory_dashboard.Controllers
             if (category == null)
                 return BadRequest("Invalid data");
 
+            if (string.IsNullOrWhiteSpace(category.catg_name))
+                return BadRequest("Category name is required.");
+
+            // Important: frontend no longer sends catg_id
+            category.catg_id = null;
+
             var success = await _apiService.AddCategoryAsync(category);
 
             if (!success)

@@ -7,90 +7,183 @@
 <head>
     <title>Delivery Checklist</title>
 
-    <style>
-        body {
-            font-family: Arial;
-            font-size: 12px;
-            margin: 20px;
-        }
-
-        .header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .sub-header {
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table, th, td {
-            border: 1px solid black;
-        }
-
-        th, td {
-            padding: 5px;
-            text-align: left;
-        }
-
-        .no-border {
-            border: none;
-        }
-
-        @@media print {
-            button
-
-        {
-            display: none;
-        }
-
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/delivery-checklist-print.css" asp-append-version="true" />
 </head>
 
 <body>
 
-    <div class="header">DELIVERY CHECKLIST</div>
-
-    <div class="sub-header">
-        Date: <span id="print_date"></span><br />
-        Truck: <span id="print_truck"></span><br />
-        Driver: <span id="print_driver"></span>
+    <div class="viewer-toolbar">
+        <button onclick="history.back()">← Back</button>
+        <button onclick="window.print()">🖨 Print</button>
+        <strong>Delivery Checklist Preview</strong>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Client</th>
-                <th>Product</th>
-                <th>Lot No (Mfg/Exp)</th>
-                <th>Qty</th>
-                <th>SI</th>
-                <th>DR</th>
-                <th>COA</th>
-                <th>Match</th>
-                <th>Remarks</th>
-            </tr>
-        </thead>
-        <tbody id="printBody">
-        </tbody>
-    </table>
+    <div class="paper">
 
-    <br />
+        <div class="header">
+            <div class="logo">
+                <div>
+                    <b>BioStar</b><br />
+                    <span>NutriProducts, Inc.</span>
+                </div>
+            </div>
 
-    <button onclick="window.print()">Print</button>
+            <div class="title">
+                DELIVERY CHECKLIST
+            </div>
 
-    <script src="~/js/delivery-checklist-print.js"></script>
+            <div class="doc">
+                FM-BNPI-WFG-03-03.01.01<br />
+                Revision 1<br />
+                24 SEPTEMBER 2025
+            </div>
+        </div>
+
+        <div class="sub-header">
+            <div class="block">
+                <div class="field-row">
+                    <span>Date</span>
+                    <span class="line" id="print_date"></span>
+                </div>
+
+                <div class="field-row">
+                    <span>Truck Number</span>
+                    <span class="line" id="print_truck"></span>
+                </div>
+
+                <div class="field-row">
+                    <span>Plate Number</span>
+                    <span class="line"></span>
+                </div>
+            </div>
+
+            <div class="block">
+                <div class="field-row">
+                    <span>Checker</span>
+                    <span class="line"></span>
+                </div>
+
+                <div class="field-row">
+                    <span>Driver</span>
+                    <span class="line" id="print_driver"></span>
+                </div>
+
+                <div class="field-row">
+                    <span>Porter</span>
+                    <span class="line"></span>
+                </div>
+            </div>
+        </div>
+
+        <table class="delivery-table">
+
+            <colgroup>
+                <!-- LEFT SIDE (wider like real form) -->
+                <col style="width:16%">   <!-- Client -->
+                <col style="width:18%">   <!-- Product -->
+                <col style="width:18%">   <!-- Lot -->
+                <col style="width:6%">    <!-- Qty -->
+                <!-- DOCUMENTS (tight small columns) -->
+                <col style="width:3.5%">
+                <col style="width:3.5%">
+                <col style="width:3.5%">
+                <col style="width:3.5%">
+                <col style="width:3.5%">
+
+                <!-- YES / NO -->
+                <col style="width:3.5%">
+                <col style="width:3.5%">
+
+                <!-- REMARKS -->
+                <col style="width:16%">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th rowspan="2">Client</th>
+                    <th rowspan="2">Products</th>
+                    <th rowspan="2">
+                        Lot Number<br />
+                        (Mfg. Date / Exp Date)
+                    </th>
+                    <th rowspan="2">Qty</th>
+
+                    <th colspan="5">DOCUMENTS</th>
+
+                    <th colspan="2">
+                        Did the loaded items matched with DR/SI?
+                    </th>
+
+                    <th rowspan="2">Remarks</th>
+                </tr>
+
+                <tr>
+                    <th>SI</th>
+                    <th>DR</th>
+                    <th>COA</th>
+                    <th>CPR</th>
+                    <th>MSDS</th>
+
+                    <th>YES</th>
+                    <th>NO</th>
+                </tr>
+            </thead>
+
+            <tbody id="printBody"></tbody>
+        </table>
+
+        <div class="footer">
+            <div class="footer-row">
+                <div>1. Was the truck cleaned before loading?</div>
+                <div>YES</div>
+                <span class="box"></span>
+                <div>NO</div>
+                <span class="box"></span>
+                <div>If yes, date/time of cleaning: __________________</div>
+            </div>
+
+            <div class="footer-row">
+                <div>2. Is the delivery area free from pests, odor, debris and contamination?</div>
+                <div>YES</div>
+                <span class="box"></span>
+                <div>NO</div>
+                <span class="box"></span>
+                <div></div>
+            </div>
+
+            <div class="footer-row">
+                <div>NOTE: Upon completion of loading of delivery products, are all doors locked?</div>
+                <div>YES</div>
+                <span class="box"></span>
+                <div>NO</div>
+                <span class="box"></span>
+                <div>(Check if padlock is properly secured)</div>
+            </div>
+
+            <div class="sign-row">
+                <div>
+                    <div class="sig-line"></div>
+                    HELPER'S SIGNATURE
+                </div>
+
+                <div>
+                    <div class="sig-line"></div>
+                    DRIVER'S SIGNATURE
+                </div>
+
+                <div class="checked">
+                    CHECKED BY: ______________________<br />
+                    VERIFIED BY: ______________________
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <script>
         const checklistId = @ViewBag.ChecklistId;
     </script>
+
+    <script src="~/js/delivery-checklist-print.js" asp-append-version="true"></script>
 
 </body>
 </html>

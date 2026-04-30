@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("searchPartner")?.addEventListener("input", debouncePartnerLoad);
     document.getElementById("filterPartnerType")?.addEventListener("change", loadPartners);
+    document.getElementById("filterRegion")?.addEventListener("change", loadPartners);
     document.getElementById("filterStatus")?.addEventListener("change", loadPartners);
 
     loadPartners();
@@ -39,6 +40,7 @@ async function loadPartners() {
         const searchValue = (document.getElementById("searchPartner")?.value || "").toLowerCase().trim();
         const typeValue = (document.getElementById("filterPartnerType")?.value || "").toLowerCase().trim();
         const statusValue = document.getElementById("filterStatus")?.value ?? "";
+        const regionValue = (document.getElementById("filterRegion")?.value || "").toLowerCase().trim();
 
         let filteredData = data;
 
@@ -56,6 +58,11 @@ async function loadPartners() {
                 (x.partner_type ?? "").toLowerCase() === typeValue
             );
         }
+        if (regionValue) {
+            filteredData = filteredData.filter(x =>
+                (x.region ?? "").toLowerCase() === regionValue
+            );
+        }
 
         if (statusValue !== "") {
             const isDeleted = statusValue === "true";
@@ -69,7 +76,7 @@ async function loadPartners() {
         console.error(error);
         document.getElementById("partnerTableBody").innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-danger">${error.message}</td>
+                <td colspan="8" class="text-center text-danger">${error.message}</td>
             </tr>
         `;
     }
@@ -82,7 +89,7 @@ function renderPartnerTable(data) {
     if (!data || data.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-muted">No partners found.</td>
+                <td colspan="8" class="text-center text-muted">No partners found.</td>
             </tr>
         `;
         return;
@@ -98,15 +105,24 @@ function renderPartnerTable(data) {
                 <td>${item.address ?? ""}</td>
                 <td>${item.contact ?? ""}</td>
                 <td>${item.partner_type ?? ""}</td>
+                <td>${item.region ?? ""}</td>
                 <td>${statusText}</td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary rounded-3"
-                        onclick='openEditPartnerModal(${JSON.stringify(item).replace(/'/g, "&apos;")})'>
+                    <button type="button"
+                        class="btn btn-sm btn-outline-primary rounded-3 btn-edit-partner"
+                        data-partner='${safeAttr(JSON.stringify(item))}'>
                         Edit
                     </button>
                 </td>
             </tr>
         `;
+    });
+
+    document.querySelectorAll(".btn-edit-partner").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const item = JSON.parse(this.dataset.partner);
+            openEditPartnerModal(item);
+        });
     });
 }
 
@@ -114,6 +130,7 @@ function clearFilters() {
     document.getElementById("searchPartner").value = "";
     document.getElementById("filterPartnerType").value = "";
     document.getElementById("filterStatus").value = "";
+    document.getElementById("filterRegion").value = "";
     loadPartners();
 }
 
@@ -127,6 +144,7 @@ function openAddPartnerModal() {
     document.getElementById("partnerAddress").value = "";
     document.getElementById("partnerContact").value = "";
     document.getElementById("partnerType").value = "";
+    document.getElementById("partnerRegion").value = "";
     document.getElementById("partnerStatus").value = "false";
 
     document.getElementById("partnerId").disabled = false;
@@ -142,6 +160,7 @@ function openEditPartnerModal(item) {
     document.getElementById("partnerAddress").value = item.address ?? "";
     document.getElementById("partnerContact").value = item.contact ?? "";
     document.getElementById("partnerType").value = item.partner_type ?? "";
+    document.getElementById("partnerRegion").value = item.region ?? "";
     document.getElementById("partnerStatus").value = String(item.is_deleted ?? false);
 
     document.getElementById("partnerId").disabled = true;
@@ -158,6 +177,7 @@ async function savePartner() {
             address: document.getElementById("partnerAddress")?.value.trim() || "",
             contact: document.getElementById("partnerContact")?.value.trim() || "",
             partner_type: document.getElementById("partnerType")?.value.trim() || "",
+            region: document.getElementById("partnerRegion")?.value.trim() || "",
             is_deleted: document.getElementById("partnerStatus")?.value === "true"
         };
 
@@ -215,4 +235,14 @@ async function savePartner() {
         console.error(error);
         alert(error.message);
     }
+  
+}
+
+function safeAttr(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }

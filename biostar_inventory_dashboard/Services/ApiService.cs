@@ -243,7 +243,7 @@ namespace biostar_inventory_dashboard.Services
             return JsonSerializer.Deserialize<List<Categories>>(json, _jsonOptions) ?? new List<Categories>();
         }
 
-       
+
         public async Task<bool> AddCategoryAsync(Categories category)
         {
             var json = JsonSerializer.Serialize(category);
@@ -264,17 +264,38 @@ namespace biostar_inventory_dashboard.Services
 
 
         // products
-        public async Task<List<dynamic>> GetProductsAsync()
+        public async Task<ProductPagedResponse> GetProductsAsync(
+     int page = 1,
+     int pageSize = 50,
+     string? search = null,
+     string? categoryId = null,
+     bool? status = null,
+     string? source = null)
         {
-            var response = await _httpClient.GetAsync("api/Products");
+            var url = $"api/Products?page={page}&pageSize={pageSize}";
 
-            if (!response.IsSuccessStatusCode)
-                return new List<dynamic>();
+            if (!string.IsNullOrWhiteSpace(search))
+                url += $"&search={Uri.EscapeDataString(search)}";
 
+            if (!string.IsNullOrWhiteSpace(categoryId))
+                url += $"&categoryId={Uri.EscapeDataString(categoryId)}";
+
+            if (status.HasValue)
+                url += $"&status={status.Value.ToString().ToLower()}";
+
+            if (!string.IsNullOrWhiteSpace(source))
+                url += $"&source={Uri.EscapeDataString(source)}";
+
+            var response = await _httpClient.GetAsync(url);
             var json = await response.Content.ReadAsStringAsync();
 
-            return JsonSerializer.Deserialize<List<dynamic>>(json, _jsonOptions)
-                   ?? new List<dynamic>();
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(json);
+
+            return JsonSerializer.Deserialize<ProductPagedResponse>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new ProductPagedResponse();
         }
         public async Task<bool> AddProductAsync(object product)
         {
@@ -737,6 +758,135 @@ namespace biostar_inventory_dashboard.Services
                 throw new Exception(result);
 
             return result;
+        }
+
+        // return 
+
+        public async Task<string> GetReturnsAsync(string status = "active")
+        {
+            var url = $"api/Returns?status={Uri.EscapeDataString(status)}";
+
+            var response = await _httpClient.GetAsync(url);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+        public async Task<string> GetReturnByIdAsync(long id)
+        {
+            var response = await _httpClient.GetAsync($"api/Returns/{id}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateReturnAsync(string json)
+        {
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("api/Returns", content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> ReleaseReturnForReprocessAsync(long id, string json)
+        {
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"api/Returns/{id}/release-reprocess", content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> CancelReturnAsync(long id)
+        {
+            var response = await _httpClient.PostAsync($"api/Returns/{id}/cancel", null);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> SearchOutTransactionsForReturnAsync(string search = "", string lotNo = "")
+        {
+            var url =
+                $"api/Inventory/search-out-for-return?search={Uri.EscapeDataString(search ?? "")}&lotNo={Uri.EscapeDataString(lotNo ?? "")}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> GetRecentReturnsAsync(int limit = 5)
+        {
+            var response = await _httpClient.GetAsync($"api/Returns/recent?limit={limit}");
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        // end return
+
+        // manual stockin
+
+        public async Task<TResponse?> PostAsync<TRequest, TResponse>(string url, TRequest data)
+        {
+            var json = JsonSerializer.Serialize(data);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(responseString);
+            }
+
+            if (string.IsNullOrWhiteSpace(responseString))
+                return default;
+
+            return JsonSerializer.Deserialize<TResponse>(responseString, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+
+        public async Task<T?> GetAsync<T>(string url)
+        {
+            var response = await _httpClient.GetAsync(url);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            if (string.IsNullOrWhiteSpace(result))
+                return default;
+
+            return JsonSerializer.Deserialize<T>(result, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
         }
 
 

@@ -1,0 +1,143 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+   
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/reports.css" asp-append-version="true" />
+}
+
+<div class="container-fluid reports-page">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 no-print">
+        <div>
+            <small class="text-muted">Reports</small>
+            <h2 class="fw-bold mb-0">Reports Module</h2>
+            <small class="text-muted">Delivery KPI, Near Expiry, Returns, and Inventory Snapshot</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="window.print()">Print</button>
+            <button class="btn btn-outline-success" disabled>Export Excel Later</button>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3 no-print" id="reportTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-report="delivery">Delivery KPI</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-report="expiry">Near Expiry</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-report="returns">Returns</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-report="inventory">Inventory</button>
+        </li>
+    </ul>
+
+    <div class="card shadow-sm mb-3 no-print">
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Date From</label>
+                    <input type="date" id="dateFrom" class="form-control" />
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Date To</label>
+                    <input type="date" id="dateTo" class="form-control" />
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Warehouse</label>
+                    <select id="branchFilter" class="form-select">
+                        <option value="">All Warehouse</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Product</label>
+                    <select id="productFilter" class="form-select">
+                        <option value="">All Product</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Customer</label>
+                    <select id="customerFilter" class="form-select">
+                        <option value="">All Customer</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Region</label>
+                    <select id="regionFilter" class="form-select">
+                        <option value="">All Region</option>
+                        <option value="LUZON">Luzon</option>
+                        <option value="VIZMIN">VizMin</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Expiry Status</label>
+                    <select id="expiryStatusFilter" class="form-select">
+                        <option value="">All</option>
+                        <option value="EXPIRED">Expired</option>
+                        <option value="NEAR">Near Expiry</option>
+                        <option value="SAFE">Safe</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Stock Status</label>
+                    <select id="stockStatusFilter" class="form-select">
+                        <option value="">All</option>
+                        <option value="WITH STOCK">With Stock</option>
+                        <option value="ZERO">Zero</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" id="btnLoadReport">Load Report</button>
+                </div>
+
+                <div class="col-lg-2 col-md-4 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" id="btnResetFilters">Reset</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="summaryCards" class="row g-3 mb-3"></div>
+
+    <div class="card shadow-sm report-print-area">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h5 id="reportTitle" class="fw-bold mb-0">Delivery KPI Report</h5>
+                    <small id="reportSubtitle" class="text-muted"></small>
+                </div>
+                <small class="text-muted print-date" id="printDate"></small>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle report-table">
+                    <thead id="reportTableHead" class="table-light"></thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    
+    <script src="~/js/report.js" asp-append-version="true"></script>
+}

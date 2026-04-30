@@ -6,30 +6,30 @@
                 ?? User.FindFirst("role")?.Value
                 ?? "";
 
+    var isReceivingOpen = currentController == "ManualStockIn";
     var isPlanningOpen = currentController == "DailyOrder";
-//var isProductionOpen = currentController == "RawMaterialRequest" || currentController == "ReceiveTransmittal";
-    var isReceivingOpen = currentController == "Otherlines" || currentController == "ReceiveTransmittal";
-    var isDispatchOpen = currentController == "DeliveryChecklist";
-    var isLogisticsOpen = currentController == "Logistics";
-    var isInventoryOpen = currentController == "Inventory" || currentController == "Transactions";
-    var isReturnOpen = currentController == "Return";
-    var isReportOpen = currentController == "Report";
-    var isMasterDataOpen = currentController == "Product"
-                        || currentController == "Categories"
-                        || currentController == "Branch"
-                        || currentController == "User"
-                        || currentController == "Partner";
     var isProductionOpen =
-currentController == "ProductToProduce" ||
-currentController == "RawMaterialRequest" ||
-currentController == "ReceiveTransmittal";
+        currentController == "ProductToProduce" ||
+        currentController == "RawMaterialRequest" ||
+        currentController == "ReceiveTransmittal";
 
+    var isDispatchOpen = currentController == "DeliveryChecklist";
+    var isInventoryOpen = currentController == "Inventory" || currentController == "Transactions";
+    var isLogisticsOpen = currentController == "Logistics";
+    var isReturnOpen = currentController == "Returns";
+    var isReportOpen = currentController == "Reports";
+
+    var isMasterDataOpen =
+        currentController == "Product" ||
+        currentController == "Categories" ||
+        currentController == "Branch" ||
+        currentController == "User" ||
+        currentController == "Partner";
 }
 
-<!-- ================= DESKTOP SIDEBAR ================= -->
 <div class="d-none d-md-block sidebar" id="desktopSidebar">
     <div class="sidebar-header mb-4">
-        <h5 class="fw-bold mb-0"><span>Inventory</span></h5>
+        <h5 class="fw-bold mb-0"><span>BNPI SERVER</span></h5>
         <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn">
             ☰
         </button>
@@ -45,6 +45,31 @@ currentController == "ReceiveTransmittal";
             </a>
         </li>
 
+        <!-- Receiving -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#receivingMenu">
+                <div>
+                    <i class="bi bi-box-arrow-in-down me-2"></i>
+                    <span>Receiving</span>
+                </div>
+                <span class="menu-arrow">▾</span>
+            </a>
+
+            <div class="collapse @(isReceivingOpen ? "show" : "")" id="receivingMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li>
+                        <a class="nav-link @(currentController == "ManualStockIn" ? "active fw-bold" : "")"
+                           asp-controller="ManualStockIn"
+                           asp-action="Index">
+                            <span>Manual Stock IN</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
         <!-- Planning -->
         <li class="nav-item mb-2">
             <a class="nav-link d-flex justify-content-between align-items-center"
@@ -56,6 +81,7 @@ currentController == "ReceiveTransmittal";
                 </div>
                 <span class="menu-arrow">▾</span>
             </a>
+
             <div class="collapse @(isPlanningOpen ? "show" : "")" id="planningMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li>
@@ -78,6 +104,7 @@ currentController == "ReceiveTransmittal";
                 </div>
                 <span class="menu-arrow">▾</span>
             </a>
+
             <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li>
@@ -85,33 +112,6 @@ currentController == "ReceiveTransmittal";
                            asp-controller="ProductToProduce"
                            asp-action="Index">
                             <span>Product to Produce</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </li>
-
-        <!-- Receiving -->
-        <li class="nav-item mb-2">
-            <a class="nav-link d-flex justify-content-between align-items-center"
-               data-bs-toggle="collapse"
-               href="#receivingMenu">
-                <div>
-                    <i class="bi bi-box-arrow-in-down me-2"></i>
-                    <span>Receiving</span>
-                </div>
-                <span class="menu-arrow">▾</span>
-            </a>
-            <div class="collapse @(isReceivingOpen ? "show" : "")" id="receivingMenu">
-                <ul class="nav flex-column ms-3 mt-1">
-                    <li>
-                        <a class="nav-link" href="#">
-                            <span>Other Lines</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="nav-link" href="#">
-                            <span>Receive Transmittal</span>
                         </a>
                     </li>
                 </ul>
@@ -129,6 +129,7 @@ currentController == "ReceiveTransmittal";
                 </div>
                 <span class="menu-arrow">▾</span>
             </a>
+
             <div class="collapse @(isDispatchOpen ? "show" : "")" id="dispatchMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li>
@@ -138,14 +139,6 @@ currentController == "ReceiveTransmittal";
                     </li>
                 </ul>
             </div>
-        </li>
-
-        <!-- Logistics -->
-        <li class="nav-item mb-2">
-            <a class="nav-link @(currentController == "Logistics" ? "active fw-bold" : "")" href="/Logistics">
-                <i class="bi bi-map me-2"></i>
-                <span>Logistics</span>
-            </a>
         </li>
 
         <!-- Inventory -->
@@ -159,6 +152,7 @@ currentController == "ReceiveTransmittal";
                 </div>
                 <span class="menu-arrow">▾</span>
             </a>
+
             <div class="collapse @(isInventoryOpen ? "show" : "")" id="inventoryMenu">
                 <ul class="nav flex-column ms-3 mt-1">
                     <li>
@@ -175,12 +169,62 @@ currentController == "ReceiveTransmittal";
             </div>
         </li>
 
+        <!-- Logistics -->
+        @* <li class="nav-item mb-2">
+            <a class="nav-link @(currentController == "Logistics" ? "active fw-bold" : "")" href="/Logistics">
+                <i class="bi bi-map me-2"></i>
+                <span>Logistics</span>
+            </a>
+        </li> *@
+
+        <!-- Returns -->
+        <li class="nav-item mb-2">
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#returnMenu">
+                <div>
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>
+                    <span>Return Product</span>
+                </div>
+                <span class="menu-arrow">▾</span>
+            </a>
+
+            <div class="collapse @(isReturnOpen ? "show" : "")" id="returnMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li>
+                        <a class="nav-link @(currentController == "Returns" ? "active fw-bold" : "")"
+                           asp-controller="Returns"
+                           asp-action="Index">
+                            <span>Returns</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
         <!-- Reports -->
         <li class="nav-item mb-2">
-            <a class="nav-link @(currentController == "Report" ? "active fw-bold" : "")" href="/Report">
-                <i class="bi bi-bar-chart me-2"></i>
-                <span>Reports</span>
+            <a class="nav-link d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse"
+               href="#reportMenu">
+                <div>
+                    <i class="bi bi-bar-chart me-2"></i>
+                    <span>Reports</span>
+                </div>
+                <span class="menu-arrow">▾</span>
             </a>
+
+            <div class="collapse @(isReportOpen ? "show" : "")" id="reportMenu">
+                <ul class="nav flex-column ms-3 mt-1">
+                    <li>
+                        <a class="nav-link @(currentController == "Reports" ? "active fw-bold" : "")"
+                           asp-controller="Reports"
+                           asp-action="Index">
+                            Reports
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
 
         <!-- Master Data -->
@@ -196,18 +240,39 @@ currentController == "ReceiveTransmittal";
                     </div>
                     <span class="menu-arrow">▾</span>
                 </a>
+
                 <div class="collapse @(isMasterDataOpen ? "show" : "")" id="masterMenu">
                     <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link" href="/Categories"><span>Category</span></a></li>
-                        <li><a class="nav-link" href="/Product"><span>Products</span></a></li>
-                        <li><a class="nav-link" href="/Branch"><span>Branches</span></a></li>
+                        <li>
+                            <a class="nav-link @(currentController == "Categories" ? "active fw-bold" : "")" href="/Categories">
+                                <span>Category</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")" href="/Product">
+                                <span>Products</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")" href="/Branch">
+                                <span>Branches</span>
+                            </a>
+                        </li>
 
                         @if (userRole == "ADMIN")
                         {
-                            <li><a class="nav-link" href="/User"><span>Users</span></a></li>
+                            <li>
+                                <a class="nav-link @(currentController == "User" ? "active fw-bold" : "")" href="/User">
+                                    <span>Users</span>
+                                </a>
+                            </li>
                         }
 
-                        <li><a class="nav-link" href="/Partner"><span>Partners</span></a></li>
+                        <li>
+                            <a class="nav-link @(currentController == "Partner" ? "active fw-bold" : "")" href="/Partner">
+                                <span>Partners</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -215,7 +280,6 @@ currentController == "ReceiveTransmittal";
 
     </ul>
 </div>
-
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -229,7 +293,6 @@ currentController == "ReceiveTransmittal";
         const activeMenu = localStorage.getItem("activeMenu");
         const savedScroll = localStorage.getItem("sidebarScrollTop");
 
-        // Restore sidebar collapsed/expanded state
         if (savedState === "collapsed") {
             sidebar.classList.add("collapsed");
             mainContent.classList.add("sidebar-collapsed");
@@ -238,7 +301,6 @@ currentController == "ReceiveTransmittal";
             mainContent.classList.remove("sidebar-collapsed");
         }
 
-        // Restore opened submenu
         if (activeMenu) {
             const menu = document.querySelector(activeMenu);
             if (menu) {
@@ -246,14 +308,12 @@ currentController == "ReceiveTransmittal";
             }
         }
 
-        // Restore scroll position
         if (savedScroll !== null) {
             setTimeout(() => {
                 sidebar.scrollTop = parseInt(savedScroll, 10) || 0;
             }, 50);
         }
 
-        // Toggle sidebar using hamburger button
         toggleBtn.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -264,7 +324,6 @@ currentController == "ReceiveTransmittal";
             localStorage.setItem("sidebarState", isCollapsed ? "collapsed" : "expanded");
         });
 
-        // Handle menu items with submenu
         document.querySelectorAll('.sidebar .nav-link[data-bs-toggle="collapse"]').forEach(link => {
             link.addEventListener("click", function (e) {
                 const target = this.getAttribute("href");
@@ -273,7 +332,6 @@ currentController == "ReceiveTransmittal";
                 localStorage.setItem("activeMenu", target);
                 localStorage.setItem("sidebarScrollTop", sidebar.scrollTop);
 
-                // If sidebar is collapsed, expand first then open submenu
                 if (sidebar.classList.contains("collapsed")) {
                     e.preventDefault();
 
@@ -293,7 +351,6 @@ currentController == "ReceiveTransmittal";
             });
         });
 
-        // Save scroll position when clicking normal links
         document.querySelectorAll('.sidebar a[href]:not([data-bs-toggle="collapse"])').forEach(link => {
             link.addEventListener("click", function () {
                 localStorage.setItem("sidebarScrollTop", sidebar.scrollTop);

@@ -1,7 +1,10 @@
 ﻿using biostar_inventory_dashboard.Models;
 using biostar_inventory_dashboard.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace biostar_inventory_dashboard.Controllers
 {
@@ -125,6 +128,14 @@ namespace biostar_inventory_dashboard.Controllers
                     return RedirectToAction("MyAccount");
                 }
 
+                // 🔥 Get updated user from API
+                var updatedUser = await _apiService.GetUserByIdAsync(userId);
+
+                if (updatedUser != null)
+                {
+                    await RefreshUserClaimsAsync(updatedUser);
+                }
+
                 TempData["Success"] = "Profile image uploaded successfully.";
                 return RedirectToAction("MyAccount");
             }
@@ -133,6 +144,30 @@ namespace biostar_inventory_dashboard.Controllers
                 TempData["Error"] = ex.Message;
                 return RedirectToAction("MyAccount");
             }
+        }
+
+
+        private async Task RefreshUserClaimsAsync(UserAccountDto user)
+        {
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.username ?? ""),
+        new Claim("user_id", user.user_id ?? ""),
+        new Claim("full_name", user.full_name ?? ""),
+        new Claim("role_name", user.role_name ?? ""),
+        new Claim(ClaimTypes.Role, user.role_name ?? "")
+    };
+
+            if (!string.IsNullOrWhiteSpace(user.profile_image))
+            {
+                claims.Add(new Claim("profile_image", user.profile_image));
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
 
         [HttpGet]

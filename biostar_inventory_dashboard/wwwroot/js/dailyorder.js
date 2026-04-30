@@ -156,9 +156,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.addEventListener("click", async function (e) {
-        if (e.target.closest(".dropdown-item")) {
-            e.preventDefault();
-        }
+        //if (e.target.closest(".dropdown-item")) {
+        //    e.preventDefault();
+        //}
 
         const viewBtn = e.target.closest(".btn-view-order");
         const editBtn = e.target.closest(".btn-edit-order");
@@ -473,6 +473,7 @@ function renderDailyOrderTable(data) {
                 <td>${getAgingBadge(order.agingDays)}</td>
                 <td>${renderStatusBadge(order.status)}</td>
                 <td>${safe(order.specialInstructions || "-")}</td>
+                <td>${order.createdBy || ""}</td>
                 <td class="text-center">
                     ${actionButtons}
                 </td>

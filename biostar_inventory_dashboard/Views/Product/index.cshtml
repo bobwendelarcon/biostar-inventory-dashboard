@@ -14,21 +14,20 @@
 
 <div class="card border-0 shadow-sm rounded-4 mb-4">
     <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Search</label>
-                <input type="text" class="form-control" id="searchProduct" placeholder="Search product..." />
+        <div class="row g-2 align-items-end flex-nowrap">
+
+            <div class="col">
+                <label class="form-label fw-semibold small">Search</label>
+                <input type="text" class="form-control" id="searchProduct" placeholder="Search..." />
             </div>
 
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Category</label>
-                <select class="form-select" id="filterCategory">
-                    <option value="">All Categories</option>
-                </select>
+            <div style="width:180px;">
+                <label class="form-label fw-semibold small">Category</label>
+                <select class="form-select" id="filterCategory"></select>
             </div>
 
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Status</label>
+            <div style="width:140px;">
+                <label class="form-label fw-semibold small">Status</label>
                 <select class="form-select" id="filterStatus">
                     <option value="">All</option>
                     <option value="false">Active</option>
@@ -36,19 +35,48 @@
                 </select>
             </div>
 
-            <div class="col-md-1">
-                <button class="btn btn-outline-secondary w-100" id="btnFilterProducts" type="button">Filter</button>
+            <div style="width:160px;">
+                <label class="form-label fw-semibold small">Source</label>
+                <select class="form-select" id="filterSource">
+                    <option value="">All</option>
+                    <option value="OWN">Own</option>
+                    <option value="OTHER_LINES">Other</option>
+                </select>
             </div>
 
-            <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" id="btnClearProducts" type="button">Clear</button>
+            <div style="width:90px;">
+                <button class="btn btn-outline-secondary w-100" id="btnFilterProducts">
+                    Filter
+                </button>
             </div>
+
+            <div style="width:90px;">
+                <button class="btn btn-outline-secondary w-100" id="btnClearProducts">
+                    Clear
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4">
+    @* <div class="d-flex justify-content-end mt-3" id="productPagination"></div> *@
+
+
     <div class="card-body">
+        @* <div class="pagination-container">
+            <span id="rangeText">0–0 of 0</span>
+            <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
+            <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
+        </div> *@
+
+        <div class="pagination-container d-flex justify-content-end align-items-center gap-2 mb-3">
+            <span id="rangeText">0–0 of 0</span>
+            <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
+            <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
+        </div>
+        
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead class="table-light">
@@ -60,7 +88,8 @@
                         <th>UOM</th>
                         <th>Pack UOM</th>
                         <th>Pack Qty</th>
-                        <th>Status</th>
+                        <td>Status</td>
+                        <td>Source</td>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -91,7 +120,8 @@
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Product ID</label>
-                            <input type="text" class="form-control" id="productId" placeholder="e.g. P001" />
+                            @* <input type="text" class="form-control" id="productId" placeholder="e.g. P001" /> *@
+                            <input type="text" class="form-control" id="productId" value="Auto-generated" readonly />
                         </div>
 
                         <div class="col-md-5">
@@ -119,6 +149,14 @@
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Stock Level</label>
                             <input type="number" step="0.01" class="form-control" id="productStockLevel" placeholder="0" />
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label">Product Source</label>
+                            <select class="form-select" id="productSource">
+                                <option value="OWN">Own Product</option>
+                                <option value="OTHER_LINES">Other Lines</option>
+                            </select>
                         </div>
 
                         <div class="col-md-3">

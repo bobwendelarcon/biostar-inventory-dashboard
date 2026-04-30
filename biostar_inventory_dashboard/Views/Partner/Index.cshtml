@@ -60,13 +60,14 @@
                         <th>Address</th>
                         <th>Contact</th>
                         <th>Type</th>
+                        <th>Region</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="partnerTableBody">
                     <tr>
-                        <td colspan="7" class="text-center text-muted">Loading partners...</td>
+                        <td colspan="8" class="text-center text-muted">Loading partners...</td>
                     </tr>
                 </tbody>
             </table>
@@ -115,6 +116,15 @@
                                 <option value="">Select type</option>
                                 <option value="SUPPLIER">SUPPLIER</option>
                                 <option value="CUSTOMER">CUSTOMER</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">Region</label>
+                            <select class="form-select" id="partnerRegion">
+                                <option value="">Select region</option>
+                                <option value="LUZON">LUZON</option>
+                                <option value="VIZMIN">VIZMIN</option>
                             </select>
                         </div>
 

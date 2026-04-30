@@ -1,0 +1,155 @@
+﻿.returns-page {
+    padding: 1.5rem;
+}
+
+    .returns-page .card {
+        border-radius: 16px;
+    }
+
+    .returns-page table thead th {
+        font-size: 0.85rem;
+        white-space: nowrap;
+        border-bottom: 1px solid #222;
+    }
+
+    .returns-page table tbody td {
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+
+.summary-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    background: #f8fafc;
+}
+
+    .summary-box small {
+        display: block;
+        color: #6b7280;
+        font-size: 0.75rem;
+    }
+
+    .summary-box strong {
+        display: block;
+        margin-top: 4px;
+    }
+
+
+
+.out-search-dialog {
+    max-width: 950px;
+}
+
+#outTransactionModal {
+    z-index: 1065;
+}
+
+    #outTransactionModal .modal-body {
+        padding: 1rem;
+    }
+
+.out-search-table {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+#outTransactionModal table th,
+#outTransactionModal table td {
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+#returnModal .modal-body {
+    overflow-x: hidden;
+}
+
+.returns-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.returns-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+}
+
+.returns-filter {
+    width: 240px;
+}
+
+@media (max-width: 768px) {
+    .returns-header {
+        flex-direction: column;
+    }
+
+    .returns-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .returns-filter {
+        width: 100%;
+    }
+
+    .returns-actions .btn {
+        width: 100%;
+    }
+}
+
+.returns-tabs {
+    display: flex;
+    align-items: center;
+    background: #eef2f7;
+    padding: 4px;
+    border-radius: 10px;
+    gap: 4px;
+}
+
+.returns-tab {
+    border: 0;
+    background: transparent;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+    .returns-tab.active {
+        background: #ffffff;
+        color: #0d6efd;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+    }
+
+    .returns-tab:hover {
+        color: #0d6efd;
+    }
+
+@media (max-width: 768px) {
+    .returns-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .returns-tabs {
+        width: 100%;
+    }
+
+    .returns-tab {
+        flex: 1;
+    }
+}
+
+.returns-tab.active {
+    background: #fff;
+    color: #0d6efd;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}

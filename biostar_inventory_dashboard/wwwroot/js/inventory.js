@@ -38,11 +38,27 @@ function getRemainingMonthsDisplay(expiration_date) {
         return `<span class="badge bg-danger">Expired</span>`;
     }
 
-    if (totalMonths <= 2) {
+    if (totalMonths <= 3) {
         return `<span class="badge bg-warning text-dark">${totalMonths} mo</span>`;
     }
 
     return `<span class="badge bg-success">${totalMonths} mo</span>`;
+}
+function getExpiryStatus(expiration_date) {
+    if (!expiration_date) return "VALID";
+
+    const today = new Date();
+    const exp = new Date(expiration_date);
+
+    let years = exp.getFullYear() - today.getFullYear();
+    let months = exp.getMonth() - today.getMonth();
+    let totalMonths = years * 12 + months;
+
+    if (exp.getDate() < today.getDate()) totalMonths--;
+
+    if (totalMonths < 0) return "EXPIRED";
+    if (totalMonths <= 3) return "EXPIRING_SOON"; // expiration date
+    return "VALID";
 }
 
 function getStatusBadge(quantity) {
@@ -96,7 +112,7 @@ async function loadInventory(page = currentPage) {
             to: document.getElementById("dateToFilter")?.value || "",
             warehouse: document.getElementById("warehouseFilter")?.value || "",
             stockStatus: document.getElementById("stockStatusFilter")?.value || "",
-            expiryStatus: document.getElementById("expiryStatusFilter")?.value || "",
+            expiryStatus: "",
             months: document.getElementById("monthsFilter")?.value || "",
             order: document.getElementById("orderFilter")?.value || "desc"
         });
@@ -109,8 +125,25 @@ async function loadInventory(page = currentPage) {
         }
 
         const json = await response.json();
-        const items = json.data || [];
-        totalRecords = Number(json.total) || 0;
+        let items = json.data || [];
+
+        // 🔥 ADD THIS BLOCK
+        const expiryFilter = document.getElementById("expiryStatusFilter")?.value;
+
+        if (expiryFilter && expiryFilter !== "All") {
+            items = items.filter(item => {
+                const status = getExpiryStatus(item.expiration_date);
+                if (expiryFilter === "expired") return status === "EXPIRED";
+                if (expiryFilter === "near") return status === "EXPIRING_SOON";
+                if (expiryFilter === "safe") return status === "VALID";
+                if (expiryFilter === "available") {
+                    return status !== "EXPIRED" && Number(item.qty) > 0;
+                }
+
+                return true;
+            });
+        }
+        totalRecords = items.length;
 
         const tableBody = document.getElementById("inventoryTable");
         tableBody.innerHTML = "";
@@ -134,11 +167,16 @@ async function loadInventory(page = currentPage) {
             const expDate = item.expiration_date ? new Date(item.expiration_date) : null;
             const isExpired = expDate && expDate < today;
 
-            const disableAdjust = (qty <= 0 || isExpired) ? "disabled" : "";
+            const canAdjust =
+                (isExpired && qty > 0) ||
+                (!isExpired);
+
+            const disableAdjust = canAdjust ? "" : "disabled";
 
             const adjustTitle =
-                qty <= 0 ? "No stock" :
-                    isExpired ? "Expired stock" : "";
+                isExpired && qty <= 0 ? "No stock to dispose" :
+                    isExpired ? "Dispose expired stock" :
+                        "Adjust stock";
 
             tableBody.innerHTML += `
         <tr>
@@ -169,6 +207,7 @@ async function loadInventory(page = currentPage) {
                     data-lot="${item.lot_no ?? ""}"
                     data-branch="${item.branch_id ?? ""}"
                     data-qty="${qty}"
+                    data-exp="${item.expiration_date ?? ""}"
                     ${disableAdjust}
                     title="${adjustTitle}">
                     Adjust
@@ -292,18 +331,50 @@ document.addEventListener("click", function (e) {
         new bootstrap.Modal(document.getElementById("transferModal")).show();
         return;
     }
-
     const adjustBtn = e.target.closest(".btn-adjust");
     if (adjustBtn) {
+        const currentQty = Number(adjustBtn.dataset.qty || 0);
+
+        const today = new Date();
+        const expDate = adjustBtn.dataset.exp ? new Date(adjustBtn.dataset.exp) : null;
+        const isExpired = expDate && expDate < today;
+
         document.getElementById("adjustProduct").value = adjustBtn.dataset.product;
         document.getElementById("adjustLot").value = adjustBtn.dataset.lot;
         document.getElementById("adjustBranch").value = adjustBtn.dataset.branch;
 
-        document.getElementById("adjustCurrentQty").innerText = adjustBtn.dataset.qty;
+        document.getElementById("adjustCurrentQty").innerText = currentQty;
+        document.getElementById("adjustQty").value = "";
+        document.getElementById("adjustQty").setAttribute("max", currentQty);
+
+        const adjustTypeSelect = document.getElementById("adjustType");
+
+        if (isExpired) {
+            adjustTypeSelect.innerHTML = `
+            <option value="DEDUCT">Deduct (Dispose)</option>
+        `;
+            document.getElementById("adjustRemarks").value = "EXPIRED DISPOSAL";
+        }
+        else if (currentQty <= 0) {
+            adjustTypeSelect.innerHTML = `
+            <option value="ADD">Add</option>
+            <option value="SET">Set Exact Qty</option>
+        `;
+            document.getElementById("adjustRemarks").value = "";
+        }
+        else {
+            adjustTypeSelect.innerHTML = `
+            <option value="ADD">Add</option>
+            <option value="DEDUCT">Deduct</option>
+            <option value="SET">Set Exact Qty</option>
+        `;
+            document.getElementById("adjustRemarks").value = "";
+        }
 
         new bootstrap.Modal(document.getElementById("adjustModal")).show();
         return;
     }
+  
 
     const historyBtn = e.target.closest(".btn-history");
     if (historyBtn) {
@@ -317,8 +388,11 @@ document.addEventListener("click", function (e) {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    loadWarehouseFilter();
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
+
+  
 
     document.getElementById("pageSizeFilter")?.addEventListener("change", function () {
         pageSize = parseInt(this.value) || 30;
@@ -514,7 +588,7 @@ async function saveAdjust() {
         branch_id: document.getElementById("adjustBranch").value,
         adjustment_type: type,
         quantity: quantity,
-        adjusted_by: "admin",
+        adjusted_by: window.currentUserId || "UNKNOWN",
         remarks: remarks
     };
 
@@ -542,7 +616,36 @@ async function saveAdjust() {
         alert(err.message);
     }
 }
+async function loadWarehouseFilter() {
+    try {
+        const res = await fetch("/Inventory/GetBranches");
 
+        if (!res.ok) {
+            throw new Error("Failed to load warehouse list.");
+        }
+
+        const data = await res.json();
+        const select = document.getElementById("warehouseFilter");
+
+        if (!select) return;
+
+        select.innerHTML = `<option value="">All Warehouses</option>`;
+
+        data.forEach(b => {
+            const branchId = b.branch_id ?? "";
+            const branchName = b.branch_name ?? branchId;
+
+            select.innerHTML += `
+                <option value="${branchId}">
+                    ${branchName}
+                </option>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Failed to load warehouse filter", err);
+    }
+}
 async function loadHistory(productId, lotNo, branchId) {
     try {
         const res = await fetch(`/Inventory/GetHistory?product_id=${encodeURIComponent(productId)}&lot_no=${encodeURIComponent(lotNo)}&branch_id=${encodeURIComponent(branchId)}`);

@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = "Manual Stock In";
+    ViewData["Subtitle"] = "Encode stock receiving directly from the dashboard.";
+}
+
+<div class="container-fluid manual-stockin-page">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <small class="text-muted">Inventory &gt; Manual Stock IN</small>
+            <h2 class="fw-bold mb-0">Manual Stock IN</h2>
+            <small class="text-muted">Encode stock receiving directly from the dashboard.</small>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+            <form id="manualStockInForm">
+
+                <h5 class="fw-bold mb-3">Stock IN Details</h5>
+
+                <div class="row g-3">
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label fw-semibold">Branch / Warehouse</label>
+                        <select class="form-select" id="branchId" required>
+                            <option value="">Select branch</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label fw-semibold">Product Source</label>
+                        <select class="form-select" id="productSource">
+                            <option value="">All Sources</option>
+                            <option value="OWN">Own Product</option>
+                            <option value="OTHER_LINES">Other Lines</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select class="form-select" id="categoryId">
+                            <option value="">All categories</option>
+                        </select>
+                    </div>
+
+                  
+
+                    <div class="col-lg-8 col-md-6">
+                        <label class="form-label fw-semibold">Product</label>
+                        <select class="form-select" id="productId" required>
+                            <option value="">Select product</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label fw-semibold">Supplier</label>
+                        <select class="form-select" id="supplierId">
+                            <option value="">Select supplier</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6" id="packContainer">
+                        <label class="form-label fw-semibold">Pack Qty</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="packInput" min="0" step="1" value="0">
+                            <span class="input-group-text" id="packUomLabel">PACK</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">Loose Qty</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="looseInput" min="0" step="0.01" value="0">
+                            <span class="input-group-text" id="baseUomLabel">UOM</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">Total Qty</label>
+                        <input type="number" class="form-control" id="quantity" readonly required>
+                        <small class="text-muted" id="qtyBreakdown">Select product first</small>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">Lot No</label>
+                        <input type="text" class="form-control" id="lotNo" required>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">MFG Date</label>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="mfgMonth"></select>
+                            <select class="form-select" id="mfgYear"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">EXP Date</label>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="expMonth"></select>
+                            <select class="form-select" id="expYear"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">Remarks</h5>
+
+                <div class="row g-3">
+                    
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Remarks</label>
+                        <textarea class="form-control" id="remarks" rows="3">Manual Stock IN via Dashboard</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary" id="btnClearStockIn">
+                        Clear
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4" id="btnSaveStockIn">
+                        Save Stock IN
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/manual-stock-in.js" asp-append-version="true"></script>
+}

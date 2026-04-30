@@ -1,8 +1,13 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿
+let currentPage = 1;
+const pageSize = 50;
+let totalPages = 1;
+document.addEventListener("DOMContentLoaded", function () {
     const btnAddProduct = document.getElementById("btnAddProduct");
     const searchProduct = document.getElementById("searchProduct");
     const filterCategory = document.getElementById("filterCategory");
     const filterStatus = document.getElementById("filterStatus");
+    const filterSource = document.getElementById("filterSource");
     const btnFilterProducts = document.getElementById("btnFilterProducts");
     const btnClearProducts = document.getElementById("btnClearProducts");
 
@@ -20,7 +25,7 @@
     const productUom = document.getElementById("productUom");
     const productPackUom = document.getElementById("productPackUom");
     const productPackQty = document.getElementById("productPackQty");
-
+    const productSource = document.getElementById("productSource");
     const productModalLabel = document.getElementById("productModalLabel");
     const btnSaveProduct = document.getElementById("btnSaveProduct");
 
@@ -68,7 +73,19 @@
 
     async function loadProducts() {
         try {
-            const response = await fetch("/Product/GetProducts");
+            const search = searchProduct?.value || "";
+            const category = filterCategory?.value || "";
+            const status = filterStatus?.value;
+            const source = filterSource?.value || "";
+
+            let url = `/Product/GetProducts?page=${currentPage}&pageSize=${pageSize}`;
+
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (category) url += `&categoryId=${encodeURIComponent(category)}`;
+            if (status !== "" && status !== undefined) url += `&status=${status}`;
+            if (source) url += `&source=${encodeURIComponent(source)}`;
+
+            const response = await fetch(url);
 
             if (!response.ok) {
                 const err = await response.text();
@@ -76,19 +93,24 @@
             }
 
             const data = await response.json();
-            allProducts = data || [];
+
+            allProducts = data.items || [];
+            totalPages = data.totalPages || 1;
 
             renderProducts(allProducts);
+            renderPagination(data.totalRecords);
+
+            console.log("API DATA:", data);
+
 
         } catch (error) {
             document.getElementById("productTableBody").innerHTML = `
-                <tr>
-                    <td colspan="9" class="text-center text-danger">
-                        ${error.message}
-                    </td>
-                </tr>
-            `;
-            console.error(error);
+            <tr>
+                <td colspan="10" class="text-center text-danger">
+                    ${error.message}
+                </td>
+            </tr>
+        `;
         }
     }
 
@@ -127,6 +149,7 @@
                     ? '<span class="badge bg-secondary">Inactive</span>'
                     : '<span class="badge bg-success">Active</span>'}
                     </td>
+                    <td>${formatProductSource(item.product_source)}</td>
                     <td class="text-end">
                         <button
                             class="btn btn-sm btn-outline-primary me-1 btn-edit-product"
@@ -140,8 +163,9 @@
                             data-desc="${item.product_description ?? ""}"
                             data-uom="${item.uom ?? ""}"
                             data-packuom="${item.pack_uom ?? ""}"
-                            data-packqty="${item.pack_qty ?? 0}">
-                            Edit
+                           data-packqty="${item.pack_qty ?? 0}"
+data-source="${item.product_source ?? 'OWN'}">
+Edit
                         </button>
                         <button
                             class="btn btn-sm btn-outline-danger btn-delete-product"
@@ -155,33 +179,18 @@
 
         bindProductButtons();
     }
+    function formatProductSource(source) {
+        source = (source || "OWN").toUpperCase();
 
+        if (source === "OTHER_LINES") {
+            return `<span class="badge bg-warning text-dark">Other Lines</span>`;
+        }
+
+        return `<span class="badge bg-primary">Own Product</span>`;
+    }
     function applyFilters() {
-        const keyword = searchProduct?.value.trim().toLowerCase() || "";
-        const selectedCategory = filterCategory?.value || "";
-        const selectedStatus = filterStatus?.value || "";
-
-        let filtered = [...allProducts];
-
-        if (keyword) {
-            filtered = filtered.filter(item =>
-                (item.product_id ?? "").toLowerCase().includes(keyword) ||
-                (item.product_name ?? "").toLowerCase().includes(keyword) ||
-                (item.product_sku ?? "").toLowerCase().includes(keyword) ||
-                (item.product_description ?? "").toLowerCase().includes(keyword)
-            );
-        }
-
-        if (selectedCategory) {
-            filtered = filtered.filter(item => (item.catg_id ?? "") === selectedCategory);
-        }
-
-        if (selectedStatus !== "") {
-            const isDeleted = selectedStatus === "true";
-            filtered = filtered.filter(item => Boolean(item.is_deleted) === isDeleted);
-        }
-
-        renderProducts(filtered);
+        currentPage = 1;
+        loadProducts();
     }
 
     function bindProductButtons() {
@@ -204,6 +213,7 @@
                 productUom.value = this.dataset.uom || "";
                 productPackUom.value = this.dataset.packuom || "";
                 productPackQty.value = this.dataset.packqty || "";
+                productSource.value = this.dataset.source || "OWN";
 
                 productId.readOnly = true;
 
@@ -219,32 +229,108 @@
             });
         });
     }
+    function formatProductSource(source) {
+        source = (source || "OWN").toUpperCase();
+
+        if (source === "OTHER_LINES") {
+            return `<span class="badge bg-warning text-dark">Other Lines</span>`;
+        }
+
+        return `<span class="badge bg-primary">Own Product</span>`;
+    }
+    //function clearProductForm() {
+    //    productFormMode.value = "add";
+    //    originalProductId.value = "";
+
+    //    //productId.value = "";
+    //    //productName.value = "";
+    //    productId.value = "Auto-generated";
+    //    productId.readOnly = true;
+    //    productCategory.value = "";
+    //    productSku.value = "";
+    //    productPrice.value = "";
+    //    productStockLevel.value = "";
+    //    productStatus.value = "false";
+    //    productDescription.value = "";
+    //    productUom.value = "";
+    //    productPackUom.value = "";
+    //    productPackQty.value = "";
+    //    if (filterSource) filterSource.value = "";
+    //    //productId.readOnly = false;
+    //    productModalLabel.textContent = "Add Product";
+    //    btnSaveProduct.textContent = "Save Product";
+    //}
+
 
     function clearProductForm() {
+        // keep last selected setup values
+        const lastCategory = productCategory.value;
+        const lastUom = productUom.value;
+        const lastPackUom = productPackUom.value;
+        const lastPackQty = productPackQty.value;
+        const lastSource = productSource.value || "OWN";
+
         productFormMode.value = "add";
         originalProductId.value = "";
 
-        productId.value = "";
+        productId.value = "Auto-generated";
+        productId.readOnly = true;
+        productId.disabled = true;
+
+        // clear only product-specific fields
         productName.value = "";
-        productCategory.value = "";
         productSku.value = "";
         productPrice.value = "";
         productStockLevel.value = "";
         productStatus.value = "false";
         productDescription.value = "";
-        productUom.value = "";
-        productPackUom.value = "";
-        productPackQty.value = "";
 
-        productId.readOnly = false;
+        // restore repeated values
+        productCategory.value = lastCategory;
+        productUom.value = lastUom;
+        productPackUom.value = lastPackUom;
+        productPackQty.value = lastPackQty;
+        productSource.value = lastSource;
+
         productModalLabel.textContent = "Add Product";
         btnSaveProduct.textContent = "Save Product";
     }
 
+
+    function renderPagination(totalRecords) {
+        totalRecords = Number(totalRecords || 0);
+
+        const start = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+        const end = Math.min(currentPage * pageSize, totalRecords);
+
+        document.getElementById("rangeText").textContent = `${start}–${end} of ${totalRecords}`;
+
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+
+        prevBtn.onclick = function () {
+            if (currentPage > 1) {
+                currentPage--;
+                loadProducts();
+            }
+        };
+
+        nextBtn.onclick = function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadProducts();
+            }
+        };
+    }
+
     if (btnSaveProduct) {
         btnSaveProduct.addEventListener("click", async function () {
+         
             const payload = {
-                product_id: productId.value.trim(),
+               // product_id: productId.value.trim(),
                 product_name: productName.value.trim(),
                 product_description: productDescription.value.trim(),
                 product_sku: productSku.value.trim(),
@@ -254,14 +340,14 @@
                 pack_uom: productPackUom.value.trim(),
                 pack_qty: parseFloat(productPackQty.value) || 0,
                 catg_id: productCategory.value,
+                product_source: productSource.value || "OWN",
                 is_deleted: productStatus.value === "true"
             };
 
-            if (!payload.product_id || !payload.product_name) {
-                alert("Product ID and Product Name are required.");
+            if (!payload.product_name) {
+                alert("Product Name is required.");
                 return;
             }
-
             try {
                 let url = "";
                 let successMessage = "";
@@ -297,6 +383,14 @@
 
                 await loadProducts();
                 applyFilters();
+
+                // ✅ reopen modal for next entry
+                setTimeout(() => {
+                    clearProductForm();
+
+                    const newModal = new bootstrap.Modal(document.getElementById("productModal"));
+                    newModal.show();
+                }, 300);
 
             } catch (error) {
                 console.error(error);
@@ -335,12 +429,21 @@
         });
     }
 
+    if (filterSource) {
+        filterSource.addEventListener("change", function () {
+            applyFilters();
+        });
+    }
+
     if (btnClearProducts) {
         btnClearProducts.addEventListener("click", function () {
             if (searchProduct) searchProduct.value = "";
             if (filterCategory) filterCategory.value = "";
             if (filterStatus) filterStatus.value = "";
-            renderProducts(allProducts);
+            if (filterSource) filterSource.value = "";
+
+            currentPage = 1;
+            loadProducts();
         });
     }
 

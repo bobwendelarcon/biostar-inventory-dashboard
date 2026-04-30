@@ -302,20 +302,42 @@ function updateDashboardInventoryAlerts(items) {
         });
     }
 
-        function formatDateTime(value) {
-        if (!value) return "-";
-        const d = new Date(value);
-        if (isNaN(d)) return "-";
+        //function formatDateTime(value) {
+        //if (!value) return "-";
+        //const d = new Date(value);
+//if (isNaN(d)) return "-";
+    //    return d.toLocaleString("en-PH", {
+    //        year: "numeric",
+    //    month: "2-digit",
+    //    day: "2-digit",
+    //    hour: "2-digit",
+    //    minute: "2-digit"
+    //    });
+    //}
+function formatDateTime(value) {
+    if (!value) return "-";
 
-        return d.toLocaleString("en-PH", {
-            year: "numeric",
+    let dateValue = value;
+
+    // If backend sends "2026-04-28T09:05:00" without Z,
+    // treat it as UTC by adding Z.
+    if (typeof dateValue === "string" && !dateValue.endsWith("Z")) {
+        dateValue += "Z";
+    }
+
+    const d = new Date(dateValue);
+    if (isNaN(d)) return "-";
+
+    return d.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
         month: "2-digit",
         day: "2-digit",
         hour: "2-digit",
-        minute: "2-digit"
-        });
-    }
-
+        minute: "2-digit",
+        hour12: true
+    });
+}
         function formatNumber(value) {
         const num = Number(value || 0);
         return num.toLocaleString("en-PH", {

@@ -1,0 +1,347 @@
+﻿@{
+    ViewData["Title"] = "Returns";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/returns.css" asp-append-version="true" />
+}
+
+<div class="container-fluid returns-page">
+    <div class="returns-header mb-4">
+        <div>
+            <small class="text-muted">Inventory &gt; Returns</small>
+            <h2 class="fw-bold mt-2 mb-0">Returns</h2>
+            <small class="text-muted">Track returned items, quarantine, and release for reprocess.</small>
+        </div>
+
+        <div class="returns-actions">
+            <div class="returns-tabs" id="returnsTabs">
+                <button type="button" class="returns-tab active" data-status="active">Active</button>
+                <button type="button" class="returns-tab" data-status="completed">Completed</button>
+                <button type="button" class="returns-tab" data-status="all">All</button>
+            </div>
+
+            <button class="btn btn-primary btn-sm" id="btnNewReturn">
+                + New Return
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle" id="returnsTable">
+                    <thead>
+                        <tr>
+                            <th>Return No</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Total Qty</th>
+                            <th>Released Qty</th>
+                            <th>Remaining</th>
+                            <th>Aging</th>
+                            <th>Reason</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="returnsTableBody">
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- CREATE RETURN MODAL -->
+<div class="modal fade" id="returnModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">New Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- HEADER INFO -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Customer ID</label>
+                        <input class="form-control" id="customerId" placeholder="e.g. C002" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Customer Name</label>
+                        <input class="form-control" id="customerName" placeholder="Customer name" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Return Date</label>
+                        <input type="date" class="form-control" id="returnDate" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Reason</label>
+                        <input class="form-control" id="returnReason" placeholder="Damaged / Quality issue" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" id="returnRemarks" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <hr />
+
+                <!-- LINE INPUT -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold mb-0">Return Item</h6>
+                    <small class="text-muted">Search OUT transaction first, then adjust return qty if needed.</small>
+                </div>
+
+                <input type="hidden" id="lineOrderId" />
+                <input type="hidden" id="lineChecklistId" />
+                <input type="hidden" id="selectedOutTransactionId" />
+
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-outline-dark w-100" id="btnOpenOutSearch">
+                            Search OUT
+                        </button>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Product ID</label>
+                        <input class="form-control" id="lineProductId" placeholder="FP0005" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Product Name</label>
+                        <input class="form-control" id="lineProductName" placeholder="Product" />
+                    </div>
+
+                    <div class="col-md-1">
+                        <label class="form-label">Branch</label>
+                        <input class="form-control" id="lineBranchId" placeholder="BR1" />
+                    </div>
+
+                    <div class="col-md-1">
+                        <label class="form-label">Lot</label>
+                        <input class="form-control" id="lineLotNo" />
+                    </div>
+
+                    <div class="col-md-1">
+                        <label class="form-label">Qty</label>
+                        <input type="number" step="0.01" class="form-control" id="lineQty" />
+                    </div>
+
+                    <div class="col-md-1">
+                        <label class="form-label">UOM</label>
+                        <input class="form-control" id="lineUom" placeholder="kg" />
+                    </div>
+
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-outline-primary w-100" id="btnAddLine">
+                            Add
+                        </button>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Quarantine Location</label>
+                        <input class="form-control" id="lineQuarantineLocation" placeholder="QR-AREA-01" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Condition</label>
+                        <select class="form-select" id="lineCondition">
+                            <option>FOR INSPECTION</option>
+                            <option>FOR REPROCESS</option>
+                            <option>DAMAGED</option>
+                            <option>EXPIRED</option>
+                            <option>GOOD</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">DR No</label>
+                        <input class="form-control" id="lineDrNo" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">INV No</label>
+                        <input class="form-control" id="lineInvNo" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Order No</label>
+                        <input class="form-control" id="lineOrderNo" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Checklist No</label>
+                        <input class="form-control" id="lineChecklistNo" />
+                    </div>
+                </div>
+
+                <!-- ADDED ITEMS -->
+                <div class="table-responsive mt-4">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Lot</th>
+                                <th>Qty</th>
+                                <th>Location</th>
+                                <th>Condition</th>
+                                <th>DR</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="returnLinesBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-3">No items added.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-success" id="btnSaveReturn">Save Return</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- SEARCH OUT TRANSACTION MODAL -->
+<div class="modal fade" id="outTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable out-search-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Search OUT Transaction</h5>
+                    <small class="text-muted">Select the original OUT transaction for this return.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-2 align-items-end mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Search DR / DO / INV / Remarks</label>
+                        <input class="form-control" id="outSearchText" placeholder="DR No, DO No, INV No, Remarks" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Lot No</label>
+                        <input class="form-control" id="outSearchLot" placeholder="Lot No" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" id="btnSearchOutTransactions">
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="my-2" />
+
+                <div class="table-responsive out-search-table">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Product</th>
+                                <th>Lot</th>
+                                <th>Qty</th>
+                                <th>Customer</th>
+                                <th>DR</th>
+                                <th>INV</th>
+                                <th>DO</th>
+                                <th>Remarks</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="outTransactionBody">
+                            <tr>
+                                <td colspan="10" class="text-center text-muted py-3">
+                                    Search OUT transactions.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- VIEW / RELEASE MODAL -->
+<div class="modal fade" id="returnDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="detailsTitle">Return Details</h5>
+                    <small class="text-muted" id="detailsSubTitle"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="detailsSummary" class="mb-3"></div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Lot</th>
+                                <th>Returned</th>
+                                <th>Released</th>
+                                <th>Remaining</th>
+                                <th>DR</th>
+                                <th>INV</th>
+                                <th>PO</th>
+                                <th>Remarks</th>
+                                <th>Status</th>
+                                <th>Release Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailsLinesBody"></tbody>
+                    </table>
+                </div>
+
+                <label class="form-label mt-3">Release Remarks</label>
+                <textarea class="form-control" id="releaseRemarks" rows="2"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-danger me-auto" id="btnCancelReturn">Cancel Return</button>
+                <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-warning" id="btnReleaseReturn">Release for Reprocess</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/returns.js" asp-append-version="true"></script>
+}
