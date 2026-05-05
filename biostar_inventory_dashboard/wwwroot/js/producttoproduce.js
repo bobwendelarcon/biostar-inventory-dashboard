@@ -1,12 +1,15 @@
-﻿let savedPtpId = null;
+﻿
+let savedPtpId = null;
+let cachedCategories = [];
 
 document.addEventListener("DOMContentLoaded", function () {
     setDefaultDate();
-
+    loadCategoriesForManual();
     document.getElementById("btnLoadShortages")?.addEventListener("click", loadPlanningShortages);
     document.getElementById("btnAddManualLine")?.addEventListener("click", addManualLine);
     document.getElementById("btnSavePtp")?.addEventListener("click", savePtpRequest);
     document.getElementById("btnPrintPtp")?.addEventListener("click", printPtpRequest);
+
 
     document.addEventListener("click", function (e) {
         const btn = e.target.closest(".btn-remove-line");
@@ -16,6 +19,24 @@ document.addEventListener("DOMContentLoaded", function () {
         refreshEmptyRow();
     });
 });
+
+
+async function loadCategoriesForManual() {
+    try {
+        const response = await fetch("/Categories/GetCategories");
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const data = await response.json();
+
+        cachedCategories = Array.isArray(data) ? data : data.items || [];
+
+    } catch (err) {
+        console.error(err);
+        cachedCategories = [];
+        alert("Failed to load categories.");
+    }
+}
 
 function setDefaultDate() {
     const input = document.getElementById("requestedDate");
@@ -88,17 +109,32 @@ function addManualLine() {
 function addLine(line) {
     const tbody = document.getElementById("ptpLinesBody");
 
+    const categoryOptions = cachedCategories.map(c => `
+    <option value="${safe(c.catg_id || c.catgId || "")}">
+        ${safe(c.catg_name || c.catgName || "")}
+    </option>
+`).join("");
+
     const productCell = line.readonlyProduct
         ? `
-            <div class="fw-semibold">${safe(line.productName)}</div>
-            <small class="text-muted">${safe(line.productId)}</small>
-            <input type="hidden" class="line-product-id" value="${safe(line.productId)}" />
-            <input type="hidden" class="line-product-name" value="${safe(line.productName)}" />
-        `
+        <div class="fw-semibold">${safe(line.productName)}</div>
+        <small class="text-muted">${safe(line.productId)}</small>
+        <input type="hidden" class="line-product-id" value="${safe(line.productId)}" />
+        <input type="hidden" class="line-product-name" value="${safe(line.productName)}" />
+    `
         : `
-            <input type="text" class="form-control mb-1 line-product-id" placeholder="Product ID" />
-            <input type="text" class="form-control line-product-name" placeholder="Product Name" />
-        `;
+        <select class="form-select mb-1 line-category-select">
+            <option value="">Select Category</option>
+            ${categoryOptions}
+        </select>
+
+        <select class="form-select line-product-select">
+            <option value="">Select Product</option>
+        </select>
+
+        <input type="hidden" class="line-product-id" value="" />
+        <input type="hidden" class="line-product-name" value="" />
+    `;
 
     const hasPack = line.packUom && Number(line.packQty || 0) > 0;
 
@@ -173,6 +209,10 @@ function addLine(line) {
 
     const row = tbody.lastElementChild;
     bindPtpQtyConversion(row);
+    if (!line.readonlyProduct) {
+        bindManualProductDropdown(row);
+    }
+   
 }
 
 function bindPtpQtyConversion(row) {
@@ -282,6 +322,92 @@ async function savePtpRequest() {
     }
 }
 
+
+function bindManualProductDropdown(row) {
+    const categorySelect = row.querySelector(".line-category-select");
+    const productSelect = row.querySelector(".line-product-select");
+
+    if (!categorySelect || !productSelect) return;
+
+    categorySelect.addEventListener("change", async function () {
+        const categoryId = this.value;
+
+        productSelect.innerHTML = `<option value="">Loading...</option>`;
+
+        row.querySelector(".line-product-id").value = "";
+        row.querySelector(".line-product-name").value = "";
+
+        if (!categoryId) {
+            productSelect.innerHTML = `<option value="">Select Product</option>`;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/Product/GetProductsLookup?categoryId=${encodeURIComponent(categoryId)}`);
+
+            if (!response.ok) throw new Error(await response.text());
+
+            const products = await response.json();
+
+            productSelect.innerHTML = `<option value="">Select Product</option>`;
+
+            products.forEach(p => {
+                productSelect.insertAdjacentHTML("beforeend", `
+                    <option
+                        value="${safe(p.productId || p.product_id || "")}"
+                        data-name="${safe(p.productName || p.product_name || "")}"
+                        data-uom="${safe(p.uom || "")}"
+                        data-pack-uom="${safe(p.packUom || p.pack_uom || "")}"
+                        data-pack-qty="${Number(p.packQty || p.pack_qty || 0)}">
+                        ${safe(p.productName || p.product_name || "")}
+                    </option>
+                `);
+            });
+
+        } catch (err) {
+            console.error(err);
+            productSelect.innerHTML = `<option value="">Failed to load products</option>`;
+        }
+    });
+
+    productSelect.addEventListener("change", function () {
+        const opt = this.options[this.selectedIndex];
+
+        const productId = opt.value || "";
+        const productName = opt.dataset.name || "";
+        const uom = opt.dataset.uom || "";
+        const packUom = opt.dataset.packUom || "";
+        const packQty = Number(opt.dataset.packQty || 0);
+
+        row.querySelector(".line-product-id").value = productId;
+        row.querySelector(".line-product-name").value = productName;
+
+        row.querySelector(".line-uom").value = uom;
+        row.querySelector(".line-base-uom").value = uom;
+        row.querySelector(".line-pack-uom").value = packUom;
+        row.querySelector(".line-pack-qty").value = packQty;
+
+        const uomSmall = row.querySelector(".line-suggested-qty")?.closest("td")?.querySelector("small");
+        if (uomSmall) uomSmall.textContent = uom;
+
+        const uomType = row.querySelector(".line-uom-type");
+        const hasPack = packUom && packQty > 0;
+
+        uomType.innerHTML = `
+            <option value="BASE">Base (${safe(uom)})</option>
+            ${hasPack ? `<option value="PACK">Pack (${safe(packUom)})</option>` : ""}
+        `;
+
+        const uomTypeSmall = uomType.closest("td").querySelector("small");
+        if (uomTypeSmall) {
+            uomTypeSmall.innerHTML = hasPack
+                ? `1 ${safe(packUom)} = ${formatQty(packQty)} ${safe(uom)}`
+                : `No pack setup`;
+        }
+
+        row.querySelector(".line-qty-input").dispatchEvent(new Event("input"));
+    });
+}
 async function printPtpRequest() {
     if (!savedPtpId) {
         alert("Save the request first before printing.");

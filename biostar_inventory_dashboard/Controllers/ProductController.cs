@@ -62,5 +62,16 @@ namespace biostar_inventory_dashboard.Controllers
 
             return Ok("Product updated successfully.");
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetProductsLookup(string? categoryId, string? search = null)
+        {
+            var endpoint =
+                $"api/Products/lookup?categoryId={Uri.EscapeDataString(categoryId ?? "")}&search={Uri.EscapeDataString(search ?? "")}";
+
+            var result = await _apiService.GetAsync<object>(endpoint);
+            return Json(result);
+        }
     }
 }
