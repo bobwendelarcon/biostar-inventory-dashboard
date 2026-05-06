@@ -135,7 +135,7 @@
                             <th>MFG. & EXP. Date</th>
                             <th>EXPIRES IN</th>
                             <th>Warehouse</th>
-                            <th class="text-center">Action</th>
+                            <th class="text-center action-col">Action</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTable">
@@ -249,5 +249,9 @@
 </div>
 
 @section Scripts {
+    <script>
+        window.currentUserRole = "@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value";
+    </script>
+
     <script src="~/js/inventory.js" asp-append-version="true"></script>
 }

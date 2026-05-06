@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("searchPartner")?.addEventListener("input", debouncePartnerLoad);
     document.getElementById("filterPartnerType")?.addEventListener("change", loadPartners);
     document.getElementById("filterRegion")?.addEventListener("change", loadPartners);
+    document.getElementById("partnerType")?.addEventListener("change", toggleAgentField);
     document.getElementById("filterStatus")?.addEventListener("change", loadPartners);
 
     loadPartners();
@@ -25,6 +26,50 @@ function debouncePartnerLoad() {
     }, 400);
 }
 
+function toggleAgentField(selectedAgentId = "") {
+    const type = document.getElementById("partnerType")?.value || "";
+    const wrapper = document.getElementById("agentWrapper");
+    const agent = document.getElementById("partnerAgent");
+
+    if (!wrapper || !agent) return;
+
+    if (type === "CUSTOMER") {
+        wrapper.style.display = "";
+        loadAgentDropdown(selectedAgentId);
+    } else {
+        wrapper.style.display = "none";
+        agent.value = "";
+    }
+}
+async function loadAgentDropdown(selectedAgentId = "") {
+    const agentSelect = document.getElementById("partnerAgent");
+    if (!agentSelect) return;
+
+    const response = await fetch("/Partner/GetPartners");
+
+    if (!response.ok) {
+        throw new Error("Failed to load agents.");
+    }
+
+    const data = await response.json();
+
+    const agents = data.filter(x =>
+        (x.partner_type ?? "").toUpperCase() === "AGENT" &&
+        Boolean(x.is_deleted) === false
+    );
+
+    agentSelect.innerHTML = `<option value="">Select Agent</option>`;
+
+    agents.forEach(agent => {
+        agentSelect.innerHTML += `
+            <option value="${agent.partner_id}">
+                ${agent.partner_id} - ${agent.partner_name}
+            </option>
+        `;
+    });
+
+    agentSelect.value = selectedAgentId || "";
+}
 async function loadPartners() {
     try {
 
@@ -76,7 +121,7 @@ async function loadPartners() {
         console.error(error);
         document.getElementById("partnerTableBody").innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-danger">${error.message}</td>
+                <td colspan="9" class="text-center text-danger">${error.message}</td>
             </tr>
         `;
     }
@@ -89,7 +134,7 @@ function renderPartnerTable(data) {
     if (!data || data.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted">No partners found.</td>
+                <td colspan="9" class="text-center text-muted">No partners found.</td>
             </tr>
         `;
         return;
@@ -99,23 +144,24 @@ function renderPartnerTable(data) {
         const statusText = String(item.is_deleted) === "true" ? "Inactive" : "Active";
 
         tableBody.innerHTML += `
-            <tr>
-                <td>${item.partner_id ?? ""}</td>
-                <td>${item.partner_name ?? ""}</td>
-                <td>${item.address ?? ""}</td>
-                <td>${item.contact ?? ""}</td>
-                <td>${item.partner_type ?? ""}</td>
-                <td>${item.region ?? ""}</td>
-                <td>${statusText}</td>
-                <td class="text-end">
-                    <button type="button"
-                        class="btn btn-sm btn-outline-primary rounded-3 btn-edit-partner"
-                        data-partner='${safeAttr(JSON.stringify(item))}'>
-                        Edit
-                    </button>
-                </td>
-            </tr>
-        `;
+    <tr>
+        <td>${item.partner_id ?? ""}</td>
+        <td>${item.partner_name ?? ""}</td>
+        <td>${item.address ?? ""}</td>
+        <td>${item.contact ?? item.contact_no ?? ""}</td>
+        <td>${item.partner_type ?? ""}</td>
+        <td>${item.region ?? ""}</td>
+      <td>${item.agent_name ?? ""}</td>
+        <td>${statusText}</td>
+        <td class="text-end">
+            <button type="button"
+                class="btn btn-sm btn-outline-primary rounded-3 btn-edit-partner"
+                data-partner='${safeAttr(JSON.stringify(item))}'>
+                Edit
+            </button>
+        </td>
+    </tr>
+`;
     });
 
     document.querySelectorAll(".btn-edit-partner").forEach(btn => {
@@ -139,15 +185,18 @@ function openAddPartnerModal() {
     document.getElementById("partnerFormMode").value = "add";
     document.getElementById("originalPartnerId").value = "";
 
-    document.getElementById("partnerId").value = "";
+    document.getElementById("partnerId").value = "Auto Generated";
     document.getElementById("partnerName").value = "";
     document.getElementById("partnerAddress").value = "";
     document.getElementById("partnerContact").value = "";
     document.getElementById("partnerType").value = "";
     document.getElementById("partnerRegion").value = "";
+    document.getElementById("partnerAgent").value = "";
     document.getElementById("partnerStatus").value = "false";
 
-    document.getElementById("partnerId").disabled = false;
+    document.getElementById("partnerId").disabled = true;
+
+    toggleAgentField();
 }
 
 function openEditPartnerModal(item) {
@@ -162,6 +211,8 @@ function openEditPartnerModal(item) {
     document.getElementById("partnerType").value = item.partner_type ?? "";
     document.getElementById("partnerRegion").value = item.region ?? "";
     document.getElementById("partnerStatus").value = String(item.is_deleted ?? false);
+
+    toggleAgentField(item.agent_id ?? "");
 
     document.getElementById("partnerId").disabled = true;
     partnerModal.show();
@@ -178,16 +229,16 @@ async function savePartner() {
             contact: document.getElementById("partnerContact")?.value.trim() || "",
             partner_type: document.getElementById("partnerType")?.value.trim() || "",
             region: document.getElementById("partnerRegion")?.value.trim() || "",
+            agent_id: document.getElementById("partnerAgent")?.value || "",
             is_deleted: document.getElementById("partnerStatus")?.value === "true"
         };
 
         console.log("PARTNER PAYLOAD:", payload);
 
-        if (!payload.partner_id) {
+        if (mode === "edit" && !payload.partner_id) {
             alert("Partner ID is required.");
             return;
         }
-
         if (!payload.partner_name) {
             alert("Partner Name is required.");
             return;
@@ -198,8 +249,12 @@ async function savePartner() {
             return;
         }
 
-        if (payload.partner_type !== "SUPPLIER" && payload.partner_type !== "CUSTOMER") {
-            alert("Partner Type must be SUPPLIER or CUSTOMER.");
+        if (
+            payload.partner_type !== "SUPPLIER" &&
+            payload.partner_type !== "CUSTOMER" &&
+            payload.partner_type !== "AGENT"
+        ) {
+            alert("Partner Type must be SUPPLIER, CUSTOMER, or AGENT.");
             return;
         }
 

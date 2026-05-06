@@ -1,9 +1,12 @@
 ﻿using biostar_inventory_dashboard.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
+
 namespace biostar_inventory_dashboard.Controllers
 {
+    [Authorize(Roles = "ADMIN,STAFF")]
     public class DeliveryChecklistController : Controller
     {
         private readonly ApiService _apiService;

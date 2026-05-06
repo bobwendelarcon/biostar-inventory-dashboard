@@ -145,7 +145,7 @@
                             <th>User</th>
                             <th>Reference</th>
                             <th>Remarks</th>
-                            <th class="text-center">Action</th>
+                            <th class="text-center action-col">Action</th>
                         </tr>
                     </thead>
                     <tbody id="transactionTable">
@@ -202,5 +202,9 @@
 </div>
 
 @section Scripts {
+    <script>
+        window.currentUserRole = "@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value";
+    </script>
+
     <script src="~/js/transaction.js" asp-append-version="true"></script>
 }

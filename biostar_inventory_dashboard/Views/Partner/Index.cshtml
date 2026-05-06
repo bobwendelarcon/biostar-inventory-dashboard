@@ -26,6 +26,8 @@
                     <option value="">All Types</option>
                     <option value="SUPPLIER">SUPPLIER</option>
                     <option value="CUSTOMER">CUSTOMER</option>
+                   
+                    <option value="AGENT">AGENT</option>
                 </select>
             </div>
 
@@ -61,13 +63,14 @@
                         <th>Contact</th>
                         <th>Type</th>
                         <th>Region</th>
+                        <th>Agent</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="partnerTableBody">
                     <tr>
-                        <td colspan="8" class="text-center text-muted">Loading partners...</td>
+                        <td colspan="9" class="text-center text-muted">Loading partners...</td>
                     </tr>
                 </tbody>
             </table>
@@ -92,7 +95,7 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Partner ID</label>
-                            <input type="text" class="form-control" id="partnerId" placeholder="e.g. P001" />
+                            <input type="text" class="form-control" id="partnerId" placeholder="Auto Generated" readonly />
                         </div>
 
                         <div class="col-md-8">
@@ -116,6 +119,14 @@
                                 <option value="">Select type</option>
                                 <option value="SUPPLIER">SUPPLIER</option>
                                 <option value="CUSTOMER">CUSTOMER</option>
+                                <option value="AGENT">AGENT</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4" id="agentWrapper" style="display:none;">
+                            <label class="form-label fw-semibold">Agent</label>
+                            <select class="form-select" id="partnerAgent">
+                                <option value="">Select Agent</option>
                             </select>
                         </div>
 
@@ -127,6 +138,8 @@
                                 <option value="VIZMIN">VIZMIN</option>
                             </select>
                         </div>
+
+                       
 
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Status</label>

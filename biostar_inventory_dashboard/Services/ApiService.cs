@@ -889,6 +889,59 @@ namespace biostar_inventory_dashboard.Services
             });
         }
 
+        public async Task<string> GetProductToProduceListAsync(
+      int page = 1,
+      int pageSize = 50,
+      string status = "ACTIVE",
+      string search = "")
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/ProductToProduce?page={page}&pageSize={pageSize}&status={Uri.EscapeDataString(status)}&search={Uri.EscapeDataString(search ?? "")}");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+        //ptp
+        public async Task<string> DeleteProductToProduceLineAsync(long ptpLineId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/ProductToProduce/line/{ptpLineId}");
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> StartProductToProduceLineAsync(long ptpLineId)
+        {
+            var response = await _httpClient.PostAsync($"api/ProductToProduce/line/{ptpLineId}/start", null);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> ProduceStockAsync(string json)
+        {
+            var response = await _httpClient.PostAsync(
+                "api/ProductToProduce/produce",
+                new StringContent(json, Encoding.UTF8, "application/json"));
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
 
 
 

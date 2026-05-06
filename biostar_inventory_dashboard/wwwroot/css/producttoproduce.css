@@ -77,3 +77,32 @@
         font-size: 13px;
     }
 }
+
+.ptp-summary-card {
+    transition: 0.2s ease;
+}
+
+    .ptp-summary-card:hover {
+        transform: translateY(-2px);
+    }
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+}
+
+.running-time {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+
+.ptp-page .nav-pills .nav-link {
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+    .ptp-page .nav-pills .nav-link.active {
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+    }

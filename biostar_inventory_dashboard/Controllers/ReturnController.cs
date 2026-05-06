@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace biostar_inventory_dashboard.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ADMIN,STAFF")]
     public class ReturnsController : Controller
     {
         private readonly ApiService _apiService;

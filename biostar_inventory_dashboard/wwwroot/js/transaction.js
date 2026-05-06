@@ -54,13 +54,63 @@ function toDisplayNumber(value) {
 
 
 function buildReferenceHtml(item) {
+
     const refs = [];
 
-    if (item.dr_no) refs.push(`<div><strong>DR:</strong> ${escapeHtml(item.dr_no)}</div>`);
-    if (item.inv_no) refs.push(`<div><strong>INV:</strong> ${escapeHtml(item.inv_no)}</div>`);
-    if (item.po_no) refs.push(`<div><strong>PO:</strong> ${escapeHtml(item.po_no)}</div>`);
-    if (item.order_no) refs.push(`<div><strong>DO:</strong> ${escapeHtml(item.order_no)}</div>`);
-    if (item.checklist_no) refs.push(`<div><strong>DC:</strong> ${escapeHtml(item.checklist_no)}</div>`);
+    const remarks = String(item.remarks || "").toUpperCase();
+
+    // Production Transmittal
+    if (item.dr_no) {
+
+        let label = "DR";
+
+        if (remarks.includes("PRODUCTION STOCK IN")) {
+            label = "Tr#";
+        }
+
+        refs.push(`
+            <div>
+                <strong>${label}:</strong>
+                ${escapeHtml(item.dr_no)}
+            </div>
+        `);
+    }
+
+    if (item.inv_no) {
+        refs.push(`
+            <div>
+                <strong>INV:</strong>
+                ${escapeHtml(item.inv_no)}
+            </div>
+        `);
+    }
+
+    if (item.po_no) {
+        refs.push(`
+            <div>
+                <strong>PO:</strong>
+                ${escapeHtml(item.po_no)}
+            </div>
+        `);
+    }
+
+    if (item.order_no) {
+        refs.push(`
+            <div>
+                <strong>DO:</strong>
+                ${escapeHtml(item.order_no)}
+            </div>
+        `);
+    }
+
+    if (item.checklist_no) {
+        refs.push(`
+            <div>
+                <strong>DC:</strong>
+                ${escapeHtml(item.checklist_no)}
+            </div>
+        `);
+    }
 
     return refs.length > 0
         ? `<div class="reference-stack">${refs.join("")}</div>`
@@ -189,38 +239,49 @@ async function loadTransactions(page = 1) {
 <td>${buildReferenceHtml(item)}</td>
 
                     <td>${escapeHtml(item.remarks ?? "")}</td>
-                    <td class="text-center">
-                        ${isOut
-                    ? `
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-outline-primary btn-edit"
-                                    data-id="${item.transaction_id ?? ""}"
-                                    data-customer="${escapeHtml(item.customer_name ?? "")}"
-                                    data-dr="${escapeHtml(item.dr_no ?? "")}"
-                                    data-inv="${escapeHtml(item.inv_no ?? "")}"
-                                    data-po="${escapeHtml(item.po_no ?? "")}"
-                                    data-remarks="${escapeHtml(item.remarks ?? "")}">
-                                    Edit
-                                </button>
-                            `
-                    : `<span class="text-muted">-</span>`
-                }
-                    </td>
+                   ${canShowTransactionAction() ? `
+<td class="text-center action-col">
+    ${isOut
+                        ? `
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-primary btn-edit"
+            data-id="${item.transaction_id ?? ""}"
+            data-customer="${escapeHtml(item.customer_name ?? "")}"
+            data-dr="${escapeHtml(item.dr_no ?? "")}"
+            data-inv="${escapeHtml(item.inv_no ?? "")}"
+            data-po="${escapeHtml(item.po_no ?? "")}"
+            data-remarks="${escapeHtml(item.remarks ?? "")}">
+            Edit
+        </button>
+        `
+                        : `<span class="text-muted">-</span>`
+                    }
+</td>
+` : ""}
                 </tr>
             `;
         });
 
         renderPagination(totalRecords);
     } catch (error) {
+        const colspan = canShowTransactionAction() ? 13 : 12;
         document.getElementById("transactionTable").innerHTML = `
             <tr>
-                <td colspan="11" class="text-center text-danger">
+                <td colspan="${colspan}" class="text-center text-danger">
                     ${error.message}
                 </td>
             </tr>
         `;
         console.error(error);
+    }
+}
+
+function applyTransactionRoleUI() {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+
+    if (role === "PRODUCTION") {
+        document.querySelectorAll(".action-col").forEach(el => el.style.display = "none");
     }
 }
 
@@ -333,6 +394,11 @@ async function loadWarehouses() {
     }
 }
 
+function canShowTransactionAction() {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+    return role !== "PRODUCTION";
+}
+
 
 document.addEventListener("click", function (e) {
     const btn = e.target.closest(".btn-edit");
@@ -353,6 +419,7 @@ document.addEventListener("click", function (e) {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    applyTransactionRoleUI();
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
     loadWarehouses();

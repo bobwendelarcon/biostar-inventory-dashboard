@@ -2,23 +2,646 @@
 let savedPtpId = null;
 let cachedCategories = [];
 
+let ptpCurrentPage = 1;
+let ptpPageSize = 50;
+let ptpTotalPages = 1;
+let ptpTotalRecords = 0;
+
 document.addEventListener("DOMContentLoaded", function () {
     setDefaultDate();
     loadCategoriesForManual();
+
+    document.getElementById("ptpPrevBtn")?.addEventListener("click", function () {
+        if (ptpCurrentPage > 1) {
+            ptpCurrentPage--;
+            loadPtpTracking();
+        }
+    });
+
+    document.getElementById("ptpNextBtn")?.addEventListener("click", function () {
+        if (ptpCurrentPage < ptpTotalPages) {
+            ptpCurrentPage++;
+            loadPtpTracking();
+        }
+    });
+
     document.getElementById("btnLoadShortages")?.addEventListener("click", loadPlanningShortages);
     document.getElementById("btnAddManualLine")?.addEventListener("click", addManualLine);
     document.getElementById("btnSavePtp")?.addEventListener("click", savePtpRequest);
     document.getElementById("btnPrintPtp")?.addEventListener("click", printPtpRequest);
+    document.getElementById("btnRefreshPtpList")?.addEventListener("click", loadPtpTracking);
+    document.getElementById("btnSubmitProduce")?.addEventListener("click", submitProduceStock);
+
+    document.getElementById("ptpSearchInput")
+        ?.addEventListener("input", function () {
+            ptpCurrentPage = 1;
+            loadPtpTracking();
+        });
+
+    document.getElementById("ptpStatusFilter")
+        ?.addEventListener("change", function () {
+            ptpCurrentPage = 1;
+            loadPtpTracking();
+        });
+
+
+    document.getElementById("btnClearPtpFilter")
+        ?.addEventListener("click", function () {
+            document.getElementById("ptpSearchInput").value = "";
+            document.getElementById("ptpStatusFilter").value = "ACTIVE";
+
+            ptpCurrentPage = 1;
+            loadPtpTracking();
+        });
+
+
+    loadPtpTracking();
+
+    setInterval(updateRunningTimes, 60000);
+
+    setInterval(() => {
+        const produceModalOpen = document
+            .getElementById("produceModal")
+            ?.classList.contains("show");
+
+        if (!produceModalOpen) {
+            loadPtpTracking();
+        }
+    }, 5000);
+
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+
+    if (role === "PRODUCTION") {
+        // hide create tab button
+        const createTabBtn = document.getElementById("create-tab");
+        if (createTabBtn) createTabBtn.style.display = "none";
+
+        // hide create tab content
+        const createTab = document.getElementById("createTab");
+        if (createTab) createTab.style.display = "none";
+
+        // auto switch to tracking tab
+        const trackingTabBtn = document.getElementById("tracking-tab");
+        if (trackingTabBtn) trackingTabBtn.click();
+    }
 
 
     document.addEventListener("click", function (e) {
-        const btn = e.target.closest(".btn-remove-line");
-        if (!btn) return;
+        const removeBtn = e.target.closest(".btn-remove-line");
+        if (removeBtn) {
+            removeBtn.closest("tr")?.remove();
+            refreshEmptyRow();
+            return;
+        }
 
-        btn.closest("tr")?.remove();
-        refreshEmptyRow();
+        const viewBtn = e.target.closest(".btn-view-ptp");
+        if (viewBtn) {
+            viewPtpRequest(viewBtn.dataset.ptpId);
+            return;
+        }
+
+        const deleteBtn = e.target.closest(".btn-delete-ptp");
+        if (deleteBtn) {
+            deletePtpLine(deleteBtn.dataset.ptpLineId);
+            return;
+        }
+
+        const startBtn = e.target.closest(".btn-start-ptp");
+        if (startBtn) {
+            startProduction(startBtn.dataset.ptpLineId);
+            return;
+        }
+
+        const produceBtn = e.target.closest(".btn-produce-ptp");
+        if (produceBtn) {
+            openProduceModal(produceBtn.dataset.ptpLineId);
+            return;
+        }
     });
 });
+
+
+async function openProduceModal(ptpLineId) {
+    if (!ptpLineId) return;
+
+    initMonthYearDropdowns();
+
+    document.getElementById("producePtpLineId").value = ptpLineId;
+    document.getElementById("produceQty").value = "";
+    document.getElementById("produceLotNo").value = "";
+    document.getElementById("produceTransmittalNo").value = "";
+
+    const phDate = new Date(
+        new Date().toLocaleString("en-US", {
+            timeZone: "Asia/Manila"
+        })
+    );
+
+    const currentMonth = String(phDate.getMonth() + 1).padStart(2, "0");
+    const currentYear = String(phDate.getFullYear());
+    //const expYear = String(phDate.getFullYear() + 1);
+    const expYear = currentYear;
+
+    // MFG = current PH month/year
+    document.getElementById("produceMfgMonth").value = currentMonth;
+    document.getElementById("produceMfgYear").value = currentYear;
+
+    // EXP = current PH month + next year
+    document.getElementById("produceExpMonth").value = currentMonth;
+    document.getElementById("produceExpYear").value = expYear;
+
+    await loadProduceWarehouses();
+
+    new bootstrap.Modal(document.getElementById("produceModal")).show();
+}
+
+function renderPtpSummaryFromResponse(data) {
+    document.getElementById("cardPending").textContent = data.pending || 0;
+    document.getElementById("cardOngoing").textContent = data.ongoing || 0;
+    document.getElementById("cardPartial").textContent = data.partial || 0;
+    document.getElementById("cardCompletedToday").textContent = data.completed || 0;
+}
+
+let cachedPtpList = [];
+
+async function loadPtpTracking() {
+    try {
+        const search = document.getElementById("ptpSearchInput")?.value.trim() || "";
+        const status = document.getElementById("ptpStatusFilter")?.value || "ACTIVE";
+
+        const response = await fetch(
+            `/ProductToProduce/List?page=${ptpCurrentPage}&pageSize=${ptpPageSize}&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`
+        );
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const data = await response.json();
+        ptpCurrentPage = Number(data.page || ptpCurrentPage);
+        ptpPageSize = Number(data.pageSize || ptpPageSize);
+        ptpTotalRecords = Number(data.totalRecords || 0);
+        ptpTotalPages = Number(data.totalPages || 1);
+        cachedPtpList = data.items || [];
+
+        renderPtpTracking(cachedPtpList);
+        renderPtpSummaryFromResponse(data);
+        renderPtpPagination();
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById("ptpTrackingBody").innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center text-danger py-4">
+                    Failed to load PTP tracking.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function renderPtpPagination() {
+
+    const rangeText = document.getElementById("ptpRangeText");
+
+    const prevBtn = document.getElementById("ptpPrevBtn");
+
+    const nextBtn = document.getElementById("ptpNextBtn");
+
+    const start = ptpTotalRecords === 0
+        ? 0
+        : ((ptpCurrentPage - 1) * ptpPageSize) + 1;
+
+    const end = Math.min(
+        ptpCurrentPage * ptpPageSize,
+        ptpTotalRecords
+    );
+
+    if (rangeText) {
+        rangeText.textContent = `${start}-${end} of ${ptpTotalRecords}`;
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = ptpCurrentPage <= 1;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = ptpCurrentPage >= ptpTotalPages;
+    }
+}
+
+async function loadProduceWarehouses() {
+    const select = document.getElementById("produceBranch");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">Loading...</option>`;
+
+    try {
+        const res = await fetch("/Inventory/GetBranches");
+
+        if (!res.ok) throw new Error(await res.text());
+
+        const data = await res.json();
+
+        select.innerHTML = `<option value="">Select Warehouse</option>`;
+
+        data.forEach(b => {
+            select.innerHTML += `
+                <option value="${safe(b.branch_id || b.branchId || "")}">
+                    ${safe(b.branch_name || b.branchName || b.branch_id || "")}
+                </option>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+        select.innerHTML = `<option value="">Failed to load warehouses</option>`;
+    }
+}
+function initMonthYearDropdowns() {
+    const months = [
+        "01", "02", "03", "04", "05", "06",
+        "07", "08", "09", "10", "11", "12"
+    ];
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    const yearStart = currentYear - 2;
+    const yearEnd = currentYear + 5;
+
+    const monthSelects = [
+        document.getElementById("produceMfgMonth"),
+        document.getElementById("produceExpMonth")
+    ];
+
+    const yearSelects = [
+        document.getElementById("produceMfgYear"),
+        document.getElementById("produceExpYear")
+    ];
+
+    // months
+    monthSelects.forEach(select => {
+        select.innerHTML = `<option value="">MM</option>`;
+        months.forEach(m => {
+            select.innerHTML += `<option value="${m}">${m}</option>`;
+        });
+    });
+
+    // years
+    yearSelects.forEach(select => {
+        select.innerHTML = `<option value="">YYYY</option>`;
+        for (let y = yearStart; y <= yearEnd; y++) {
+            select.innerHTML += `<option value="${y}">${y}</option>`;
+        }
+    });
+}
+function buildDateFromMonthYear(month, year, isEnd = false) {
+    if (!month || !year) return null;
+
+    if (!isEnd) {
+        return `${year}-${month}-01`;
+    }
+
+    const lastDay = new Date(Number(year), Number(month), 0).getDate();
+    return `${year}-${month}-${lastDay}`;
+}
+
+async function submitProduceStock() {
+    const ptpLineId = Number(document.getElementById("producePtpLineId").value || 0);
+    const quantity = Number(document.getElementById("produceQty").value || 0);
+    const branchId = document.getElementById("produceBranch").value;
+    const lotNo = document.getElementById("produceLotNo").value.trim();
+    const transmittalNo = document.getElementById("produceTransmittalNo").value.trim();
+
+    const mfgMonth = document.getElementById("produceMfgMonth").value;
+    const mfgYear = document.getElementById("produceMfgYear").value;
+    const expMonth = document.getElementById("produceExpMonth").value;
+    const expYear = document.getElementById("produceExpYear").value;
+
+    const manufacturingDate = buildDateFromMonthYear(mfgMonth, mfgYear, false);
+    const expirationDate = buildDateFromMonthYear(expMonth, expYear, true);
+
+    if (!transmittalNo) {
+        alert("Transmittal No. is required.");
+        return;
+    }
+
+    if (!ptpLineId) {
+        alert("Invalid PTP line.");
+        return;
+    }
+
+    if (quantity <= 0) {
+        alert("Produced quantity must be greater than 0.");
+        return;
+    }
+
+    if (!branchId) {
+        alert("Please select warehouse.");
+        return;
+    }
+
+    if (!lotNo) {
+        alert("Lot No is required.");
+        return;
+    }
+
+    if (!manufacturingDate) {
+        alert("MFG month and year are required.");
+        return;
+    }
+
+    if (!expirationDate) {
+        alert("EXP month and year are required.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/ProductToProduce/Produce", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ptpLineId,
+                quantity,
+                branchId,
+                lotNo,
+                transmittalNo,
+                manufacturingDate,
+                expirationDate
+            })
+        });
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const result = await response.json();
+
+        bootstrap.Modal.getInstance(document.getElementById("produceModal"))?.hide();
+
+        alert(result.message || "Production stock recorded successfully.");
+        await loadPtpTracking();
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to save production stock: " + err.message);
+    }
+}
+
+function renderPtpTracking(items) {
+    const tbody = document.getElementById("ptpTrackingBody");
+
+    if (!items || items.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="12" class="text-center text-muted py-4">No PTP requests found.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    items.forEach(item => {
+        const status = normalizeStatus(item.status);
+        const requiredQty = Number(item.requiredQty || item.requested_qty || 0);
+        const producedQty = Number(item.producedQty || item.produced_qty || 0);
+        const remainingQty = Math.max(requiredQty - producedQty, 0);
+
+        tbody.insertAdjacentHTML("beforeend", `
+            <tr data-started-at="${safe(item.startedAt || item.started_at || "")}"
+                data-completed-at="${safe(item.completedAt || item.completed_at || "")}"
+                data-status="${safe(status)}">
+
+                <td class="fw-semibold">${safe(item.ptpNo || item.ptp_no || "")}</td>
+
+                <td>
+                    <div class="fw-semibold">${safe(item.productName || item.product_name || "")}</div>
+                    <small class="text-muted">${safe(item.productId || item.product_id || "")}</small>
+                </td>
+
+                <td>
+                    ${safe(item.remarks || "-")}
+                </td>
+
+                <td>${formatQty(requiredQty)} ${safe(item.uom || "")}</td>
+
+                <td>
+                    <div class="fw-semibold">${formatQty(producedQty)} / ${formatQty(requiredQty)} ${safe(item.uom || "")}</div>
+                    ${renderProgressBar(requiredQty, producedQty)}
+                </td>
+
+                <td>${formatQty(remainingQty)} ${safe(item.uom || "")}</td>
+
+                <td>${renderStatusBadge(status)}</td>
+
+                <td>
+                    ${formatDate(item.requestedDate || item.requested_date)}
+                </td>
+
+                <td>${formatDateTime(item.startedAt || item.started_at)}</td>
+
+                <td class="running-time">${getRunningTimeText(item.startedAt || item.started_at, item.completedAt || item.completed_at, status)}</td>
+
+                <td>${safe(item.createdBy || item.created_by || item.requestedBy || item.requested_by || "")}</td>
+
+                <td class="text-center">
+    <div class="d-flex gap-1 justify-content-center">
+
+        <button type="button"
+                class="btn btn-outline-primary btn-sm btn-view-ptp"
+                data-ptp-id="${safe(item.ptpId || item.ptp_id || "")}">
+            View
+        </button>
+
+        ${canStartProduction(status) ? `
+            <button type="button"
+                    class="btn btn-outline-success btn-sm btn-start-ptp"
+                    data-ptp-line-id="${safe(item.ptpLineId || item.ptp_line_id || "")}">
+                Start
+            </button>
+        ` : ""}
+
+        ${canProduceStock(status) ? `
+            <button type="button"
+                    class="btn btn-outline-warning btn-sm btn-produce-ptp"
+                    data-ptp-line-id="${safe(item.ptpLineId || item.ptp_line_id || "")}">
+                Produce
+            </button>
+        ` : ""}
+
+        ${canDeletePtp(status) ? `
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm btn-delete-ptp"
+                    data-ptp-line-id="${safe(item.ptpLineId || item.ptp_line_id || "")}">
+                Delete
+            </button>
+        ` : ""}
+    </div>
+</td>
+
+
+            </tr>
+        `);
+    });
+}
+
+function canStartProduction(status) {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+    return role === "PRODUCTION" && normalizeStatus(status) === "PENDING";
+}
+
+function canProduceStock(status) {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+    const s = normalizeStatus(status);
+
+    return role === "PRODUCTION" &&
+        (s === "IN_PROGRESS" || s === "PARTIAL");
+}
+function canDeletePtp(status) {
+    const role = String(window.currentUserRole || "").toUpperCase();
+
+    console.log("CURRENT ROLE:", role, "STATUS:", status);
+
+    if (role === "PRODUCTION" || role === "PRODUCT")
+        return false;
+
+    return normalizeStatus(status) === "PENDING";
+}
+function renderPtpSummary(items) {
+    document.getElementById("cardPending").textContent =
+        items.filter(x => normalizeStatus(x.status) === "PENDING").length;
+
+    document.getElementById("cardOngoing").textContent =
+        items.filter(x => normalizeStatus(x.status) === "IN_PROGRESS").length;
+
+    document.getElementById("cardPartial").textContent =
+        items.filter(x => normalizeStatus(x.status) === "PARTIAL").length;
+
+    document.getElementById("cardCompletedToday").textContent =
+        items.filter(x => normalizeStatus(x.status) === "COMPLETED" && isToday(x.completedAt || x.completed_at)).length;
+}
+
+function renderStatusBadge(status) {
+    if (status === "PENDING")
+        return `<span class="badge bg-secondary status-badge">PENDING</span>`;
+
+    if (status === "IN_PROGRESS")
+        return `<span class="badge bg-primary status-badge">ONGOING</span>`;
+
+    if (status === "PARTIAL")
+        return `<span class="badge bg-warning text-dark status-badge">PARTIAL</span>`;
+
+    if (status === "COMPLETED")
+        return `<span class="badge bg-success status-badge">COMPLETED</span>`;
+
+    if (status === "CANCELLED")
+        return `<span class="badge bg-danger status-badge">CANCELLED</span>`;
+
+    return `<span class="badge bg-secondary status-badge">${safe(status)}</span>`;
+}
+
+function normalizeStatus(status) {
+    return String(status || "PENDING").trim().toUpperCase();
+}
+function renderProgressBar(requiredQty, producedQty) {
+    const percent = requiredQty > 0 ? Math.min((producedQty / requiredQty) * 100, 100) : 0;
+
+    return `
+        <div class="progress mt-1" style="height: 6px;">
+            <div class="progress-bar" style="width:${percent}%"></div>
+        </div>
+    `;
+}
+
+function updateRunningTimes() {
+    document.querySelectorAll("#ptpTrackingBody tr[data-status]").forEach(row => {
+        const startedAt = row.dataset.startedAt;
+        const completedAt = row.dataset.completedAt;
+        const status = row.dataset.status;
+
+        const cell = row.querySelector(".running-time");
+        if (cell) {
+            cell.textContent = getRunningTimeText(startedAt, completedAt, status);
+        }
+    });
+}
+
+function parseUtcDate(dateStr) {
+    if (!dateStr) return null;
+
+    let value = String(dateStr).replace(" ", "T");
+
+    if (!value.endsWith("Z") && !value.includes("+")) {
+        value += "Z";
+    }
+
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+function getRunningTimeText(startedAt, completedAt, status) {
+    if (!startedAt) return "-";
+
+    const start = parseUtcDate(startedAt);
+    if (isNaN(start.getTime())) return "-";
+
+    let end;
+
+    if (status === "COMPLETED" && completedAt) {
+        end = parseUtcDate(completedAt);
+    } else {
+        end = new Date();
+    }
+
+    const diffMs = end - start;
+    if (diffMs < 0) return "-";
+
+    const totalMinutes = Math.floor(diffMs / 60000);
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+
+    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+}
+
+function formatDateTime(dateStr) {
+    if (!dateStr) return "-";
+
+    let value = String(dateStr).replace(" ", "T");
+
+    // Treat backend DateTime as UTC if no timezone included
+    if (!value.endsWith("Z") && !value.includes("+")) {
+        value += "Z";
+    }
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return "-";
+
+    return date.toLocaleString("en-US", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+}
+
+function isToday(dateStr) {
+    if (!dateStr) return false;
+
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return false;
+
+    const today = new Date();
+
+    return date.getFullYear() === today.getFullYear()
+        && date.getMonth() === today.getMonth()
+        && date.getDate() === today.getDate();
+}
 
 
 async function loadCategoriesForManual() {
@@ -214,7 +837,22 @@ function addLine(line) {
     }
    
 }
+function convertMonthToDate(value, isEnd = false) {
+    if (!value) return null;
 
+    const [year, month] = value.split("-");
+
+    if (!year || !month) return null;
+
+    // Start of month OR end of month
+    if (!isEnd) {
+        return `${year}-${month}-01`;
+    } else {
+        // last day of month
+        const lastDay = new Date(year, month, 0).getDate();
+        return `${year}-${month}-${lastDay}`;
+    }
+}
 function bindPtpQtyConversion(row) {
     const qtyInput = row.querySelector(".line-qty-input");
     const uomType = row.querySelector(".line-uom-type");
@@ -312,9 +950,25 @@ async function savePtpRequest() {
         const result = await response.json();
 
         savedPtpId = result.ptpId;
+
         document.getElementById("btnPrintPtp").disabled = false;
 
         alert(result.message || "PTP request saved.");
+
+        // clear form
+        document.getElementById("headerRemarks").value = "";
+
+        setDefaultDate();
+
+        const tbody = document.getElementById("ptpLinesBody");
+
+        tbody.innerHTML = `
+    <tr>
+        <td colspan="9" class="text-center text-muted py-4">
+            No products added yet.
+        </td>
+    </tr>
+`;
 
     } catch (err) {
         console.error(err);
@@ -534,4 +1188,146 @@ function safe(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function applyPtpFilters() {
+
+    const searchText = String(
+        document.getElementById("ptpSearchInput")?.value || ""
+    ).trim().toLowerCase();
+
+    const statusFilter = String(
+        document.getElementById("ptpStatusFilter")?.value || "ACTIVE"
+    ).trim().toUpperCase();
+
+    let filtered = [...cachedPtpList];
+
+    // All (exc Completed)
+    if (statusFilter === "ACTIVE") {
+
+        filtered = filtered.filter(item => {
+
+            const s = normalizeStatus(item.status);
+
+            return s !== "COMPLETED"
+                && s !== "CANCELLED";
+        });
+    }
+
+    // All (inc Completed)
+    else if (statusFilter === "ALL") {
+
+        // no filtering
+    }
+
+    // Specific Status
+    else {
+
+        filtered = filtered.filter(item =>
+            normalizeStatus(item.status) === statusFilter
+        );
+    }
+
+    // Search
+    if (searchText) {
+
+        filtered = filtered.filter(item => {
+
+            const text = [
+                item.ptpNo,
+                item.ptp_no,
+                item.productName,
+                item.product_name,
+                item.productId,
+                item.product_id,
+                item.createdBy,
+                item.created_by,
+                item.requestedBy,
+                item.requested_by
+            ]
+                .join(" ")
+                .toLowerCase();
+
+            return text.includes(searchText);
+        });
+    }
+
+    renderPtpTracking(filtered);
+}
+
+async function viewPtpRequest(ptpId) {
+    if (!ptpId) return;
+
+    try {
+        const response = await fetch(`/ProductToProduce/GetById?id=${encodeURIComponent(ptpId)}`);
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const data = await response.json();
+
+        alert(
+            `PTP No: ${data.ptp_no || data.ptpNo || ""}\n` +
+            `Status: ${data.status || ""}\n` +
+            `Created By: ${data.created_by || data.createdBy || ""}\n` +
+            `Remarks: ${data.remarks || ""}`
+        );
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to load PTP details: " + err.message);
+    }
+}
+async function startProduction(ptpLineId) {
+    if (!ptpLineId) return;
+
+    if (!confirm("Start production for this item?")) return;
+
+    try {
+        const response = await fetch(`/ProductToProduce/StartLine?ptpLineId=${ptpLineId}`, {
+            method: "POST"
+        });
+
+        if (!response.ok) throw new Error(await response.text());
+
+        alert("Production started.");
+        await loadPtpTracking();
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to start production: " + err.message);
+    }
+}
+
+async function deletePtpLine(ptpLineId) {
+    if (!ptpLineId) return;
+
+    if (!confirm("Delete this pending PTP request?")) return;
+
+    try {
+        const response = await fetch(`/ProductToProduce/DeleteLine?ptpLineId=${encodeURIComponent(ptpLineId)}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) throw new Error(await response.text());
+
+        const result = await response.json();
+
+        alert(result.message || "PTP deleted.");
+        await loadPtpTracking();
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to delete PTP: " + err.message);
+    }
+}
+function canDeletePtp(status) {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+    const cleanStatus = normalizeStatus(status);
+
+    console.log("ROLE:", role, "STATUS:", cleanStatus);
+
+    if (role === "PRODUCTION" || role === "PRODUCT" || role === "WAREHOUSE")
+        return false;
+
+    return cleanStatus === "PENDING";
 }

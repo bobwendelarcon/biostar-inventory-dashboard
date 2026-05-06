@@ -7,78 +7,369 @@
 }
 
 <div class="container-fluid ptp-page">
+
+    <!-- PAGE HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <small class="text-muted">Production &gt; Product to Produce</small>
-            <h2 class="fw-bold mt-2 mb-0">Product to Produce Request</h2>
-            <small class="text-muted">Create production request from planning shortages or manual items.</small>
-        </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-outline-primary" id="btnLoadShortages">
-                Load Planning Shortages
-            </button>
-            <button class="btn btn-outline-secondary" id="btnAddManualLine">
-                Add Product
-            </button>
-            <button class="btn btn-success" id="btnSavePtp">
-                Save Request
-            </button>
-            <button class="btn btn-outline-dark" id="btnPrintPtp" disabled>
-                Print
-            </button>
+            <h2 class="fw-bold mt-2 mb-0">Product to Produce</h2>
+            <small class="text-muted">Create production requests and track production progress.</small>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Requested Date</label>
-                    <input type="date" class="form-control" id="requestedDate" />
+    <!-- SUMMARY CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 ptp-summary-card">
+                <div class="card-body">
+                    <small class="text-muted">Pending</small>
+                    <h3 class="fw-bold mb-0" id="cardPending">0</h3>
                 </div>
+            </div>
+        </div>
 
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Created By</label>
-                    <input type="text" class="form-control" id="createdBy" value="@ViewBag.CurrentUser" readonly />
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 ptp-summary-card">
+                <div class="card-body">
+                    <small class="text-muted">Ongoing</small>
+                    <h3 class="fw-bold mb-0" id="cardOngoing">0</h3>
                 </div>
+            </div>
+        </div>
 
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Status</label>
-                    <input type="text" class="form-control" value="PENDING" readonly />
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 ptp-summary-card">
+                <div class="card-body">
+                    <small class="text-muted">Partial</small>
+                    <h3 class="fw-bold mb-0" id="cardPartial">0</h3>
                 </div>
+            </div>
+        </div>
 
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Remarks</label>
-                    <input type="text" class="form-control" id="headerRemarks" placeholder="Optional remarks" />
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 ptp-summary-card">
+                <div class="card-body">
+                    <small class="text-muted">Completed Today</small>
+                    <h3 class="fw-bold mb-0" id="cardCompletedToday">0</h3>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- TABS -->
     <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th style="min-width:320px;">Product</th>
-                            <th>Suggested Qty</th>
-                            <th style="min-width:150px;">Qty Input</th>
-                            <th style="min-width:150px;">UOM Type</th>
-                            <th style="min-width:180px;">Equivalent Base Qty</th>
-                            <th>Delivery Date</th>
-                            <th style="min-width:220px;">Remarks</th>
-                            <th>Source</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ptpLinesBody">
-                        <tr>
-                            <td colspan="9" class="text-center text-muted py-4">No products added yet.</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="card-body">
+
+            <ul class="nav nav-pills mb-4" id="ptpTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active"
+                            id="create-tab"
+                            data-bs-toggle="pill"
+                            data-bs-target="#createTab"
+                            type="button"
+                            role="tab">
+                        Create Request
+                    </button>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="tracking-tab"
+                            data-bs-toggle="pill"
+                            data-bs-target="#trackingTab"
+                            type="button"
+                            role="tab">
+                        PTP Tracking
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+
+
+
+                <!-- CREATE REQUEST TAB -->
+                <div class="tab-pane fade show active" id="createTab" role="tabpanel">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-0">Create PTP Request</h5>
+                            <small class="text-muted">Create production request from planning shortages or manual items.</small>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-outline-primary" id="btnLoadShortages">
+                                Load Planning Shortages
+                            </button>
+                            <button class="btn btn-outline-secondary" id="btnAddManualLine">
+                                Add Product
+                            </button>
+                            <button class="btn btn-success" id="btnSavePtp">
+                                Save Request
+                            </button>
+                            <button class="btn btn-outline-dark" id="btnPrintPtp" disabled>
+                                Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Requested Date</label>
+                                    <input type="date" class="form-control" id="requestedDate" />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Created By</label>
+                                    <input type="text" class="form-control" id="createdBy" value="@ViewBag.CurrentUser" readonly />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Status</label>
+                                    <input type="text" class="form-control" value="PENDING" readonly />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Remarks</label>
+                                    <input type="text" class="form-control" id="headerRemarks" placeholder="Optional remarks" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width:320px;">Product</th>
+                                            <th>Suggested Qty</th>
+                                            <th style="min-width:150px;">Qty Input</th>
+                                            <th style="min-width:150px;">UOM Type</th>
+                                            <th style="min-width:180px;">Equivalent Base Qty</th>
+                                            <th>Delivery Date</th>
+                                            <th style="min-width:220px;">Remarks</th>
+                                            <th>Source</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ptpLinesBody">
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted py-4">No products added yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TRACKING TAB -->
+                <div class="tab-pane fade" id="trackingTab" role="tabpanel">
+
+
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-0">PTP Tracking</h5>
+                            <small class="text-muted">Monitor production status, started time, and running duration.</small>
+                        </div>
+
+                       
+                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                            <input type="text"
+                                   class="form-control form-control-sm"
+                                   id="ptpSearchInput"
+                                   placeholder="Search PTP / Product / Requested By"
+                                   style="min-width:260px;" />
+
+                            <select class="form-select form-select-sm"
+                                    id="ptpStatusFilter"
+                                    style="min-width:240px;">
+
+                                <option value="ACTIVE" selected>
+                                    All (exc Completed)
+                                </option>
+
+                                <option value="ALL">
+                                    All (inc Completed)
+                                </option>
+
+                                <option value="PENDING">
+                                    Pending
+                                </option>
+
+                                <option value="IN_PROGRESS">
+                                    Ongoing
+                                </option>
+
+                                <option value="PARTIAL">
+                                    Partial
+                                </option>
+
+                                <option value="COMPLETED">
+                                    Completed
+                                </option>
+
+                                <option value="CANCELLED">
+                                    Cancelled
+                                </option>
+
+                            </select>
+
+                            <button class="btn btn-outline-secondary btn-sm" id="btnClearPtpFilter">
+                                Clear
+                            </button>
+
+                            <button class="btn btn-outline-primary btn-sm" id="btnRefreshPtpList">
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-4">
+
+                        <div class="pagination-container d-flex justify-content-end align-items-center gap-2 mt-3">
+
+                            <span id="ptpRangeText">0–0 of 0</span>
+
+                            <button id="ptpPrevBtn"
+                                    class="btn btn-sm btn-light"
+                                    type="button">
+                                ◀
+                            </button>
+
+                            <button id="ptpNextBtn"
+                                    class="btn btn-sm btn-light"
+                                    type="button">
+                                ▶
+                            </button>
+
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>PTP No</th>
+
+                                            <th style="min-width:220px;">Product</th>
+
+                                            <th style="min-width:220px;">Remarks</th>
+
+                                            <th>Required</th>
+
+                                            <th>Produced</th>
+
+                                            <th>Remaining</th>
+
+                                            <th>Status</th>
+
+                                            <th>Date Requested</th>
+
+                                            <th>Started At</th>
+
+                                            <th>Running Time</th>
+
+                                            <th>Requested By</th>
+
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ptpTrackingBody">
+                                        <tr>
+                                            <td colspan="12" class="text-center text-muted py-4">No PTP requests loaded.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="produceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title">Production Stock IN</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="producePtpLineId" />
+
+                <!-- Qty -->
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Produced Qty</label>
+                    <input type="number" class="form-control" id="produceQty">
+                </div>
+
+                <!-- Warehouse -->
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Warehouse</label>
+                    <select class="form-select" id="produceBranch"></select>
+                </div>
+
+                <!-- 🔥 ADD HERE -->
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Transmittal No.</label>
+                    <input type="text"
+                           class="form-control"
+                           id="produceTransmittalNo"
+                           placeholder="Enter TR No.">
+                </div>
+
+                <!-- Lot -->
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Lot No</label>
+                    <input type="text" class="form-control" id="produceLotNo">
+                </div>
+
+                <!-- Dates -->
+                <div class="row g-2">
+
+                    <!-- MFG -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">MFG</label>
+
+                        <div class="d-flex gap-1">
+                            <select class="form-select" id="produceMfgMonth"></select>
+                            <select class="form-select" id="produceMfgYear"></select>
+                        </div>
+                    </div>
+
+                    <!-- EXP -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">EXP</label>
+
+                        <div class="d-flex gap-1">
+                            <select class="form-select" id="produceExpMonth"></select>
+                            <select class="form-select" id="produceExpYear"></select>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="btnSubmitProduce">
+                    Save Stock IN
+                </button>
             </div>
         </div>
     </div>
@@ -87,5 +378,10 @@
 <div id="printArea" class="d-none"></div>
 
 @section Scripts {
+    <script>
+        window.currentUserRole = "@ViewBag.CurrentRole";
+        console.log("ROLE FROM SERVER:", window.currentUserRole);
+    </script>
+
     <script src="~/js/producttoproduce.js" asp-append-version="true"></script>
 }

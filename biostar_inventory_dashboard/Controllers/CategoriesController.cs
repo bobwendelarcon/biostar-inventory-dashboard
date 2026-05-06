@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using biostar_inventory_dashboard.Models;
 using biostar_inventory_dashboard.Services;
-using biostar_inventory_dashboard.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace biostar_inventory_dashboard.Controllers
 {
+    [Authorize(Roles = "ADMIN,STAFF,PRODUCTION")]
     public class CategoriesController : Controller
     {
         private readonly ApiService _apiService;

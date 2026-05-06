@@ -21,8 +21,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    loadClassFilter();
+
     document.getElementById("addOrderModal")?.addEventListener("shown.bs.modal", stopDailyOrderAutoRefresh);
     document.getElementById("addOrderModal")?.addEventListener("hidden.bs.modal", startDailyOrderAutoRefresh);
+    document.getElementById("addClassName")?.addEventListener("change", loadCustomersByAgent);
 
     document.getElementById("editOrderModal")?.addEventListener("shown.bs.modal", stopDailyOrderAutoRefresh);
     document.getElementById("editOrderModal")?.addEventListener("hidden.bs.modal", startDailyOrderAutoRefresh);
@@ -32,7 +35,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("addOrderModal")?.addEventListener("shown.bs.modal", async function () {
         await loadAddOrderCategories();
-        await loadCustomers();
+        await loadAgentsForClass();
+        await loadCustomersByAgent();
         await loadBranches();
         // ✅ DISABLE PAST DATES (Delivery Date)
         const deliveryInput = document.getElementById("addDeliveryDate");
@@ -198,6 +202,126 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+async function loadClassFilter() {
+    const classFilter = document.getElementById("classFilter");
+    if (!classFilter) return;
+
+    classFilter.innerHTML = `<option value="">Loading agents...</option>`;
+
+    try {
+        const response = await fetch("/DailyOrder/GetCustomers");
+
+        if (!response.ok) {
+            throw new Error("Failed to load class filter.");
+        }
+
+        const data = await response.json();
+
+        const agents = data.filter(x =>
+            (x.partner_type || "").toUpperCase() === "AGENT" &&
+            Boolean(x.is_deleted) === false
+        );
+
+        let options = `<option value="">All Class</option>`;
+
+        agents.forEach(agent => {
+            options += `
+                <option value="${safe(agent.partner_name)}">
+                    ${safe(agent.partner_name)}
+                </option>
+            `;
+        });
+
+        classFilter.innerHTML = options;
+
+    } catch (err) {
+        console.error("loadClassFilter error:", err);
+
+        classFilter.innerHTML = `
+            <option value="">Failed to load</option>
+        `;
+    }
+}
+async function loadAgentsForClass() {
+    const classSelect = document.getElementById("addClassName");
+    if (!classSelect) return;
+
+    classSelect.innerHTML = `<option value="">Loading agents...</option>`;
+
+    const response = await fetch("/DailyOrder/GetCustomers");
+
+    if (!response.ok) {
+        throw new Error("Failed to load agents.");
+    }
+
+    const data = await response.json();
+
+    const agents = data.filter(x =>
+        (x.partner_type || "").toUpperCase() === "AGENT" &&
+        Boolean(x.is_deleted) === false
+    );
+
+    let options = `<option value="">Select Class / Agent</option>`;
+
+    agents.forEach(agent => {
+        options += `
+            <option value="${safe(agent.partner_id)}">
+                ${safe(agent.partner_name)}
+            </option>
+        `;
+    });
+
+    classSelect.innerHTML = options;
+}
+
+async function loadCustomersByAgent() {
+    const customerSelect = document.getElementById("addCustomerName");
+    const classSelect = document.getElementById("addClassName");
+
+    if (!customerSelect || !classSelect) return;
+
+    const selectedAgentId = classSelect.value || "";
+
+    if (!selectedAgentId) {
+        customerSelect.innerHTML = `<option value="">Select Class / Agent first</option>`;
+        customerSelect.disabled = true;
+        return;
+    }
+
+    customerSelect.disabled = false;
+    customerSelect.innerHTML = `<option value="">Loading customers...</option>`;
+
+    const response = await fetch("/DailyOrder/GetCustomers");
+
+    if (!response.ok) {
+        throw new Error("Failed to load customers.");
+    }
+
+    const data = await response.json();
+
+    const customers = data.filter(x =>
+        (x.partner_type || "").toUpperCase() === "CUSTOMER" &&
+        Boolean(x.is_deleted) === false &&
+        x.agent_id === selectedAgentId
+    );
+
+    if (customers.length === 0) {
+        customerSelect.innerHTML = `<option value="">No customers under this Class</option>`;
+        return;
+    }
+
+    let options = `<option value="">Select Customer</option>`;
+
+    customers.forEach(item => {
+        options += `
+            <option value="${safe(item.partner_id)}">
+                ${safe(item.partner_name)}
+            </option>
+        `;
+    });
+
+    customerSelect.innerHTML = options;
+}
 async function loadBranches() {
     try {
         const select = document.getElementById("addSourceBranch");
@@ -923,7 +1047,8 @@ async function saveAddOrder() {
     const customerId = customerSelect?.value || "";
     const customerName = customerSelect?.selectedOptions[0]?.text || "";
     const sourceBranchId = document.getElementById("addSourceBranch")?.value || "";
-    const className = document.getElementById("addClassName")?.value.trim() || "";
+    const classSelect = document.getElementById("addClassName");
+    const className = classSelect?.selectedOptions[0]?.text?.trim() || "";
     const routeName = document.getElementById("addRouteName")?.value.trim() || "";
     const dateOrdered = document.getElementById("addDateOrdered")?.value || null;
     const deliveryDate = document.getElementById("addDeliveryDate")?.value || null;
@@ -1054,7 +1179,7 @@ async function loadCustomers() {
 }
 function resetAddOrderForm() {
     document.getElementById("addCustomerName").value = "";
-    document.getElementById("addClassName").value = "";
+    document.getElementById("addClassName").selectedIndex = 0;
     document.getElementById("addRouteName").value = "";
     document.getElementById("addDateOrdered").value = "";
     document.getElementById("addDeliveryDate").value = "";
@@ -1073,6 +1198,8 @@ function resetAddOrderForm() {
             <td colspan="5" class="text-center text-muted">No order lines added yet.</td>
         </tr>
     `;
+
+    loadCustomersByAgent();
 }
 
 

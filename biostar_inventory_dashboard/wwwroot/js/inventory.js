@@ -188,39 +188,41 @@ async function loadInventory(page = currentPage) {
             <td>${formatMonthYear(item.manufacturing_date)} - ${formatMonthYear(item.expiration_date)}</td>
             <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
             <td>${item.warehouse ?? ""}</td>
-            <td class="text-center">
-                <button
-                    class="btn btn-sm btn-outline-primary btn-transfer"
-                    data-product="${item.product_id ?? ""}"
-                    data-lot="${item.lot_no ?? ""}"
-                    data-qty="${qty}"
-                    data-branch="${item.branch_id ?? ""}"
-                    data-warehouse="${item.warehouse ?? ""}"
-                    data-uom="${item.uom ?? ""}"
-                    ${disableTransfer}>
-                    Transfer
-                </button>
+            ${canShowInventoryAction() ? `
+<td class="text-center action-col">
+    <button
+        class="btn btn-sm btn-outline-primary btn-transfer"
+        data-product="${item.product_id ?? ""}"
+        data-lot="${item.lot_no ?? ""}"
+        data-qty="${qty}"
+        data-branch="${item.branch_id ?? ""}"
+        data-warehouse="${item.warehouse ?? ""}"
+        data-uom="${item.uom ?? ""}"
+        ${disableTransfer}>
+        Transfer
+    </button>
 
-                <button
-                    class="btn btn-sm btn-outline-warning btn-adjust"
-                    data-product="${item.product_id ?? ""}"
-                    data-lot="${item.lot_no ?? ""}"
-                    data-branch="${item.branch_id ?? ""}"
-                    data-qty="${qty}"
-                    data-exp="${item.expiration_date ?? ""}"
-                    ${disableAdjust}
-                    title="${adjustTitle}">
-                    Adjust
-                </button>
+    <button
+        class="btn btn-sm btn-outline-warning btn-adjust"
+        data-product="${item.product_id ?? ""}"
+        data-lot="${item.lot_no ?? ""}"
+        data-branch="${item.branch_id ?? ""}"
+        data-qty="${qty}"
+        data-exp="${item.expiration_date ?? ""}"
+        ${disableAdjust}
+        title="${adjustTitle}">
+        Adjust
+    </button>
 
-                <button
-                    class="btn btn-sm btn-outline-secondary btn-history"
-                    data-product="${item.product_id ?? ""}"
-                    data-lot="${item.lot_no ?? ""}"
-                    data-branch="${item.branch_id ?? ""}">
-                    History
-                </button>
-            </td>
+    <button
+        class="btn btn-sm btn-outline-secondary btn-history"
+        data-product="${item.product_id ?? ""}"
+        data-lot="${item.lot_no ?? ""}"
+        data-branch="${item.branch_id ?? ""}">
+        History
+    </button>
+</td>
+` : ""}
         </tr>`;
         });
 
@@ -234,6 +236,19 @@ async function loadInventory(page = currentPage) {
                 </td>
             </tr>`;
         console.error(error);
+    }
+}
+
+function canShowInventoryAction() {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+
+    return role !== "PRODUCTION";
+}
+function applyInventoryRoleUI() {
+    const role = String(window.currentUserRole || "").trim().toUpperCase();
+
+    if (role === "PRODUCTION") {
+        document.querySelectorAll(".action-col").forEach(el => el.style.display = "none");
     }
 }
 
@@ -391,6 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
     loadWarehouseFilter();
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
+    applyInventoryRoleUI();
 
   
 

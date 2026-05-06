@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Security.Claims;
 
 namespace biostar_inventory_dashboard.Controllers
@@ -22,12 +23,18 @@ namespace biostar_inventory_dashboard.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
+                var role = User.FindFirst(ClaimTypes.Role)?.Value?.Trim().ToUpper() ?? "";
+
+                if (role == "PRODUCTION")
+                {
+                    return RedirectToAction("Index", "ProductToProduce");
+                }
+
                 return RedirectToAction("Index", "Dashboard");
             }
 
             return View();
         }
-
         [HttpPost]
         public async Task<IActionResult> Index(string username, string password)
         {
@@ -76,6 +83,11 @@ namespace biostar_inventory_dashboard.Controllers
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
+
+            if (role == "PRODUCTION")
+            {
+                return RedirectToAction("Index", "ProductToProduce");
+            }
 
             return RedirectToAction("Index", "Dashboard");
         }

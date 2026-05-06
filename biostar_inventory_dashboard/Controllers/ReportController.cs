@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace biostar_inventory_dashboard.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ADMIN,STAFF")]
     public class ReportsController : Controller
     {
         private readonly ApiService _apiService;
