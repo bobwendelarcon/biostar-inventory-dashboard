@@ -6,6 +6,9 @@
     @* <link rel="stylesheet" href="~/css/dispatch.css" /> *@
 }
 
+
+
+
 <div class="dispatch-page">
 
     
@@ -17,6 +20,10 @@
         </div>
 
         <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" type="button" onclick="loadChecklistList()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createChecklistModal">
                 <i class="bi bi-plus-circle"></i> Create Checklist
             </button>

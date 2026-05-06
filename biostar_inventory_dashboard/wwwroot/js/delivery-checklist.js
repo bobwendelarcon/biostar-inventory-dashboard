@@ -1,95 +1,30 @@
 ﻿
-//document.addEventListener("DOMContentLoaded", function () {
-//    loadChecklistList();
-//    initializeCreateChecklistModal();
-//    initializeSelectAllOrders();
+let checklistAutoRefreshTimer = null;
 
-//    const btnReopen = document.getElementById("btnReopenChecklist");
-//    if (btnReopen) {
-//        btnReopen.addEventListener("click", async function () {
-//            console.log("REOPEN CLICKED");
+function isChecklistModalOpen() {
+    const createModal = document.getElementById("createChecklistModal");
+    const viewModal = document.getElementById("viewChecklistModal");
 
-//            if (!window.currentChecklistId || window.currentChecklistId <= 0) {
-//                alert("No checklist selected.");
-//                return;
-//            }
+    const isCreateOpen = createModal?.classList.contains("show");
+    const isViewOpen = viewModal?.classList.contains("show");
 
-//            if (!confirm("Reopen this checklist and set status back to READY?")) {
-//                return;
-//            }
+    return isCreateOpen || isViewOpen;
+}
 
-//            try {
-//                const formData = new URLSearchParams();
-//                formData.append("checklistId", window.currentChecklistId);
+function startChecklistAutoRefresh() {
+    if (checklistAutoRefreshTimer) {
+        clearInterval(checklistAutoRefreshTimer);
+    }
 
-//                const response = await fetch('/DeliveryChecklist/ReopenChecklist', {
-//                    method: 'POST',
-//                    headers: {
-//                        'Content-Type': 'application/x-www-form-urlencoded'
-//                    },
-//                    body: formData.toString()
-//                });
+    checklistAutoRefreshTimer = setInterval(async function () {
+        if (isChecklistModalOpen()) {
+            console.log("Auto refresh skipped: modal is open");
+            return;
+        }
 
-//                const resultText = await response.text();
-//                let result = null;
-
-//                try {
-//                    result = JSON.parse(resultText);
-//                } catch {
-//                    result = { message: resultText };
-//                }
-
-//                if (!response.ok) {
-//                    throw new Error(result?.message || "Failed to reopen checklist.");
-//                }
-
-//                alert(result.message || "Checklist reopened successfully.");
-
-//                const modalEl = document.getElementById("viewChecklistModal");
-//                const modalInstance = bootstrap.Modal.getInstance(modalEl);
-//                if (modalInstance) {
-//                    modalInstance.hide();
-//                }
-
-//                await loadChecklistList();
-//            } catch (error) {
-//                console.error("Reopen error:", error);
-//                alert(error.message || "Failed to reopen checklist.");
-//            }
-//        });
-
-//        document.getElementById("filterDate")?.addEventListener("change", loadChecklistList);
-//        document.getElementById("filterStatus")?.addEventListener("change", loadChecklistList);
-//        document.getElementById("filterTruck")?.addEventListener("input", debounce(loadChecklistList, 500));
-//        document.getElementById("filterSearch")?.addEventListener("input", debounce(loadChecklistList, 500));
-//    }
-
-//    const btnConfirm = document.getElementById("btnConfirmLoading");
-//    if (btnConfirm) {
-//        btnConfirm.addEventListener("click", function () {
-//            confirmLoading();
-//        });
-//    }
-
-//    const btnDelete = document.getElementById("btnDeleteChecklist");
-//    if (btnDelete) {
-//        btnDelete.addEventListener("click", function () {
-//            if (!window.currentChecklistId || window.currentChecklistId <= 0) {
-//                alert("No checklist selected.");
-//                return;
-//            }
-
-//            deleteChecklist(window.currentChecklistId);
-//        });
-//    }
-
-//    const btnPrint = document.getElementById("btnPrintChecklist");
-//    if (btnPrint) {
-//        btnPrint.addEventListener("click", function () {
-//            openPrintPage();
-//        });
-//    }
-//});
+        await loadChecklistList();
+    }, 5000); // 5 seconds
+}
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -105,6 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
     loadChecklistList();
     initializeCreateChecklistModal();
     initializeSelectAllOrders();
+    startChecklistAutoRefresh();
 
     const btnReopen = document.getElementById("btnReopenChecklist");
     if (btnReopen) {
