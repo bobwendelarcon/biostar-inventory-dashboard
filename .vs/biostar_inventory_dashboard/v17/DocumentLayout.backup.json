@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "D:\\source\\repos\\biostar_inventory_dashboard\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|d:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\views\\dailyorder\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\dailyorder\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|d:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|d:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|d:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\views\\dailyorder\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\dailyorder\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|d:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\views\\partner\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -173,18 +173,6 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "CategoriesController.cs",
-              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
-              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAwAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-29T08:28:01.498Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 7,
               "Title": "ApiService.cs",
               "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Services\\ApiService.cs",
@@ -193,8 +181,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Services\\ApiService.cs",
               "ViewState": "AgIAAFEDAAAAAAAAAAA4wGsDAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-29T08:29:29.595Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-29T08:29:29.595Z"
             },
             {
               "$type": "Document",
@@ -206,8 +193,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\ProductToProduceController.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAArwDwAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-05T00:20:09.874Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-05T00:20:09.874Z"
             },
             {
               "$type": "Document",
@@ -219,8 +205,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\producttoproduce.js",
               "ViewState": "AgIAAHIAAAAAAAAAAAAswI4AAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-05T00:08:30.466Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-05T00:08:30.466Z"
             },
             {
               "$type": "Document",
@@ -242,12 +227,11 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\PartnerController.cs",
               "ViewState": "AgIAAAoAAAAAAAAAAAAkwEMAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-05T04:54:14.322Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-05T04:54:14.322Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\appsettings.json",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\appsettings.json",
@@ -260,6 +244,31 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "ViewState": "AgIAAIABAAAAAAAAAAApwJcBAABTAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-05-06T02:40:26.506Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "CategoriesController.cs",
+              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
+              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\CategoriesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T08:28:01.498Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 3,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\Partner\\Index.cshtml",
@@ -268,25 +277,11 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Partner\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-06T02:01:18.208Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-06T02:01:18.208Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "ToolTip": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAcwDYAAABBAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-06T02:40:26.506Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "dailyorder.js",
               "DocumentMoniker": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
@@ -294,8 +289,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
               "ViewState": "AgIAAAUBAAAAAAAAAAAwwEMBAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-06T02:40:48.779Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-06T02:40:48.779Z"
             },
             {
               "$type": "Document",
@@ -307,8 +301,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\partner.js",
               "ViewState": "AgIAAKsAAAAAAAAAAAAwwNwAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-06T02:01:55.78Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-06T02:01:55.78Z"
             },
             {
               "$type": "Document",
@@ -320,8 +313,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\ProductToProduce\\Index.cshtml",
               "ViewState": "AgIAAFwAAAAAAAAAAAAcwL0AAABGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-05T00:08:16.582Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-05T00:08:16.582Z"
             },
             {
               "$type": "Document",
@@ -333,8 +325,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\user.js",
               "ViewState": "AgIAALkAAAAAAAAAAAAwwPcAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-04-30T01:56:59.499Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-30T01:56:59.499Z"
             },
             {
               "$type": "Document",
@@ -346,8 +337,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
               "ViewState": "AgIAADcAAAAAAAAAAAA7wGIAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-05T05:14:36.454Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-05T05:14:36.454Z"
             },
             {
               "$type": "Document",
