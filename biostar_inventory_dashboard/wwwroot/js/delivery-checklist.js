@@ -22,7 +22,7 @@ function startChecklistAutoRefresh() {
             return;
         }
 
-        await loadChecklistList();
+        await loadChecklistList({ silent: true });
     }, 5000); // 5 seconds
 }
 
@@ -225,16 +225,20 @@ function setChecklistButtons(status) {
 // ==========================
 // MAIN CHECKLIST LIST
 // ==========================
-async function loadChecklistList() {
+async function loadChecklistList(options = {}) {
     const tableBody = document.getElementById("checklistTableBody");
     if (!tableBody) return;
 
+    const silent = options.silent === true;
+
     try {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center text-muted py-4">Loading...</td>
-            </tr>
-        `;
+        if (!silent) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">Loading...</td>
+                </tr>
+            `;
+        }
 
         const date = document.getElementById("filterDate")?.value || "";
         const status = document.getElementById("filterStatus")?.value || "";
@@ -255,7 +259,6 @@ async function loadChecklistList() {
         }
 
         const data = await response.json();
-        console.log(data);
 
         if (!Array.isArray(data) || data.length === 0) {
             tableBody.innerHTML = `
@@ -294,15 +297,19 @@ async function loadChecklistList() {
         });
 
         tableBody.innerHTML = rows;
+
     } catch (error) {
         console.error("Error loading checklist list:", error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center text-danger py-4">
-                    Failed to load checklist.
-                </td>
-            </tr>
-        `;
+
+        if (!silent) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-danger py-4">
+                        Failed to load checklist.
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
