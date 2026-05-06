@@ -7,7 +7,11 @@
         <small class="text-muted">Dashboard &gt; Master Data &gt; Partners</small>
         <h2 class="fw-bold mt-2 mb-0">Partner Management</h2>
     </div>
-    <button class="btn btn-primary rounded-3" id="btnAddPartner" data-bs-toggle="modal" data-bs-target="#partnerModal">
+
+    <button class="btn btn-primary rounded-3"
+            id="btnAddPartner"
+            data-bs-toggle="modal"
+            data-bs-target="#partnerModal">
         + Add Partner
     </button>
 </div>
@@ -15,23 +19,56 @@
 <div class="card border-0 shadow-sm rounded-4 mb-4">
     <div class="card-body">
         <div class="row g-3 align-items-end">
-            <div class="col-md-4">
+
+            <!-- SEARCH -->
+            <div class="col-md-2">
                 <label class="form-label fw-semibold">Search</label>
-                <input type="text" class="form-control" id="searchPartner" placeholder="Search partner..." />
+                <input type="text"
+                       class="form-control"
+                       id="searchPartner"
+                       placeholder="Search partner..." />
             </div>
 
-            <div class="col-md-3">
+            <!-- TYPE -->
+            <div class="col-md-2">
                 <label class="form-label fw-semibold">Type</label>
                 <select class="form-select" id="filterPartnerType">
                     <option value="">All Types</option>
                     <option value="SUPPLIER">SUPPLIER</option>
                     <option value="CUSTOMER">CUSTOMER</option>
-                   
                     <option value="AGENT">AGENT</option>
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <!-- REGION -->
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Region</label>
+                <select class="form-select" id="filterRegion">
+                    <option value="">All Regions</option>
+                    <option value="LUZON">LUZON</option>
+                    <option value="VIZMIN">VIZMIN</option>
+                </select>
+            </div>
+
+            <!-- AGENT -->
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Agent</label>
+                <select class="form-select" id="filterAgent">
+                    <option value="">All Agents</option>
+                </select>
+            </div>
+
+            <!-- SORT -->
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Sort By</label>
+                <select class="form-select" id="sortPartners">
+                    <option value="partner_id_asc">Partner ID ASC</option>
+                    <option value="partner_id_desc">Partner ID DESC</option>
+                </select>
+            </div>
+
+            <!-- STATUS -->
+            <div class="col-md-2">
                 <label class="form-label fw-semibold">Status</label>
                 <select class="form-select" id="filterStatus">
                     <option value="">All</option>
@@ -40,21 +77,34 @@
                 </select>
             </div>
 
+            <!-- FILTER -->
             <div class="col-md-1">
-                <button class="btn btn-outline-secondary w-100" id="btnFilterPartners" type="button">Filter</button>
+                <button class="btn btn-outline-secondary w-100"
+                        id="btnFilterPartners"
+                        type="button">
+                    Filter
+                </button>
             </div>
 
+            <!-- CLEAR -->
             <div class="col-md-1">
-                <button class="btn btn-outline-secondary w-100" id="btnClearPartners" type="button">Clear</button>
+                <button class="btn btn-outline-secondary w-100"
+                        id="btnClearPartners"
+                        type="button">
+                    Clear
+                </button>
             </div>
+
         </div>
     </div>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body">
+
         <div class="table-responsive">
             <table class="table align-middle mb-0">
+
                 <thead class="table-light">
                     <tr>
                         <th>Partner ID</th>
@@ -68,54 +118,119 @@
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
+
                 <tbody id="partnerTableBody">
                     <tr>
-                        <td colspan="9" class="text-center text-muted">Loading partners...</td>
+                        <td colspan="9"
+                            class="text-center text-muted">
+                            Loading partners...
+                        </td>
                     </tr>
                 </tbody>
+
             </table>
         </div>
+
     </div>
 </div>
 
-<div class="modal fade" id="partnerModal" tabindex="-1" aria-labelledby="partnerModalLabel" aria-hidden="true">
+<!-- MODAL -->
+<div class="modal fade"
+     id="partnerModal"
+     tabindex="-1"
+     aria-labelledby="partnerModalLabel"
+     aria-hidden="true">
+
     <div class="modal-dialog modal-lg modal-dialog-centered">
+
         <div class="modal-content rounded-4 border-0 shadow">
+
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="partnerModalLabel">Add Partner</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title fw-bold"
+                    id="partnerModalLabel">
+                    Add Partner
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
             </div>
 
             <div class="modal-body pt-0">
-                <input type="hidden" id="partnerFormMode" value="add" />
-                <input type="hidden" id="originalPartnerId" />
+
+                <input type="hidden"
+                       id="partnerFormMode"
+                       value="add" />
+
+                <input type="hidden"
+                       id="originalPartnerId" />
 
                 <div class="mb-4">
-                    <h6 class="fw-bold mb-3">Partner Information</h6>
+
+                    <h6 class="fw-bold mb-3">
+                        Partner Information
+                    </h6>
+
                     <div class="row g-3">
+
+                        <!-- PARTNER ID -->
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Partner ID</label>
-                            <input type="text" class="form-control" id="partnerId" placeholder="Auto Generated" readonly />
+                            <label class="form-label fw-semibold">
+                                Partner ID
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="partnerId"
+                                   placeholder="Auto Generated"
+                                   readonly />
                         </div>
 
+                        <!-- PARTNER NAME -->
                         <div class="col-md-8">
-                            <label class="form-label fw-semibold">Partner Name</label>
-                            <input type="text" class="form-control" id="partnerName" placeholder="Enter partner name" />
+                            <label class="form-label fw-semibold">
+                                Partner Name
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="partnerName"
+                                   placeholder="Enter partner name" />
                         </div>
 
+                        <!-- ADDRESS -->
                         <div class="col-md-12">
-                            <label class="form-label fw-semibold">Address</label>
-                            <input type="text" class="form-control" id="partnerAddress" placeholder="Enter address" />
+                            <label class="form-label fw-semibold">
+                                Address
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="partnerAddress"
+                                   placeholder="Enter address" />
                         </div>
 
+                        <!-- CONTACT -->
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Contact</label>
-                            <input type="text" class="form-control" id="partnerContact" placeholder="Enter contact" />
+                            <label class="form-label fw-semibold">
+                                Contact
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="partnerContact"
+                                   placeholder="Enter contact" />
                         </div>
 
+                        <!-- TYPE -->
                         <div class="col-md-3">
-                            <label class="form-label fw-semibold">Partner Type</label>
-                            <select class="form-select" id="partnerType">
+                            <label class="form-label fw-semibold">
+                                Partner Type
+                            </label>
+
+                            <select class="form-select"
+                                    id="partnerType">
                                 <option value="">Select type</option>
                                 <option value="SUPPLIER">SUPPLIER</option>
                                 <option value="CUSTOMER">CUSTOMER</option>
@@ -123,39 +238,68 @@
                             </select>
                         </div>
 
-                        <div class="col-md-4" id="agentWrapper" style="display:none;">
-                            <label class="form-label fw-semibold">Agent</label>
-                            <select class="form-select" id="partnerAgent">
+                        <!-- AGENT -->
+                        <div class="col-md-4"
+                             id="agentWrapper"
+                             style="display:none;">
+
+                            <label class="form-label fw-semibold">
+                                Agent
+                            </label>
+
+                            <select class="form-select"
+                                    id="partnerAgent">
                                 <option value="">Select Agent</option>
                             </select>
                         </div>
 
+                        <!-- REGION -->
                         <div class="col-md-2">
-                            <label class="form-label fw-semibold">Region</label>
-                            <select class="form-select" id="partnerRegion">
+                            <label class="form-label fw-semibold">
+                                Region
+                            </label>
+
+                            <select class="form-select"
+                                    id="partnerRegion">
                                 <option value="">Select region</option>
                                 <option value="LUZON">LUZON</option>
                                 <option value="VIZMIN">VIZMIN</option>
                             </select>
                         </div>
 
-                       
-
+                        <!-- STATUS -->
                         <div class="col-md-3">
-                            <label class="form-label fw-semibold">Status</label>
-                            <select class="form-select" id="partnerStatus">
+                            <label class="form-label fw-semibold">
+                                Status
+                            </label>
+
+                            <select class="form-select"
+                                    id="partnerStatus">
                                 <option value="false">Active</option>
                                 <option value="true">Inactive</option>
                             </select>
                         </div>
+
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary rounded-3" id="btnSavePartner">Save Partner</button>
+
+                <button type="button"
+                        class="btn btn-light rounded-3"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary rounded-3"
+                        id="btnSavePartner">
+                    Save Partner
+                </button>
+
             </div>
+
         </div>
     </div>
 </div>

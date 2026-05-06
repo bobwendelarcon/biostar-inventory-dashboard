@@ -13,17 +13,54 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("searchPartner")?.addEventListener("input", debouncePartnerLoad);
     document.getElementById("filterPartnerType")?.addEventListener("change", loadPartners);
     document.getElementById("filterRegion")?.addEventListener("change", loadPartners);
-    document.getElementById("partnerType")?.addEventListener("change", toggleAgentField);
     document.getElementById("filterStatus")?.addEventListener("change", loadPartners);
+    document.getElementById("filterAgent")?.addEventListener("change", loadPartners);
+    document.getElementById("sortPartners")?.addEventListener("change", loadPartners);
 
+    document.getElementById("partnerType")?.addEventListener("change", toggleAgentField);
+
+    loadAgentFilterDropdown();
     loadPartners();
 });
 
 function debouncePartnerLoad() {
     clearTimeout(partnerFilterTimeout);
-    partnerFilterTimeout = setTimeout(() => {
-        loadPartners();
-    }, 400);
+    partnerFilterTimeout = setTimeout(loadPartners, 400);
+}
+
+async function loadAgentFilterDropdown() {
+    try {
+        const response = await fetch("/Partner/GetPartners");
+
+        if (!response.ok) {
+            throw new Error("Failed to load agents.");
+        }
+
+        const data = await response.json();
+        const agentSelect = document.getElementById("filterAgent");
+
+        if (!agentSelect) return;
+
+        const agents = data.filter(x =>
+            (x.partner_type ?? "").toUpperCase() === "AGENT" &&
+            Boolean(x.is_deleted) === false
+        );
+
+        agentSelect.innerHTML = `<option value="">All Agents</option>`;
+
+        agents
+            .sort((a, b) => (a.partner_name ?? "").localeCompare(b.partner_name ?? ""))
+            .forEach(agent => {
+                agentSelect.innerHTML += `
+                    <option value="${agent.partner_id}">
+                        ${agent.partner_name}
+                    </option>
+                `;
+            });
+
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function toggleAgentField(selectedAgentId = "") {
@@ -41,6 +78,7 @@ function toggleAgentField(selectedAgentId = "") {
         agent.value = "";
     }
 }
+
 async function loadAgentDropdown(selectedAgentId = "") {
     const agentSelect = document.getElementById("partnerAgent");
     if (!agentSelect) return;
@@ -60,20 +98,21 @@ async function loadAgentDropdown(selectedAgentId = "") {
 
     agentSelect.innerHTML = `<option value="">Select Agent</option>`;
 
-    agents.forEach(agent => {
-        agentSelect.innerHTML += `
-            <option value="${agent.partner_id}">
-                ${agent.partner_id} - ${agent.partner_name}
-            </option>
-        `;
-    });
+    agents
+        .sort((a, b) => (a.partner_name ?? "").localeCompare(b.partner_name ?? ""))
+        .forEach(agent => {
+            agentSelect.innerHTML += `
+                <option value="${agent.partner_id}">
+                    ${agent.partner_id} - ${agent.partner_name}
+                </option>
+            `;
+        });
 
     agentSelect.value = selectedAgentId || "";
 }
+
 async function loadPartners() {
     try {
-
-
         const response = await fetch("/Partner/GetPartners");
 
         if (!response.ok) {
@@ -86,6 +125,8 @@ async function loadPartners() {
         const typeValue = (document.getElementById("filterPartnerType")?.value || "").toLowerCase().trim();
         const statusValue = document.getElementById("filterStatus")?.value ?? "";
         const regionValue = (document.getElementById("filterRegion")?.value || "").toLowerCase().trim();
+        const agentValue = (document.getElementById("filterAgent")?.value || "").trim();
+        const sortValue = document.getElementById("sortPartners")?.value || "partner_id_asc";
 
         let filteredData = data;
 
@@ -94,7 +135,9 @@ async function loadPartners() {
                 (x.partner_id ?? "").toLowerCase().includes(searchValue) ||
                 (x.partner_name ?? "").toLowerCase().includes(searchValue) ||
                 (x.address ?? "").toLowerCase().includes(searchValue) ||
-                (x.contact ?? "").toLowerCase().includes(searchValue)
+                (x.contact ?? "").toLowerCase().includes(searchValue) ||
+                (x.contact_no ?? "").toLowerCase().includes(searchValue) ||
+                (x.agent_name ?? "").toLowerCase().includes(searchValue)
             );
         }
 
@@ -103,9 +146,16 @@ async function loadPartners() {
                 (x.partner_type ?? "").toLowerCase() === typeValue
             );
         }
+
         if (regionValue) {
             filteredData = filteredData.filter(x =>
                 (x.region ?? "").toLowerCase() === regionValue
+            );
+        }
+
+        if (agentValue) {
+            filteredData = filteredData.filter(x =>
+                (x.agent_id ?? "") === agentValue
             );
         }
 
@@ -116,15 +166,36 @@ async function loadPartners() {
             );
         }
 
+        filteredData = sortPartnerData(filteredData, sortValue);
+
         renderPartnerTable(filteredData);
+
     } catch (error) {
         console.error(error);
+
         document.getElementById("partnerTableBody").innerHTML = `
             <tr>
                 <td colspan="9" class="text-center text-danger">${error.message}</td>
             </tr>
         `;
     }
+}
+
+function sortPartnerData(data, sortValue) {
+    const sorted = [...data];
+
+    sorted.sort((a, b) => {
+        const valueA = a.partner_id ?? "";
+        const valueB = b.partner_id ?? "";
+
+        if (sortValue === "partner_id_desc") {
+            return valueB.localeCompare(valueA, undefined, { numeric: true });
+        }
+
+        return valueA.localeCompare(valueB, undefined, { numeric: true });
+    });
+
+    return sorted;
 }
 
 function renderPartnerTable(data) {
@@ -144,24 +215,24 @@ function renderPartnerTable(data) {
         const statusText = String(item.is_deleted) === "true" ? "Inactive" : "Active";
 
         tableBody.innerHTML += `
-    <tr>
-        <td>${item.partner_id ?? ""}</td>
-        <td>${item.partner_name ?? ""}</td>
-        <td>${item.address ?? ""}</td>
-        <td>${item.contact ?? item.contact_no ?? ""}</td>
-        <td>${item.partner_type ?? ""}</td>
-        <td>${item.region ?? ""}</td>
-      <td>${item.agent_name ?? ""}</td>
-        <td>${statusText}</td>
-        <td class="text-end">
-            <button type="button"
-                class="btn btn-sm btn-outline-primary rounded-3 btn-edit-partner"
-                data-partner='${safeAttr(JSON.stringify(item))}'>
-                Edit
-            </button>
-        </td>
-    </tr>
-`;
+            <tr>
+                <td>${safeHtml(item.partner_id ?? "")}</td>
+                <td>${safeHtml(item.partner_name ?? "")}</td>
+                <td>${safeHtml(item.address ?? "")}</td>
+                <td>${safeHtml(item.contact ?? item.contact_no ?? "")}</td>
+                <td>${safeHtml(item.partner_type ?? "")}</td>
+                <td>${safeHtml(item.region ?? "")}</td>
+                <td>${safeHtml(item.agent_name ?? "")}</td>
+                <td>${statusText}</td>
+                <td class="text-end">
+                    <button type="button"
+                        class="btn btn-sm btn-outline-primary rounded-3 btn-edit-partner"
+                        data-partner='${safeAttr(JSON.stringify(item))}'>
+                        Edit
+                    </button>
+                </td>
+            </tr>
+        `;
     });
 
     document.querySelectorAll(".btn-edit-partner").forEach(btn => {
@@ -177,6 +248,9 @@ function clearFilters() {
     document.getElementById("filterPartnerType").value = "";
     document.getElementById("filterStatus").value = "";
     document.getElementById("filterRegion").value = "";
+    document.getElementById("filterAgent").value = "";
+    document.getElementById("sortPartners").value = "partner_id_asc";
+
     loadPartners();
 }
 
@@ -207,7 +281,7 @@ function openEditPartnerModal(item) {
     document.getElementById("partnerId").value = item.partner_id ?? "";
     document.getElementById("partnerName").value = item.partner_name ?? "";
     document.getElementById("partnerAddress").value = item.address ?? "";
-    document.getElementById("partnerContact").value = item.contact ?? "";
+    document.getElementById("partnerContact").value = item.contact ?? item.contact_no ?? "";
     document.getElementById("partnerType").value = item.partner_type ?? "";
     document.getElementById("partnerRegion").value = item.region ?? "";
     document.getElementById("partnerStatus").value = String(item.is_deleted ?? false);
@@ -221,24 +295,26 @@ function openEditPartnerModal(item) {
 async function savePartner() {
     try {
         const mode = document.getElementById("partnerFormMode")?.value || "add";
+        const partnerType = document.getElementById("partnerType")?.value.trim() || "";
 
         const payload = {
             partner_id: document.getElementById("partnerId")?.value.trim() || "",
             partner_name: document.getElementById("partnerName")?.value.trim() || "",
             address: document.getElementById("partnerAddress")?.value.trim() || "",
             contact: document.getElementById("partnerContact")?.value.trim() || "",
-            partner_type: document.getElementById("partnerType")?.value.trim() || "",
+            partner_type: partnerType,
             region: document.getElementById("partnerRegion")?.value.trim() || "",
-            agent_id: document.getElementById("partnerAgent")?.value || "",
+            agent_id: partnerType === "CUSTOMER"
+                ? document.getElementById("partnerAgent")?.value || ""
+                : "",
             is_deleted: document.getElementById("partnerStatus")?.value === "true"
         };
-
-        console.log("PARTNER PAYLOAD:", payload);
 
         if (mode === "edit" && !payload.partner_id) {
             alert("Partner ID is required.");
             return;
         }
+
         if (!payload.partner_name) {
             alert("Partner Name is required.");
             return;
@@ -258,6 +334,11 @@ async function savePartner() {
             return;
         }
 
+        if (payload.partner_type === "CUSTOMER" && !payload.agent_id) {
+            alert("Agent is required for CUSTOMER.");
+            return;
+        }
+
         let url = "/Partner/AddPartner";
         let method = "POST";
 
@@ -266,10 +347,6 @@ async function savePartner() {
             method = "PUT";
         }
 
-
-        console.log("MODE:", mode);
-        console.log("URL:", url);
-        console.log("PARTNER PAYLOAD:", payload);
         const response = await fetch(url, {
             method: method,
             headers: {
@@ -277,6 +354,7 @@ async function savePartner() {
             },
             body: JSON.stringify(payload)
         });
+
         const resultText = await response.text();
 
         if (!response.ok) {
@@ -284,13 +362,25 @@ async function savePartner() {
         }
 
         partnerModal.hide();
-        loadPartners();
+
+        await loadAgentFilterDropdown();
+        await loadPartners();
+
         alert(mode === "edit" ? "Partner updated successfully." : "Partner added successfully.");
+
     } catch (error) {
         console.error(error);
         alert(error.message);
     }
-  
+}
+
+function safeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 function safeAttr(value) {
