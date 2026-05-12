@@ -203,30 +203,40 @@ function formatLot(lotNo) {
 }
 function formatReference(item) {
     let html = `<div class="d-flex flex-wrap gap-1">`;
+    let hasRef = false;
 
     if (item.drNo) {
+        hasRef = true;
         html += `<span class="badge bg-secondary">DR: ${escapeHtml(item.drNo)}</span>`;
+    }
+    if (item.trNo) {
+        hasRef = true;
+        html += `<span class="badge bg-dark">Tr#: ${escapeHtml(item.trNo)}</span>`;
     }
 
     if (item.invNo) {
+        hasRef = true;
         html += `<span class="badge bg-dark">INV: ${escapeHtml(item.invNo)}</span>`;
     }
 
     if (item.poNo) {
+        hasRef = true;
         html += `<span class="badge bg-warning text-dark">PO: ${escapeHtml(item.poNo)}</span>`;
     }
 
     if (item.orderNo) {
+        hasRef = true;
         html += `<span class="badge bg-primary">DO: ${escapeHtml(item.orderNo)}</span>`;
     }
 
     if (item.checklistNo) {
+        hasRef = true;
         html += `<span class="badge bg-info text-dark">DC: ${escapeHtml(item.checklistNo)}</span>`;
     }
 
     html += `</div>`;
 
-    return html;
+    return hasRef ? html : `<span class="text-muted">-</span>`;
 }
 function updateDashboardInventoryAlerts(items) {
     const list = document.getElementById("dashboardInventoryAlertsBody");
@@ -251,7 +261,7 @@ function updateDashboardInventoryAlerts(items) {
 
         if (alertType === "PLANNING SHORTAGE") {
             detailText = `
-                (${formatNumber(item.availableQty)} ${escapeHtml(item.uom || "")} stock,
+                (${formatNumber(item.availableQty)} ${escapeHtml(item.uom || "")} available,
                 ${formatNumber(item.reservedQty)} ${escapeHtml(item.uom || "")} reserved,
                 ${formatNumber(item.requiredQty)} ${escapeHtml(item.uom || "")} required)
                 → <span class="text-danger fw-semibold">Short ${formatNumber(item.shortageQty)} ${escapeHtml(item.uom || "")}</span>`;

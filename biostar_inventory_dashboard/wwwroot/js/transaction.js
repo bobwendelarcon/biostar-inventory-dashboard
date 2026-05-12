@@ -57,25 +57,27 @@ function buildReferenceHtml(item) {
 
     const refs = [];
 
-    const remarks = String(item.remarks || "").toUpperCase();
-
-    // Production Transmittal
+    // DR
     if (item.dr_no) {
-
-        let label = "DR";
-
-        if (remarks.includes("PRODUCTION STOCK IN")) {
-            label = "Tr#";
-        }
-
         refs.push(`
             <div>
-                <strong>${label}:</strong>
+                <strong>DR:</strong>
                 ${escapeHtml(item.dr_no)}
             </div>
         `);
     }
 
+    // TR
+    if (item.tr_no) {
+        refs.push(`
+            <div>
+                <strong>Tr#:</strong>
+                ${escapeHtml(item.tr_no)}
+            </div>
+        `);
+    }
+
+    // INV
     if (item.inv_no) {
         refs.push(`
             <div>
@@ -85,6 +87,7 @@ function buildReferenceHtml(item) {
         `);
     }
 
+    // PO
     if (item.po_no) {
         refs.push(`
             <div>
@@ -94,6 +97,7 @@ function buildReferenceHtml(item) {
         `);
     }
 
+    // Daily Order
     if (item.order_no) {
         refs.push(`
             <div>
@@ -103,6 +107,7 @@ function buildReferenceHtml(item) {
         `);
     }
 
+    // Delivery Checklist
     if (item.checklist_no) {
         refs.push(`
             <div>
@@ -195,7 +200,12 @@ async function loadTransactions(page = 1) {
         }
 
         const result = await response.json();
+        console.log("FULL RESULT:", result);
+
         const data = result.data;
+
+        console.log("TRANSACTION DATA:", data);
+
         totalRecords = Number(result.total) || 0;
 
         const tableBody = document.getElementById("transactionTable");
@@ -220,8 +230,9 @@ async function loadTransactions(page = 1) {
 
             tableBody.innerHTML += `
                 <tr>
-                    <td>${escapeHtml(item.lot_no ?? "")}</td>
+                 
                     <td>${escapeHtml(item.product_name ?? "")}</td>
+                       <td>${escapeHtml(item.lot_no ?? "")}</td>
                     <td>${escapeHtml(item.customer_name ?? "")}</td>
                     <td>${formatDateOnly(item.created_at)}</td>
                     <td>${formatTimeOnly(item.created_at)}</td>

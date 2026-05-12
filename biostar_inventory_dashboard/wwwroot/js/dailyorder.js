@@ -23,6 +23,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadClassFilter();
 
+    document.getElementById("btnBackToAllocation")?.addEventListener("click", async function () {
+        if (!window.currentOrderId) {
+            alert("No order selected.");
+            return;
+        }
+
+        await backToAllocation(window.currentOrderId);
+    });
+
     document.getElementById("addOrderModal")?.addEventListener("shown.bs.modal", stopDailyOrderAutoRefresh);
     document.getElementById("addOrderModal")?.addEventListener("hidden.bs.modal", startDailyOrderAutoRefresh);
     document.getElementById("addClassName")?.addEventListener("change", loadCustomersByAgent);
@@ -82,6 +91,120 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     });
+
+    document
+        .getElementById("btnManualAllocation")
+        .addEventListener("click", async () => {
+
+            if (!window.currentOrderId) return;
+
+            const response = await fetch(
+                `/DailyOrder/GetAvailableLots?orderId=${window.currentOrderId}`
+            );
+
+            if (!response.ok) {
+                alert(await response.text());
+                return;
+            }
+
+            const data = await response.json();
+
+            renderManualAvailableLotsModal(data);
+
+            new bootstrap.Modal(
+                document.getElementById("manualAllocationModal")
+            ).show();
+        });
+
+    document.addEventListener("input", e => {
+
+        if (e.target.classList.contains("manual-lot-input")) {
+
+            const max = Number(e.target.dataset.max || 0);
+            const value = Number(e.target.value || 0);
+
+            if (value > max) {
+                e.target.value = max;
+            }
+
+            computeManualAllocationTotal();
+        }
+    });
+
+    document
+        .getElementById("btnSaveManualAllocation")
+        .addEventListener("click", async () => {
+
+            try {
+
+                const grouped = {};
+
+                document
+                    .querySelectorAll(".manual-lot-input")
+                    .forEach(input => {
+
+                        const qty = Number(input.value || 0);
+
+                        if (qty <= 0)
+                            return;
+
+                        const lineId = Number(
+                            input.dataset.lineId
+                        );
+
+                        if (!grouped[lineId]) {
+                            grouped[lineId] = [];
+                        }
+
+                        grouped[lineId].push({
+                            lotNo: input.dataset.lotNo,
+                            allocateQty: qty
+                        });
+                    });
+
+                const lines = Object.keys(grouped).map(x => ({
+                    orderLineId: Number(x),
+                    lots: grouped[x]
+                }));
+
+                const payload = {
+                    lines: lines
+                };
+
+                console.log(payload);
+
+                const response = await fetch(
+                    `/DailyOrder/ManualAllocateOrder?orderId=${window.currentOrderId}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                const result = await response.json();
+
+                if (!response.ok)
+                    throw new Error(result.message || "Failed");
+
+                alert(result.message || "Manual allocation completed.");
+
+                bootstrap.Modal
+                    .getInstance(
+                        document.getElementById("manualAllocationModal")
+                    )
+                    .hide();
+
+                await loadDailyOrders();
+                await openViewModal(window.currentOrderId);
+
+            } catch (err) {
+
+                console.error(err);
+                alert(err.message || "Manual allocation failed.");
+            }
+        });
 
     document.getElementById("addLineCategory")?.addEventListener("change", loadAddOrderProducts);
     document.getElementById("addLineProductSearch")?.addEventListener("input", loadAddOrderProducts);
@@ -144,8 +267,32 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnModalRerunAllocation")?.addEventListener("click", async function () {
         if (!window.currentOrderId) return;
 
-        await allocateOrder(window.currentOrderId);
-        await openViewModal(window.currentOrderId); // refresh modal
+        const lines = [];
+
+        document.querySelectorAll(".allocate-now-input").forEach(input => {
+            const orderLineId = Number(input.dataset.lineId);
+            const allocateQty = Number(input.value || 0);
+            const maxQty = Number(input.max || 0);
+
+            if (allocateQty > 0) {
+                if (allocateQty > maxQty) {
+                    throw new Error(`Allocate qty cannot exceed remaining qty.`);
+                }
+
+                lines.push({
+                    orderLineId: orderLineId,
+                    allocateQty: allocateQty
+                });
+            }
+        });
+
+        if (lines.length === 0) {
+            alert("Please enter quantity to allocate.");
+            return;
+        }
+
+        await allocateOrder(window.currentOrderId, lines);
+        await openViewModal(window.currentOrderId);
     });
 
     document.getElementById("btnModalSendToDispatch")?.addEventListener("click", async function () {
@@ -169,6 +316,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const deleteBtn = e.target.closest(".btn-delete-order");
         const allocateBtn = e.target.closest(".btn-allocate-order");
         const dispatchBtn = e.target.closest(".btn-dispatch-order");
+        const editQtyBtn = e.target.closest(".btn-edit-line-required-qty");
+        const clearAllocationBtn = e.target.closest(".btn-clear-line-allocation");
 
         if (viewBtn) {
             const orderId = viewBtn.dataset.id;
@@ -193,7 +342,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (allocateBtn) {
             const orderId = allocateBtn.dataset.id;
-            await allocateOrder(orderId);
+
+            await openViewModal(orderId);
+
+            const floatingMenu = document.getElementById("floatingActionMenu");
+            if (floatingMenu) {
+                floatingMenu.classList.add("d-none");
+                floatingMenu.innerHTML = "";
+            }
+        }
+
+        if (editQtyBtn) {
+            const orderLineId = editQtyBtn.dataset.lineId;
+            const oldQty = editQtyBtn.dataset.requiredQty;
+            const dispatchedQty = editQtyBtn.dataset.dispatchedQty || 0;
+
+            await updateLineRequiredQty(orderLineId, oldQty, dispatchedQty);
+        }
+
+        if (clearAllocationBtn) {
+            const orderLineId = clearAllocationBtn.dataset.lineId;
+            await clearLineAllocation(orderLineId);
         }
 
         if (dispatchBtn) {
@@ -202,6 +371,124 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+function renderManualAvailableLotsModal(lines) {
+    const tbody = document.getElementById("manualAllocationTableBody");
+    tbody.innerHTML = "";
+
+    lines.forEach(line => {
+        (line.lots || []).forEach(lot => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${safe(lot.lotNo)}</td>
+                    <td>${formatDate(lot.manufacturingDate)}</td>
+                    <td>${formatDate(lot.expirationDate)}</td>
+                    <td>${formatNumber(lot.onHandQty)}</td>
+                    <td>${formatNumber(lot.reservedQty)}</td>
+                    <td>${formatNumber(lot.availableQty)}</td>
+                    <td style="width:140px;">
+                        <input
+                            type="number"
+                            class="form-control manual-lot-input"
+                            data-line-id="${line.orderLineId}"
+                            data-lot-no="${safeAttr(lot.lotNo)}"
+                            data-max="${lot.availableQty}"
+                            min="0"
+                            max="${lot.availableQty}"
+                            step="0.01"
+                            value="${lot.existingAllocatedQty || 0}"
+                        />
+                    </td>
+                </tr>
+            `;
+        });
+    });
+
+    computeManualAllocationTotal();
+}
+function renderManualAllocationModal(order) {
+
+    const tbody = document.getElementById(
+        "manualAllocationTableBody"
+    );
+
+    tbody.innerHTML = "";
+
+    order.lines.forEach(line => {
+
+        (line.allocations || []).forEach(a => {
+
+            const existingQty = Number(a.allocatedQty || 0);
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        ${safe(a.lotNo)}
+                    </td>
+
+                    <td>
+                        ${formatDate(a.manufacturingDate)}
+                    </td>
+
+                    <td class="
+                        ${isNearExpiry(a.expirationDate)
+                    ? 'text-danger fw-bold'
+                    : ''
+                }
+                    ">
+                        ${formatDate(a.expirationDate)}
+                    </td>
+
+                    <td>
+                        ${formatNumber(a.onHandQty)}
+                    </td>
+
+                    <td>
+                        ${formatNumber(a.reservedQty)}
+                    </td>
+
+                    <td>
+                        ${formatNumber(a.availableQty)}
+                    </td>
+
+                    <td style="width:140px;">
+                        <input
+                            type="number"
+                            class="form-control manual-lot-input"
+                            data-line-id="${line.orderLineId}"
+                            data-lot-no="${safeAttr(a.lotNo)}"
+                            data-max="${a.availableQty}"
+                            min="0"
+                            max="${a.availableQty}"
+                            step="0.01"
+                            value="${existingQty}"
+                        />
+                    </td>
+                </tr>
+            `;
+        });
+    });
+
+    computeManualAllocationTotal();
+}
+function computeManualAllocationTotal() {
+
+    let total = 0;
+
+    document
+        .querySelectorAll(".manual-lot-input")
+        .forEach(input => {
+
+            total += Number(input.value || 0);
+        });
+
+    document.getElementById(
+        "manualAllocationTotal"
+    ).innerText = formatNumber(total);
+}
+
+
+
 async function loadClassFilter() {
     const classFilter = document.getElementById("classFilter");
     if (!classFilter) return;
@@ -240,6 +527,41 @@ async function loadClassFilter() {
         classFilter.innerHTML = `
             <option value="">Failed to load</option>
         `;
+    }
+}
+
+async function backToAllocation(orderId) {
+    if (!confirm("Move this order back to allocation?")) return;
+
+    try {
+        const response = await fetch(`/DailyOrder/BackToAllocation?orderId=${orderId}`, {
+            method: "POST"
+        });
+
+        const text = await response.text();
+
+        let result = null;
+        try {
+            result = JSON.parse(text);
+        } catch {
+            result = { message: text };
+        }
+
+        if (!response.ok) {
+            throw new Error(result.message || text || "Failed to move back to allocation.");
+        }
+
+        alert(result.message || "Order moved back to allocation.");
+
+        await loadDailyOrders();
+
+        if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
+            await openViewModal(orderId);
+        }
+
+    } catch (err) {
+        console.error("backToAllocation error:", err);
+        alert(err.message || "Failed to move back to allocation.");
     }
 }
 async function loadAgentsForClass() {
@@ -590,7 +912,12 @@ function renderDailyOrderTable(data) {
 <td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
 <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
 <td>${formatQtyWithPack(order.dispatchedQty, order.uom, order.packQty, order.packUom)}</td>
-           <td>${formatAllocationStatus(order.allocationStatus, order.remainingQty, order.allocatedQty)}</td>
+         <td>${formatAllocationStatus(
+             order.allocationStatus,
+             order.remainingQty,
+             order.allocatedQty,
+             order.status
+         )}</td>
                 <td>${formatDate(order.dateOrdered)}</td>
                 <td>${formatDate(order.deliveryDate)}</td>
                 <td>${formatDate(order.dateDelivered)}</td>
@@ -617,9 +944,37 @@ async function openViewModal(orderId) {
 
     try {
         const response = await fetch(`/DailyOrder/GetOrderDetails?orderId=${orderId}`);
+       
+
         if (!response.ok) throw new Error(await response.text());
 
         const data = await response.json();
+        window.currentOrderData = data;
+
+        const status = (data.status || "").trim().toUpperCase();
+
+        const isLocked =
+            status === "READY FOR DISPATCH" ||
+            status === "COMPLETED";
+
+        // FOOTER BUTTONS
+        document.getElementById("btnManualAllocation").style.display =
+            isLocked ? "none" : "inline-block";
+
+        document.getElementById("btnModalRerunAllocation").style.display =
+            isLocked ? "none" : "inline-block";
+
+        document.getElementById("btnEditOrder").style.display =
+            isLocked ? "none" : "inline-block";
+
+        document.getElementById("btnModalSendToDispatch").style.display =
+            isLocked ? "none" : "inline-block";
+
+        // ONLY SHOW BACK BUTTON WHEN READY FOR DISPATCH
+        document.getElementById("btnBackToAllocation").style.display =
+            status === "READY FOR DISPATCH"
+                ? "inline-block"
+                : "none";
 
         document.getElementById("modalOrderNo").textContent = data.orderNo || "-";
         document.getElementById("modalCustomerName").textContent = data.customerName || "-";
@@ -633,6 +988,17 @@ async function openViewModal(orderId) {
 
         renderModalLineSummary(data.lines || []);
         renderModalLotAllocations(data.lines || []);
+
+        const btnBackToAllocation = document.getElementById("btnBackToAllocation");
+
+        if (btnBackToAllocation) {
+            const status = (data.status || "").trim().toUpperCase();
+
+            btnBackToAllocation.style.display =
+                status === "READY FOR DISPATCH"
+                    ? "inline-block"
+                    : "none";
+        }
 
         const editBtn = document.querySelector("#viewOrderModal .btn-edit-order");
         if (editBtn) {
@@ -654,31 +1020,234 @@ async function openViewModal(orderId) {
 }
 
 function renderModalLineSummary(lines) {
+
     const tbody = document.getElementById("modalLineSummaryBody");
     tbody.innerHTML = "";
 
     if (!lines.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="text-center text-muted">No order lines found.</td>
+                <td colspan="8" class="text-center text-muted">
+                    No order lines found.
+                </td>
             </tr>
         `;
         return;
     }
 
     lines.forEach(line => {
+
+        const dispatchedQty = Number(line.dispatchedQty || 0);
+        const requiredQty = Number(line.requiredQty || 0);
+        const allocatedQty = Number(line.allocatedQty || 0);
+
+        const allocateNowQty =
+            allocatedQty > 0
+                ? allocatedQty
+                : Number(line.remainingQty || 0);
+
         tbody.innerHTML += `
             <tr>
-                <td>${safe(line.productName)}</td>
-               <td>${formatQtyWithPack(line.remainingQty, line.uom, line.packQty, line.packUom)}</td>
-<td>${formatQtyWithPack(line.allocatedQty, line.uom, line.packQty, line.packUom)}</td>
-<td>${formatQtyWithPack(line.availableBeforeAllocation, line.uom, line.packQty, line.packUom)}</td>
-                <td>${renderAllocationBadge(line.allocationResult)}</td>
+
+                <td>
+                    ${safe(line.productName)}
+                </td>
+
+                <td>
+                    ${formatQtyWithPack(
+            line.requiredQty,
+            line.uom,
+            line.packQty,
+            line.packUom
+        )}
+                </td>
+
+                <td>
+                    ${formatQtyWithPack(
+            line.allocatedQty,
+            line.uom,
+            line.packQty,
+            line.packUom
+        )}
+                </td>
+
+                <td>
+                    ${formatQtyWithPack(
+            line.remainingQty,
+            line.uom,
+            line.packQty,
+            line.packUom
+        )}
+                </td>
+
+                <td style="min-width:140px;">
+                    <input
+                        type="number"
+                        class="form-control allocate-now-input"
+                        data-line-id="${line.orderLineId}"
+                        min="1"
+                        max="${line.requiredQty}"
+                        step="0.01"
+                        value="${allocateNowQty}"
+                    />
+                </td>
+
+                <td>
+                    ${formatQtyWithPack(
+            line.availableBeforeAllocation,
+            line.uom,
+            line.packQty,
+            line.packUom
+        )}
+                </td>
+
+                <td>
+                    ${renderAllocationBadge(line.allocationResult)}
+                </td>
+
+                <td class="text-nowrap">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-warning btn-sm btn-edit-line-required-qty"
+                        data-line-id="${line.orderLineId}"
+                        data-required-qty="${requiredQty}"
+                        data-dispatched-qty="${dispatchedQty}">
+                        Edit Qty
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm btn-clear-line-allocation"
+                        data-line-id="${line.orderLineId}"
+                        ${allocatedQty <= 0 ? "disabled" : ""}>
+                        Clear Allocation
+                    </button>
+
+                </td>
+
             </tr>
         `;
     });
 }
+async function updateLineRequiredQty(
+    orderLineId,
+    oldQty,
+    dispatchedQty
+) {
 
+    if (!window.currentOrderId)
+        return;
+
+    const input = prompt(
+        "Enter new Required Qty:",
+        oldQty
+    );
+
+    if (input === null)
+        return;
+
+    const newQty = Number(input);
+
+    if (!newQty || newQty <= 0) {
+        alert("Required qty must be greater than zero.");
+        return;
+    }
+
+    if (newQty < Number(dispatchedQty || 0)) {
+        alert(
+            `Required qty cannot be less than dispatched qty (${dispatchedQty}).`
+        );
+        return;
+    }
+
+    if (!confirm(
+        "Changing Required Qty will clear existing allocation for this line.\n\nContinue?"
+    )) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/DailyOrder/UpdateLineRequiredQty?orderId=${window.currentOrderId}&orderLineId=${orderLineId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    requiredQty: newQty
+                })
+            });
+
+        const text = await response.text();
+
+        if (!response.ok)
+            throw new Error(text);
+
+        const result = JSON.parse(text);
+
+        alert(result.message || "Required qty updated.");
+
+        await loadDailyOrders();
+        await openViewModal(window.currentOrderId);
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            err.message ||
+            "Failed to update required qty."
+        );
+    }
+}
+
+async function clearLineAllocation(orderLineId) {
+
+    if (!window.currentOrderId)
+        return;
+
+    if (!confirm(
+        "Clear allocation for this line?"
+    )) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `/DailyOrder/ClearLineAllocation?orderId=${window.currentOrderId}&orderLineId=${orderLineId}`,
+            {
+                method: "DELETE"
+            });
+
+        const text = await response.text();
+
+        if (!response.ok)
+            throw new Error(text);
+
+        const result = JSON.parse(text);
+
+        alert(
+            result.message ||
+            "Allocation cleared."
+        );
+
+        await loadDailyOrders();
+        await openViewModal(window.currentOrderId);
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            err.message ||
+            "Failed to clear allocation."
+        );
+    }
+}
 function renderModalLotAllocations(lines) {
     const tbody = document.getElementById("modalLotAllocationBody");
     tbody.innerHTML = "";
@@ -696,32 +1265,130 @@ function renderModalLotAllocations(lines) {
 
     allocations.forEach(item => {
         tbody.innerHTML += `
-            <tr>
+        <tr>
             <td>${safe(item.branchId || "-")}</td>
-                <td>${safe(item.lotNo)}</td>
-                <td>${formatDate(item.manufacturingDate)}</td>
-                <td>${formatDate(item.expirationDate)}</td>
-              <td>${formatQtyWithPack(item.onHandQty, item.uom, item.packQty, item.packUom)}</td>
-<td>${formatQtyWithPack(item.reservedQty, item.uom, item.packQty, item.packUom)}</td>
-<td>${formatQtyWithPack(item.availableQty, item.uom, item.packQty, item.packUom)}</td>
-<td>${formatQtyWithPack(item.allocatedQty, item.uom, item.packQty, item.packUom)}</td>
-                <td>${renderPriorityBadge(item.priorityRank)}</td>
-            </tr>
-        `;
+
+            <td>${safe(item.lotNo)}</td>
+
+            <td>${formatDate(item.manufacturingDate)}</td>
+
+            <td>${formatDate(item.expirationDate)}</td>
+
+            <td>
+                ${formatQtyWithPack(
+            item.onHandQty,
+            item.uom,
+            item.packQty,
+            item.packUom
+        )}
+            </td>
+
+            <td>
+                ${formatQtyWithPack(
+            item.reservedQty,
+            item.uom,
+            item.packQty,
+            item.packUom
+        )}
+            </td>
+
+            <td>
+                ${formatQtyWithPack(
+            item.availableQty,
+            item.uom,
+            item.packQty,
+            item.packUom
+        )}
+            </td>
+
+            <td>
+                <span class="badge ${(item.allocationMode || "").toUpperCase() === "MANUAL"
+                ? "bg-dark"
+                : "bg-primary"
+            }">
+                    ${safe(item.allocationMode || "FEFO")}
+                </span>
+            </td>
+
+            <td>
+                ${formatQtyWithPack(
+                item.allocatedQty,
+                item.uom,
+                item.packQty,
+                item.packUom
+            )}
+            </td>
+
+            <td>
+                ${renderPriorityBadge(item.priorityRank)}
+            </td>
+        </tr>
+    `;
     });
 }
 
-async function allocateOrder(orderId) {
-    if (!confirm("Run FEFO allocation for this order?")) return;
+async function allocateOrder(orderId, lines = null) {
+
+    const hasManualAllocation =
+        window.currentOrderData?.lines?.some(line =>
+            (line.allocations || []).some(a =>
+                (a.allocationMode || "").toUpperCase() === "MANUAL"
+            )
+        );
+
+    let confirmMessage = "Run FEFO allocation for this order?";
+
+    if (hasManualAllocation) {
+        confirmMessage =
+            "This order already has MANUAL lot allocations.\n\n" +
+            "Running FEFO will replace the manual selected lots.\n\n" +
+            "Continue?";
+    }
+
+    if (!confirm(confirmMessage))
+        return;
+    //if (!confirm("Run FEFO allocation for this order?")) return;
 
     try {
+        if (!lines) {
+            lines = [];
+
+            document.querySelectorAll(".allocate-now-input").forEach(input => {
+                const orderLineId = Number(input.dataset.lineId);
+                const allocateQty = Number(input.value || 0);
+
+                if (orderLineId && allocateQty > 0) {
+                    lines.push({
+                        orderLineId: orderLineId,
+                        allocateQty: allocateQty
+                    });
+                }
+            });
+        }
+
+        if (!lines || lines.length === 0) {
+            alert("Please enter quantity to allocate.");
+            return;
+        }
+
+        const payload = {
+            lines: lines
+        };
+
+       // console.log("FEFO PAYLOAD:", JSON.stringify(payload));
+       // alert("Sending allocate qty: " + lines.map(x => x.allocateQty).join(", "));
+
         const response = await fetch(`/DailyOrder/AllocateOrder?orderId=${orderId}`, {
-            method: "POST"
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
         });
 
         const resultText = await response.text();
-        let result = null;
 
+        let result = null;
         try {
             result = JSON.parse(resultText);
         } catch {
@@ -732,12 +1399,14 @@ async function allocateOrder(orderId) {
             throw new Error(result?.message || resultText || "Failed to allocate order.");
         }
 
-        alert(result.message || "Allocation completed.");
+       // alert(result.message || "Allocation completed.");
+
         await loadDailyOrders();
 
         if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
             await openViewModal(orderId);
         }
+
     } catch (err) {
         console.error("allocateOrder error:", err);
         alert(err.message || "Failed to allocate order.");
@@ -762,7 +1431,44 @@ async function markReadyForDispatch(orderId) {
         alert("Failed to mark order as ready for dispatch.");
     }
 }
+function isNearExpiry(dateValue) {
+    if (!dateValue) return false;
 
+    const expDate = new Date(dateValue);
+    if (isNaN(expDate.getTime())) return false;
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    expDate.setHours(0, 0, 0, 0);
+
+    const threeMonthsFromNow = new Date(today);
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+
+    return expDate <= threeMonthsFromNow;
+}
+
+function formatNumber(value) {
+
+    const number = Number(value || 0);
+
+    return number.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+}
+function safeAttr(value) {
+
+    if (value === null || value === undefined)
+        return "";
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
 function renderAllocationBadge(status) {
     const value = (status || "").trim().toUpperCase();
 
@@ -823,7 +1529,22 @@ function formatDate(dateStr) {
         day: "numeric"
     });
 }
+function isNearExpiry(dateValue) {
+    if (!dateValue) return false;
 
+    const expDate = new Date(dateValue);
+    if (isNaN(expDate.getTime())) return false;
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    expDate.setHours(0, 0, 0, 0);
+
+    const threeMonthsFromNow = new Date(today);
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+
+    return expDate <= threeMonthsFromNow;
+}
 function formatQty(value) {
     if (value === null || value === undefined) return "0";
     return Number(value).toLocaleString("en-US", {
@@ -900,28 +1621,90 @@ function formatQtyWithPack(qty, uom, packQty, packUom) {
     `;
 }
 
-function formatAllocationStatus(status, remainingQty, allocatedQty) {
+//function formatAllocationStatus(status, remainingQty, allocatedQty, orderStatus = "") {
+//    const normalizedStatus = (status || "").trim().toUpperCase();
+//    const normalizedOrderStatus = (orderStatus || "").trim().toUpperCase();
+
+//    const remaining = Number(remainingQty || 0);
+//    const allocated = Number(allocatedQty || 0);
+
+//    // ✅ completed / delivered orders should not need allocation
+//    if (
+//        normalizedOrderStatus === "COMPLETED" ||
+//        normalizedOrderStatus === "PARTIALLY DELIVERED" ||
+//        remaining <= 0
+//    ) {
+//        return `<span class="text-success fw-bold">✔ Completed</span>`;
+//    }
+
+//    if (normalizedStatus === "NO STOCK") {
+//        return `<span class="text-danger fw-bold">⚠ No stock</span>`;
+//    }
+
+//    if (allocated <= 0) {
+//        return `<span class="text-danger fw-bold">⚠ Needs allocation</span>`;
+//    }
+
+//    if (allocated > 0 && remaining > 0) {
+//        return `<span class="text-warning fw-bold">⚠ Partial</span>`;
+//    }
+
+//    if (allocated > 0 && remaining <= 0) {
+//        return `<span class="text-success fw-bold">✔ Allocated</span>`;
+//    }
+
+//    return renderAllocationBadge(status);
+//}
+
+function formatAllocationStatus(status, remainingQty, allocatedQty, orderStatus = "") {
+
     const normalizedStatus = (status || "").trim().toUpperCase();
+    const normalizedOrderStatus = (orderStatus || "").trim().toUpperCase();
+
     const remaining = Number(remainingQty || 0);
     const allocated = Number(allocatedQty || 0);
 
-    if (remaining <= 0) {
+    // COMPLETED
+    if (normalizedOrderStatus === "COMPLETED") {
         return `<span class="text-success fw-bold">✔ Completed</span>`;
     }
 
-    if (normalizedStatus === "NOT ALLOCATED") {
-        return `<span class="text-danger fw-bold">⚠ Needs allocation</span>`;
+    // PARTIALLY DELIVERED
+    if (normalizedOrderStatus === "PARTIALLY DELIVERED") {
+
+        // nothing allocated yet
+        if (remaining > 0 && allocated <= 0) {
+            return `<span class="text-warning fw-bold">⚠ Remaining needs allocation</span>`;
+        }
+
+        // partially allocated remaining
+        if (remaining > 0 && allocated > 0) {
+            return `<span class="text-info fw-bold">↻ Partially reallocated</span>`;
+        }
+
+        // all remaining already allocated
+        if (remaining <= 0 && allocated > 0) {
+            return `<span class="text-success fw-bold">↻ Remaining allocated</span>`;
+        }
     }
 
+    // NO STOCK
     if (normalizedStatus === "NO STOCK") {
         return `<span class="text-danger fw-bold">⚠ No stock</span>`;
     }
 
-    if (normalizedStatus === "PARTIAL") {
-        return `<span class="text-warning fw-bold">⚠ Insufficient</span>`;
+    // NEEDS ALLOCATION
+    if (allocated <= 0) {
+        return `<span class="text-danger fw-bold">⚠ Needs allocation</span>`;
     }
 
-    if (normalizedStatus === "FULLY ALLOCATED") {
+    // PARTIAL
+    if (allocated > 0 && remaining > 0) {
+        return `<span class="text-warning fw-bold">⚠ Partial</span>`;
+    }
+
+    // ALLOCATED
+    if (allocated > 0 && remaining <= 0) {
         return `<span class="text-success fw-bold">✔ Allocated</span>`;
     }
 
@@ -946,14 +1729,25 @@ async function deleteOrder(orderId) {
             method: "DELETE"
         });
 
-        if (!response.ok) throw new Error(await response.text());
+        const text = await response.text();
 
-        const result = await response.json();
+        let result = null;
+        try {
+            result = JSON.parse(text);
+        } catch {
+            result = { message: text };
+        }
+
+        if (!response.ok) {
+            throw new Error(result.message || text || "Failed to delete order.");
+        }
+
         alert(result.message || "Order deleted successfully.");
         await loadDailyOrders();
+
     } catch (err) {
-        console.error(err);
-        alert("Failed to delete order.");
+        console.error("deleteOrder error:", err);
+        alert(err.message || "Failed to delete order.");
     }
 }
 
@@ -1371,4 +2165,89 @@ function bindLineQtyConversion(row) {
     uomType.addEventListener("change", recalc);
 
     recalc();
+}
+
+
+async function updateLineRequiredQty(orderLineId, oldQty, dispatchedQty) {
+    if (!window.currentOrderId) return;
+
+    const input = prompt("Enter new Required Qty:", oldQty);
+
+    if (input === null) return;
+
+    const newQty = Number(input);
+
+    if (!newQty || newQty <= 0) {
+        alert("Required qty must be greater than zero.");
+        return;
+    }
+
+    if (newQty < Number(dispatchedQty || 0)) {
+        alert(`Required qty cannot be less than dispatched qty (${dispatchedQty}).`);
+        return;
+    }
+
+    if (!confirm("Changing Required Qty will clear existing allocation for this line. Continue?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/DailyOrder/UpdateLineRequiredQty?orderId=${window.currentOrderId}&orderLineId=${orderLineId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    requiredQty: newQty
+                })
+            });
+
+        const text = await response.text();
+
+        if (!response.ok)
+            throw new Error(text);
+
+        const result = JSON.parse(text);
+
+        alert(result.message || "Required qty updated.");
+
+        await loadDailyOrders();
+        await openViewModal(window.currentOrderId);
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to update required qty.");
+    }
+}
+
+async function clearLineAllocation(orderLineId) {
+    if (!window.currentOrderId) return;
+
+    if (!confirm("Clear allocation for this line?")) return;
+
+    try {
+        const response = await fetch(
+            `/DailyOrder/ClearLineAllocation?orderId=${window.currentOrderId}&orderLineId=${orderLineId}`,
+            {
+                method: "DELETE"
+            });
+
+        const text = await response.text();
+
+        if (!response.ok)
+            throw new Error(text);
+
+        const result = JSON.parse(text);
+
+        alert(result.message || "Allocation cleared.");
+
+        await loadDailyOrders();
+        await openViewModal(window.currentOrderId);
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to clear allocation.");
+    }
 }

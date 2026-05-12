@@ -127,11 +127,11 @@
                 <table class="table inventory-table align-middle">
                     <thead>
                         <tr>
-                            <th>Lot No</th>
-                            <th>Description</th>
-                            <th>Qty</th>
+                            <th>Product / Description</th>
+                            <th>Qty Available</th>
                             <th>Pack</th>
                             <th>Stock Level</th>
+                            <th>Lot No</th>
                             <th>MFG. & EXP. Date</th>
                             <th>EXPIRES IN</th>
                             <th>Warehouse</th>
@@ -140,7 +140,7 @@
                     </thead>
                     <tbody id="inventoryTable">
                         <tr>
-                            <td colspan="9" class="empty-state-cell">Loading inventory data...</td>
+                            <td colspan="8" class="empty-state-cell">Loading inventory data...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -239,6 +239,64 @@
                         <tbody id="historyTable">
                             <tr>
                                 <td colspan="7" class="text-center text-muted">No history loaded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reservedDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0">Reserved Stock Details</h5>
+                    <small class="text-muted" id="reservedModalSubTitle"></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="reserved-summary-card">
+                            <div class="reserved-label">On-Hand</div>
+                            <div class="reserved-value" id="reservedOnHand">0</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="reserved-summary-card">
+                            <div class="reserved-label">Reserved</div>
+                            <div class="reserved-value text-warning" id="reservedQty">0</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="reserved-summary-card">
+                            <div class="reserved-label">Available</div>
+                            <div class="reserved-value text-success" id="reservedAvailable">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Order No</th>
+                                <th>Customer</th>
+                                <th class="text-end">Reserved Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservedDetailsTable">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    No reserved stock for this lot.
+                                </td>
                             </tr>
                         </tbody>
                     </table>

@@ -1,6 +1,7 @@
 ﻿using biostar_inventory_dashboard.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace biostar_inventory_dashboard.Controllers
 {
@@ -57,11 +58,11 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AllocateOrder(long orderId)
+        public async Task<IActionResult> AllocateOrder(long orderId, [FromBody] System.Text.Json.JsonElement request)
         {
             try
             {
-                var result = await _apiService.AllocateDailyOrderAsync(orderId);
+                var result = await _apiService.AllocateDailyOrderAsync(orderId, request.GetRawText());
                 return Content(result, "application/json");
             }
             catch (Exception ex)
@@ -111,7 +112,6 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] object request)
         {
@@ -181,5 +181,97 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ManualAllocateOrder(
+    long orderId,
+    [FromBody] JsonElement request)
+        {
+            try
+            {
+                var result = await _apiService
+                    .ManualAllocateOrderAsync(
+                        orderId,
+                        request.GetRawText());
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableLots(long orderId)
+        {
+            try
+            {
+                var result = await _apiService.GetAvailableLotsAsync(orderId);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateLineRequiredQty(
+      long orderId,
+      long orderLineId,
+      [FromBody] JsonElement request)
+        {
+            try
+            {
+                var result = await _apiService.UpdateDailyOrderLineRequiredQtyAsync(
+                    orderId,
+                    orderLineId,
+                    request
+                );
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> ClearLineAllocation(
+            long orderId,
+            long orderLineId)
+        {
+            try
+            {
+                var result = await _apiService.ClearDailyOrderLineAllocationAsync(
+                    orderId,
+                    orderLineId
+                );
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BackToAllocation(long orderId)
+        {
+            try
+            {
+                var result = await _apiService.BackToAllocationDailyOrderAsync(orderId);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
     }
 }

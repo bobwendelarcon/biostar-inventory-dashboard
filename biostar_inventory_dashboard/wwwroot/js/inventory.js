@@ -61,18 +61,53 @@ function getExpiryStatus(expiration_date) {
     return "VALID";
 }
 
-function getStatusBadge(quantity) {
-    const qty = parseInt(quantity) || 0;
+function getStatusBadge(availableQty, reservedQty = 0) {
 
-    if (qty === 0) {
-        return `<span class="badge bg-danger">Zero Stock</span>`;
-    } else if (qty <= 5) {
-        return `<span class="badge bg-warning text-dark">Low Stock</span>`;
-    } else if (qty <= 100) {
-        return `<span class="badge bg-success">Normal</span>`;
-    } else {
-        return `<span class="badge bg-primary">Over Stock</span>`;
+    const qty = Number(availableQty || 0);
+    const reserved = Number(reservedQty || 0);
+
+    // Fully Reserved
+    if (qty <= 0 && reserved > 0) {
+        return `
+            <span class="badge bg-warning text-dark">
+                Fully Reserved
+            </span>
+        `;
     }
+
+    // Out of Stock
+    if (qty <= 0) {
+        return `
+            <span class="badge bg-danger">
+                Out of Stock
+            </span>
+        `;
+    }
+
+    // Low Stock
+    if (qty <= 10) {
+        return `
+            <span class="badge bg-warning text-dark">
+                Low Stock
+            </span>
+        `;
+    }
+
+    // Normal
+    if (qty <= 500) {
+        return `
+            <span class="badge bg-success">
+                Normal
+            </span>
+        `;
+    }
+
+    // Over Stock
+    return `
+        <span class="badge bg-primary">
+            Over Stock
+        </span>
+    `;
 }
 
 function formatPack(qty, packQty, packUom, baseUom) {
@@ -151,7 +186,7 @@ async function loadInventory(page = currentPage) {
         if (items.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-muted">
+                    <td colspan="8" class="text-center text-muted">
                         No inventory data found.
                     </td>
                 </tr>`;
@@ -159,32 +194,78 @@ async function loadInventory(page = currentPage) {
             return;
         }
 
+         //<td>${qty} ${item.uom ?? ""}</td>
+         //  <td>${formatPack(item.qty, item.pack_qty, item.pack_uom, item.uom)}</td>
+
         items.forEach(item => {
-            const qty = Number(item.qty ?? 0);
-            const disableTransfer = qty <= 0 ? "disabled" : "";
+            const onHandQty = Number(item.qty ?? 0);
+            const reservedQty = Number(item.reserved_qty ?? 0);
+            const availableQty = Number(
+                item.available_qty ?? (onHandQty - reservedQty)
+            );
+            const disableTransfer = availableQty <= 0 ? "disabled" : "";
 
             const today = new Date();
             const expDate = item.expiration_date ? new Date(item.expiration_date) : null;
             const isExpired = expDate && expDate < today;
 
             const canAdjust =
-                (isExpired && qty > 0) ||
+                (isExpired && availableQty > 0) ||
                 (!isExpired);
-
             const disableAdjust = canAdjust ? "" : "disabled";
 
             const adjustTitle =
-                isExpired && qty <= 0 ? "No stock to dispose" :
+                isExpired && availableQty <= 0 ? "No stock to dispose" :
                     isExpired ? "Dispose expired stock" :
                         "Adjust stock";
 
+            const reservedDetailsJson = encodeURIComponent(
+                JSON.stringify(item.reserved_details || [])
+            );
+
             tableBody.innerHTML += `
         <tr>
-            <td>${item.lot_no ?? ""}</td>
+            
             <td>${item.description ?? ""}</td>
-            <td>${qty} ${item.uom ?? ""}</td>
-            <td>${formatPack(item.qty, item.pack_qty, item.pack_uom, item.uom)}</td>
-            <td>${getStatusBadge(item.qty)}</td>
+
+            <td>
+  <div class="qty-available-wrap btn-view-stock"
+     data-product="${item.product_id ?? ""}"
+     data-description="${item.description ?? ""}"
+     data-lot="${item.lot_no ?? ""}"
+     data-branch="${item.branch_id ?? ""}"
+     data-warehouse="${item.warehouse ?? ""}"
+     data-onhand="${onHandQty}"
+     data-reserved="${reservedQty}"
+     data-available="${availableQty}"
+     data-reserved-details="${reservedDetailsJson}"
+     data-uom="${item.uom ?? ""}"
+     title="View Reserved Details">
+
+        <div class="qty-main-row">
+            <span class="qty-main">
+                ${availableQty} ${item.uom ?? ""}
+            </span>
+
+            <i class="bi bi-eye qty-eye-icon"></i>
+        </div>
+
+        <div class="qty-sub">
+          OH:${onHandQty} |
+            <span class="reserved-text">
+                Res: ${reservedQty}
+            </span>
+        </div>
+    </div>
+</td>
+
+
+<td>
+    ${formatPack(availableQty, item.pack_qty, item.pack_uom, item.uom)}
+</td>
+           
+          <td>${getStatusBadge(availableQty, reservedQty)}</td>
+            <td>${item.lot_no ?? ""}</td>
             <td>${formatMonthYear(item.manufacturing_date)} - ${formatMonthYear(item.expiration_date)}</td>
             <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
             <td>${item.warehouse ?? ""}</td>
@@ -194,7 +275,7 @@ async function loadInventory(page = currentPage) {
         class="btn btn-sm btn-outline-primary btn-transfer"
         data-product="${item.product_id ?? ""}"
         data-lot="${item.lot_no ?? ""}"
-        data-qty="${qty}"
+       data-qty="${availableQty}"
         data-branch="${item.branch_id ?? ""}"
         data-warehouse="${item.warehouse ?? ""}"
         data-uom="${item.uom ?? ""}"
@@ -207,7 +288,7 @@ async function loadInventory(page = currentPage) {
         data-product="${item.product_id ?? ""}"
         data-lot="${item.lot_no ?? ""}"
         data-branch="${item.branch_id ?? ""}"
-        data-qty="${qty}"
+       data-qty="${availableQty}"
         data-exp="${item.expiration_date ?? ""}"
         ${disableAdjust}
         title="${adjustTitle}">
@@ -238,6 +319,8 @@ async function loadInventory(page = currentPage) {
         console.error(error);
     }
 }
+
+
 
 function canShowInventoryAction() {
     const role = String(window.currentUserRole || "").trim().toUpperCase();
@@ -317,10 +400,67 @@ function prevPage() {
         loadInventory(currentPage);
     }
 }
-
 document.addEventListener("click", function (e) {
+
+    // VIEW RESERVED DETAILS
+    const viewStockBtn = e.target.closest(".btn-view-stock");
+    if (viewStockBtn) {
+
+        const product = viewStockBtn.dataset.description || "";
+        const lot = viewStockBtn.dataset.lot || "";
+        const warehouse = viewStockBtn.dataset.warehouse || "";
+        const onHand = Number(viewStockBtn.dataset.onhand || 0);
+        const reserved = Number(viewStockBtn.dataset.reserved || 0);
+        const available = Number(viewStockBtn.dataset.available || 0);
+        const uom = viewStockBtn.dataset.uom || "";
+        const reservedDetails = JSON.parse(
+            decodeURIComponent(
+                viewStockBtn.dataset.reservedDetails || "%5B%5D"
+            )
+        );
+
+        document.getElementById("reservedModalSubTitle").innerText =
+            `${product} | Lot: ${lot} | ${warehouse}`;
+
+        document.getElementById("reservedOnHand").innerText = `${onHand} ${uom}`;
+        document.getElementById("reservedQty").innerText = `${reserved} ${uom}`;
+        document.getElementById("reservedAvailable").innerText = `${available} ${uom}`;
+
+        if (!reservedDetails.length) {
+
+            document.getElementById("reservedDetailsTable").innerHTML = `
+        <tr>
+            <td colspan="3" class="text-center text-muted">
+                No reserved stock for this lot.
+            </td>
+        </tr>
+    `;
+
+        } else {
+
+            document.getElementById("reservedDetailsTable").innerHTML =
+                reservedDetails.map(x => `
+            <tr>
+                <td>${x.order_no ?? ""}</td>
+                <td>${x.customer_name ?? ""}</td>
+                <td class="text-end fw-semibold">
+                    ${Number(x.reserved_qty || 0)} ${uom}
+                </td>
+            </tr>
+        `).join("");
+        }
+
+        new bootstrap.Modal(
+            document.getElementById("reservedDetailsModal")
+        ).show();
+
+        return;
+    }
+
+    // TRANSFER
     const btn = e.target.closest(".btn-transfer");
     if (btn) {
+
         isEditing = true;
 
         const maxQty = parseFloat(btn.dataset.qty) || 0;
@@ -344,10 +484,14 @@ document.addEventListener("click", function (e) {
         loadBranchesDropdown();
 
         new bootstrap.Modal(document.getElementById("transferModal")).show();
+
         return;
     }
+
+    // ADJUST
     const adjustBtn = e.target.closest(".btn-adjust");
     if (adjustBtn) {
+
         const currentQty = Number(adjustBtn.dataset.qty || 0);
 
         const today = new Date();
@@ -366,38 +510,41 @@ document.addEventListener("click", function (e) {
 
         if (isExpired) {
             adjustTypeSelect.innerHTML = `
-            <option value="DEDUCT">Deduct (Dispose)</option>
-        `;
+                <option value="DEDUCT">Deduct (Dispose)</option>
+            `;
             document.getElementById("adjustRemarks").value = "EXPIRED DISPOSAL";
         }
         else if (currentQty <= 0) {
             adjustTypeSelect.innerHTML = `
-            <option value="ADD">Add</option>
-            <option value="SET">Set Exact Qty</option>
-        `;
+                <option value="ADD">Add</option>
+                <option value="SET">Set Exact Qty</option>
+            `;
             document.getElementById("adjustRemarks").value = "";
         }
         else {
             adjustTypeSelect.innerHTML = `
-            <option value="ADD">Add</option>
-            <option value="DEDUCT">Deduct</option>
-            <option value="SET">Set Exact Qty</option>
-        `;
+                <option value="ADD">Add</option>
+                <option value="DEDUCT">Deduct</option>
+                <option value="SET">Set Exact Qty</option>
+            `;
             document.getElementById("adjustRemarks").value = "";
         }
 
         new bootstrap.Modal(document.getElementById("adjustModal")).show();
+
         return;
     }
-  
 
+    // HISTORY
     const historyBtn = e.target.closest(".btn-history");
     if (historyBtn) {
+
         loadHistory(
             historyBtn.dataset.product,
             historyBtn.dataset.lot,
             historyBtn.dataset.branch
         );
+
         return;
     }
 });

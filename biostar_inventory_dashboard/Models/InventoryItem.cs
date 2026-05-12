@@ -35,9 +35,17 @@ namespace biostar_inventory_dashboard.Models
             public string lot_no { get; set; } = "";
             public string warehouse { get; set; } = "";
             public decimal qty { get; set; }
+            public decimal reserved_qty { get; set; }
+            public decimal available_qty { get; set; }
+
+
             public string date { get; set; } = "";
             public string manufacturing_date { get; set; } = "";
             public string expiration_date { get; set; } = "";
+
+          
+            public List<InventoryReservedDetailDto> reserved_details { get; set; } = new();
+
         }
     }
 

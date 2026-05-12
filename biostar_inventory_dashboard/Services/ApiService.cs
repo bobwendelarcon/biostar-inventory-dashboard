@@ -567,11 +567,41 @@ namespace biostar_inventory_dashboard.Services
             return await _httpClient.GetStringAsync($"api/DailyOrders/{orderId}");
         }
 
-        public async Task<string> AllocateDailyOrderAsync(long orderId)
+        public async Task<string> AllocateDailyOrderAsync(long orderId, string json)
         {
-            var response = await _httpClient.PostAsync($"api/DailyOrders/{orderId}/allocate", null);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"api/DailyOrders/{orderId}/allocate",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> ManualAllocateOrderAsync(
+    long orderId,
+    string json)
+        {
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"api/DailyOrders/{orderId}/manual-allocate",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
         }
 
         public async Task<string> MarkDailyOrderReadyForDispatchAsync(long orderId)
@@ -595,8 +625,13 @@ namespace biostar_inventory_dashboard.Services
         public async Task<string> DeleteDailyOrderAsync(long orderId)
         {
             var response = await _httpClient.DeleteAsync($"api/DailyOrders/{orderId}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStringAsync();
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
         }
 
         public async Task<string> CreateDailyOrderAsync(object request)
@@ -942,6 +977,73 @@ namespace biostar_inventory_dashboard.Services
             return result;
         }
 
+        public async Task<string> GetAvailableLotsAsync(long orderId)
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/DailyOrders/{orderId}/available-lots"
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> UpdateDailyOrderLineRequiredQtyAsync(
+      long orderId,
+      long orderLineId,
+      object request)
+        {
+            var json = JsonSerializer.Serialize(request);
+
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PutAsync(
+                $"api/DailyOrders/{orderId}/lines/{orderLineId}/required-qty",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> ClearDailyOrderLineAllocationAsync(
+            long orderId,
+            long orderLineId)
+        {
+            var response = await _httpClient.DeleteAsync(
+                $"api/DailyOrders/{orderId}/lines/{orderLineId}/allocation");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+        public async Task<string> BackToAllocationDailyOrderAsync(long orderId)
+        {
+            var response = await _httpClient.PostAsync(
+                $"api/DailyOrders/{orderId}/back-to-allocation",
+                null);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
 
 
 

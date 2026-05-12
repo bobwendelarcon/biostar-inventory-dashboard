@@ -284,6 +284,7 @@ async function saveManualStockIn(e) {
         dr_no: "",
         inv_no: "",
         po_no: "",
+        tr_no: document.getElementById("transmittalNo")?.value.trim() || "",
 
         remarks: document.getElementById("remarks").value.trim() || "Manual Stock IN via Dashboard",
         scanned_by: window.currentUserId || "UNKNOWN"
@@ -295,6 +296,10 @@ async function saveManualStockIn(e) {
     if (!body.quantity || body.quantity <= 0) return alert("Please enter valid quantity.");
 
     try {
+
+        console.log("MANUAL STOCK IN BODY:", body);
+        alert(JSON.stringify(body, null, 2));
+
         btn.disabled = true;
         btn.innerText = "Saving...";
 
@@ -345,6 +350,10 @@ function clearManualStockInForm() {
     document.getElementById("packInput").value = 0;
     document.getElementById("looseInput").value = 0;
     document.getElementById("quantity").value = "";
+    const transmittalInput = document.getElementById("transmittalNo");
+    if (transmittalInput) {
+        transmittalInput.value = "";
+    }
 
     // reset selected product object
     selectedProduct = null;
