@@ -1,6 +1,10 @@
-﻿using biostar_inventory_dashboard.Services;
+﻿using biostar_inventory_dashboard.Models;
+using biostar_inventory_dashboard.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Text;
 
 namespace biostar_inventory_dashboard.Controllers
 {
@@ -8,12 +12,18 @@ namespace biostar_inventory_dashboard.Controllers
     public class ProductController : Controller
     {
         private readonly ApiService _apiService;
+        private readonly HttpClient _httpClient;
+        private readonly string _apiBaseUrl;
 
-        public ProductController(ApiService apiService)
+        public ProductController(ApiService apiService, IConfiguration configuration)
         {
             _apiService = apiService;
-        }
 
+            _httpClient = new HttpClient();
+
+            _apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+                ?? throw new Exception("ApiSettings:BaseUrl is missing.");
+        }
 
 
         public IActionResult Index()
@@ -74,6 +84,65 @@ namespace biostar_inventory_dashboard.Controllers
 
             var result = await _apiService.GetAsync<object>(endpoint);
             return Json(result);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ImportPreview(IFormFile file)
+        {
+            try
+            {
+                using var content = new MultipartFormDataContent();
+
+                using var stream = file.OpenReadStream();
+
+                content.Add(
+                    new StreamContent(stream),
+                    "file",
+                    file.FileName
+                );
+
+                var response = await _httpClient.PostAsync(
+                    $"{_apiBaseUrl}api/Products/import-preview",
+                    content
+                );
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ImportSelected([FromBody] ProductImportRequestDto payload)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(payload);
+
+                var content = new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _httpClient.PostAsync(
+                    $"{_apiBaseUrl}api/Products/import-selected",
+                    content
+                );
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

@@ -29,6 +29,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const productModalLabel = document.getElementById("productModalLabel");
     const btnSaveProduct = document.getElementById("btnSaveProduct");
 
+    const btnImportProducts = document.getElementById("btnImportProducts");
+    const excelFileInput = document.getElementById("excelFileInput");
+
+    let currentImportFileToken = "";
+    let currentPreviewSheets = [];
+
     let allProducts = [];
     let allCategories = [];
 
@@ -111,6 +117,38 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
             </tr>
         `;
+        }
+    }
+
+    async function previewImportExcel(file) {
+        try {
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("/Product/ImportPreview", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(err);
+            }
+
+            const data = await response.json();
+
+            currentImportFileToken = data.fileToken || data.FileToken || "";
+            currentPreviewSheets = data.sheets || data.Sheets || [];
+
+            console.log("PREVIEW DATA:", data);
+            console.log("TOKEN:", currentImportFileToken);
+
+            renderImportPreviewModal();
+
+        } catch (error) {
+            console.error(error);
+            alert("Import preview failed: " + error.message);
         }
     }
 
@@ -326,6 +364,202 @@ Edit
         };
     }
 
+    function renderImportPreviewModal() {
+
+        let html = `
+        <div class="modal fade" id="importPreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow rounded-4">
+
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold">
+                            Import Product Preview
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <div class="mb-3 text-muted small">
+                            Select sheets to import.
+                        </div>
+
+                        <div class="list-group">
+    `;
+
+        currentPreviewSheets.forEach(sheet => {
+
+            const disabled = !sheet.categoryExists ? "disabled" : "";
+
+            const badge = sheet.categoryExists
+                ? `<span class="badge bg-success">Category Found</span>`
+                : `<span class="badge bg-danger">Category Not Found</span>`;
+
+            html += `
+            <label class="list-group-item d-flex justify-content-between align-items-center">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <input type="checkbox"
+                           class="form-check-input import-sheet-checkbox"
+                           value="${sheet.sheetName}"
+                           ${disabled}
+                           checked>
+
+                    <div>
+                        <div class="fw-semibold">
+                            ${sheet.sheetName}
+                        </div>
+
+                        <small class="text-muted">
+                            ${sheet.productCount} products
+                        </small>
+                    </div>
+
+                </div>
+
+                ${badge}
+
+            </label>
+        `;
+        });
+
+        html += `
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer border-0">
+
+                        <button type="button"
+                                class="btn btn-light"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-success"
+                                id="btnImportSelectedSheets">
+                            Import Selected
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    `;
+
+        const existing = document.getElementById("importPreviewModal");
+
+        if (existing) {
+            existing.remove();
+        }
+
+        document.body.insertAdjacentHTML("beforeend", html);
+
+        const modal = new bootstrap.Modal(document.getElementById("importPreviewModal"));
+
+        modal.show();
+
+        bindImportSelectedButton();
+    }
+
+    function bindImportSelectedButton() {
+
+        const btn = document.getElementById("btnImportSelectedSheets");
+
+        if (!btn) return;
+
+        btn.addEventListener("click", async function () {
+
+            const selectedSheets = [];
+
+            document.querySelectorAll(".import-sheet-checkbox:checked")
+                .forEach(x => {
+                    selectedSheets.push(x.value);
+                });
+
+            if (selectedSheets.length === 0) {
+                alert("Please select at least one sheet.");
+                return;
+            }
+
+            try {
+
+                btn.disabled = true;
+                btn.innerHTML = "Importing...";
+
+                if (!currentImportFileToken) {
+                    alert("File token is missing. Please select the Excel file again.");
+                    return;
+                }
+
+                const response = await fetch("/Product/ImportSelected", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        FileToken: currentImportFileToken,
+                        SelectedSheets: selectedSheets
+                    })
+                });
+
+                const responseText = await response.text();
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch {
+                    throw new Error(responseText);
+                }
+
+                if (!response.ok) {
+                    throw new Error(result.message || responseText || "Import failed.");
+                }
+
+                alert(`
+Import Completed
+
+Imported:
+${result.importedCount}
+
+Skipped:
+${result.skippedCount}
+            `);
+
+                const modalEl = document.getElementById("importPreviewModal");
+
+                const modal = bootstrap.Modal.getInstance(modalEl);
+
+                if (modal) {
+                    modal.hide();
+                }
+
+                loadProducts();
+                excelFileInput.value = "";
+                currentImportFileToken = "";
+                currentPreviewSheets = [];
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(error.message);
+
+            } finally {
+
+                btn.disabled = false;
+                btn.innerHTML = "Import Selected";
+            }
+        });
+    }
+
     if (btnSaveProduct) {
         btnSaveProduct.addEventListener("click", async function () {
          
@@ -444,6 +678,26 @@ Edit
 
             currentPage = 1;
             loadProducts();
+        });
+    }
+
+    if (btnImportProducts) {
+        btnImportProducts.addEventListener("click", function () {
+            excelFileInput.value = "";
+            excelFileInput.click();
+        });
+    }
+
+    if (excelFileInput) {
+
+        excelFileInput.addEventListener("change", async function (e) {
+
+            const file = e.target.files[0];
+
+            if (!file) return;
+
+            await previewImportExcel(file);
+
         });
     }
 
