@@ -709,6 +709,27 @@ document.addEventListener("DOMContentLoaded", function () {
         isEditing = false;
     });
 
+
+    document.getElementById("btnExportInventory")?.addEventListener("click", function () {
+        const params = new URLSearchParams({
+            lot_no: document.getElementById("lotNoFilter")?.value || "",
+            product: document.getElementById("productFilter")?.value || "",
+            from: document.getElementById("dateFromFilter")?.value || "",
+            to: document.getElementById("dateToFilter")?.value || "",
+            warehouse: document.getElementById("warehouseFilter")?.value || "",
+            stockStatus: document.getElementById("stockStatusFilter")?.value || "",
+            expiryStatus: document.getElementById("expiryStatusFilter")?.value || "",
+            months: document.getElementById("monthsFilter")?.value || "",
+            order: document.getElementById("orderFilter")?.value || "desc"
+        });
+
+        window.location.href = `/Inventory/ExportExcel?${params.toString()}`;
+    });
+
+
+
+
+
     const stockStatusEl = document.getElementById("stockStatusFilter");
     if (stockStatusEl && !stockStatusEl.value) {
         stockStatusEl.value = "available";
