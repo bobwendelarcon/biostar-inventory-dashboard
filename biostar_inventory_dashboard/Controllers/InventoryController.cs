@@ -142,7 +142,8 @@ namespace biostar_inventory_dashboard.Controllers
             ws.Cell(1, 6).Value = "Lot No";
             ws.Cell(1, 7).Value = "MFG Date";
             ws.Cell(1, 8).Value = "EXP Date";
-            ws.Cell(1, 9).Value = "Warehouse";
+            ws.Cell(1, 9).Value = "Remaining Months";
+            ws.Cell(1, 10).Value = "Warehouse";
 
             int row = 2;
 
@@ -154,14 +155,54 @@ namespace biostar_inventory_dashboard.Controllers
                 ws.Cell(row, 4).Value = item.available_qty;
                 ws.Cell(row, 5).Value = item.uom;
                 ws.Cell(row, 6).Value = item.lot_no;
-                ws.Cell(row, 7).Value = item.manufacturing_date;
-                ws.Cell(row, 8).Value = item.expiration_date;
-                ws.Cell(row, 9).Value = item.warehouse;
+                if (DateTime.TryParse(item.manufacturing_date, out var mfgDate))
+                {
+                    ws.Cell(row, 7).Value = mfgDate.ToString("MMMM yyyy");
+                }
+                else
+                {
+                    ws.Cell(row, 7).Value = item.manufacturing_date;
+                }
+
+                if (DateTime.TryParse(item.expiration_date, out var expDate))
+                {
+                    ws.Cell(row, 8).Value = expDate.ToString("MMMM yyyy");
+                }
+                else
+                {
+                    ws.Cell(row, 8).Value = item.expiration_date;
+                }
+
+
+                string remainingMonthsText = "-";
+
+                if (DateTime.TryParse(item.expiration_date, out var expDate2))
+                {
+                    var today = DateTime.Today;
+
+                    int years = expDate2.Year - today.Year;
+                    int monthDiff = expDate2.Month - today.Month;
+
+                    int totalMonths = years * 12 + monthDiff;
+
+                    if (expDate2.Day < today.Day)
+                        totalMonths--;
+
+                    if (totalMonths < 0)
+                        remainingMonthsText = "Expired";
+                    else
+                        remainingMonthsText = $"{totalMonths} mo";
+                }
+
+                ws.Cell(row, 9).Value = remainingMonthsText;
+
+
+                ws.Cell(row, 10).Value = item.warehouse;
 
                 row++;
             }
 
-            ws.Range(1, 1, 1, 9).Style.Font.Bold = true;
+            ws.Range(1, 1, 1, 10).Style.Font.Bold = true;
             ws.Columns().AdjustToContents();
             ws.SheetView.FreezeRows(1);
             ws.RangeUsed().SetAutoFilter();
