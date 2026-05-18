@@ -146,6 +146,7 @@ async function loadInventory(page = currentPage) {
             from: document.getElementById("dateFromFilter")?.value || "",
             to: document.getElementById("dateToFilter")?.value || "",
             warehouse: document.getElementById("warehouseFilter")?.value || "",
+            category: document.getElementById("categoryFilter")?.value || "",
             stockStatus: document.getElementById("stockStatusFilter")?.value || "",
             expiryStatus: "",
             months: document.getElementById("monthsFilter")?.value || "",
@@ -161,6 +162,9 @@ async function loadInventory(page = currentPage) {
 
         const json = await response.json();
         let items = json.data || [];
+        loadCategoryFilter(items);
+
+       
 
         // 🔥 ADD THIS BLOCK
         const expiryFilter = document.getElementById("expiryStatusFilter")?.value;
@@ -191,6 +195,7 @@ async function loadInventory(page = currentPage) {
                     </td>
                 </tr>`;
             renderPagination();
+            syncInventoryTopScrollbar();
             return;
         }
 
@@ -227,11 +232,12 @@ async function loadInventory(page = currentPage) {
         <tr>
             
             <td>${item.description ?? ""}</td>
-
+            <td>${item.category_name ?? "-"}</td>
             <td>
   <div class="qty-available-wrap btn-view-stock"
      data-product="${item.product_id ?? ""}"
      data-description="${item.description ?? ""}"
+
      data-lot="${item.lot_no ?? ""}"
      data-branch="${item.branch_id ?? ""}"
      data-warehouse="${item.warehouse ?? ""}"
@@ -265,7 +271,23 @@ async function loadInventory(page = currentPage) {
 </td>
            
           <td>${getStatusBadge(availableQty, reservedQty)}</td>
-            <td>${item.lot_no ?? ""}</td>
+            <td>
+    <div class="lot-edit-wrap">
+        <span>${item.lot_no ?? ""}</span>
+
+        ${String(window.currentUserRole || "").toUpperCase() === "ADMIN" ? `
+            <button
+                type="button"
+                class="btn-edit-lot"
+                data-product="${item.product_id ?? ""}"
+                data-branch="${item.branch_id ?? ""}"
+                data-lot="${item.lot_no ?? ""}"
+                title="Edit Lot No">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+        ` : ""}
+    </div>
+</td>
             <td>${formatMonthYear(item.manufacturing_date)} - ${formatMonthYear(item.expiration_date)}</td>
             <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
             <td>${item.warehouse ?? ""}</td>
@@ -321,7 +343,37 @@ async function loadInventory(page = currentPage) {
 }
 
 
+function loadCategoryFilter(items) {
 
+    const select = document.getElementById("categoryFilter");
+    if (!select) return;
+
+    const existing = new Set();
+
+    items.forEach(x => {
+        if (x.category_name) {
+            existing.add(x.category_name);
+        }
+    });
+
+    const currentValue = select.value;
+
+    select.innerHTML =
+        `<option value="">All Categories</option>`;
+
+    [...existing]
+        .sort()
+        .forEach(cat => {
+
+            select.innerHTML += `
+                <option value="${cat}">
+                    ${cat}
+                </option>
+            `;
+        });
+
+    select.value = currentValue;
+}
 function canShowInventoryAction() {
     const role = String(window.currentUserRole || "").trim().toUpperCase();
 
@@ -547,9 +599,24 @@ document.addEventListener("click", function (e) {
 
         return;
     }
+
+
+    //edit lot number
+    const editLotBtn = e.target.closest(".btn-edit-lot");
+    if (editLotBtn) {
+        document.getElementById("editLotProductId").value = editLotBtn.dataset.product || "";
+        document.getElementById("editLotBranchId").value = editLotBtn.dataset.branch || "";
+        document.getElementById("editLotOldNo").value = editLotBtn.dataset.lot || "";
+        document.getElementById("editLotCurrentDisplay").value = editLotBtn.dataset.lot || "";
+        document.getElementById("editLotNewNo").value = editLotBtn.dataset.lot || "";
+
+        new bootstrap.Modal(document.getElementById("editLotModal")).show();
+        return;
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    initInventoryHorizontalScroll();
     loadWarehouseFilter();
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
@@ -570,7 +637,11 @@ document.addEventListener("DOMContentLoaded", function () {
             loadInventory(1);
         }, 500);
     });
-
+    document.getElementById("categoryFilter")
+        ?.addEventListener("change", () => {
+            currentPage = 1;
+            loadInventory(1);
+        });
     document.getElementById("productFilter")?.addEventListener("input", function () {
         clearTimeout(productSearchTimeout);
         productSearchTimeout = setTimeout(() => {
@@ -616,6 +687,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "dateFromFilter",
             "dateToFilter",
             "warehouseFilter",
+            "categoryFilter",
             "stockStatusFilter",
             "expiryStatusFilter",
             "monthsFilter",
@@ -714,6 +786,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const params = new URLSearchParams({
             lot_no: document.getElementById("lotNoFilter")?.value || "",
             product: document.getElementById("productFilter")?.value || "",
+            category: document.getElementById("categoryFilter")?.value || "",
             from: document.getElementById("dateFromFilter")?.value || "",
             to: document.getElementById("dateToFilter")?.value || "",
             warehouse: document.getElementById("warehouseFilter")?.value || "",
@@ -725,6 +798,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         window.location.href = `/Inventory/ExportExcel?${params.toString()}`;
     });
+
+
+    document.getElementById("btnSaveLotNo")?.addEventListener("click", saveLotNoEdit);
 
 
 
@@ -743,6 +819,46 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, 5000);
 });
+
+
+//edit lot number
+
+async function saveLotNoEdit() {
+    const payload = {
+        product_id: document.getElementById("editLotProductId").value,
+        branch_id: document.getElementById("editLotBranchId").value,
+        old_lot_no: document.getElementById("editLotOldNo").value,
+        new_lot_no: document.getElementById("editLotNewNo").value.trim(),
+        requested_by_role: window.currentUserRole || ""
+    };
+
+    if (!payload.new_lot_no) {
+        alert("New lot number is required.");
+        return;
+    }
+
+    try {
+        const res = await fetch("/Inventory/RenameLot", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+
+        if (!res.ok) {
+            throw new Error(text || "Failed to update lot number.");
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById("editLotModal"))?.hide();
+
+        alert("Lot number updated successfully.");
+        loadInventory(currentPage);
+
+    } catch (err) {
+        alert(err.message);
+    }
+}
 
 async function saveAdjust() {
     const quantity = parseFloat(document.getElementById("adjustQty").value || "0");
@@ -830,6 +946,57 @@ async function loadWarehouseFilter() {
         console.error("Failed to load warehouse filter", err);
     }
 }
+
+function initInventoryHorizontalScroll() {
+
+    const topScroll =
+        document.querySelector(".table-scroll-top");
+
+    const bottomScroll =
+        document.querySelector(".table-scroll-box");
+
+    if (!topScroll || !bottomScroll) return;
+
+    let syncing = false;
+
+    topScroll.addEventListener("scroll", function () {
+
+        if (syncing) return;
+
+        syncing = true;
+        bottomScroll.scrollLeft = topScroll.scrollLeft;
+        syncing = false;
+    });
+
+    bottomScroll.addEventListener("scroll", function () {
+
+        if (syncing) return;
+
+        syncing = true;
+        topScroll.scrollLeft = bottomScroll.scrollLeft;
+        syncing = false;
+    });
+
+    syncInventoryTopScrollbar();
+}
+
+function syncInventoryTopScrollbar() {
+
+    const topScroll =
+        document.querySelector(".table-scroll-top");
+
+    const bottomScroll =
+        document.querySelector(".table-scroll-box");
+
+    const table =
+        document.querySelector(".inventory-table");
+
+    if (!topScroll || !bottomScroll || !table) return;
+
+    topScroll.firstElementChild.style.width =
+        table.scrollWidth + "px";
+}
+
 async function loadHistory(productId, lotNo, branchId) {
     try {
         const res = await fetch(`/Inventory/GetHistory?product_id=${encodeURIComponent(productId)}&lot_no=${encodeURIComponent(lotNo)}&branch_id=${encodeURIComponent(branchId)}`);

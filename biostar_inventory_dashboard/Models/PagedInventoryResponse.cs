@@ -1,4 +1,4 @@
-﻿using biostar_inventory_dashboard.Models.biostar_inventory_dashboard.Models;
+﻿using biostar_inventory_dashboard.Models;
 
 namespace biostar_inventory_dashboard.Models
 {

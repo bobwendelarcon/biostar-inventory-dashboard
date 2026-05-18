@@ -68,6 +68,13 @@
                 </div>
 
                 <div class="col-md-2">
+                    <label class="form-label fw-semibold">Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">Order</label>
                     <select class="form-select" id="orderFilter">
                         <option value="desc">Descending</option>
@@ -122,12 +129,17 @@
             <button id="prevBtn" class="btn btn-sm btn-light" type="button">◀</button>
             <button id="nextBtn" class="btn btn-sm btn-light" type="button">▶</button>
         </div>
-        <div class="table-scroll-box">
+        <div class="table-scroll-top">
+            <div></div>
+        </div>
+
+        <div class="table-scroll-box inventory-table-wrapper">
             <div class="table-responsive">
                 <table class="table inventory-table align-middle">
                     <thead>
                         <tr>
                             <th>Product / Description</th>
+                            <th>Category</th>
                             <th>Qty Available</th>
                             <th>Pack</th>
                             <th>Stock Level</th>
@@ -306,10 +318,41 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="editLotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Edit Lot Number</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="editLotProductId">
+                <input type="hidden" id="editLotBranchId">
+                <input type="hidden" id="editLotOldNo">
+
+                <label class="form-label">Current Lot No</label>
+                <input type="text" id="editLotCurrentDisplay" class="form-control mb-3" readonly>
+
+                <label class="form-label">New Lot No</label>
+                <input type="text" id="editLotNewNo" class="form-control" placeholder="Enter new lot no">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSaveLotNo">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         window.currentUserRole = "@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value";
     </script>
+
+    
 
     <script src="~/js/inventory.js" asp-append-version="true"></script>
 }

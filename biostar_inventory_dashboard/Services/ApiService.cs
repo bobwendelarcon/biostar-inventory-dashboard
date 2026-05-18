@@ -69,13 +69,14 @@ namespace biostar_inventory_dashboard.Services
         }
 
         public async Task<PagedInventoryResponse> GetInventoryAsync(
-      int page = 1,
-      int pageSize = 30,
-      string lot_no = "",
-      string product = "",
-      string warehouse = "",
-      string stockStatus = "",
-      string expiryStatus = "",
+            int page = 1,
+            int pageSize = 30,
+            string lot_no = "",
+            string product = "",
+            string warehouse = "",
+            string category = "",
+            string stockStatus = "",
+            string expiryStatus = "",
       string months = "",
       string from = "",
       string to = "",
@@ -96,6 +97,9 @@ namespace biostar_inventory_dashboard.Services
 
             if (!string.IsNullOrWhiteSpace(warehouse))
                 queryParams.Add($"warehouse={Uri.EscapeDataString(warehouse)}");
+
+            if (!string.IsNullOrWhiteSpace(category))
+                queryParams.Add($"category={Uri.EscapeDataString(category)}");
 
             if (!string.IsNullOrWhiteSpace(stockStatus))
                 queryParams.Add($"stockStatus={Uri.EscapeDataString(stockStatus)}");
@@ -1036,6 +1040,20 @@ namespace biostar_inventory_dashboard.Services
             var response = await _httpClient.PostAsync(
                 $"api/DailyOrders/{orderId}/back-to-allocation",
                 null);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> RenameLotAsync(string jsonData)
+        {
+            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync("api/ProductLotNumber/rename-lot", content);
 
             var result = await response.Content.ReadAsStringAsync();
 

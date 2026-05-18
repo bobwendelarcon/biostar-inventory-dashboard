@@ -53,8 +53,9 @@ namespace biostar_inventory_dashboard.Controllers
             int pageSize = 30,
             string lot_no = "",
             string product = "",
-            string warehouse = "",
-            string stockStatus = "",
+           string warehouse = "",
+string category = "",
+string stockStatus = "",
             string expiryStatus = "",
             string months = "",
             string from = "",
@@ -63,12 +64,13 @@ namespace biostar_inventory_dashboard.Controllers
         )
         {
             var items = await _apiService.GetInventoryAsync(
-                page,
-                pageSize,
-                lot_no,
-                product,
-                warehouse,
-                stockStatus,
+    page,
+    pageSize,
+    lot_no,
+    product,
+    warehouse,
+    category,
+    stockStatus,
                 expiryStatus,
                 months,
                 from,
@@ -114,6 +116,7 @@ namespace biostar_inventory_dashboard.Controllers
     string lot_no = "",
     string product = "",
     string warehouse = "",
+    string category = "",
     string stockStatus = "",
     string expiryStatus = "",
     string months = "",
@@ -125,6 +128,7 @@ namespace biostar_inventory_dashboard.Controllers
             var result = await _apiService.GetInventoryAsync(
                 1, 100000,
                 lot_no, product, warehouse,
+                category,
                 stockStatus, expiryStatus, months,
                 from, to, order
             );
@@ -215,6 +219,21 @@ namespace biostar_inventory_dashboard.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"InventoryList_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
             );
+        }
+
+
+        [HttpPut]
+        public async Task<IActionResult> RenameLot([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.RenameLotAsync(data.GetRawText());
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
 
