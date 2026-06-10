@@ -1,0 +1,118 @@
+﻿@{
+    ViewData["Title"] = "Create MPRF";
+}
+<link rel="stylesheet" href="~/css/purchasing/mprf.css?v=3" />
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">
+                Purchasing > MPRF Requests > Create
+            </div>
+            <h2 class="fw-bold mb-1">Create MPRF</h2>
+            <div class="text-muted">
+                Create a new Materials Purchase Requisition Form.
+            </div>
+        </div>
+
+        <a href="/purchasing/mprf" class="btn btn-secondary">
+            Back
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header">
+            <strong>MPRF Information</strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">MPRF No</label>
+                    <input type="text"
+                           id="mprfNo"
+                           class="form-control"
+                           placeholder="Auto / Editable">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Category / Requesting Department</label>
+                    <input type="text"
+                           id="category"
+                           class="form-control"
+                           placeholder="LABELS / RAW MATERIALS / PROBIOTICS">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Request Date</label>
+                    <input type="date"
+                           id="requestDate"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Week</label>
+                    <input type="text"
+                           id="week"
+                           class="form-control"
+                           placeholder="e.g. 4th">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Lines -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Requested Materials</strong>
+
+            <button class="btn btn-primary btn-sm"
+                    onclick="addLine()">
+                + Add Material
+            </button>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mprf-lines-table">
+
+                    <thead>
+                        <tr>
+                            <th style="width:600px;">Material</th>
+                            <th style="width:600px;">Classification</th>
+                            <th style="width:200px;">Qty On Hand</th>
+                            <th style="width:100px;">UOM</th>
+                            <th>Remarks</th>
+                            <th style="width:100px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="mprfLinesBody">
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="text-end">
+        <button class="btn btn-success"
+                onclick="saveMprf()">
+            Save MPRF
+        </button>
+    </div>
+
+</div>
+<input type="hidden" id="mprfId" value="@ViewBag.MprfId" />
+<input type="hidden" id="pageMode" value="@ViewBag.Mode" />
+@section Scripts {
+    <script src="~/js/purchasing/mprf.js?v=11"></script>
+}

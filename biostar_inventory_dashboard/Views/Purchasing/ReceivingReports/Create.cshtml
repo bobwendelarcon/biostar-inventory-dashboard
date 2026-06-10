@@ -1,0 +1,268 @@
+﻿@{
+    ViewData["Title"] = "Create Receiving Report";
+    var poId = ViewBag.PoId;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Receiving Reports &gt; Create</div>
+        <h2 class="fw-bold mb-1">Create Receiving Report</h2>
+        <div class="text-muted">Receive full or partial delivery from approved Purchase Order.</div>
+    </div>
+
+    <div class="mb-3">
+        <a href="/purchasing/purchase-orders/details/@poId" class="btn btn-outline-secondary btn-sm">
+            Back to PO Details
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">RR No</label>
+                    <input id="rrNo" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">PO No</label>
+                    <input id="poNo" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Supplier</label>
+                    <input id="supplierName" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Delivery Date</label>
+                    <input id="deliveryDate" type="date" class="form-control">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">SI / DR No</label>
+                    <input id="siDrNo" class="form-control" placeholder="Enter SI or DR number">
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">Remarks</label>
+                    <input id="remarks" class="form-control" placeholder="Optional remarks">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Receiving Lines</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th class="text-end">PO Qty</th>
+                            <th class="text-end">Previously Received</th>
+                            <th class="text-end">Balance</th>
+                            <th style="width:160px;" class="text-end">Receive Qty</th>
+                            <th>UOM</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rrLineBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                Loading PO balance...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-end mt-3">
+                <button id="btnSaveRr" class="btn btn-success">
+                    Save Receiving Report
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const poId = '@poId';
+    let poData = null;
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        await loadNextRrNo();
+        await loadCreateOptions();
+
+        document.getElementById("btnSaveRr").addEventListener("click", saveReceivingReport);
+    });
+
+    async function loadNextRrNo() {
+        const response = await fetch("/purchasing/receiving-reports/next-number");
+        const data = await response.json();
+
+        document.getElementById("rrNo").value = data.rr_no ?? "";
+    }
+
+    async function loadCreateOptions() {
+        try {
+            const response = await fetch(`/purchasing/receiving-reports/create-options/${poId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message ?? "Unable to load PO for receiving.");
+                window.location.href = `/purchasing/purchase-orders/details/${poId}`;
+                return;
+            }
+
+            poData = data;
+
+            document.getElementById("poNo").value = data.poNo ?? "";
+            document.getElementById("supplierName").value = data.supplierName ?? "";
+
+            const today = new Date().toISOString().split("T")[0];
+            document.getElementById("deliveryDate").value = today;
+
+            renderLines(data.lines ?? []);
+
+        } catch (error) {
+            document.getElementById("rrLineBody").innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-danger py-4">
+                        Failed to load receiving data.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderLines(lines) {
+        const tbody = document.getElementById("rrLineBody");
+        tbody.innerHTML = "";
+
+        if (lines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        No remaining PO balance to receive.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        lines.forEach(line => {
+            tbody.innerHTML += `
+                <tr data-po-line-id="${line.poLineId}">
+                    <td>${line.materialCode ?? ""}</td>
+                    <td>${line.materialName ?? ""}</td>
+                    <td class="text-end">${formatQty(line.poQty)}</td>
+                    <td class="text-end">${formatQty(line.previouslyReceivedQty)}</td>
+                    <td class="text-end fw-semibold">${formatQty(line.balanceQty)}</td>
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm text-end receive-qty"
+                               min="0"
+                               max="${line.balanceQty}"
+                               step="0.0001"
+                               value="0">
+                    </td>
+                    <td>${line.uom ?? ""}</td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm line-remarks">
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function saveReceivingReport() {
+        if (!poData) {
+            alert("PO data not loaded.");
+            return;
+        }
+
+        const deliveryDate = document.getElementById("deliveryDate").value;
+
+        if (!deliveryDate) {
+            alert("Delivery date is required.");
+            return;
+        }
+
+        const lines = [];
+
+        document.querySelectorAll("#rrLineBody tr[data-po-line-id]").forEach(row => {
+            const poLineId = Number(row.dataset.poLineId);
+            const receiveQty = Number(row.querySelector(".receive-qty").value ?? 0);
+            const remarks = row.querySelector(".line-remarks").value;
+
+            if (receiveQty > 0) {
+                lines.push({
+                    poLineId: poLineId,
+                    receiveQty: receiveQty,
+                    remarks: remarks
+                });
+            }
+        });
+
+        if (lines.length === 0) {
+            alert("Please enter at least one receive quantity.");
+            return;
+        }
+
+        const payload = {
+            poId: Number(poId),
+            siDrNo: document.getElementById("siDrNo").value,
+            deliveryDate: deliveryDate,
+            remarks: document.getElementById("remarks").value,
+            lines: lines
+        };
+
+        if (!confirm("Save this Receiving Report?")) return;
+
+        const btn = document.getElementById("btnSaveRr");
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+
+        try {
+            const response = await fetch("/purchasing/receiving-reports/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.message ?? "Failed to save RR.");
+                btn.disabled = false;
+                btn.innerText = "Save Receiving Report";
+                return;
+            }
+
+            alert(result.message ?? "Receiving Report saved.");
+
+            window.location.href = `/purchasing/purchase-orders/details/${poId}`;
+
+        } catch (error) {
+            alert("Failed to save Receiving Report.");
+            btn.disabled = false;
+            btn.innerText = "Save Receiving Report";
+        }
+    }
+
+    function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+</script>

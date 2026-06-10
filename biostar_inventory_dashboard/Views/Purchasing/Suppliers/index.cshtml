@@ -1,0 +1,586 @@
+﻿@{
+    ViewData["Title"] = "Suppliers";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">
+                Purchasing > Suppliers
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Supplier Master
+            </h2>
+
+            <div class="text-muted">
+                Manage supplier information, purchasing details, and linked materials.
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="openCreateSupplierModal()">
+            + Create Supplier
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row mb-3 g-2">
+                <div class="col-md-4">
+                    <input id="txtSearchSupplier"
+                           type="text"
+                           class="form-control"
+                           placeholder="Search supplier...">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="filterStatus" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select id="filterSupplierType" class="form-select">
+                        <option value="">All Supplier Type</option>
+                        <option value="Manufacturer">Manufacturer</option>
+                        <option value="Distributor">Distributor</option>
+                        <option value="Trader">Trader</option>
+                        <option value="Importer">Importer</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <select id="pageSizeSelect" class="form-select">
+                        <option value="10">10 rows</option>
+                        <option value="25">25 rows</option>
+                        <option value="50">50 rows</option>
+                        <option value="100">100 rows</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:110px;">Code</th>
+                            <th>Supplier Name</th>
+                            <th>Supplier Type</th>
+                            <th>Contact Person</th>
+                            <th>Terms</th>
+                            <th>Lead Time</th>
+                            <th>Preferred</th>
+                            <th>Status</th>
+                            <th style="width:190px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="supplierTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">
+                                Loading suppliers...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div id="supplierPaginationInfo" class="text-muted small">
+                    Showing 0 of 0 suppliers
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="previousPage()">
+                        Previous
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="nextPage()">
+                        Next
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- SUPPLIER MODAL -->
+<div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 id="supplierModalTitle" class="modal-title">Supplier Information</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="supplierId">
+
+                <h6 class="fw-bold mb-3">Basic Information</h6>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Supplier Code</label>
+                        <input id="supplierCode" class="form-control" placeholder="AUTO" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Supplier Name</label>
+                        <input id="supplierName" class="form-control" placeholder="Supplier name">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Supplier Type</label>
+                        <select id="supplierType" class="form-select">
+                            <option value="Manufacturer">Manufacturer</option>
+                            <option value="Distributor">Distributor</option>
+                            <option value="Trader">Trader</option>
+                            <option value="Importer">Importer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3">Contact Information</h6>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Contact Person</label>
+                        <input id="contactPerson" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Contact Number</label>
+                        <input id="contactNumber" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Email Address</label>
+                        <input id="emailAddress" class="form-control">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Address</label>
+                        <textarea id="address" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3">Purchasing Information</h6>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Payment Terms</label>
+                        <select id="paymentTerms" class="form-select">
+                            <option value="COD">COD</option>
+                            <option value="30 Days">30 Days</option>
+                            <option value="45 Days">45 Days</option>
+                            <option value="60 Days">60 Days</option>
+                            <option value="90 Days">90 Days</option>
+                            <option value="120 Days">120 Days</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Lead Time Days</label>
+                        <input id="leadTimeDays" type="number" class="form-control" value="0">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Currency</label>
+                        <select id="currency" class="form-select">
+                            <option value="PHP">PHP</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select id="isActive" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="isPreferred">
+                            <label class="form-check-label" for="isPreferred">
+                                Mark as preferred supplier
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Remarks</label>
+                        <textarea id="remarks"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div id="supplierSetupSections">
+
+
+                <h6 class="fw-bold mb-3">Manufacturers Handled</h6>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-7">
+                        <select id="supplierManufacturerId" class="form-select">
+                            <option value="">Select Manufacturer</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="button"
+                                class="btn btn-outline-primary w-100"
+                                onclick="openNewManufacturerModal()">
+                            + New
+                        </button>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="button"
+                                class="btn btn-primary w-100"
+                                onclick="addSupplierManufacturer()">
+                            Add Manufacturer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Manufacturer</th>
+                                <th>Accreditation</th>
+                                <th>COA</th>
+                                <th style="width:120px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierManufacturerTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    No manufacturers linked.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+
+
+                <hr class="my-4">
+
+                </div>
+
+
+
+
+                <h6 class="fw-bold mb-3">Materials Supplied</h6>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Material</th>
+                                <th>Manufacturer</th>
+                                <th>Preferred</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierMaterialSummaryTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    No materials linked.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="modal-footer d-flex justify-content-between">
+
+
+
+
+                <div>
+                    <div id="supplierSetupFooter">
+                    <button id="btnLinkMaterials"
+                            type="button"
+                            class="btn btn-success"
+                            disabled>
+                        Link Materials
+                    </button>
+                    </div>
+                </div>
+
+                <div>
+                    <button class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+
+                    <button id="btnSaveSupplier" class="btn btn-primary" onclick="saveSupplier()">
+                        Save Supplier
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade"
+     id="linkMaterialsModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Supplier Material Mapping
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="mappingSupplierId">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Category</label>
+                        <select id="mappingCategoryId"
+                                class="form-select"
+                                onchange="onMappingCategoryChanged()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Sub Category</label>
+                        <select id="mappingSubCategoryId"
+                                class="form-select"
+                                onchange="onMappingSubCategoryChanged()">
+                            <option value="">All Sub Categories</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Material</label>
+                        <select id="mappingMaterialId" class="form-select">
+                            <option value="">Select Material</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Manufacturer</label>
+                        <select id="mappingManufacturerId" class="form-select">
+                            <option value="">Select Manufacturer</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100"
+                                type="button"
+                                onclick="addSupplierMaterial()">
+                            Add
+                        </button>
+                    </div>
+
+                    <div class="col-md-12">
+
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="mappingPreferred">
+
+                            <label class="form-check-label">
+                                Preferred Supplier
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-12">
+                        <textarea id="mappingRemarks"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="Remarks">
+                        </textarea>
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered">
+
+                        <thead>
+
+                            <tr>
+                                <th>Material</th>
+                                <th>Manufacturer</th>
+                                <th>Preferred</th>
+                                <th>Remarks</th>
+                                <th width="120">Action</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="supplierMaterialTableBody">
+
+                            <tr>
+                                <td colspan="5"
+                                    class="text-center text-muted">
+                                    No materials linked.
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="newManufacturerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="newManufacturerModalTitle">New Manufacturer</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+
+
+            <div class="modal-body">
+                <input type="hidden" id="newManufacturerId" value="0">
+                <input type="hidden" id="newManufacturerMode" value="create">
+                <div class="row g-3">
+
+                    <div class="col-md-12">
+                        <label class="form-label">Manufacturer Name</label>
+                        <input id="newManufacturerName"
+                               class="form-control"
+                               placeholder="Manufacturer name">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Accreditation Status</label>
+                        <select id="newManufacturerAccreditationStatus" class="form-select">
+                            <option value="For Evaluation">For Evaluation</option>
+                            <option value="Accredited">Accredited</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Accreditation Date</label>
+                        <input id="newManufacturerAccreditationDate"
+                               type="date"
+                               class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Accreditation Expiry</label>
+                        <input id="newManufacturerAccreditationExpiry"
+                               type="date"
+                               class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">COA Required</label>
+                        <select id="newManufacturerCoaRequired" class="form-select">
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label">Remarks</label>
+                        <input id="newManufacturerRemarks"
+                               class="form-control"
+                               placeholder="Remarks">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnSaveNewManufacturer"
+                        onclick="saveNewManufacturer()">
+                    Save Manufacturer
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .table-responsive {
+            overflow: visible !important;
+        }
+
+        .action-btn {
+            width: 80px;
+            text-align: center;
+            padding: 2px 8px;
+            font-size: 13px;
+        }
+
+        .table td:last-child,
+        .table th:last-child {
+            width: 90px;
+            white-space: nowrap;
+        }
+    </style>
+    <script src="~/js/purchasing/suppliers/suppliers.js?v=5"></script>
+}

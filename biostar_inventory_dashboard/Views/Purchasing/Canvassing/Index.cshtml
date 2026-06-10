@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = "Supplier Canvassing";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Supplier Canvassing</div>
+        <h2 class="fw-bold mb-1">Supplier Canvassing</h2>
+        <div class="text-muted">Monitor all supplier canvassing records and PO progress.</div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <input id="canvassSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="Search Canvass No / MPRF No">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="canvassStatusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="OPEN">Open</option>
+                        <option value="COMPLETED">Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Canvass No</th>
+                            <th>MPRF No</th>
+                            <th>Department</th>
+                            <th>Canvass Date</th>
+                            <th>Status</th>
+                            <th>PO Progress</th>
+                            <th style="width:150px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="canvassListBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Loading canvassing records...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div id="canvassRecordInfo" class="text-muted small"></div>
+                <div id="canvassPagination"></div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <style>
+        .table-responsive,
+        .card,
+        .card-body {
+            overflow: visible !important;
+        }
+
+        .dropdown-menu {
+            z-index: 9999;
+        }
+    </style>
+    <script src="~/js/purchasing/canvassing/canvassing-list.js?v=1"></script>
+}

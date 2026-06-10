@@ -1,0 +1,260 @@
+﻿@{
+    ViewData["Title"] = "Purchase Order Details";
+    var poId = ViewBag.PoId;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Purchase Orders &gt; Details</div>
+        <h2 class="fw-bold mb-1" id="poTitle">Purchase Order</h2>
+        <div class="text-muted">View PO information, material prices, and receiving balance.</div>
+    </div>
+
+    <div class="mb-3 d-flex gap-2">
+        <a href="/purchasing/purchase-orders" class="btn btn-outline-secondary btn-sm">
+            Back to PO List
+        </a>
+
+        <button id="btnCreateRr" class="btn btn-success btn-sm d-none">
+            Create Receiving Report
+        </button>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="text-muted small">PO No</label>
+                    <div class="fw-semibold" id="poNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="text-muted small">Printed PO No</div>
+                    <div id="printedPoNo">-</div>
+                </div>
+
+               
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Supplier</label>
+                    <div class="fw-semibold" id="supplierName">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">PO Date</label>
+                    <div class="fw-semibold" id="poDate">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Delivery Date</label>
+                    <div class="fw-semibold" id="deliveryDate">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Payment Terms</label>
+                    <div class="fw-semibold" id="paymentTerms">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Status</label>
+                    <div id="poStatus">-</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <label class="text-muted small">Remarks</label>
+            <div id="poRemarks">-</div>
+
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">PO Materials</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th class="text-end">PO Qty</th>
+                            <th>UOM</th>
+                            <th class="text-end">Quotation Price</th>
+                            <th class="text-end">PO Price</th>
+                            <th class="text-end">Line Total</th>
+                            <th class="text-end">Received</th>
+                            <th class="text-end">Balance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poLineBody">
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                Loading PO details...
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="6" class="text-end">Total</th>
+                            <th class="text-end" id="grandTotal">0.00</th>
+                            <th colspan="3"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const poId = '@poId';
+
+    document.addEventListener("DOMContentLoaded", loadPoDetails);
+
+    async function loadPoDetails() {
+        try {
+            const response = await fetch(`/purchasing/purchase-orders/${poId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message ?? "PO not found.");
+                return;
+            }
+
+            document.getElementById("poTitle").innerText = data.poNo;
+            document.getElementById("poNo").innerText = data.poNo;
+            document.getElementById("printedPoNo").innerText =data.printedPoNo ?? "-";
+
+            document.getElementById("supplierName").innerText = data.supplierName;
+            document.getElementById("poDate").innerText = formatDate(data.poDate);
+            document.getElementById("deliveryDate").innerText = formatDate(data.deliveryDate);
+            document.getElementById("paymentTerms").innerText = data.paymentTerms ?? "-";
+            document.getElementById("poStatus").innerHTML = renderStatus(data.status);
+            document.getElementById("poRemarks").innerText = data.remarks ?? "-";
+
+            renderLines(data.lines ?? []);
+            setupCreateRrButton(data);
+
+        } catch (error) {
+            document.getElementById("poLineBody").innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center text-danger py-4">
+                        Failed to load PO details.
+                    </td>
+                </tr>`;
+        }
+    }
+
+        function setupCreateRrButton(po) {
+        const btn = document.getElementById("btnCreateRr");
+
+        if (!btn) return;
+
+        const canCreateRr =
+            po.status === "APPROVED" ||
+            po.status === "PARTIALLY_RECEIVED";
+
+        const hasBalance = (po.lines ?? []).some(line =>
+            Number(line.balanceQty ?? 0) > 0
+        );
+
+        if (canCreateRr && hasBalance) {
+            btn.classList.remove("d-none");
+
+            btn.onclick = function () {
+                window.location.href = `/purchasing/receiving-reports/create/${po.poId}`;
+            };
+        } else {
+            btn.classList.add("d-none");
+        }
+    }
+
+    function renderLines(lines) {
+        const tbody = document.getElementById("poLineBody");
+        tbody.innerHTML = "";
+
+        if (lines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">
+                        No PO materials found.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        let grandTotal = 0;
+
+        lines.forEach(line => {
+            grandTotal += Number(line.lineTotal ?? 0);
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${line.materialCode ?? ""}</td>
+                    <td>${line.materialName ?? ""}</td>
+                    <td class="text-end">${formatQty(line.poQty)}</td>
+                    <td>${line.uom ?? ""}</td>
+                    <td class="text-end">${formatMoney(line.quotationUnitPrice)}</td>
+                    <td class="text-end fw-semibold">${formatMoney(line.poUnitPrice)}</td>
+                    <td class="text-end">${formatMoney(line.lineTotal)}</td>
+                    <td class="text-end">${formatQty(line.receivedQty)}</td>
+                    <td class="text-end">${formatQty(line.balanceQty)}</td>
+                    <td>${renderLineStatus(line.status)}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("grandTotal").innerText = formatMoney(grandTotal);
+    }
+
+    function renderStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "DRAFT") badge = "bg-warning text-dark";
+        if (status === "FOR_APPROVAL") badge = "bg-info text-dark";
+        if (status === "APPROVED") badge = "bg-success";
+        if (status === "CANCELLED") badge = "bg-danger";
+        if (status === "CLOSED") badge = "bg-dark";
+            if (status === "PARTIALLY_RECEIVED") badge = "bg-warning text-dark";
+    if (status === "FULLY_RECEIVED") badge = "bg-dark";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function renderLineStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "OPEN") badge = "bg-primary";
+        if (status === "PARTIAL") badge = "bg-warning text-dark";
+        if (status === "COMPLETED") badge = "bg-success";
+        if (status === "CANCELLED") badge = "bg-danger";
+        if (status === "CLOSED") badge = "bg-success";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function formatDate(value) {
+        if (!value) return "-";
+        return new Date(value).toLocaleDateString();
+    }
+
+    function formatMoney(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+</script>

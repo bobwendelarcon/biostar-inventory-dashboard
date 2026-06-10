@@ -1,0 +1,272 @@
+﻿@{
+    ViewData["Title"] = "Purchase Orders";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Purchase Orders</div>
+        <h2 class="fw-bold mb-1">Purchase Orders</h2>
+        <div class="text-muted">Manage purchase orders created from completed canvassing.</div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <input id="poSearch" type="text" class="form-control" placeholder="Search PO No / Supplier">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="poStatusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="FOR_APPROVAL">For Approval</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="CANCELLED">Cancelled</option>
+                        <option value="CLOSED">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive po-table-wrapper">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>PO No</th>
+                            <th>PO Date</th>
+                            <th>Supplier</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th class="text-end" style="width:140px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Loading purchase orders...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .po-table-wrapper {
+        overflow: visible !important;
+    }
+
+    .po-card-body {
+        overflow: visible !important;
+    }
+
+    .dropdown-menu {
+        z-index: 2000;
+    }
+</style>
+
+
+<script>
+    let poData = [];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadPurchaseOrders();
+
+        document.getElementById("poSearch").addEventListener("input", renderPoTable);
+        document.getElementById("poStatusFilter").addEventListener("change", renderPoTable);
+    });
+
+    async function loadPurchaseOrders() {
+        try {
+            const response = await fetch("/purchasing/purchase-orders/list");
+            poData = await response.json();
+            renderPoTable();
+        } catch (error) {
+            document.getElementById("poTableBody").innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger py-4">
+                        Failed to load purchase orders.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderPoTable() {
+        const tbody = document.getElementById("poTableBody");
+        const search = document.getElementById("poSearch").value.toLowerCase();
+        const status = document.getElementById("poStatusFilter").value;
+
+        tbody.innerHTML = "";
+
+        const filtered = poData.filter(x => {
+            const poNo = (x.poNo ?? "").toLowerCase();
+            const supplier = (x.supplierName ?? "").toLowerCase();
+
+            const matchSearch =
+                poNo.includes(search) ||
+                supplier.includes(search);
+
+            const matchStatus = status === "" || x.status === status;
+
+            return matchSearch && matchStatus;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        No purchase orders found.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        filtered.forEach(x => {
+            tbody.innerHTML += `
+                  <tr>
+        <td class="fw-semibold">${x.poNo}</td>
+        <td>${formatDate(x.poDate)}</td>
+        <td>${x.supplierName}</td>
+        <td>${formatMoney(x.totalAmount)}</td>
+        <td>${renderStatus(x.status)}</td>
+        <td>${x.createdBy ?? ""}</td>
+
+        <td class="text-end">
+            <div class="dropdown position-static">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                    Action
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item"
+                           href="/purchasing/purchase-orders/details/${x.poId}">
+                            View Details
+                        </a>
+                    </li>
+
+                      ${x.status === "DRAFT" ? `
+        <li>
+            <a class="dropdown-item"
+               href="/purchasing/purchase-orders/edit/${x.poId}">
+                Edit PO
+            </a>
+        </li>
+
+        <li>
+            <button class="dropdown-item"
+                    onclick="submitPo(${x.poId})">
+                Submit for Approval
+            </button>
+        </li>
+    ` : ""}
+
+                    ${x.status === "FOR_APPROVAL" ? `
+                        <li>
+                            <button class="dropdown-item"
+                                    onclick="approvePo(${x.poId})">
+                                Approve PO
+                            </button>
+                        </li>
+                    ` : ""}
+
+                    ${x.status !== "CANCELLED" && x.status !== "CLOSED" ? `
+                        <li>
+                            <button class="dropdown-item text-danger"
+                                    onclick="cancelPo(${x.poId})">
+                                Cancel PO
+                            </button>
+                        </li>
+                    ` : ""}
+                </ul>
+            </div>
+        </td>
+    </tr>
+            `;
+        });
+    }
+
+    async function submitPo(id) {
+        if (!confirm("Submit this PO for approval?")) return;
+
+        const response = await fetch(`/purchasing/purchase-orders/${id}/submit`, {
+            method: "POST"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message ?? "Failed to submit PO.");
+            return;
+        }
+
+        loadPurchaseOrders();
+    }
+
+    async function approvePo(id) {
+        if (!confirm("Approve this PO?")) return;
+
+        const response = await fetch(`/purchasing/purchase-orders/${id}/approve`, {
+            method: "POST"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message ?? "Failed to approve PO.");
+            return;
+        }
+
+        loadPurchaseOrders();
+    }
+
+    async function cancelPo(id) {
+        if (!confirm("Cancel this PO?")) return;
+
+        const response = await fetch(`/purchasing/purchase-orders/${id}/cancel`, {
+            method: "POST"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message ?? "Failed to cancel PO.");
+            return;
+        }
+
+        loadPurchaseOrders();
+    }
+
+    function renderStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "DRAFT") badge = "bg-warning text-dark";
+        if (status === "FOR_APPROVAL") badge = "bg-info text-dark";
+        if (status === "APPROVED") badge = "bg-success";
+        if (status === "CANCELLED") badge = "bg-danger";
+        if (status === "CLOSED") badge = "bg-dark";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function formatDate(value) {
+        if (!value) return "";
+        return new Date(value).toLocaleDateString();
+    }
+
+    function formatMoney(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+</script>

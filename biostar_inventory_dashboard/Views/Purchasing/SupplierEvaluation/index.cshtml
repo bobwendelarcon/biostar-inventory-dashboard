@@ -1,0 +1,595 @@
+﻿@{
+    ViewData["Title"] = "Supplier Evaluation";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">Purchasing > Supplier Evaluation</div>
+            <h2 class="fw-bold mb-1">Supplier Evaluation</h2>
+            <div class="text-muted">
+                Supplier performance scoring based on product delivery, QA/QC result, delivery compliance, price history, and documentation.
+            </div>
+        </div>
+
+        <button class="btn btn-primary">
+            Generate Evaluation
+        </button>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Average Score</div>
+                    <h3 class="fw-bold mb-0">86.00%</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Excellent Suppliers</div>
+                    <h3 class="fw-bold mb-0">8</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">For Monitoring</div>
+                    <h3 class="fw-bold mb-0">2</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">No Data Yet</div>
+                    <h3 class="fw-bold mb-0">3</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    <input class="form-control" placeholder="Search supplier, manufacturer, or material">
+                </div>
+
+                <div class="col-md-3">
+                    <select class="form-select">
+                        <option>April 2026</option>
+                        <option>May 2026</option>
+                        <option>June 2026</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select class="form-select">
+                        <option>All Ratings</option>
+                        <option>Excellent</option>
+                        <option>Good</option>
+                        <option>For Monitoring</option>
+                        <option>No Data</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Manufacturer</th>
+                            <th>Material / Product Delivered</th>
+                            <th>PO / RR Ref.</th>
+                            <th>Quality 40%</th>
+                            <th>Delivery 30%</th>
+                            <th>Cost 20%</th>
+                            <th>Reliability 10%</th>
+                            <th>Total</th>
+                            <th>Rating</th>
+                            <th style="width:120px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>8 Sources Inc.</td>
+                            <td>Syngenta</td>
+                            <td>Ciprofloxacin HCL</td>
+                            <td>PO-034276 / RR-046303</td>
+                            <td><span class="badge bg-success">38.00 / 40</span></td>
+                            <td><span class="badge bg-warning text-dark">20.00 / 30</span></td>
+                            <td><span class="badge bg-success">18.00 / 20</span></td>
+                            <td><span class="badge bg-success">10.00 / 10</span></td>
+                            <td><span class="badge bg-info text-dark">86.00%</span></td>
+                            <td><span class="badge bg-primary">Good</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#evaluationModal">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Bayer Philippines</td>
+                            <td>Bayer</td>
+                            <td>Solar Salt</td>
+                            <td>PO-034281 / RR-046276</td>
+                            <td><span class="badge bg-success">40.00 / 40</span></td>
+                            <td><span class="badge bg-success">30.00 / 30</span></td>
+                            <td><span class="badge bg-success">20.00 / 20</span></td>
+                            <td><span class="badge bg-success">10.00 / 10</span></td>
+                            <td><span class="badge bg-success">100.00%</span></td>
+                            <td><span class="badge bg-success">Excellent</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#evaluationModal">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>ABC Trading Corporation</td>
+                            <td>NutriTech</td>
+                            <td>No product delivery yet</td>
+                            <td>No PO / RR</td>
+                            <td><span class="badge bg-secondary">No Data</span></td>
+                            <td><span class="badge bg-secondary">No Data</span></td>
+                            <td><span class="badge bg-secondary">No Data</span></td>
+                            <td><span class="badge bg-secondary">No Data</span></td>
+                            <td><span class="badge bg-secondary">N/A</span></td>
+                            <td><span class="badge bg-warning text-dark">For Evaluation</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#noDataModal">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- FULL EVALUATION MODAL -->
+<div class="modal fade" id="evaluationModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Supplier Evaluation Computation Details</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Supplier</label>
+                        <input class="form-control" value="8 Sources Inc." readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Manufacturer</label>
+                        <input class="form-control" value="Syngenta" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Material / Product</label>
+                        <input class="form-control" value="Ciprofloxacin HCL" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Evaluation Period</label>
+                        <input class="form-control" value="April 2026" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">PO No.</label>
+                        <input class="form-control" value="PO-034276" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">RR No.</label>
+                        <input class="form-control" value="RR-046303" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Evaluated By</label>
+                        <input class="form-control" value="Purchasing / QA-QC" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Evaluation Date</label>
+                        <input class="form-control" value="04/30/2026" readonly>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border">
+                    <strong>Final Computation:</strong>
+                    Quality 38.00 + Delivery 20.00 + Cost 18.00 + Reliability 10.00 =
+                    <strong>86.00%</strong>
+                </div>
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-3">
+                        <div class="card border-success h-100">
+                            <div class="card-body text-center">
+                                <div class="text-muted small">Quality</div>
+                                <h3 class="fw-bold text-success">38.00 / 40</h3>
+                                <div class="small">Approved vs Rejected Quantity</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card border-warning h-100">
+                            <div class="card-body text-center">
+                                <div class="text-muted small">Delivery</div>
+                                <h3 class="fw-bold text-warning">20.00 / 30</h3>
+                                <div class="small">On-time delivery compliance</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card border-info h-100">
+                            <div class="card-body text-center">
+                                <div class="text-muted small">Cost</div>
+                                <h3 class="fw-bold text-info">18.00 / 20</h3>
+                                <div class="small">Current price vs previous price</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card border-primary h-100">
+                            <div class="card-body text-center">
+                                <div class="text-muted small">Reliability</div>
+                                <h3 class="fw-bold text-primary">10.00 / 10</h3>
+                                <div class="small">COA, documents, terms, support</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <h6 class="fw-bold mb-3">1. Quality Evaluation - 40%</h6>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Received Qty</label>
+                        <input class="form-control" value="10,000" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Approved Qty</label>
+                        <input class="form-control" value="9,500" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Rejected Qty</label>
+                        <input class="form-control" value="500" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Approval Rate</label>
+                        <input class="form-control fw-bold" value="95.00%" readonly>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>Computation:</strong>
+                    Approved Qty 9,500 ÷ Received Qty 10,000 = 95.00%.
+                    95.00% × 40 = <strong>38.00 / 40</strong>.
+                </div>
+
+                <hr>
+
+                <h6 class="fw-bold mb-3">2. Delivery Evaluation - 30%</h6>
+
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Delivery Schedule</th>
+                            <th>Actual Delivery</th>
+                            <th>Scheduled Qty</th>
+                            <th>Received Qty</th>
+                            <th>On Time?</th>
+                            <th>In Full?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>04/01/2026</td>
+                            <td>04/01/2026</td>
+                            <td>3,000</td>
+                            <td>3,000</td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                        </tr>
+
+                        <tr>
+                            <td>04/15/2026</td>
+                            <td>04/16/2026</td>
+                            <td>4,000</td>
+                            <td>4,000</td>
+                            <td><span class="badge bg-danger">No</span></td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                        </tr>
+
+                        <tr>
+                            <td>04/25/2026</td>
+                            <td>04/25/2026</td>
+                            <td>3,000</td>
+                            <td>3,000</td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Scheduled Deliveries</label>
+                        <input class="form-control" value="3" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">On-Time Deliveries</label>
+                        <input class="form-control" value="2" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">On-Time Rate</label>
+                        <input class="form-control fw-bold" value="66.67%" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Delivery Grade</label>
+                        <input class="form-control fw-bold" value="20.00 / 30" readonly>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Computation:</strong>
+                    On-time deliveries 2 ÷ scheduled deliveries 3 = 66.67%.
+                    66.67% × 30 = <strong>20.00 / 30</strong>.
+                </div>
+
+                <hr>
+
+                <h6 class="fw-bold mb-3">3. Cost Competitiveness Evaluation - 20%</h6>
+
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Period</th>
+                            <th>PO No.</th>
+                            <th>Supplier Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>January 2026</td>
+                            <td>PO-03200</td>
+                            <td>₱100.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>February 2026</td>
+                            <td>PO-03298</td>
+                            <td>₱102.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>March 2026</td>
+                            <td>PO-03370</td>
+                            <td>₱104.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>April 2026</td>
+                            <td>PO-034276</td>
+                            <td>₱105.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Previous Price</label>
+                        <input class="form-control" value="₱104.00" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Current Price</label>
+                        <input class="form-control" value="₱105.00" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Price Increase</label>
+                        <input class="form-control fw-bold" value="0.96%" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Cost Grade</label>
+                        <input class="form-control fw-bold" value="18.00 / 20" readonly>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Computation:</strong>
+                    Current price ₱105.00 - previous price ₱104.00 = ₱1.00 increase.
+                    ₱1.00 ÷ ₱104.00 = 0.96% increase.
+                    Since increase is below 5%, cost grade is <strong>18.00 / 20</strong>.
+                </div>
+
+                <hr>
+
+                <h6 class="fw-bold mb-3">4. Reliability / Documentation Evaluation - 10%</h6>
+
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Requirement</th>
+                            <th>Result</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>COA Submitted</td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                            <td>5.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>Documentation Complete</td>
+                            <td><span class="badge bg-success">Yes</span></td>
+                            <td>3.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>Terms / After Sales Support</td>
+                            <td><span class="badge bg-success">Good</span></td>
+                            <td>2.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-primary">
+                    <strong>Computation:</strong>
+                    COA 5.00 + Documentation 3.00 + Terms/Support 2.00 =
+                    <strong>10.00 / 10</strong>.
+                </div>
+
+                <hr>
+
+                <h6 class="fw-bold mb-3">Final Evaluation Result</h6>
+
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Criteria</th>
+                            <th>Maximum</th>
+                            <th>Earned Score</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>Quality</td>
+                            <td>40</td>
+                            <td>38.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>Delivery</td>
+                            <td>30</td>
+                            <td>20.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>Cost Competitiveness</td>
+                            <td>20</td>
+                            <td>18.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>Reliability / After Sales</td>
+                            <td>10</td>
+                            <td>10.00</td>
+                        </tr>
+
+                        <tr class="table-light fw-bold">
+                            <td>Total</td>
+                            <td>100</td>
+                            <td>86.00%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success mb-0">
+                    <h5 class="mb-1">Rating: GOOD</h5>
+                    Supplier is acceptable for future canvassing, but delivery compliance needs monitoring.
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- NO DATA MODAL -->
+<div class="modal fade" id="noDataModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Supplier Evaluation</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-warning mb-0">
+                    <h5>No Evaluation Data Yet</h5>
+                    This supplier has no completed Purchase Order, Receiving Report, or QA/QC Inspection records yet.
+                    Supplier evaluation will be generated once transaction history is available.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

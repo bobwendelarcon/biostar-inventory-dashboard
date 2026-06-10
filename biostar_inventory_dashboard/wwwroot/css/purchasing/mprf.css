@@ -1,0 +1,113 @@
+﻿.material-results-portal {
+    position: fixed;
+    z-index: 999999;
+    width: 520px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+}
+
+    .material-results-portal button {
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+        .material-results-portal button:hover {
+            background-color: #f8f9fa;
+        }
+
+.mprf-lines-table {
+    width: 100%;
+}
+
+.material-search,
+.classification,
+.line-remarks {
+    width: 100%;
+}
+
+.qty-on-hand {
+    width: 180px !important;
+    text-align: center;
+}
+
+.uom {
+    width: 80px !important;
+    text-align: center;
+}
+
+.table-responsive,
+.card-body {
+    overflow: visible !important;
+}
+
+
+
+
+.mprf-action-menu {
+    position: fixed;
+    min-width: 180px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+    z-index: 999999;
+    padding: 6px 0;
+}
+
+.mprf-action-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    font-size: 14px;
+}
+
+    .mprf-action-menu button:hover {
+        background: #f8f9fa;
+    }
+
+.mprf-action-menu .text-success {
+    color: #198754;
+}
+
+.mprf-action-menu .text-danger {
+    color: #dc3545;
+}
+
+.mprf-floating-menu {
+    position: fixed;
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+    z-index: 999999;
+    padding: 6px 0;
+}
+
+    .mprf-floating-menu button {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        padding: 8px 14px;
+        text-align: left;
+    }
+
+        .mprf-floating-menu button:hover {
+            background: #f8f9fa;
+        }
+
+.table-responsive.overflow-visible {
+    overflow: visible !important;
+}
+
+.dropdown-menu {
+    z-index: 9999;
+}

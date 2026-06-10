@@ -1,0 +1,465 @@
+﻿@{
+    ViewData["Title"] = "Create Purchase Order";
+    var canvassId = ViewBag.CanvassId;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Purchase Orders &gt; Create</div>
+        <h2 class="fw-bold mb-1">Create Purchase Order</h2>
+        <div class="text-muted">Create PO from completed supplier canvassing.</div>
+    </div>
+
+    <div class="mb-3">
+        <a href="/purchasing/purchase-orders" class="btn btn-outline-secondary btn-sm">
+            Back to PO List
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <input type="hidden" id="canvassId" value="@canvassId">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+                    <label class="form-label">System PO No</label>
+                    <input id="poNo" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Printed PO No</label>
+                    <input id="printedPoNo" class="form-control" placeholder="Example: 035932">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">PO Date</label>
+                    <input id="poDate" type="date" class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Delivery Date</label>
+                    <input id="deliveryDate" type="date" class="form-control">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Supplier</label>
+                    <select id="supplierId" class="form-select" onchange="renderSupplierLines()">
+                        <option value="">Select Supplier</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Payment Terms</label>
+                    <input id="paymentTerms" class="form-control" placeholder="Example: 30 Days">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Requested By</label>
+                    <input id="requestedBy" class="form-control" placeholder="Requested by">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Supplier Address</label>
+                    <input id="supplierAddress" class="form-control" placeholder="Supplier address">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Remarks</label>
+                    <input id="remarks" class="form-control">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Materials</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material</th>
+                            <th class="text-end">PO Qty</th>
+                            <th>UOM</th>
+                            <th class="text-end">Quotation Price</th>
+                            <th class="text-end">PO Unit Price</th>
+                            <th class="text-end">Line Total</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poLineBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Select supplier to load materials.
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="5" class="text-end">Subtotal</th>
+                            <th class="text-end" id="subtotal">0.00</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-end">Others</th>
+                            <th>
+                                <input id="otherCharges"
+                                       type="number"
+                                       step="0.01"
+                                       class="form-control form-control-sm text-end"
+                                       value="0"
+                                       oninput="updateGrandTotal()">
+                            </th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-end">Total</th>
+                            <th class="text-end" id="grandTotal">0.00</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="text-end mt-3">
+                <button class="btn btn-primary" onclick="savePo()">
+                    Save Purchase Order
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvassId = Number('@canvassId');
+        const urlParams = new URLSearchParams(window.location.search);
+    const preselectedSupplierId = Number(urlParams.get("supplierId") || 0);
+
+    let canvassData = null;
+    let supplierLines = [];
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        setDefaultDates();
+        loadNextPoNo();
+        loadCreateOptions();
+    });
+
+    function setDefaultDates() {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("poDate").value = today;
+    }
+
+    async function loadNextPoNo() {
+        const response = await fetch("/purchasing/purchase-orders/next-number");
+        const data = await response.json();
+        document.getElementById("poNo").value = data.po_no ?? "";
+    }
+
+    async function loadCanvassDetails() {
+        const response = await fetch(`/purchasing/canvassing/details/${canvassId}`);
+
+        if (!response.ok) {
+            alert("Failed to load canvassing details.");
+            return;
+        }
+
+        canvassData = await response.json();
+
+        if (canvassData.header.status !== "COMPLETED") {
+            alert("Only completed canvassing can create Purchase Order.");
+            return;
+        }
+
+        loadSuppliersFromQuotes();
+    }
+
+        async function loadCreateOptions() {
+
+        const response = await fetch(
+            `/purchasing/purchase-orders/create-options/${canvassId}`
+        );
+
+        if (!response.ok) {
+            alert("Failed to load PO options.");
+            return;
+        }
+
+        const data = await response.json();
+
+        canvassData = data;
+
+        const supplierSelect =
+            document.getElementById("supplierId");
+
+        supplierSelect.innerHTML =
+            `<option value="">Select Supplier</option>`;
+
+        (data.suppliers || []).forEach(s => {
+
+            supplierSelect.innerHTML += `
+                <option
+                    value="${s.supplierId}"
+                    data-terms="${escapeAttr(s.paymentTerms)}"
+                    data-address="${escapeAttr(s.supplierAddress)}">
+
+                    ${s.supplierName}
+                    (${s.lineCount} Items)
+
+                </option>`;
+        });
+            if (preselectedSupplierId > 0) {
+        supplierSelect.value = preselectedSupplierId;
+        renderSupplierLines();
+    }
+    else if ((data.suppliers || []).length === 1) {
+        supplierSelect.value = data.suppliers[0].supplierId;
+        renderSupplierLines();
+    }
+    }
+
+    function loadSuppliersFromQuotes() {
+        const supplierSelect = document.getElementById("supplierId");
+        supplierSelect.innerHTML = `<option value="">Select Supplier</option>`;
+
+        const suppliers = [];
+        const lines = canvassData.lines ?? [];
+
+        lines.forEach(line => {
+            const quotes = line.quotes ?? [];
+
+            quotes.forEach(q => {
+                const supplierId = q.supplierId;
+                const supplierName = q.supplierName;
+
+                if (!supplierId) return;
+
+                if (!suppliers.some(s => s.supplierId === supplierId)) {
+                    suppliers.push({
+                        supplierId: supplierId,
+                        supplierName: supplierName,
+                        paymentTerms: q.paymentTerms ?? "",
+                        supplierAddress: q.address ?? q.supplierAddress ?? ""
+                    });
+                }
+            });
+        });
+
+        suppliers.forEach(s => {
+            supplierSelect.innerHTML += `
+                <option value="${s.supplierId}"
+                        data-terms="${escapeAttr(s.paymentTerms)}"
+                        data-address="${escapeAttr(s.supplierAddress)}">
+                    ${s.supplierName}
+                </option>`;
+        });
+    }
+
+    function renderSupplierLines() {
+        const supplierSelect = document.getElementById("supplierId");
+        const supplierId = Number(supplierSelect.value);
+        const tbody = document.getElementById("poLineBody");
+
+        supplierLines = [];
+        tbody.innerHTML = "";
+
+        if (!supplierId) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        Select supplier to load materials.
+                    </td>
+                </tr>`;
+            updateGrandTotal();
+            return;
+        }
+
+        const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
+
+        document.getElementById("paymentTerms").value =
+            selectedOption.getAttribute("data-terms") || "";
+
+        document.getElementById("supplierAddress").value =
+            selectedOption.getAttribute("data-address") || "";
+
+                const lines =
+        (canvassData.lines || [])
+        .filter(x => x.supplierId === supplierId);
+
+    supplierLines = [];
+
+    lines.forEach(line => {
+
+        supplierLines.push({
+            canvassLineId: line.canvassLineId,
+            quoteId: line.quoteId,
+            materialId: line.materialId,
+            materialName: line.material_name,
+            poQty: line.qty,
+            uom: line.uom,
+            quotationUnitPrice: line.unitPrice,
+            poUnitPrice: line.unitPrice,
+            remarks: ""
+        });
+
+    });
+      
+
+        if (supplierLines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        This supplier has no quoted materials.
+                    </td>
+                </tr>`;
+            updateGrandTotal();
+            return;
+        }
+
+        supplierLines.forEach((line, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${line.materialName}</td>
+
+                    <td>
+                        <input type="number" step="0.0001"
+                               class="form-control form-control-sm text-end"
+                               value="${line.poQty}"
+                               onchange="updateLine(${index}, 'poQty', this.value)">
+                    </td>
+
+                    <td>${line.uom}</td>
+
+                    <td class="text-end">${formatMoney(line.quotationUnitPrice)}</td>
+
+                    <td>
+                        <input type="number" step="0.0001"
+                               class="form-control form-control-sm text-end"
+                               value="${line.poUnitPrice}"
+                               onchange="updateLine(${index}, 'poUnitPrice', this.value)">
+                    </td>
+
+                    <td class="text-end" id="lineTotal_${index}">
+                        ${formatMoney(line.poQty * line.poUnitPrice)}
+                    </td>
+
+                    <td>
+                        <input class="form-control form-control-sm"
+                               onchange="updateLine(${index}, 'remarks', this.value)">
+                    </td>
+                </tr>`;
+        });
+
+        updateGrandTotal();
+    }
+
+    function updateLine(index, field, value) {
+        if (field === "poQty" || field === "poUnitPrice") {
+            supplierLines[index][field] = Number(value);
+        } else {
+            supplierLines[index][field] = value;
+        }
+
+        const total = supplierLines[index].poQty * supplierLines[index].poUnitPrice;
+        document.getElementById(`lineTotal_${index}`).innerText = formatMoney(total);
+
+        updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+        const subtotal = supplierLines.reduce((sum, line) => {
+            return sum + (Number(line.poQty) * Number(line.poUnitPrice));
+        }, 0);
+
+        const otherCharges = Number(document.getElementById("otherCharges").value || 0);
+        const total = subtotal + otherCharges;
+
+        document.getElementById("subtotal").innerText = formatMoney(subtotal);
+        document.getElementById("grandTotal").innerText = formatMoney(total);
+    }
+
+    async function savePo() {
+        const supplierId = Number(document.getElementById("supplierId").value);
+
+        if (!supplierId) {
+            alert("Please select supplier.");
+            return;
+        }
+
+        if (supplierLines.length === 0) {
+            alert("No materials selected.");
+            return;
+        }
+
+        const payload = {
+            canvassId: canvassId,
+            supplierId: supplierId,
+
+            printedPoNo: document.getElementById("printedPoNo").value,
+            poDate: document.getElementById("poDate").value,
+            deliveryDate: document.getElementById("deliveryDate").value || null,
+
+            paymentTerms: document.getElementById("paymentTerms").value,
+            supplierAddress: document.getElementById("supplierAddress").value,
+            requestedBy: document.getElementById("requestedBy").value,
+            otherCharges: Number(document.getElementById("otherCharges").value || 0),
+
+            remarks: document.getElementById("remarks").value,
+
+            lines: supplierLines.map(x => ({
+                canvassLineId: x.canvassLineId,
+                quoteId: x.quoteId,
+                materialId: x.materialId,
+                poQty: x.poQty,
+                uom: x.uom,
+                quotationUnitPrice: x.quotationUnitPrice,
+                poUnitPrice: x.poUnitPrice,
+                remarks: x.remarks
+            }))
+        };
+
+        const response = await fetch("/purchasing/purchase-orders/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message ?? "Failed to create PO.");
+            return;
+        }
+
+        alert("Purchase Order created successfully.");
+
+            window.location.href =
+    `/purchasing/purchase-orders/details/${result.po_id}`;
+    }
+
+    function escapeAttr(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;");
+    }
+
+    function formatMoney(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+</script>

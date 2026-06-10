@@ -1,0 +1,335 @@
+﻿@{
+    ViewData["Title"] = "Receiving Report Details";
+    var rrId = ViewBag.RrId;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Receiving Reports &gt; Details</div>
+        <h2 class="fw-bold mb-1" id="rrTitle">Receiving Report</h2>
+        <div class="text-muted">View RR information, QC status, and received materials.</div>
+    </div>
+
+    <div class="mb-3 d-flex gap-2">
+        <a href="/purchasing/receiving-reports" class="btn btn-outline-secondary btn-sm">
+            Back to RR List
+        </a>
+
+        <button id="btnSubmitQc" class="btn btn-info btn-sm d-none">
+            Submit for QC
+        </button>
+
+        <button id="btnAccept" class="btn btn-success btn-sm d-none">
+            Accept
+        </button>
+
+        <button id="btnReject" class="btn btn-danger btn-sm d-none">
+            Reject
+        </button>
+
+        <button id="btnCommit" class="btn btn-dark btn-sm d-none">
+            Commit Inventory
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="text-muted small">RR No</label>
+                    <div class="fw-semibold" id="rrNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">PO No</label>
+                    <div class="fw-semibold" id="poNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Supplier</label>
+                    <div class="fw-semibold" id="supplierName">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">SI / DR No</label>
+                    <div class="fw-semibold" id="siDrNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Delivery Date</label>
+                    <div class="fw-semibold" id="deliveryDate">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Status</label>
+                    <div id="rrStatus">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Created By</label>
+                    <div class="fw-semibold" id="createdBy">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Created At</label>
+                    <div class="fw-semibold" id="createdAt">-</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="text-muted small">QC By</label>
+                    <div class="fw-semibold" id="qcBy">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">QC At</label>
+                    <div class="fw-semibold" id="qcAt">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Committed By</label>
+                    <div class="fw-semibold" id="committedBy">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Committed At</label>
+                    <div class="fw-semibold" id="committedAt">-</div>
+                </div>
+            </div>
+
+            <hr>
+
+            <label class="text-muted small">Remarks</label>
+            <div id="remarks">-</div>
+
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Received Materials</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th class="text-end">PO Qty</th>
+                            <th class="text-end">Previously Received</th>
+                            <th class="text-end">Balance Before RR</th>
+                            <th class="text-end">Receive Qty</th>
+                            <th class="text-end">Accepted Qty</th>
+                            <th class="text-end">Rejected Qty</th>
+                            <th>UOM</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rrLineBody">
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                Loading RR details...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const rrId = '@rrId';
+    let rrData = null;
+
+    document.addEventListener("DOMContentLoaded", loadRrDetails);
+
+    async function loadRrDetails() {
+        try {
+            const response = await fetch(`/purchasing/receiving-reports/${rrId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message ?? "Receiving Report not found.");
+                window.location.href = "/purchasing/receiving-reports";
+                return;
+            }
+
+            rrData = data;
+
+            document.getElementById("rrTitle").innerText = data.rrNo;
+            document.getElementById("rrNo").innerText = data.rrNo ?? "-";
+            document.getElementById("poNo").innerText = data.poNo ?? "-";
+            document.getElementById("supplierName").innerText = data.supplierName ?? "-";
+            document.getElementById("siDrNo").innerText = data.siDrNo ?? "-";
+            document.getElementById("deliveryDate").innerText = formatDate(data.deliveryDate);
+            document.getElementById("rrStatus").innerHTML = renderStatus(data.status);
+
+            document.getElementById("createdBy").innerText = data.createdBy ?? "-";
+            document.getElementById("createdAt").innerText = formatDateTime(data.createdAt);
+
+            document.getElementById("qcBy").innerText = data.qcBy ?? "-";
+            document.getElementById("qcAt").innerText = formatDateTime(data.qcAt);
+
+            document.getElementById("committedBy").innerText = data.committedBy ?? "-";
+            document.getElementById("committedAt").innerText = formatDateTime(data.committedAt);
+
+            document.getElementById("remarks").innerText = data.remarks ?? "-";
+
+            renderLines(data.lines ?? []);
+            setupActionButtons(data);
+
+        } catch (error) {
+            document.getElementById("rrLineBody").innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center text-danger py-4">
+                        Failed to load RR details.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderLines(lines) {
+        const tbody = document.getElementById("rrLineBody");
+        tbody.innerHTML = "";
+
+        if (lines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">
+                        No RR materials found.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        lines.forEach(line => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${line.materialCode ?? ""}</td>
+                    <td>${line.materialName ?? ""}</td>
+                    <td class="text-end">${formatQty(line.poQty)}</td>
+                    <td class="text-end">${formatQty(line.previouslyReceivedQty)}</td>
+                    <td class="text-end">${formatQty(line.balanceQty)}</td>
+                    <td class="text-end fw-semibold">${formatQty(line.receiveQty)}</td>
+                    <td class="text-end">${formatQty(line.acceptedQty)}</td>
+                    <td class="text-end">${formatQty(line.rejectedQty)}</td>
+                    <td>${line.uom ?? ""}</td>
+                    <td>${renderLineStatus(line.status)}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function setupActionButtons(rr) {
+        hideAllButtons();
+
+        if (rr.status === "DRAFT") {
+            showButton("btnSubmitQc", async function () {
+                if (!confirm("Submit this RR for QC?")) return;
+                await postAction(`/purchasing/receiving-reports/${rr.rrId}/submit-qc`);
+            });
+        }
+
+        if (rr.status === "FOR_QC") {
+            showButton("btnAccept", async function () {
+                if (!confirm("Accept this RR?")) return;
+                await postAction(`/purchasing/receiving-reports/${rr.rrId}/accept`);
+            });
+
+            showButton("btnReject", async function () {
+                if (!confirm("Reject this RR?")) return;
+                await postAction(`/purchasing/receiving-reports/${rr.rrId}/reject`);
+            });
+        }
+
+        if (rr.status === "ACCEPTED") {
+            showButton("btnCommit", async function () {
+                if (!confirm("Commit this RR to inventory?")) return;
+                await postAction(`/purchasing/receiving-reports/${rr.rrId}/commit`);
+            });
+        }
+    }
+
+    function hideAllButtons() {
+        ["btnSubmitQc", "btnAccept", "btnReject", "btnCommit"].forEach(id => {
+            const btn = document.getElementById(id);
+            btn.classList.add("d-none");
+            btn.onclick = null;
+        });
+    }
+
+    function showButton(id, clickHandler) {
+        const btn = document.getElementById(id);
+        btn.classList.remove("d-none");
+        btn.onclick = clickHandler;
+    }
+
+    async function postAction(url) {
+        try {
+            const response = await fetch(url, {
+                method: "POST"
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.message ?? "Action failed.");
+                return;
+            }
+
+            alert(result.message ?? "Action completed.");
+            await loadRrDetails();
+
+        } catch (error) {
+            alert("Action failed.");
+        }
+    }
+
+    function renderStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "DRAFT") badge = "bg-warning text-dark";
+        if (status === "FOR_QC") badge = "bg-info text-dark";
+        if (status === "ACCEPTED") badge = "bg-success";
+        if (status === "REJECTED") badge = "bg-danger";
+        if (status === "COMMITTED") badge = "bg-dark";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function renderLineStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "PENDING") badge = "bg-warning text-dark";
+        if (status === "ACCEPTED") badge = "bg-success";
+        if (status === "REJECTED") badge = "bg-danger";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function formatDate(value) {
+        if (!value) return "-";
+        return new Date(value).toLocaleDateString();
+    }
+
+    function formatDateTime(value) {
+        if (!value) return "-";
+        return new Date(value).toLocaleString();
+    }
+
+    function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+</script>

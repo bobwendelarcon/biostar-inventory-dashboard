@@ -1,0 +1,292 @@
+﻿@{
+    ViewData["Title"] = "MPRF Requests";
+}
+
+<style>
+    .mprf-table-wrapper {
+        position: relative;
+        overflow: visible !important;
+    }
+
+        .mprf-table-wrapper .dropdown {
+            position: static;
+        }
+
+        .mprf-table-wrapper .dropdown-menu {
+            z-index: 9999;
+        }
+
+    .mprf-summary-card {
+        border: 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        border-radius: 10px;
+    }
+
+        .mprf-summary-card .count {
+            font-size: 22px;
+            font-weight: 700;
+        }
+</style>
+
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">Purchasing &gt; MPRF Requests</div>
+            <h2 class="fw-bold mb-1">MPRF Requests</h2>
+            <div class="text-muted">Manage Materials Purchase Requisition Forms.</div>
+        </div>
+
+        <a href="/purchasing/mprf/create" class="btn btn-primary">
+            + Create MPRF
+        </a>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-2">
+            <div class="card mprf-summary-card">
+                <div class="card-body py-3">
+                    <div class="count text-secondary" id="draftCount">0</div>
+                    <div class="text-muted small">Draft</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card mprf-summary-card">
+                <div class="card-body py-3">
+                    <div class="count text-warning" id="returnedCount">0</div>
+                    <div class="text-muted small">Returned</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card mprf-summary-card">
+                <div class="card-body py-3">
+                    <div class="count text-primary" id="submittedCount">0</div>
+                    <div class="text-muted small">Submitted</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card mprf-summary-card">
+                <div class="card-body py-3">
+                    <div class="count text-info" id="reviewedCount">0</div>
+                    <div class="text-muted small">Reviewed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card mprf-summary-card">
+                <div class="card-body py-3">
+                    <div class="count text-danger" id="rejectedCount">0</div>
+                    <div class="text-muted small">Rejected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <input type="text"
+                           id="searchMprf"
+                           class="form-control"
+                           placeholder="Search MPRF No, Department, Requested By">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="RETURNED">Returned</option>
+                        <option value="SUBMITTED">Submitted</option>
+                        <option value="REVIEWED">Reviewed</option>
+                        <option value="REJECTED">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive overflow-visible">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>MPRF No</th>
+                            <th>Request Date</th>
+                            <th>Week</th>
+                            <th>Category / Requesting Department</th>
+                            <th>Requested By</th>
+                            <th>Status</th>
+                            <th style="width: 90px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="mprfTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Loading MPRF requests...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="mprfRecordInfo" class="text-muted small mb-2">
+                Showing 0 records
+            </div>
+
+            <div id="mprfPagination" class="d-flex justify-content-between align-items-center mt-3"></div>
+
+        </div>
+    </div>
+
+</div>
+
+
+
+<div class="modal fade" id="mprfViewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">MPRF Details</h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">MPRF No</label>
+                        <input id="viewMprfNo" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Request Date</label>
+                        <input id="viewRequestDate" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Week</label>
+                        <input id="viewWeek" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Category / Requesting Department</label>
+                        <input id="viewCategory" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Requested By</label>
+                        <input id="viewRequestedBy" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Status</label>
+                        <div id="viewStatus" class="pt-2"></div>
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="row g-3 mb-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">System PO No</label>
+                        <input id="viewPoNo" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Printed PO No</label>
+                        <input id="viewPrintedPoNo" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">PO Status</label>
+                        <div id="viewPoStatus" class="pt-2"></div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">PO Amount</label>
+                        <input id="viewPoAmount" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <a id="viewPoButton"
+                           href="#"
+                           class="btn btn-primary w-100 d-none">
+                            View PO
+                        </a>
+                    </div>
+
+                </div>
+
+                   
+
+                <div class="alert alert-info d-none" id="viewReviewRemarksBox">
+                    <strong>Purchasing Remarks:</strong>
+                    <div id="viewReviewRemarks" class="mt-1"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th>Material</th>
+                                <th>Classification</th>
+                                <th style="width:120px;">Qty On Hand</th>
+                                <th style="width:90px;">UOM</th>
+                                <th>Request Remarks</th>
+                                <th style="width:140px;">Qty To Purchase</th>
+                                <th style="width:130px;">Item Decision</th>
+                                <th>Purchasing Remarks</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="viewMprfLinesBody">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+               
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<div id="mprfFloatingMenu" class="mprf-floating-menu d-none"></div>
+
+
+@section Scripts {
+    <script src="~/js/purchasing/mprf.js"></script>
+}

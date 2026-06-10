@@ -1,0 +1,188 @@
+﻿<input type="hidden" id="canvassId" value="@ViewBag.CanvassId" />
+
+@{
+    ViewData["Title"] = "Supplier Canvassing";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">
+                Purchasing &gt; MPRF Review &gt; Supplier Canvassing
+            </div>
+            <h2 class="fw-bold mb-1">Supplier Canvassing</h2>
+            <div class="text-muted">
+                Compare supplier quotations per requested material.
+            </div>
+        </div>
+
+       <a href="/purchasing/canvassing" class="btn btn-secondary">Back</a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-bold">Canvassing Information</div>
+
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-3">
+                    <label class="form-label">Canvass No</label>
+                    <input id="canvassNo" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">MPRF No</label>
+                    <input id="mprfNo" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Department</label>
+                    <input id="department" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <input id="status" class="form-control" readonly>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="materialsContainer">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body text-center text-muted py-4">
+                Loading canvassing details...
+            </div>
+        </div>
+    </div>
+
+    <div id="poProgressBox" class="alert alert-info mt-3 d-none"></div>
+
+
+    <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-secondary">Save Draft</button>
+
+        @* <button class="btn btn-success" onclick="completeCanvassing()">
+            Complete Canvassing
+        </button> *@
+
+
+        <button class="btn btn-info" onclick="recommendSuppliers()">
+            Recommend Suppliers
+        </button>
+       
+    </div>
+    <div class="d-flex justify-content-end mt-2">
+        <div id="createPoContainer"></div>
+    </div>
+
+
+
+</div>
+
+<!-- ADD SUPPLIER QUOTE MODAL -->
+<div class="modal fade" id="quoteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Add Supplier Quote</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="quoteCanvassLineId">
+                <input type="hidden" id="quoteMaterialId">
+
+                <div class="mb-3">
+                    <label class="form-label">Material</label>
+                    <input id="quoteMaterial" class="form-control" readonly>
+                </div>
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Supplier</label>
+                        <select id="quoteSupplierId" class="form-select">
+                            <option value="">Select Supplier</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Unit Price</label>
+                        <input id="quoteUnitPrice" type="number" class="form-control" placeholder="0.00">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Terms</label>
+                        <input id="quotePaymentTerms" class="form-control" placeholder="30 Days">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Delivery Days</label>
+                        <input id="quoteDeliveryDays" type="number" class="form-control" placeholder="5">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">COA / Documents</label>
+                        <select id="quoteCoaAvailable" class="form-select">
+                            <option value="true">With COA</option>
+                            <option value="false">No COA</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label">Documents Remarks</label>
+                        <input id="quoteDocumentsRemarks" class="form-control" placeholder="COA / Documents remarks">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Quotation Ref</label>
+                        <input id="quoteQuotationRef" class="form-control" placeholder="Quotation reference">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Quote Date</label>
+                        <input id="quoteDate" type="date" class="form-control">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Remarks</label>
+                        <input id="quoteRemarks" class="form-control" placeholder="Remarks">
+                    </div>
+
+                </div>
+
+                <div class="alert alert-info mt-4 mb-0">
+                    Supplier list will come from linked supplier-material mapping.
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" onclick="saveQuote()">
+                    Save Quote
+                </button>
+               
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts
+{
+    <script src="~/js/purchasing/canvassing/canvassing.js?v=1"></script>
+}

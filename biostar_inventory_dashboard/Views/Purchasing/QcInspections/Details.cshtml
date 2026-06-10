@@ -1,0 +1,341 @@
+﻿@{
+    ViewData["Title"] = "QA/QC Inspection Details";
+    var qcId = ViewBag.QcId;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; QA/QC Inspection &gt; Details</div>
+        <h2 class="fw-bold mb-1" id="qcTitle">QA/QC Inspection</h2>
+        <div class="text-muted">Input accepted and rejected quantities for received materials.</div>
+    </div>
+
+    <div class="mb-3 d-flex gap-2">
+        <a href="/purchasing/qc-inspections" class="btn btn-outline-secondary btn-sm">
+            Back to QC List
+        </a>
+
+        <button id="btnSaveInspection" class="btn btn-success btn-sm d-none">
+            Save Inspection
+        </button>
+
+        <button id="btnCommitInventory" class="btn btn-dark btn-sm d-none">
+            Commit Inventory
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="text-muted small">QC No</label>
+                    <div class="fw-semibold" id="qcNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">RR No</label>
+                    <div class="fw-semibold" id="rrNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">PO No</label>
+                    <div class="fw-semibold" id="poNo">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Supplier</label>
+                    <div class="fw-semibold" id="supplierName">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="text-muted small">Status</label>
+                    <div id="qcStatus">-</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Inspection Date</label>
+                    <input id="inspectionDate" type="date" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">QC Remarks</label>
+                    <input id="remarks" class="form-control" placeholder="Optional QC remarks">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Inspection Lines</h5>
+
+            <div class="table-responsive overflow-visible">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th class="text-end">Received Qty</th>
+                            <th class="text-end" style="width:150px;">Accepted Qty</th>
+                            <th class="text-end" style="width:150px;">Rejected Qty</th>
+                            <th>Reason</th>
+                            <th>Remarks</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="qcLineBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                Loading QC inspection...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const qcId = '@qcId';
+    let qcData = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadQcDetails();
+
+        document.getElementById("btnSaveInspection").addEventListener("click", saveInspection);
+        document.getElementById("btnCommitInventory").addEventListener("click", commitInventory);
+    });
+
+    async function loadQcDetails() {
+        try {
+            const response = await fetch(`/purchasing/qc-inspections/${qcId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.message ?? "QC inspection not found.");
+                window.location.href = "/purchasing/qc-inspections";
+                return;
+            }
+
+            qcData = data;
+
+            document.getElementById("qcTitle").innerText = data.qcNo;
+            document.getElementById("qcNo").innerText = data.qcNo ?? "-";
+            document.getElementById("rrNo").innerText = data.rrNo ?? "-";
+            document.getElementById("poNo").innerText = data.poNo ?? "-";
+            document.getElementById("supplierName").innerText = data.supplierName ?? "-";
+            document.getElementById("qcStatus").innerHTML = renderStatus(data.status);
+
+            document.getElementById("inspectionDate").value =
+                data.inspectionDate ? data.inspectionDate.split("T")[0] : new Date().toISOString().split("T")[0];
+
+            document.getElementById("remarks").value = data.remarks ?? "";
+
+            renderLines(data.lines ?? []);
+            setupButtons(data);
+
+        } catch (error) {
+            document.getElementById("qcLineBody").innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-danger py-4">
+                        Failed to load QC inspection.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderLines(lines) {
+        const tbody = document.getElementById("qcLineBody");
+        tbody.innerHTML = "";
+
+        if (lines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        No QC lines found.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        const editable = qcData.status === "FOR_INSPECTION";
+
+        lines.forEach(line => {
+            tbody.innerHTML += `
+                <tr data-qc-line-id="${line.qcLineId}" data-received-qty="${line.receivedQty}">
+                    <td>${line.materialCode ?? ""}</td>
+                    <td>${line.materialName ?? ""}</td>
+                    <td class="text-end fw-semibold">${formatQty(line.receivedQty)}</td>
+
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm text-end accepted-qty"
+                               min="0"
+                               step="0.0001"
+                               value="${line.acceptedQty ?? 0}"
+                               ${editable ? "" : "disabled"}>
+                    </td>
+
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm text-end rejected-qty"
+                               min="0"
+                               step="0.0001"
+                               value="${line.rejectedQty ?? 0}"
+                               ${editable ? "" : "disabled"}>
+                    </td>
+
+                    <td>
+                        <input type="text"
+                               class="form-control form-control-sm rejection-reason"
+                               value="${line.rejectionReason ?? ""}"
+                               placeholder="Reason if rejected"
+                               ${editable ? "" : "disabled"}>
+                    </td>
+
+                    <td>
+                        <input type="text"
+                               class="form-control form-control-sm line-remarks"
+                               value="${line.remarks ?? ""}"
+                               ${editable ? "" : "disabled"}>
+                    </td>
+
+                    <td>${renderLineStatus(line.status)}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function setupButtons(qc) {
+        document.getElementById("btnSaveInspection").classList.add("d-none");
+        document.getElementById("btnCommitInventory").classList.add("d-none");
+
+        if (qc.status === "FOR_INSPECTION") {
+            document.getElementById("btnSaveInspection").classList.remove("d-none");
+        }
+
+        if (qc.status === "ACCEPTED" || qc.status === "PARTIALLY_ACCEPTED") {
+            document.getElementById("btnCommitInventory").classList.remove("d-none");
+        }
+    }
+
+    async function saveInspection() {
+        const lines = [];
+
+        document.querySelectorAll("#qcLineBody tr[data-qc-line-id]").forEach(row => {
+            const qcLineId = Number(row.dataset.qcLineId);
+            const receivedQty = Number(row.dataset.receivedQty);
+            const acceptedQty = Number(row.querySelector(".accepted-qty").value ?? 0);
+            const rejectedQty = Number(row.querySelector(".rejected-qty").value ?? 0);
+            const rejectionReason = row.querySelector(".rejection-reason").value;
+            const remarks = row.querySelector(".line-remarks").value;
+
+            if ((acceptedQty + rejectedQty).toFixed(4) !== receivedQty.toFixed(4)) {
+                throw new Error("Accepted qty plus rejected qty must equal received qty.");
+            }
+
+            if (rejectedQty > 0 && rejectionReason.trim() === "") {
+                throw new Error("Rejection reason is required when rejected qty is greater than zero.");
+            }
+
+            lines.push({
+                qcLineId,
+                acceptedQty,
+                rejectedQty,
+                rejectionReason,
+                remarks
+            });
+        });
+
+        const payload = {
+            inspectionDate: document.getElementById("inspectionDate").value,
+            remarks: document.getElementById("remarks").value,
+            lines: lines
+        };
+
+        if (!confirm("Save this QC inspection?")) return;
+
+        try {
+            const response = await fetch(`/purchasing/qc-inspections/${qcId}/save-inspection`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.message ?? "Failed to save QC inspection.");
+                return;
+            }
+
+            alert(result.message ?? "QC inspection saved.");
+            await loadQcDetails();
+
+        } catch (error) {
+            alert(error.message ?? "Failed to save QC inspection.");
+        }
+    }
+
+       async function commitInventory() {
+        if (!confirm("Commit accepted quantities to inventory?")) return;
+
+        try {
+            const response = await fetch(`/purchasing/qc-inspections/${qcId}/commit`, {
+                method: "POST"
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.message ?? "Failed to commit inventory.");
+                return;
+            }
+
+            alert(result.message ?? "Inventory committed.");
+            await loadQcDetails();
+
+        } catch (error) {
+            alert("Failed to commit inventory.");
+        }
+    }
+
+    function renderStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "FOR_INSPECTION") badge = "bg-info text-dark";
+        if (status === "ACCEPTED") badge = "bg-success";
+        if (status === "PARTIALLY_ACCEPTED") badge = "bg-warning text-dark";
+        if (status === "REJECTED") badge = "bg-danger";
+        if (status === "COMMITTED") badge = "bg-dark";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function renderLineStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "PENDING") badge = "bg-warning text-dark";
+        if (status === "ACCEPTED") badge = "bg-success";
+        if (status === "PARTIALLY_ACCEPTED") badge = "bg-warning text-dark";
+        if (status === "REJECTED") badge = "bg-danger";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+</script>

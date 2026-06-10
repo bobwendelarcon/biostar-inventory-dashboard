@@ -4,6 +4,7 @@ wwwroot\css\delivery-checklist-print.css
 wwwroot\css\inventory.css
 wwwroot\css\login.css
 wwwroot\css\producttoproduce.css
+wwwroot\css\purchasing\mprf.css
 wwwroot\css\reports.css
 wwwroot\css\returns.css
 wwwroot\css\site.css
@@ -17,9 +18,16 @@ wwwroot\js\delivery-checklist-print.js
 wwwroot\js\delivery-checklist.js
 wwwroot\js\inventory.js
 wwwroot\js\manual-stock-in.js
+wwwroot\js\manufacturing\materials\material-categories.js
+wwwroot\js\manufacturing\materials\materials.js
 wwwroot\js\partner.js
 wwwroot\js\products.js
 wwwroot\js\producttoproduce.js
+wwwroot\js\purchasing\canvassing\canvassing-list.js
+wwwroot\js\purchasing\canvassing\canvassing.js
+wwwroot\js\purchasing\mprf-review.js
+wwwroot\js\purchasing\mprf.js
+wwwroot\js\purchasing\suppliers\suppliers.js
 wwwroot\js\report.js
 wwwroot\js\returns.js
 wwwroot\js\site.js

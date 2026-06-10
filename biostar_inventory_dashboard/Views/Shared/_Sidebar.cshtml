@@ -8,7 +8,12 @@
      ?? ""
  ).ToUpper();
 
-    var isReceivingOpen = currentController == "ManualStockIn";
+    var currentPath = Context.Request.Path.ToString().ToLower();
+    var isManufacturingOpen = currentPath.StartsWith("/manufacturing");
+    var isPurchasingOpen = currentPath.StartsWith("/purchasing");
+
+    var isReceivingOpen =
+    currentController == "ManualStockIn";
     var isPlanningOpen = currentController == "DailyOrder";
     var isProductionOpen =
         currentController == "ProductToProduce" ||
@@ -27,6 +32,10 @@
         currentController == "Branch" ||
         currentController == "User" ||
         currentController == "Partner";
+
+   
+
+
 }
 
 <div class="d-none d-md-block sidebar" id="desktopSidebar">
@@ -88,6 +97,7 @@
                 </a>
             </li>
 
+           
             <!-- Receiving -->
             <li class="nav-item mb-2">
                 <a class="nav-link d-flex justify-content-between align-items-center"
@@ -109,6 +119,8 @@
                                 <span>Manual Stock IN</span>
                             </a>
                         </li>
+
+                        
                     </ul>
                 </div>
             </li>
@@ -320,10 +332,131 @@
                     </div>
                 </li>
             }
+
+
+
+            <!-- Manufacturing -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#manufacturingMenu">
+                    <div>
+                        <i class="bi bi-buildings me-2"></i>
+                        <span>Manufacturing</span>
+                    </div>
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isManufacturingOpen ? "show" : "")" id="manufacturingMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/manufacturing/materials/categories" ? "active fw-bold" : "")"
+                               href="/manufacturing/materials/categories">
+                                <span>Material Categories</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/manufacturing/materials" ? "active fw-bold" : "")"
+                               href="/manufacturing/materials">
+                                <span>Materials</span>
+                            </a>
+                        </li>
+
+
+
+                    </ul>
+                </div>
+            </li>
+
+
+            <!-- Purchasing -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#purchasingMenu">
+                    <div>
+                        <i class="bi bi-cart-check me-2"></i>
+                        <span>Purchasing</span>
+                    </div>
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isPurchasingOpen ? "show" : "")"
+                     id="purchasingMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/purchasing/mprf" ? "active fw-bold" : "")"
+                               href="/purchasing/mprf">
+                                <span>MPRF Requests</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/purchasing/mprf/review" ? "active fw-bold" : "")"
+                               href="/purchasing/mprf/review">
+                                <span>MPRF Review</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/purchasing/suppliers" ? "active fw-bold" : "")"
+                               href="/purchasing/suppliers">
+                                <span>Suppliers</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/purchasing/canvassing") ? "active fw-bold" : "")"
+                               href="/purchasing/canvassing">
+                                <span>Supplier Canvassing</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/purchasing/purchase-orders"
+                               class="nav-link @(Context.Request.Path.Value.Contains("/purchasing/purchase-orders") ? "active" : "")">
+                                Purchase Orders
+                            </a>
+
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
+                               href="/purchasing/receiving-reports">
+                                <span>Receiving Reports</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/purchasing/qc-inspections") ? "active fw-bold" : "")"
+                               href="/purchasing/qc-inspections">
+                                <span>QA/QC Inspection</span>
+                            </a>
+                        </li>
+
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/purchasing/mprf/supplier-evaluation" ? "active fw-bold" : "")"
+                               href="/purchasing/supplier-evaluation">
+                                <span>Supplier Evaluation</span>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+            </li>
+
+
+
         }
 
     </ul>
 </div>
+
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

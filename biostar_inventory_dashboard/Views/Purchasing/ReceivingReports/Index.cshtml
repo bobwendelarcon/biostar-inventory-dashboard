@@ -1,0 +1,270 @@
+﻿@{
+    ViewData["Title"] = "Receiving Reports";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; Receiving Reports</div>
+        <h2 class="fw-bold mb-1">Receiving Reports</h2>
+        <div class="text-muted">List of Receiving Reports from approved Purchase Orders.</div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <input id="rrSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="Search RR No, PO No, Supplier, SI/DR No">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="FOR_QC">For QC</option>
+                        <option value="ACCEPTED">Accepted</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="COMMITTED">Committed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive overflow-visible">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                           
+                            <th>RR No</th>
+                            <th>PO No</th>
+                            <th>Supplier</th>
+                            <th>SI/DR No</th>
+                            <th>Delivery Date</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>Created At</th>
+                            <th style="width:90px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rrTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                Loading receiving reports...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let rrList = [];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadReceivingReports();
+
+        document.getElementById("rrSearch").addEventListener("input", renderTable);
+        document.getElementById("statusFilter").addEventListener("change", renderTable);
+    });
+
+    async function loadReceivingReports() {
+        try {
+            const response = await fetch("/purchasing/receiving-reports/list");
+            const data = await response.json();
+
+            if (!response.ok) {
+                document.getElementById("rrTableBody").innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center text-danger py-4">
+                            ${data.message ?? "Failed to load receiving reports."}
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            rrList = data;
+            renderTable();
+
+        } catch (error) {
+            document.getElementById("rrTableBody").innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-danger py-4">
+                        Failed to load receiving reports.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById("rrTableBody");
+        const search = document.getElementById("rrSearch").value.toLowerCase();
+        const status = document.getElementById("statusFilter").value;
+
+        let filtered = rrList.filter(rr => {
+            const searchText = `
+                ${rr.rrNo ?? ""}
+                ${rr.poNo ?? ""}
+                ${rr.supplierName ?? ""}
+                ${rr.siDrNo ?? ""}
+            `.toLowerCase();
+
+            const matchesSearch = searchText.includes(search);
+            const matchesStatus = !status || rr.status === status;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        tbody.innerHTML = "";
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        No receiving reports found.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        filtered.forEach(rr => {
+            tbody.innerHTML += `
+                <tr>
+               
+                    <td class="fw-semibold">${rr.rrNo ?? ""}</td>
+                    <td>${rr.poNo ?? ""}</td>
+                    <td>${rr.supplierName ?? ""}</td>
+                    <td>${rr.siDrNo ?? "-"}</td>
+                    <td>${formatDate(rr.deliveryDate)}</td>
+                    <td>${renderStatus(rr.status)}</td>
+                    <td>${rr.createdBy ?? ""}</td>
+                    <td>${formatDateTime(rr.createdAt)}</td>
+
+
+                         <td class="text-end">
+    <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown">
+                                Action
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="/purchasing/receiving-reports/details/${rr.rrId}">
+                                        View
+                                    </a>
+                                </li>
+
+                                ${rr.status === "DRAFT" ? `
+                                    <li>
+                                        <button class="dropdown-item" onclick="submitForQc(${rr.rrId})">
+                                            Submit for QC
+                                        </button>
+                                    </li>
+                                ` : ""}
+
+                                ${rr.status === "FOR_QC" ? `
+                                    <li>
+                                        <button class="dropdown-item" onclick="acceptRr(${rr.rrId})">
+                                            Accept
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item text-danger" onclick="rejectRr(${rr.rrId})">
+                                            Reject
+                                        </button>
+                                    </li>
+                                ` : ""}
+
+                                ${rr.status === "ACCEPTED" ? `
+                                    <li>
+                                        <button class="dropdown-item text-success" onclick="commitRr(${rr.rrId})">
+                                            Commit Inventory
+                                        </button>
+                                    </li>
+                                ` : ""}
+                            </ul>
+                        </div>
+                    </td>
+
+
+                </tr>
+            `;
+        });
+    }
+
+    async function submitForQc(rrId) {
+        if (!confirm("Submit this RR for QC?")) return;
+
+        await postAction(`/purchasing/receiving-reports/${rrId}/submit-qc`);
+    }
+
+    async function acceptRr(rrId) {
+        if (!confirm("Accept this RR?")) return;
+
+        await postAction(`/purchasing/receiving-reports/${rrId}/accept`);
+    }
+
+    async function rejectRr(rrId) {
+        if (!confirm("Reject this RR?")) return;
+
+        await postAction(`/purchasing/receiving-reports/${rrId}/reject`);
+    }
+
+    async function commitRr(rrId) {
+        if (!confirm("Commit this RR to inventory?")) return;
+
+        await postAction(`/purchasing/receiving-reports/${rrId}/commit`);
+    }
+
+    async function postAction(url) {
+        try {
+            const response = await fetch(url, {
+                method: "POST"
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.message ?? "Action failed.");
+                return;
+            }
+
+            alert(result.message ?? "Action completed.");
+            await loadReceivingReports();
+
+        } catch (error) {
+            alert("Action failed.");
+        }
+    }
+
+    function renderStatus(status) {
+        let badge = "bg-secondary";
+
+        if (status === "DRAFT") badge = "bg-warning text-dark";
+        if (status === "FOR_QC") badge = "bg-info text-dark";
+        if (status === "ACCEPTED") badge = "bg-success";
+        if (status === "REJECTED") badge = "bg-danger";
+        if (status === "COMMITTED") badge = "bg-dark";
+
+        return `<span class="badge ${badge}">${status}</span>`;
+    }
+
+    function formatDate(value) {
+        if (!value) return "-";
+
+        return new Date(value).toLocaleDateString();
+    }
+
+    function formatDateTime(value) {
+        if (!value) return "-";
+
+        return new Date(value).toLocaleString();
+    }
+</script>

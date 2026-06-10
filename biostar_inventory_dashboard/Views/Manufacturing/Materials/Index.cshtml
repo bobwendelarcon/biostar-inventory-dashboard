@@ -1,0 +1,257 @@
+﻿@{
+    ViewData["Title"] = "Materials";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">Manufacturing &gt; Materials</div>
+            <h2 class="fw-bold mb-1">Materials</h2>
+            <div class="text-muted">Manage raw materials, packaging materials, and additives.</div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btnAddMaterial">
+            + Add Material
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    <input type="text"
+                           id="txtSearchMaterial"
+                           class="form-control"
+                           placeholder="Search material code or name">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="filterCategory" class="form-select">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select id="filterSubCategory" class="form-select">
+                        <option value="">All Sub Categories</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="button"
+                            class="btn btn-outline-secondary w-100"
+                            id="btnResetFilters">
+                        Reset
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Materials Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Material Name</th>
+                            <th>Category</th>
+                            <th>Sub Category</th>
+                            <th>UOM</th>
+                            <th>Pack UOM</th>
+                            <th>Pack Qty</th>
+                            <th>Minimum Stock</th>
+                            <th>Status</th>
+                            <th style="width:140px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="materialsTableBody">
+                        <tr>
+                            <td colspan="10"
+                                class="text-center text-muted py-4">
+                                Loading materials...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+
+                <div id="materialsRecordInfo"
+                     class="text-muted small">
+                    Showing 0 records
+                </div>
+
+                <nav>
+                    <ul class="pagination pagination-sm mb-0"
+                        id="materialsPagination">
+                    </ul>
+                </nav>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Material Modal -->
+<div class="modal fade"
+     id="materialModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title"
+                    id="materialModalTitle">
+                    Add Material
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="materialId">
+
+                <div class="row g-3">
+
+                    <!-- Code -->
+                    <div class="col-md-4">
+                        <label class="form-label">Material Code *</label>
+                        <input type="text"
+                               id="materialCode"
+                               class="form-control"
+                               placeholder="RM-0001">
+                    </div>
+
+                    <!-- Name -->
+                    <div class="col-md-8">
+                        <label class="form-label">Material Name *</label>
+                        <input type="text"
+                               id="materialName"
+                               class="form-control"
+                               placeholder="Enter material name">
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label">Category *</label>
+                        <select id="materialCategoryId"
+                                class="form-select">
+                            <option value="">
+                                Select Category
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Sub Category -->
+                    <div class="col-md-6">
+                        <label class="form-label">Sub Category</label>
+                        <select id="materialSubCategoryId"
+                                class="form-select">
+                            <option value="">
+                                No Sub Category
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- UOM -->
+                    <div class="col-md-3">
+                        <label class="form-label">UOM *</label>
+                        <input type="text"
+                               id="uom"
+                               class="form-control"
+                               placeholder="KG">
+                    </div>
+
+                    <!-- Pack UOM -->
+                    <div class="col-md-3">
+                        <label class="form-label">Pack UOM</label>
+                        <input type="text"
+                               id="packUom"
+                               class="form-control"
+                               placeholder="BOX">
+                    </div>
+
+                    <!-- Pack Qty -->
+                    <div class="col-md-3">
+                        <label class="form-label">Pack Qty</label>
+                        <input type="number"
+                               id="packQty"
+                               class="form-control"
+                               min="0"
+                               step="0.01"
+                               value="0">
+                    </div>
+
+                    <!-- Minimum Stock -->
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Minimum Stock
+                        </label>
+
+                        <input type="number"
+                               id="minimumStock"
+                               class="form-control"
+                               min="0"
+                               step="0.01"
+                               value="0">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-md-12">
+                        <label class="form-label">
+                            Description
+                        </label>
+
+                        <textarea id="description"
+                                  class="form-control"
+                                  rows="3"></textarea>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnSaveMaterial">
+                    Save Material
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/manufacturing/materials/materials.js?v=5"></script>
+}

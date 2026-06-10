@@ -24,6 +24,11 @@ builder.Services.AddHttpClient<ApiService>(client =>
     client.BaseAddress = new Uri(baseUrl!);
 });
 
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!);
+});
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

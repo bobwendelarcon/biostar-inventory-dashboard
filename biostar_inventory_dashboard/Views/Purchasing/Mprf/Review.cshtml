@@ -1,0 +1,239 @@
+﻿@{
+    ViewData["Title"] = "MPRF Review";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">Purchasing &gt; MPRF Review</div>
+        <h2 class="fw-bold mb-1">MPRF Review</h2>
+        <div class="text-muted">Review submitted material requests before supplier canvassing.</div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <input id="reviewSearch" type="text" class="form-control" placeholder="Search MPRF No">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="reviewStatusFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="SUBMITTED">Submitted</option>
+                        <option value="REVIEWED">Reviewed</option>
+                        <option value="CANVASSING">Canvassing</option>
+                        <option value="RETURNED">Returned</option>
+                        <option value="REJECTED">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>MPRF No</th>
+                            <th>Request Date</th>
+                            <th>Department</th>
+                            <th>Requested By</th>
+                            <th>Status</th>
+                            <th>PO Progress</th>
+                            <th style="width:90px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mprfReviewTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Loading MPRF review list...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="mprfReviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">MPRF Review Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="reviewMprfId">
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">MPRF Information</div>
+
+                    <div class="card-body">
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+                                <label class="form-label">MPRF No</label>
+                                <input id="reviewMprfNo" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Request Date</label>
+                                <input id="reviewRequestDate" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Department</label>
+                                <input id="reviewDepartment" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Requested By</label>
+                                <input id="reviewRequestedBy" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <div id="reviewStatus" class="pt-2"></div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Week</label>
+                                <input id="reviewWeek" class="form-control" readonly>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Requested Materials</div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Material</th>
+                                        <th>Classification</th>
+                                        <th>Qty On Hand</th>
+                                        <th>UOM</th>
+                                        <th>Request Remarks</th>
+                                        <th style="width:150px;">Qty to Purchase</th>
+                                        <th style="width:160px;">Item Decision</th>
+                                        <th style="width:220px;">Purchasing Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewLinesBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            No material lines found.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-light border mt-3 mb-0">
+                            <strong>Note:</strong> Only items marked as <strong>Approved</strong> with Qty to Purchase greater than 0 will proceed to Supplier Canvassing.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Purchasing Review</div>
+
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+
+                            <div class="col-md-12">
+                                <label class="form-label">Remarks to Requestor</label>
+                                <textarea id="reviewRemarks"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder="Enter remarks visible to the requestor if returned or rejected..."></textarea>
+                            </div>
+
+                        </div>
+
+                        <div class="alert alert-info mb-0">
+                            This message will be visible to the requestor if the MPRF is Returned or Rejected.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">Review History</div>
+
+                    <div class="card-body">
+                        <table class="table table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="reviewHistoryBody">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        No review history yet.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer d-flex justify-content-between">
+
+                <div>
+                    <button id="btnRejectReview"  class="btn btn-danger" onclick="quickReviewDecision('REJECT')">
+                        Reject Entire MPRF
+                    </button>
+
+                    <button id="btnReturnReview" class="btn btn-warning" onclick="quickReviewDecision('RETURN_TO_REQUESTOR')">
+                        Return Entire MPRF
+                    </button>
+                </div>
+
+                <div>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+
+                    <button id="btnApproveReview" class="btn btn-success" onclick="saveMprfReview()">
+                        Approve for Canvassing
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .action-btn {
+            width: 80px;
+            text-align: center;
+            padding: 2px 8px;
+            font-size: 13px;
+        }
+
+        .table-responsive {
+            overflow: visible !important;
+        }
+    </style>
+    <script src="~/js/purchasing/mprf-review.js?v=2"></script>
+}

@@ -6046,23 +6046,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\bob arcon\\.nuget\\packages\\": {},
+    "C:\\Users\\USER\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj",
+      "projectUniqueName": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj",
       "projectName": "biostar_inventory_dashboard",
-      "projectPath": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj",
-      "packagesPath": "C:\\Users\\bob arcon\\.nuget\\packages\\",
-      "outputPath": "D:\\source\\repos\\biostar_inventory_dashboard\\biostar_inventory_dashboard\\obj\\",
+      "projectPath": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj",
+      "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\bob arcon\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
