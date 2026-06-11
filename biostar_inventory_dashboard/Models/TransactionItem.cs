@@ -12,6 +12,8 @@ namespace biostar_inventory_dashboard.Models
 
         public string? product_name { get; set; }
 
+        public string? product_description { get; set; }
+
         public string? uom { get; set; }
         public string? pack_uom { get; set; }
         public decimal? pack_qty { get; set; }

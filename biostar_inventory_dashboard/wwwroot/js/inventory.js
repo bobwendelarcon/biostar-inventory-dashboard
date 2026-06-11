@@ -231,12 +231,18 @@ async function loadInventory(page = currentPage) {
             tableBody.innerHTML += `
         <tr>
             
-            <td>${item.description ?? ""}</td>
+            <td>
+    <div>${item.description ?? ""}</div>
+    ${item.product_description
+                    ? `<div class="text-muted small">${item.product_description}</div>`
+                    : ""}
+</td>
             <td>${item.category_name ?? "-"}</td>
             <td>
   <div class="qty-available-wrap btn-view-stock"
      data-product="${item.product_id ?? ""}"
      data-description="${item.description ?? ""}"
+     data-product-description="${item.product_description ?? ""}"
 
      data-lot="${item.lot_no ?? ""}"
      data-branch="${item.branch_id ?? ""}"
@@ -459,6 +465,8 @@ document.addEventListener("click", function (e) {
     if (viewStockBtn) {
 
         const product = viewStockBtn.dataset.description || "";
+        const productDescription =
+            viewStockBtn.dataset.productDescription || "";
         const lot = viewStockBtn.dataset.lot || "";
         const warehouse = viewStockBtn.dataset.warehouse || "";
         const onHand = Number(viewStockBtn.dataset.onhand || 0);
@@ -471,8 +479,15 @@ document.addEventListener("click", function (e) {
             )
         );
 
-        document.getElementById("reservedModalSubTitle").innerText =
-            `${product} | Lot: ${lot} | ${warehouse}`;
+      
+
+        document.getElementById("reservedModalSubTitle").innerHTML = `
+    <div>${product}</div>
+    ${productDescription
+                ? `<div class="text-muted small">${productDescription}</div>`
+                : ""}
+    <div class="text-muted small">Lot: ${lot} | ${warehouse}</div>
+`;
 
         document.getElementById("reservedOnHand").innerText = `${onHand} ${uom}`;
         document.getElementById("reservedQty").innerText = `${reserved} ${uom}`;

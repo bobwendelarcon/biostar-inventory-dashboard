@@ -398,6 +398,7 @@ async function loadReadyForChecklist() {
                             data-customer-name="${escapeAttribute(item.customer_name ?? "")}"
                             data-product-id="${escapeAttribute(item.product_id ?? "")}"
                             data-product-name="${escapeAttribute(item.product_name ?? "")}"
+                            data-product-description="${escapeAttribute(item.product_description ?? "")}"
 
                             data-uom="${escapeAttribute(item.uom ?? "")}"
 data-pack-uom="${escapeAttribute(item.pack_uom ?? "")}"
@@ -411,7 +412,12 @@ data-pack-qty="${toNumber(item.pack_qty)}"
                     <td>${escapeHtml(item.order_no ?? "")}</td>
                     <td>${escapeHtml(item.customer_name ?? "-")}</td>
                     <td>${escapeHtml(item.route_name ?? "-")}</td>
-                    <td>${escapeHtml(item.product_name ?? "-")}</td>
+                    <td>
+    <div>${escapeHtml(item.product_name ?? "-")}</div>
+    ${item.product_description
+                    ? `<div class="text-muted small">${escapeHtml(item.product_description)}</div>`
+                    : ""}
+</td>
                     <td>${toDisplayNumber(item.required_qty)}</td>
                     <td>${toDisplayNumber(item.allocated_qty)}</td>
                     <td>${formatDate(item.delivery_date)}</td>
@@ -465,6 +471,7 @@ async function submitCreateChecklist() {
             customer_name: cb.dataset.customerName || "",
             product_id: cb.dataset.productId || "",
             product_name: cb.dataset.productName || "",
+            product_description: cb.dataset.productDescription || "",
             uom: cb.dataset.uom || "",
             pack_uom: cb.dataset.packUom || "",
             pack_qty: parseFloat(cb.dataset.packQty || "0") || null,
@@ -580,7 +587,12 @@ async function openViewChecklistModal(id) {
                 rows += `
             <tr>
                 <td>${escapeHtml(line.customer_name ?? "-")}</td>
-                <td>${escapeHtml(line.product_name ?? "-")}</td>
+                <td>
+    <div>${escapeHtml(line.product_name ?? "-")}</div>
+    ${line.product_description
+                        ? `<div class="text-muted small">${escapeHtml(line.product_description)}</div>`
+                        : ""}
+</td>
                 <td>${escapeHtml(line.lot_no ?? "-")}</td>
                 <td>${formatDate(line.manufacturing_date)}</td>
                 <td>${formatDate(line.expiration_date)}</td>

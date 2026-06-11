@@ -231,8 +231,14 @@ async function loadTransactions(page = 1) {
             tableBody.innerHTML += `
                 <tr>
                  
-                    <td>${escapeHtml(item.product_name ?? "")}</td>
-                       <td>${escapeHtml(item.lot_no ?? "")}</td>
+                 <td>
+                <div>${escapeHtml(item.product_name ?? "")}</div>
+                    ${item.product_description
+                                    ? `<div class="text-muted small">${escapeHtml(item.product_description)}</div>`
+                                : ""}
+
+                </td>
+                <td>${escapeHtml(item.lot_no ?? "")}</td>
                     <td>${escapeHtml(item.customer_name ?? "")}</td>
                     <td>${formatDateOnly(item.created_at)}</td>
                     <td>${formatTimeOnly(item.created_at)}</td>

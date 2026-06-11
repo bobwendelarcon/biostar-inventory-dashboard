@@ -186,7 +186,11 @@ async function loadProducts() {
                 x.product_name ||
                 x.productName ||
                 x.name ||
-                x.description ||
+                "";
+
+            const productDescription =
+                x.product_description ||
+                x.productDescription ||
                 "";
 
             const productSource =
@@ -194,11 +198,16 @@ async function loadProducts() {
                 x.productSource ||
                 "";
 
+            const displayName = productDescription
+                ? `${productName} - ${productDescription}`
+                : productName;
+
             select.innerHTML += `
-                <option value="${productId}">
-                    ${productName}${productSource ? ` (${productSource})` : ""}
-                </option>
-            `;
+    <option value="${productId}">
+        ${displayName}
+    </option>
+`;
+
         });
 
     } catch (err) {

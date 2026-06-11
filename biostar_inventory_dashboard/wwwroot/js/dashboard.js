@@ -191,7 +191,14 @@ async function refreshDashboardData() {
     <td>${escapeHtml(item.customerName || "")}</td>
     <td>${formatReference(item)}</td>
     <td>${formatLot(item.lotNo)}</td>
-    <td>${escapeHtml(item.productName || "")}</td>
+   <td>
+    <div>${escapeHtml(item.productName || "")}</div>
+    ${item.productDescription
+                    ? `<div class="text-muted small">
+              ${escapeHtml(item.productDescription)}
+           </div>`
+                    : ""}
+</td>
     <td>${formatNumber(item.quantity)} ${escapeHtml(item.uom || "")}</td>
     <td><span class="badge ${badgeClass}">${escapeHtml(item.type || "")}</span></td>
 </tr>`;
@@ -202,13 +209,14 @@ function formatLot(lotNo) {
     return `<span class="text-muted">${escapeHtml(lotNo)}</span>`;
 }
 function formatReference(item) {
-    let html = `<div class="d-flex flex-wrap gap-1">`;
     let hasRef = false;
+    let html = "";   // ADD THIS
 
     if (item.drNo) {
         hasRef = true;
         html += `<span class="badge bg-secondary">DR: ${escapeHtml(item.drNo)}</span>`;
     }
+
     if (item.trNo) {
         hasRef = true;
         html += `<span class="badge bg-dark">Tr#: ${escapeHtml(item.trNo)}</span>`;
@@ -233,8 +241,6 @@ function formatReference(item) {
         hasRef = true;
         html += `<span class="badge bg-info text-dark">DC: ${escapeHtml(item.checklistNo)}</span>`;
     }
-
-    html += `</div>`;
 
     return hasRef ? html : `<span class="text-muted">-</span>`;
 }

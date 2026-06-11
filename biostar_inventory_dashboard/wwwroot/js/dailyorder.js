@@ -711,11 +711,15 @@ async function openEditModal(orderId) {
         if (!response.ok) throw new Error(await response.text());
 
         const data = await response.json();
+        await loadEditBranches(data.sourceBranchId);
 
         document.getElementById("editOrderId").value = data.orderId || "";
         document.getElementById("editCustomerName").value = data.customerName || "";
         document.getElementById("editClassName").value = data.className || "";
+        document.getElementById("editSourceBranch").value =
+            data.sourceBranchId || "";
         document.getElementById("editRouteName").value = data.routeName || "";
+
         document.getElementById("editDeliveryDate").value = toInputDate(data.deliveryDate);
         document.getElementById("editSpecialInstructions").value = data.specialInstructions || "";
 
@@ -739,6 +743,7 @@ async function saveEditOrder() {
     const payload = {
         customerName: document.getElementById("editCustomerName").value.trim(),
         className: document.getElementById("editClassName").value.trim(),
+        sourceBranchId: document.getElementById("editSourceBranch").value,
         routeName: document.getElementById("editRouteName").value.trim(),
         deliveryDate: document.getElementById("editDeliveryDate").value || null,
         specialInstructions: document.getElementById("editSpecialInstructions").value.trim()
@@ -907,7 +912,12 @@ function renderDailyOrderTable(data) {
                 <td>${safe(order.month)}</td>
                 <td>${safe(order.orderNo)}</td>
                 <td>${safe(order.customerName)}</td>
-                <td>${safe(order.productName)}</td>
+                <td>
+    <div>${safe(order.productName || "")}</div>
+    ${order.productDescription
+                ? `<div class="text-muted small">${safe(order.productDescription)}</div>`
+                : ""}
+</td>
                 <td>${formatQtyWithPack(order.requiredQty, order.uom, order.packQty, order.packUom)}</td>
 <td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
 <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
@@ -1049,9 +1059,19 @@ function renderModalLineSummary(lines) {
         tbody.innerHTML += `
             <tr>
 
-                <td>
-                    ${safe(line.productName)}
-                </td>
+               <td>
+    <div class="fw-semibold">
+        ${safe(line.productName)}
+    </div>
+
+    ${line.productDescription
+                ? `
+            <div class="text-muted small">
+                ${safe(line.productDescription)}
+            </div>
+        `
+                : ""}
+</td>
 
                 <td>
                     ${formatQtyWithPack(
@@ -2041,15 +2061,21 @@ async function loadAddOrderProducts() {
         productSelect.innerHTML = `<option value="">Select product</option>`;
 
         products.forEach(p => {
+
+            const helperText =
+                p.productDescription
+                    ? `${p.productName} - ${p.productDescription}`
+                    : p.productName;
+
             productSelect.innerHTML += `
-                <option value="${safe(p.productId)}"
-                        data-name="${safe(p.productName)}"
-                        data-uom="${safe(p.uom || "")}"
-                        data-pack-uom="${safe(p.packUom || "")}"
-                        data-pack-qty="${safe(p.packQty || 0)}">
-                    ${safe(p.productName)}
-                </option>
-            `;
+        <option value="${safe(p.productId)}"
+                data-name="${safe(p.productName)}"
+                data-uom="${safe(p.uom || "")}"
+                data-pack-uom="${safe(p.packUom || "")}"
+                data-pack-qty="${safe(p.packQty || 0)}">
+            ${safe(helperText)}
+        </option>
+    `;
         });
 
         updateSelectedProductInfo();
@@ -2249,5 +2275,39 @@ async function clearLineAllocation(orderLineId) {
     } catch (err) {
         console.error(err);
         alert(err.message || "Failed to clear allocation.");
+    }
+}
+
+async function loadEditBranches(selectedBranchId = "") {
+    try {
+
+        const select = document.getElementById("editSourceBranch");
+        if (!select) return;
+
+        select.innerHTML = `<option value="">Loading branches...</option>`;
+
+        const response = await fetch("/DailyOrder/GetBranches");
+
+        if (!response.ok)
+            throw new Error("Failed to load branches.");
+
+        const data = await response.json();
+
+        let options = `<option value="">Select source branch</option>`;
+
+        data.forEach(item => {
+
+            options += `
+                <option value="${item.branch_id}"
+                    ${item.branch_id === selectedBranchId ? "selected" : ""}>
+                    ${item.branch_name}
+                </option>
+            `;
+        });
+
+        select.innerHTML = options;
+
+    } catch (err) {
+        console.error(err);
     }
 }
