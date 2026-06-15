@@ -176,7 +176,16 @@ document.addEventListener("DOMContentLoaded", function () {
             tableBody.innerHTML += `
                 <tr>
                     <td>${item.product_id ?? ""}</td>
-                    <td>${item.product_name ?? ""}</td>
+                    <td>
+    <div class="fw-semibold">
+        ${item.product_name ?? ""}
+    </div>
+    ${item.product_description
+                    ? `<div class="text-muted small">
+                ${item.product_description}
+           </div>`
+                    : ""}
+</td>
                     <td>${getCategoryName(item.catg_id)}</td>
                     <td>${item.product_sku ?? ""}</td>
                     <td>${item.uom ?? ""}</td>
