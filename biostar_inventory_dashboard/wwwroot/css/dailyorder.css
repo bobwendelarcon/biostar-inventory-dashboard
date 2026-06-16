@@ -29,10 +29,12 @@
 }
 
 .dailyorder-table-wrapper {
-    max-height: 500px; /* only table scrolls */
-    overflow-y: auto;
+    height: calc(100vh - 320px);
+    min-height: 600px;
     overflow-x: auto;
+    overflow-y: auto;
     border-radius: 0 0 1rem 1rem;
+    position: relative;
 }
 
 .qty-pack-cell small {
@@ -118,15 +120,22 @@
 }
 
 
-.dailyorder-table-wrapper {
-    overflow-x: auto;
-    overflow-y: visible;
-    position: relative;
-}
+
 
 .dailyorder-table {
     position: relative;
 }
+
+    .dailyorder-table tbody td {
+        font-size: 13px;
+        white-space: nowrap;
+        padding: 8px 10px;
+        vertical-align: middle;
+    }
+
+    .dailyorder-table thead th {
+        padding: 10px 10px;
+    }
 
 
 
