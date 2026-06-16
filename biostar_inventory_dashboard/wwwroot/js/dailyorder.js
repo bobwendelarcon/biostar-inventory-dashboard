@@ -2069,10 +2069,11 @@ async function loadAddOrderProducts() {
 
             productSelect.innerHTML += `
         <option value="${safe(p.productId)}"
-                data-name="${safe(p.productName)}"
-                data-uom="${safe(p.uom || "")}"
-                data-pack-uom="${safe(p.packUom || "")}"
-                data-pack-qty="${safe(p.packQty || 0)}">
+        data-name="${safe(p.productName)}"
+        data-description="${safe(p.productDescription || "")}"
+        data-uom="${safe(p.uom || "")}"
+        data-pack-uom="${safe(p.packUom || "")}"
+        data-pack-qty="${safe(p.packQty || 0)}">
             ${safe(helperText)}
         </option>
     `;
@@ -2108,6 +2109,7 @@ function addSelectedProductLine() {
     const productSelect = document.getElementById("addLineProduct");
     const selected = productSelect.options[productSelect.selectedIndex];
 
+
     if (!selected || !selected.value) {
         alert("Please select a product.");
         return;
@@ -2115,6 +2117,7 @@ function addSelectedProductLine() {
 
     const productId = selected.value;
     const productName = selected.dataset.name || selected.text;
+    const productDescription = selected.dataset.description || "";
     const uom = selected.dataset.uom || "";
     const packUom = selected.dataset.packUom || "";
     const packQty = parseFloat(selected.dataset.packQty || "0");
@@ -2130,7 +2133,12 @@ function addSelectedProductLine() {
         <tr>
             <td>
                 <div class="fw-semibold">${safe(productName)}</div>
-                <small class="text-muted">
+
+${productDescription
+            ? `<div class="text-muted small">${safe(productDescription)}</div>`
+            : ""}
+
+<small class="text-muted">
                     ID: ${safe(productId)}
                     ${uom ? `| Base: ${safe(uom)}` : ""}
                     ${packUom ? `| Pack: ${safe(packUom)}` : ""}
