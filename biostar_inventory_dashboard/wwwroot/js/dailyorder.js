@@ -370,22 +370,129 @@ document.addEventListener("DOMContentLoaded", function () {
             await markReadyForDispatch(orderId);
         }
     });
+
+
+
+    document.addEventListener("contextmenu", function (e) {
+
+        const row = e.target.closest(".dailyorder-row");
+
+        if (!row)
+            return;
+
+        e.preventDefault();
+
+        const floatingMenu =
+            document.getElementById("floatingActionMenu");
+
+        const menuHtml =
+            decodeURIComponent(
+                row.dataset.menu || ""
+            );
+
+        floatingMenu.innerHTML = menuHtml;
+        floatingMenu.classList.remove("d-none");
+
+        const menuWidth = 170;
+        const menuHeight = 180;
+
+        let left = e.pageX;
+        let top = e.pageY;
+
+        if (left + menuWidth > window.innerWidth) {
+            left = window.innerWidth - menuWidth - 10;
+        }
+
+        if (top + menuHeight > window.innerHeight) {
+            top = window.innerHeight - menuHeight - 10;
+        }
+
+        floatingMenu.style.left = left + "px";
+        floatingMenu.style.top = top + "px";
+    });
+
+
 });
 
+//function renderManualAvailableLotsModal(lines) {
+//    const tbody = document.getElementById("manualAllocationTableBody");
+//    tbody.innerHTML = "";
+
+//    lines.forEach(line => {
+//        (line.lots || []).forEach(lot => {
+//            tbody.innerHTML += `
+//                <tr>
+//                    <td>${safe(lot.lotNo)}</td>
+//                    <td>${formatDate(lot.manufacturingDate)}</td>
+//                    <td>${formatDate(lot.expirationDate)}</td>
+//                    <td>${formatNumber(lot.onHandQty)}</td>
+//                    <td>${formatNumber(lot.reservedQty)}</td>
+//                    <td>${formatNumber(lot.availableQty)}</td>
+//                    <td style="width:140px;">
+//                        <input
+//                            type="number"
+//                            class="form-control manual-lot-input"
+//                            data-line-id="${line.orderLineId}"
+//                            data-lot-no="${safeAttr(lot.lotNo)}"
+//                            data-max="${lot.availableQty}"
+//                            min="0"
+//                            max="${lot.availableQty}"
+//                            step="0.01"
+//                            value="${lot.existingAllocatedQty || 0}"
+//                        />
+//                    </td>
+//                </tr>
+//            `;
+//        });
+//    });
+
+//    computeManualAllocationTotal();
+//}
+
 function renderManualAvailableLotsModal(lines) {
+
     const tbody = document.getElementById("manualAllocationTableBody");
     tbody.innerHTML = "";
 
     lines.forEach(line => {
+
+        // PRODUCT HEADER
+        tbody.innerHTML += `
+           <tr class="table-primary">
+    <td colspan="7">
+        <strong>
+            ${safe(line.productName)}
+        </strong>
+
+        <span class="badge bg-secondary ms-2">
+            Required:
+            ${formatNumber(line.remainingQty)}
+            ${line.uom}
+        </span>
+
+        <div class="small text-muted">
+            ${safe(line.productDescription || "")}
+        </div>
+    </td>
+</tr>
+        `;
+
         (line.lots || []).forEach(lot => {
+
             tbody.innerHTML += `
                 <tr>
                     <td>${safe(lot.lotNo)}</td>
+
                     <td>${formatDate(lot.manufacturingDate)}</td>
+
                     <td>${formatDate(lot.expirationDate)}</td>
+
                     <td>${formatNumber(lot.onHandQty)}</td>
+
                     <td>${formatNumber(lot.reservedQty)}</td>
+
                     <td>${formatNumber(lot.availableQty)}</td>
+
                     <td style="width:140px;">
                         <input
                             type="number"
@@ -862,7 +969,7 @@ function renderDailyOrderTable(data) {
 
     if (!data || data.length === 0) {
         tbody.innerHTML = `
-            <tr>
+        <tr>
                 <td colspan="18" class="text-center text-muted py-4">
                     No orders found.
                 </td>
@@ -906,7 +1013,8 @@ function renderDailyOrderTable(data) {
         `;
 
         tbody.innerHTML += `
-            <tr>
+    <tr class="dailyorder-row"
+        data-menu='${encodeURIComponent(menuItems)}'>
                 <td>${safe(order.className)}</td>
                 <td>${safe(order.year)}</td>
                 <td>${safe(order.month)}</td>

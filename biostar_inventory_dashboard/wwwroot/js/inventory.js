@@ -148,7 +148,8 @@ async function loadInventory(page = currentPage) {
             warehouse: document.getElementById("warehouseFilter")?.value || "",
             category: document.getElementById("categoryFilter")?.value || "",
             stockStatus: document.getElementById("stockStatusFilter")?.value || "",
-            expiryStatus: "",
+            expiryStatus:
+                document.getElementById("expiryStatusFilter")?.value || "",
             months: document.getElementById("monthsFilter")?.value || "",
             order: document.getElementById("orderFilter")?.value || "desc"
         });
@@ -167,22 +168,24 @@ async function loadInventory(page = currentPage) {
        
 
         // 🔥 ADD THIS BLOCK
-        const expiryFilter = document.getElementById("expiryStatusFilter")?.value;
+        //const expiryFilter = document.getElementById("expiryStatusFilter")?.value;
 
-        if (expiryFilter && expiryFilter !== "All") {
-            items = items.filter(item => {
-                const status = getExpiryStatus(item.expiration_date);
-                if (expiryFilter === "expired") return status === "EXPIRED";
-                if (expiryFilter === "near") return status === "EXPIRING_SOON";
-                if (expiryFilter === "safe") return status === "VALID";
-                if (expiryFilter === "available") {
-                    return status !== "EXPIRED" && Number(item.qty) > 0;
-                }
+        //if (expiryFilter && expiryFilter !== "All") {
+        //    items = items.filter(item => {
+        //        const status = getExpiryStatus(item.expiration_date);
+        //        if (expiryFilter === "expired") return status === "EXPIRED";
+        //        if (expiryFilter === "near") return status === "EXPIRING_SOON";
+        //        if (expiryFilter === "safe") return status === "VALID";
+        //        if (expiryFilter === "available") {
+        //            return status !== "EXPIRED" && Number(item.qty) > 0;
+        //        }
 
-                return true;
-            });
-        }
-        totalRecords = items.length;
+        //        return true;
+        //    });
+        //}
+        //totalRecords = items.length;
+
+        totalRecords = json.total;
 
         const tableBody = document.getElementById("inventoryTable");
         tableBody.innerHTML = "";

@@ -206,3 +206,11 @@ body {
     overflow-x: auto;
 }
 
+.dailyorder-row {
+    cursor: context-menu;
+}
+
+    .dailyorder-row:hover {
+        background: #eef5ff !important;
+    }
+
