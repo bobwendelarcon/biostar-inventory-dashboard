@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("biostar_inventory_dashboard")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3711b033a25e6daad468ea3f56ce5d6470a9e746")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+015512d034080e931abc5129d39cda5137c7b942")]
 [assembly: System.Reflection.AssemblyProductAttribute("biostar_inventory_dashboard")]
 [assembly: System.Reflection.AssemblyTitleAttribute("biostar_inventory_dashboard")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

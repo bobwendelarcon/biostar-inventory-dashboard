@@ -320,6 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const clearAllocationBtn = e.target.closest(".btn-clear-line-allocation");
 
         if (viewBtn) {
+            hideFloatingMenu();
             const orderId = viewBtn.dataset.id;
             await openViewModal(orderId);
 
@@ -331,16 +332,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (editBtn) {
+            hideFloatingMenu();
             const orderId = editBtn.dataset.id;
             await openEditModal(orderId);
         }
 
         if (deleteBtn) {
+            hideFloatingMenu();
             const orderId = deleteBtn.dataset.id;
             await deleteOrder(orderId);
         }
 
         if (allocateBtn) {
+            hideFloatingMenu();
             const orderId = allocateBtn.dataset.id;
 
             await openViewModal(orderId);
@@ -353,6 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (editQtyBtn) {
+            hideFloatingMenu();
             const orderLineId = editQtyBtn.dataset.lineId;
             const oldQty = editQtyBtn.dataset.requiredQty;
             const dispatchedQty = editQtyBtn.dataset.dispatchedQty || 0;
@@ -361,11 +366,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (clearAllocationBtn) {
+            hideFloatingMenu();
             const orderLineId = clearAllocationBtn.dataset.lineId;
             await clearLineAllocation(orderLineId);
         }
 
         if (dispatchBtn) {
+            hideFloatingMenu();
             const orderId = dispatchBtn.dataset.id;
             await markReadyForDispatch(orderId);
         }
@@ -512,6 +519,18 @@ function renderManualAvailableLotsModal(lines) {
     });
 
     computeManualAllocationTotal();
+}
+
+function hideFloatingMenu() {
+
+    const floatingMenu =
+        document.getElementById("floatingActionMenu");
+
+    if (!floatingMenu)
+        return;
+
+    floatingMenu.classList.add("d-none");
+    floatingMenu.innerHTML = "";
 }
 function renderManualAllocationModal(order) {
 
