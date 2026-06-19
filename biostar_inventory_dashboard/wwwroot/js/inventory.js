@@ -1060,23 +1060,20 @@ async function loadHistory(productId, lotNo, branchId) {
     }
 }
 
-function formatPHDateTime(value) {
-    if (!value) return "";
+function formatPHDateTime(created_at) {
+    if (!created_at) return "-";
 
-    const date = new Date(value);
+    const utcString = String(created_at).replace(" ", "T") + "Z";
+    const date = new Date(utcString);
 
-    if (isNaN(date.getTime())) {
-        return value;
-    }
-
-    return date.toLocaleString("en-PH", {
+    return date.toLocaleString("en-US", {
         timeZone: "Asia/Manila",
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-        hour: "2-digit",
+        hour: "numeric",
         minute: "2-digit",
         second: "2-digit",
-        hour12: false
+        hour12: true
     });
 }
