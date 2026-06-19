@@ -1041,7 +1041,7 @@ async function loadHistory(productId, lotNo, branchId) {
             data.forEach(x => {
                 table.innerHTML += `
         <tr>
-            <td>${x.created_at ?? ""}</td>
+           <td>${formatPHDateTime(x.created_at)}</td>
             <td>${x.transaction_type ?? ""}</td>
             <td>${x.quantity ?? ""}</td>
             <td>${x.reference ?? ""}</td>
@@ -1058,4 +1058,25 @@ async function loadHistory(productId, lotNo, branchId) {
         console.error("LOAD HISTORY ERROR:", err);
         alert(err.message);
     }
+}
+
+function formatPHDateTime(value) {
+    if (!value) return "";
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
 }
