@@ -585,21 +585,31 @@ async function openViewChecklistModal(id) {
 
             data.lines.forEach(line => {
                 rows += `
-            <tr>
-                <td>${escapeHtml(line.customer_name ?? "-")}</td>
-                <td>
-    <div>${escapeHtml(line.product_name ?? "-")}</div>
-    ${line.product_description
+<tr>
+    <td>${escapeHtml(line.customer_name ?? "-")}</td>
+
+    <td>
+        <div>${escapeHtml(line.product_name ?? "-")}</div>
+        ${line.product_description
                         ? `<div class="text-muted small">${escapeHtml(line.product_description)}</div>`
                         : ""}
-</td>
-                <td>${escapeHtml(line.lot_no ?? "-")}</td>
-                <td>${formatDate(line.manufacturing_date)}</td>
-                <td>${formatDate(line.expiration_date)}</td>
-            <td>${formatChecklistQty(line)}</td>
-                <td>${getStatusBadge(line.status)}</td>
-            </tr>
-        `;
+    </td>
+
+    <td>
+        ${escapeHtml(line.branch_name ?? "-")}
+    </td>
+
+    <td>${escapeHtml(line.lot_no ?? "-")}</td>
+
+    <td>${formatDate(line.manufacturing_date)}</td>
+
+    <td>${formatDate(line.expiration_date)}</td>
+
+    <td>${formatChecklistQty(line)}</td>
+
+    <td>${getStatusBadge(line.status)}</td>
+</tr>
+`;
             });
 
             tbody.innerHTML = rows;
@@ -804,7 +814,25 @@ async function deleteChecklist(id) {
         }
 
         if (!response.ok) {
-            throw new Error(result?.message || resultText || "Failed to delete checklist.");
+
+            const errorText = await response.text();
+
+            console.error(errorText);
+
+            let errorObj = null;
+
+            try {
+                errorObj = JSON.parse(errorText);
+            } catch {
+                errorObj = { message: errorText };
+            }
+
+            throw new Error(
+                errorObj.message ||
+                errorObj.inner ||
+                errorText ||
+                "Failed to load checklist details."
+            );
         }
 
         alert(result?.message || "Checklist deleted successfully.");

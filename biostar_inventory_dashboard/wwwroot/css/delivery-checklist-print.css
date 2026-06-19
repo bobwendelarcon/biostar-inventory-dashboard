@@ -198,6 +198,12 @@ body {
     padding-left: 10px;
 }
 
+.sub-text {
+    font-size: 8px;
+    font-weight: normal;
+    line-height: 1.1;
+}
+
 /* PRINT */
 @media print {
     body {
@@ -216,3 +222,5 @@ body {
         padding: 0;
     }
 }
+
+

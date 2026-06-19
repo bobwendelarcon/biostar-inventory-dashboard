@@ -157,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
 
                         grouped[lineId].push({
+                            branchId: input.dataset.branchId,
                             lotNo: input.dataset.lotNo,
                             allocateQty: qty
                         });
@@ -466,7 +467,7 @@ function renderManualAvailableLotsModal(lines) {
         // PRODUCT HEADER
         tbody.innerHTML += `
            <tr class="table-primary">
-    <td colspan="7">
+    <td colspan="8">
         <strong>
             ${safe(line.productName)}
         </strong>
@@ -488,23 +489,26 @@ function renderManualAvailableLotsModal(lines) {
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${safe(lot.lotNo)}</td>
+    <td>${safe(lot.lotNo)}</td>
 
-                    <td>${formatDate(lot.manufacturingDate)}</td>
+    <td>${safe(lot.warehouseName || lot.branchId || "-")}</td>
 
-                    <td>${formatDate(lot.expirationDate)}</td>
+    <td>${formatDate(lot.manufacturingDate)}</td>
 
-                    <td>${formatNumber(lot.onHandQty)}</td>
+    <td>${formatDate(lot.expirationDate)}</td>
 
-                    <td>${formatNumber(lot.reservedQty)}</td>
+    <td>${formatNumber(lot.onHandQty)}</td>
 
-                    <td>${formatNumber(lot.availableQty)}</td>
+    <td>${formatNumber(lot.reservedQty)}</td>
 
-                    <td style="width:140px;">
-                        <input
+    <td>${formatNumber(lot.availableQty)}</td>
+
+    <td style="width:140px;">
+                       <input
                             type="number"
                             class="form-control manual-lot-input"
                             data-line-id="${line.orderLineId}"
+                            data-branch-id="${safeAttr(lot.branchId)}"
                             data-lot-no="${safeAttr(lot.lotNo)}"
                             data-max="${lot.availableQty}"
                             min="0"
@@ -1240,13 +1244,8 @@ function renderModalLineSummary(lines) {
                 </td>
 
                 <td>
-                    ${formatQtyWithPack(
-            line.availableBeforeAllocation,
-            line.uom,
-            line.packQty,
-            line.packUom
-        )}
-                </td>
+    ${renderWarehouseAvailability(line)}
+</td>
 
                 <td>
                     ${renderAllocationBadge(line.allocationResult)}
@@ -1277,6 +1276,47 @@ function renderModalLineSummary(lines) {
         `;
     });
 }
+function renderWarehouseAvailability(line) {
+
+    const stocks =
+        line.warehouseAvailableStocks ||
+        line.WarehouseAvailableStocks ||
+        [];
+
+    if (!stocks.length) {
+        return formatQtyWithPack(
+            line.availableBeforeAllocation || 0,
+            line.uom,
+            line.packQty,
+            line.packUom
+        );
+    }
+
+    let html = `
+        <div class="fw-semibold">
+            ${formatQtyWithPack(
+        line.availableBeforeAllocation || line.totalAvailableStock || 0,
+        line.uom,
+        line.packQty,
+        line.packUom
+    )}
+            <small class="text-muted">Total</small>
+        </div>
+    `;
+
+    stocks.forEach(w => {
+        html += `
+            <div class="small ${w.isPreferred ? "text-primary fw-semibold" : "text-muted"}">
+                ${formatNumber(w.availableQty)} ${safe(line.uom || "")}
+                - ${safe(w.warehouseName || w.branchId || "-")}
+                ${w.isPreferred ? "(Preferred)" : ""}
+            </div>
+        `;
+    });
+
+    return html;
+}
+
 async function updateLineRequiredQty(
     orderLineId,
     oldQty,
@@ -1413,7 +1453,7 @@ function renderModalLotAllocations(lines) {
     allocations.forEach(item => {
         tbody.innerHTML += `
         <tr>
-            <td>${safe(item.branchId || "-")}</td>
+            <td>${safe(item.warehouseName || item.branchId || "-")}</td>
 
             <td>${safe(item.lotNo)}</td>
 

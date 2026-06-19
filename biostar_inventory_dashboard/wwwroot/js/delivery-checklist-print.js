@@ -36,17 +36,68 @@ async function loadPrintData() {
     }
 }
 
+//function generateRow(line) {
+//    return `
+//        <tr>
+//            <td>${line?.customer_name ?? ""}</td>
+//            <td>${line?.product_name ?? ""}</td>
+//            <td>
+//                ${line?.lot_no ?? ""}<br/>
+//                ${line ? formatDate(line.manufacturing_date) : ""}<br/>
+//                ${line ? formatDate(line.expiration_date) : ""}
+//            </td>
+//            <td>${line?.checklist_qty ?? ""}</td>
+
+//            <td></td>
+//            <td></td>
+//            <td></td>
+//            <td></td>
+//            <td></td>
+
+//            <td></td>
+//            <td></td>
+
+//            <td></td>
+//        </tr>
+//    `;
+//}
+
 function generateRow(line) {
+    const productHtml = line
+        ? `
+            <div>${escapeHtml(line.product_name ?? "")}</div>
+            ${line.product_description
+            ? `<div class="sub-text">${escapeHtml(line.product_description)}</div>`
+            : ""}
+          `
+        : "";
+
+    const lotHtml = line
+        ? `
+            <div>
+                ${escapeHtml(line.lot_no ?? "")}
+                ${line.branch_name
+            ? ` (${escapeHtml(line.branch_name)})`
+            : line.branch_id
+                ? ` (${escapeHtml(line.branch_id)})`
+                : ""}
+            </div>
+            <div class="sub-text">
+                ${formatDate(line.manufacturing_date)} - ${formatDate(line.expiration_date)}
+            </div>
+          `
+        : "";
+
     return `
         <tr>
-            <td>${line?.customer_name ?? ""}</td>
-            <td>${line?.product_name ?? ""}</td>
-            <td>
-                ${line?.lot_no ?? ""}<br/>
-                ${line ? formatDate(line.manufacturing_date) : ""}<br/>
-                ${line ? formatDate(line.expiration_date) : ""}
-            </td>
-            <td>${line?.checklist_qty ?? ""}</td>
+            <td>${escapeHtml(line?.customer_name ?? "")}</td>
+            <td>${productHtml}</td>
+            <td>${lotHtml}</td>
+           <td>
+    ${line
+            ? `${line.checklist_qty} ${line.uom ?? ""}`
+            : ""}
+</td>
 
             <td></td>
             <td></td>
@@ -61,7 +112,14 @@ function generateRow(line) {
         </tr>
     `;
 }
-
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
 function formatDate(dateString) {
     if (!dateString) return "";
     const d = new Date(dateString);

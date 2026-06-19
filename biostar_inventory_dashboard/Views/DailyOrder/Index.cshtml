@@ -297,7 +297,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label text-muted small mb-1">Source Branch</label>
+                        <label class="form-label text-muted small mb-1">Preferred Warehouse</label>
                         <div class="fw-semibold" id="modalSourceBranch">-</div>
                     </div>
 
@@ -320,7 +320,7 @@
                                         <th>Allocated Qty</th>
                                         <th>Remaining Qty</th>
                                         <th>Allocate Now</th>
-                                        <th>Available Stock (Excl. Reserved)</th>
+                                        <th>Available Stock<br><small>(Excl. Reserved)</small></th>
                                         <th>Allocation Result</th>
                                         <th>Actions</th>
                                     </tr>
@@ -343,7 +343,7 @@
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Branch</th>
+                                        <th>Warehouse</th>
                                         <th>Lot No</th>
                                         <th>MFG Date</th>
                                         <th>Expiry Date</th>
@@ -417,10 +417,13 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Source Branch</label>
+                        <label class="form-label fw-semibold">Preferred Warehouse</label>
                         <select class="form-select" id="editSourceBranch">
-                            <option value="">Select source branch</option>
+                            <option value="">Select Preferred Warehouse</option>
                         </select>
+                        <small class="text-muted">
+                            Auto allocation will use this warehouse first. If stock is insufficient, the system will continue from other warehouses.
+                        </small>
                     </div>
 
                     <div class="col-md-6">
@@ -478,10 +481,13 @@
                     </div>
 
                     <div class="col-lg-3 col-md-6">
-                        <label class="form-label fw-semibold">Source Branch</label>
+                        <label class="form-label fw-semibold">Preferred Warehouse</label>
                         <select class="form-select" id="addSourceBranch">
-                            <option value="">Select source branch</option>
+                            <option value="">Select Preferred Warehouse</option>
                         </select>
+                        <small class="text-muted">
+                            Auto allocation will use this warehouse first. If stock is insufficient, the system will continue from other warehouses.
+                        </small>
                     </div>
 
                     <div class="col-lg-4 col-md-6">
@@ -597,6 +603,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Lot No</th>
+                                <th>Warehouse</th>
                                 <th>MFG</th>
                                 <th>EXP</th>
                                 <th>On Hand</th>
