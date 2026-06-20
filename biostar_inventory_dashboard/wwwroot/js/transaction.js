@@ -437,12 +437,17 @@ document.addEventListener("click", function (e) {
 
 document.addEventListener("DOMContentLoaded", function () {
     applyTransactionRoleUI();
+
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
+
     loadWarehouses();
+    initTransactionDragScroll();
+
     document.getElementById("filterApplied")?.addEventListener("change", function () {
         loadTransactions(1);
     });
+
     document.getElementById("applyFilters")?.addEventListener("click", function () {
         loadTransactions(1);
     });
@@ -484,14 +489,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnSaveReference")?.addEventListener("click", async function () {
         const payload = {
             transaction_id: parseInt(document.getElementById("editTransactionId").value, 10),
-            //customer: document.getElementById("editCustomer").value.trim(),
             dr_no: document.getElementById("editDrNo").value.trim(),
             inv_no: document.getElementById("editInvNo").value.trim(),
             po_no: document.getElementById("editPoNo").value.trim(),
             remarks: document.getElementById("editRemarks").value.trim()
         };
-
-        console.log("UPDATE PAYLOAD:", payload);
 
         try {
             const res = await fetch("/Transactions/UpdateReference", {
@@ -503,8 +505,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const text = await res.text();
-            console.log("UPDATE RESPONSE STATUS:", res.status);
-            console.log("UPDATE RESPONSE BODY:", text);
 
             if (!res.ok) {
                 throw new Error(text || "Failed to update reference.");
@@ -512,35 +512,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const modalElement = document.getElementById("editReferenceModal");
             const modalInstance = bootstrap.Modal.getInstance(modalElement);
+
             if (modalInstance) modalInstance.hide();
 
             isEditing = false;
             loadTransactions(currentPage);
             alert("Reference updated successfully.");
+
         } catch (err) {
             console.error("UPDATE ERROR:", err);
             alert("Error: " + err.message);
         }
     });
 
-
-
-
-
-
     document.getElementById("editReferenceModal")?.addEventListener("hidden.bs.modal", function () {
         isEditing = false;
     });
-
-    //const scrollArea = document.getElementById("transactionScrollArea");
-    //if (scrollArea) {
-    //    scrollArea.addEventListener("wheel", function (e) {
-    //        if (e.deltaY !== 0) {
-    //            e.preventDefault();
-    //            scrollArea.scrollLeft += e.deltaY;
-    //        }
-    //    }, { passive: false });
-    //}
 
     loadTransactions(1);
 
@@ -550,3 +537,46 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, 5000);
 });
+
+
+function initTransactionDragScroll() {
+    const scrollArea = document.getElementById("transactionScrollArea");
+
+    if (!scrollArea)
+        return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    scrollArea.addEventListener("mousedown", function (e) {
+        if (e.target.closest("button, input, select, textarea, a")) return;
+
+        isDown = true;
+        scrollArea.classList.add("dragging");
+
+        startX = e.pageX - scrollArea.offsetLeft;
+        scrollLeft = scrollArea.scrollLeft;
+    });
+
+    scrollArea.addEventListener("mouseleave", function () {
+        isDown = false;
+        scrollArea.classList.remove("dragging");
+    });
+
+    scrollArea.addEventListener("mouseup", function () {
+        isDown = false;
+        scrollArea.classList.remove("dragging");
+    });
+
+    scrollArea.addEventListener("mousemove", function (e) {
+        if (!isDown) return;
+
+        e.preventDefault();
+
+        const x = e.pageX - scrollArea.offsetLeft;
+        const walk = (x - startX) * 1.3;
+
+        scrollArea.scrollLeft = scrollLeft - walk;
+    });
+}

@@ -255,3 +255,76 @@
 
 
 
+.transaction-scroll-area {
+    cursor: grab;
+    overflow-x: auto;
+}
+
+    .transaction-scroll-area.dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+        .transaction-scroll-area.dragging table {
+            pointer-events: none;
+        }
+
+.transaction-table {
+    min-width: 1500px;
+}
+
+.table-scroll-box {
+    cursor: grab;
+    overflow-x: auto;
+}
+
+    .table-scroll-box.dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+        .table-scroll-box.dragging table {
+            pointer-events: none;
+        }
+
+
+.inventory-table-wrapper,
+.table-scroll-box {
+    overflow-x: auto !important;
+    cursor: grab;
+}
+
+    .inventory-table-wrapper.dragging,
+    .table-scroll-box.dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+        .inventory-table-wrapper.dragging table,
+        .table-scroll-box.dragging table {
+            pointer-events: none;
+        }
+
+.inventory-table {
+    min-width: 1500px;
+}
+
+.table-scroll-box.inventory-table-wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: auto;
+    cursor: grab;
+}
+
+    .table-scroll-box.inventory-table-wrapper.dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+        .table-scroll-box.inventory-table-wrapper.dragging table {
+            pointer-events: none;
+        }
+
+.inventory-table {
+    min-width: 1500px;
+}

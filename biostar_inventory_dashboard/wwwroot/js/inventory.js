@@ -635,6 +635,7 @@ document.addEventListener("click", function (e) {
 
 document.addEventListener("DOMContentLoaded", function () {
     initInventoryHorizontalScroll();
+    initInventoryDragScroll();
     loadWarehouseFilter();
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
@@ -970,8 +971,7 @@ function initInventoryHorizontalScroll() {
     const topScroll =
         document.querySelector(".table-scroll-top");
 
-    const bottomScroll =
-        document.querySelector(".table-scroll-box");
+    const bottomScroll = getInventoryScrollBox();
 
     if (!topScroll || !bottomScroll) return;
 
@@ -1003,8 +1003,7 @@ function syncInventoryTopScrollbar() {
     const topScroll =
         document.querySelector(".table-scroll-top");
 
-    const bottomScroll =
-        document.querySelector(".table-scroll-box");
+    const bottomScroll = getInventoryScrollBox();
 
     const table =
         document.querySelector(".inventory-table");
@@ -1075,5 +1074,51 @@ function formatPHDateTime(created_at) {
         minute: "2-digit",
         second: "2-digit",
         hour12: true
+    });
+}
+
+
+
+
+function getInventoryScrollBox() {
+    return document.querySelector(".inventory-table-wrapper")
+        || document.querySelector(".table-scroll-box")
+        || document.querySelector(".table-responsive");
+}
+
+function initInventoryDragScroll() {
+    const scrollBox = getInventoryScrollBox();
+    if (!scrollBox) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    scrollBox.addEventListener("mousedown", function (e) {
+        if (e.target.closest("button, input, select, textarea, a, .btn-view-stock")) return;
+
+        isDown = true;
+        scrollBox.classList.add("dragging");
+        startX = e.pageX - scrollBox.getBoundingClientRect().left;
+        scrollLeft = scrollBox.scrollLeft;
+    });
+
+    document.addEventListener("mouseup", function () {
+        isDown = false;
+        scrollBox.classList.remove("dragging");
+    });
+
+    document.addEventListener("mousemove", function (e) {
+        if (!isDown) return;
+
+        e.preventDefault();
+
+        const x = e.pageX - scrollBox.getBoundingClientRect().left;
+        const walk = (x - startX) * 1.3;
+
+        scrollBox.scrollLeft = scrollLeft - walk;
+
+        const topScroll = document.querySelector(".table-scroll-top");
+        if (topScroll) topScroll.scrollLeft = scrollBox.scrollLeft;
     });
 }
