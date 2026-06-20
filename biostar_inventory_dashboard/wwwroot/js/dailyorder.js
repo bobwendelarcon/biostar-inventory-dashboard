@@ -1,5 +1,6 @@
 ﻿let dailyOrderAutoRefresh = null;
 let isTypingFilter = false;
+let isLoadingDailyOrders = false;
 
 document.addEventListener("DOMContentLoaded", function () {
     loadDailyOrders();
@@ -1003,6 +1004,10 @@ function toInputDate(dateStr) {
 }
 
 async function loadDailyOrders() {
+    if (isLoadingDailyOrders) return;
+
+    isLoadingDailyOrders = true;
+
     const className = document.getElementById("classFilter")?.value || "";
     const year = document.getElementById("yearFilter")?.value || "";
     const month = document.getElementById("monthFilter")?.value || "";
@@ -1022,26 +1027,28 @@ async function loadDailyOrders() {
 
     try {
         const response = await fetch(`/DailyOrder/GetOrders?${params.toString()}`);
-        if (!response.ok) throw new Error(await response.text());
 
-        //const data = await response.json();
-        //renderDailyOrderTable(data);
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
 
         const result = await response.json();
 
         renderDailyOrderSummary(result.summary);
         renderDailyOrderTable(result.data || []);
 
-
     } catch (err) {
         console.error(err);
+
         document.getElementById("dailyOrderTableBody").innerHTML = `
             <tr>
-                <td colspan="16" class="text-center text-danger py-4">
+                <td colspan="19" class="text-center text-danger py-4">
                     Failed to load orders.
                 </td>
             </tr>
         `;
+    } finally {
+        isLoadingDailyOrders = false;
     }
 }
 
@@ -1057,18 +1064,19 @@ function renderDailyOrderSummary(summary) {
 }
 function renderDailyOrderTable(data) {
     const tbody = document.getElementById("dailyOrderTableBody");
-    tbody.innerHTML = "";
 
     if (!data || data.length === 0) {
         tbody.innerHTML = `
-        <tr>
-                <td colspan="18" class="text-center text-muted py-4">
+            <tr>
+                <td colspan="19" class="text-center text-muted py-4">
                     No orders found.
                 </td>
             </tr>
         `;
         return;
     }
+
+    let rows = "";
 
     data.forEach(order => {
         let menuItems = `
@@ -1091,8 +1099,8 @@ function renderDailyOrderTable(data) {
             orderStatus === "PARTIALLY DELIVERED"
         ) {
             menuItems += `
-        <button type="button" class="floating-action-item btn-dispatch-order text-success" data-id="${order.orderId}">Dispatch</button>
-    `;
+                <button type="button" class="floating-action-item btn-dispatch-order text-success" data-id="${order.orderId}">Dispatch</button>
+            `;
         }
 
         const actionButtons = `
@@ -1104,47 +1112,47 @@ function renderDailyOrderTable(data) {
             </button>
         `;
 
-        tbody.innerHTML += `
-    <tr class="dailyorder-row"
-        data-menu='${encodeURIComponent(menuItems)}'>
+        rows += `
+            <tr class="dailyorder-row" data-menu='${encodeURIComponent(menuItems)}'>
                 <td>${safe(order.className)}</td>
                 <td>${safe(order.year)}</td>
                 <td>${safe(order.month)}</td>
                 <td>${safe(order.orderNo)}</td>
                 <td>${safe(order.customerName)}</td>
                 <td>
-    <div>${safe(order.productName || "")}</div>
-    ${order.productDescription
+                    <div>${safe(order.productName || "")}</div>
+                    ${order.productDescription
                 ? `<div class="text-muted small">${safe(order.productDescription)}</div>`
-                : ""}
-</td>
+                : ""
+            }
+                </td>
                 <td>${formatQtyWithPack(order.requiredQty, order.uom, order.packQty, order.packUom)}</td>
-<td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
-<td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
-<td>${formatQtyWithPack(order.dispatchedQty, order.uom, order.packQty, order.packUom)}</td>
-         <td>${formatAllocationStatus(
-             order.allocationStatus,
-             order.remainingQty,
-             order.allocatedQty,
-             order.status
-         )}</td>
+                <td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
+                <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
+                <td>${formatQtyWithPack(order.dispatchedQty, order.uom, order.packQty, order.packUom)}</td>
+                <td>${formatAllocationStatus(
+                order.allocationStatus,
+                order.remainingQty,
+                order.allocatedQty,
+                order.status
+            )}</td>
                 <td>${formatDate(order.dateOrdered)}</td>
                 <td>${formatDate(order.deliveryDate)}</td>
                 <td>${formatDate(order.dateDelivered)}</td>
                 <td>${getAgingBadge(order.agingDays)}</td>
                 <td>${renderStatusBadge(order.status)}</td>
                 <td>${safe(order.specialInstructions || "-")}</td>
-                <td>${order.createdBy || ""}</td>
-                <td class="text-center">
-                    ${actionButtons}
-                </td>
+                <td>${safe(order.createdBy || "")}</td>
+                <td class="text-center">${actionButtons}</td>
             </tr>
         `;
     });
+
+    tbody.innerHTML = rows;
+
     setTimeout(() => {
         initTopScrollbar();
     }, 50);
-
 }
 
 function getAgingBadge(days) {
