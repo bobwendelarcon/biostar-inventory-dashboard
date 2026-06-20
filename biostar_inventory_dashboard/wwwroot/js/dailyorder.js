@@ -4,22 +4,54 @@ let isTypingFilter = false;
 document.addEventListener("DOMContentLoaded", function () {
     loadDailyOrders();
     startDailyOrderAutoRefresh();
+    initTableDragScroll();
+   
 
-    document.getElementById("searchInput")?.addEventListener("input", function () {
-        isTypingFilter = true;
+    //document.getElementById("searchInput")?.addEventListener("input", function () {
+    //    isTypingFilter = true;
 
-        clearTimeout(window.dailyOrderTypingTimeout);
-        window.dailyOrderTypingTimeout = setTimeout(() => {
-            isTypingFilter = false;
-        }, 1000);
-    });
+    //    clearTimeout(window.dailyOrderTypingTimeout);
+    //    window.dailyOrderTypingTimeout = setTimeout(() => {
+    //        isTypingFilter = false;
+    //    }, 1000);
+    //});
 
-    const btnFilter = document.getElementById("btnFilter");
-    if (btnFilter) {
-        btnFilter.addEventListener("click", function () {
-            loadDailyOrders();
+    //const btnFilter = document.getElementById("btnFilter");
+    //if (btnFilter) {
+    //    btnFilter.addEventListener("click", function () {
+    //        loadDailyOrders();
+    //    });
+    //}
+
+    document.getElementById("searchInput")
+        ?.addEventListener("input", function () {
+
+            isTypingFilter = true;
+
+            clearTimeout(window.dailyOrderTypingTimeout);
+
+            window.dailyOrderTypingTimeout = setTimeout(() => {
+
+                isTypingFilter = false;
+                loadDailyOrders();
+
+            }, 300);
         });
-    }
+
+    document.getElementById("classFilter")
+        ?.addEventListener("change", loadDailyOrders);
+
+    document.getElementById("yearFilter")
+        ?.addEventListener("change", loadDailyOrders);
+
+    document.getElementById("monthFilter")
+        ?.addEventListener("change", loadDailyOrders);
+
+    document.getElementById("statusFilter")
+        ?.addEventListener("change", loadDailyOrders);
+
+
+
 
     loadClassFilter();
 
@@ -421,6 +453,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
+
+
+function initTopScrollbar() {
+
+    const top = document.querySelector(".table-scroll-top");
+    const wrapper = document.querySelector(".dailyorder-table-wrapper");
+    const table = document.querySelector(".dailyorder-table");
+
+    if (!top || !wrapper || !table)
+        return;
+
+    const inner = top.querySelector(".table-scroll-top-inner");
+
+    if (!inner)
+        return;
+
+    // use actual rendered width
+    inner.style.width = table.offsetWidth + "px";
+
+    // remove duplicate bindings
+    top.onscroll = null;
+    wrapper.onscroll = null;
+
+    top.onscroll = () => {
+        wrapper.scrollLeft = top.scrollLeft;
+    };
+
+    wrapper.onscroll = () => {
+        top.scrollLeft = wrapper.scrollLeft;
+    };
+
+    // sync current position
+    top.scrollLeft = wrapper.scrollLeft;
+}
+
+window.addEventListener("load", initTopScrollbar);
+window.addEventListener("resize", initTopScrollbar);
 
 //function renderManualAvailableLotsModal(lines) {
 //    const tbody = document.getElementById("manualAllocationTableBody");
@@ -1072,6 +1141,10 @@ function renderDailyOrderTable(data) {
             </tr>
         `;
     });
+    setTimeout(() => {
+        initTopScrollbar();
+    }, 50);
+
 }
 
 function getAgingBadge(days) {
@@ -2452,7 +2525,47 @@ async function clearLineAllocation(orderLineId) {
         alert(err.message || "Failed to clear allocation.");
     }
 }
+function initTableDragScroll() {
+    const wrapper = document.querySelector(".dailyorder-table-wrapper");
+    if (!wrapper) return;
 
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    wrapper.addEventListener("mousedown", function (e) {
+        if (e.target.closest("button, input, select, textarea, a")) return;
+
+        isDown = true;
+        wrapper.classList.add("dragging");
+        startX = e.pageX - wrapper.offsetLeft;
+        scrollLeft = wrapper.scrollLeft;
+    });
+
+    wrapper.addEventListener("mouseleave", function () {
+        isDown = false;
+        wrapper.classList.remove("dragging");
+    });
+
+    wrapper.addEventListener("mouseup", function () {
+        isDown = false;
+        wrapper.classList.remove("dragging");
+    });
+
+    wrapper.addEventListener("mousemove", function (e) {
+        if (!isDown) return;
+
+        e.preventDefault();
+
+        const x = e.pageX - wrapper.offsetLeft;
+        const walk = (x - startX) * 1.2;
+
+        wrapper.scrollLeft = scrollLeft - walk;
+
+        const top = document.querySelector(".table-scroll-top");
+        if (top) top.scrollLeft = wrapper.scrollLeft;
+    });
+}
 async function loadEditBranches(selectedBranchId = "") {
     try {
 

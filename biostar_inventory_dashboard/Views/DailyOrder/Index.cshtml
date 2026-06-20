@@ -9,11 +9,16 @@
 
 <div class="dailyorder-page">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
+        @* <div>
             <small class="text-muted"> Planning &gt; Daily Order</small>
             <h2 class="fw-bold mt-2 mb-0">Daily Order Planning</h2>
             <small id="lastUpdatedText" class="text-muted"></small>
-            @* <small class="text-muted">Plan customer orders, run FEFO allocation, and prepare dispatch.</small> *@
+            <small class="text-muted">Plan customer orders, run FEFO allocation, and prepare dispatch.</small>
+        </div> *@
+
+        <div class="page-header">
+            <h2 class="page-title">Daily Order Planning</h2>
+            <small id="lastUpdatedText" class="page-subtitle"></small>
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
@@ -102,16 +107,16 @@
                 </select>
             </div>
 
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <label class="form-label fw-semibold">Search</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="Customer / Product / DR#" />
                 </div>
 
-                <div class="col-lg-2 col-md-12">
+                @* <div class="col-lg-2 col-md-12">
                     <button class="btn btn-primary w-100" id="btnFilter">
                         <i class="bi bi-funnel"></i> Apply Filter
                     </button>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
@@ -193,6 +198,12 @@
 
     </div>
 
+
+
+
+  
+  
+
     <!-- TABLE SECTION -->
     <div class="card border-0 shadow-sm rounded-4">
         @* <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2"> *@
@@ -206,6 +217,9 @@
                 <button class="btn btn-outline-dark btn-sm" id="btnRefreshOrders">Refresh</button>
             </div>
         </div> *@
+        <div class="table-scroll-top">
+            <div class="table-scroll-top-inner"></div>
+        </div>
 
         <div class="card-body p-0">
             <div class="table-responsive dailyorder-table-wrapper">

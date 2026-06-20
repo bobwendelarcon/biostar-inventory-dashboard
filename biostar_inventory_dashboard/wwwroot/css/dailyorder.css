@@ -2,189 +2,119 @@
     background-color: #f7f8fc;
 }
 
-.dailyorder-page {
-    height: calc(100vh - 80px);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.summary-card {
-    transition: all 0.2s ease;
-}
-
-    .summary-card:hover {
-        transform: translateY(-2px);
-    }
-
-.summary-label {
-    font-size: 13px;
-    color: #6c757d;
-    margin-bottom: 6px;
-}
-.summary-card {
-    min-width: 140px;
-}
-.summary-value {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.dailyorder-table-wrapper {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: auto;
-    min-height: 0;
-}
-
-.qty-pack-cell small {
-    display: block;
-    margin-top: 2px;
-    font-size: 12px;
-    line-height: 1.2;
-}
-
-.dailyorder-table {
-    min-width: 1500px;
-    margin-bottom: 0;
-}
-
-    .dailyorder-table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background: #1d4ed8;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 600;
-        white-space: nowrap;
-        border-bottom: none;
-        padding: 14px 12px;
-    }
-
-    .dailyorder-table tbody td {
-        font-size: 14px;
-        white-space: nowrap;
-        padding: 12px;
-        vertical-align: middle;
-    }
-
-    .dailyorder-table tbody tr:nth-child(even) {
-        background-color: #f8fbff;
-    }
-
-    .dailyorder-table tbody tr:hover {
-        background-color: #eef5ff;
-    }
-
-.status-badge {
-    font-size: 12px;
-    padding: 7px 10px;
-    border-radius: 999px;
-    font-weight: 600;
-}
-
-.card.rounded-4 {
-    border-radius: 1rem !important;
-}
-
-.form-label {
-    font-size: 14px;
-}
-
-.table-responsive::-webkit-scrollbar,
-.dailyorder-table-wrapper::-webkit-scrollbar {
-    height: 10px;
-    width: 10px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb,
-.dailyorder-table-wrapper::-webkit-scrollbar-thumb {
-    background-color: #cfd8e3;
-    border-radius: 10px;
-}
-
-.table-responsive::-webkit-scrollbar-track,
-.dailyorder-table-wrapper::-webkit-scrollbar-track {
-    background: #f1f3f7;
-}
-
-@media (max-width: 991.98px) {
-    .summary-value {
-        font-size: 24px;
-    }
-
-  
-}
-
-
-
-
-.dailyorder-table {
-    position: relative;
-}
-
-    .dailyorder-table tbody td {
-        font-size: 13px;
-        white-space: nowrap;
-        padding: 8px 10px;
-        vertical-align: middle;
-    }
-
-    .dailyorder-table thead th {
-        padding: 10px 10px;
-    }
-
-
-
-.dailyorder-table thead .sticky-action-col {
-    background: #0d6efd; /* match your blue header */
-    color: #fff;
-    z-index: 30;
-}
-
-.floating-action-menu {
-    position: fixed;
-    min-width: 170px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    padding: 6px 0;
-    z-index: 2000;
-}
-
-    .floating-action-menu.d-none {
-        display: none;
-    }
-
-.floating-action-item {
-    display: block;
-    width: 100%;
-    border: 0;
-    background: transparent;
-    text-align: left;
-    padding: 10px 14px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-    .floating-action-item:hover {
-        background: #f5f5f5;
-    }
-
-.btn-open-action-menu {
-    white-space: nowrap;
-}
-
-
 html,
 body {
     height: 100%;
     overflow: hidden;
 }
 
+/* PAGE */
+.dailyorder-page {
+    height: calc(100vh - 50px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+    /* HEADER */
+    .dailyorder-page > .d-flex:first-child {
+        margin-bottom: 4px !important;
+    }
+
+.page-header {
+    line-height: 1;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    padding: 0;
+}
+
+#lastUpdatedText {
+    display: block;
+    font-size: 10px;
+    line-height: 1;
+    margin-top: 1px;
+    color: #6c757d;
+}
+
+/* FILTER CARD */
+.dailyorder-page > .card:not(:last-child) {
+    margin-bottom: 6px !important;
+}
+
+    .dailyorder-page > .card:not(:last-child) .card-body {
+        padding: 6px 10px;
+    }
+
+.form-label {
+    font-size: 10px;
+    margin-bottom: 1px;
+    font-weight: 500;
+}
+
+.form-select,
+.form-control {
+    height: 30px;
+    min-height: 30px;
+    font-size: 12px;
+    padding: 2px 8px;
+}
+
+.btn {
+    height: 30px;
+    min-height: 30px;
+    font-size: 12px;
+}
+
+/* SUMMARY */
+.dailyorder-page > .row {
+    margin-bottom: 6px !important;
+}
+
+.summary-card {
+    min-width: 110px;
+    transition: all .2s ease;
+}
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .summary-card .card-body {
+        padding: 6px 10px;
+    }
+
+.summary-label {
+    font-size: 10px;
+    color: #6c757d;
+    margin-bottom: 1px;
+}
+
+.summary-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* AUTO FILTER */
+#btnFilter {
+    display: none !important;
+}
+
+#searchInput {
+    width: 100%;
+    min-width: 260px;
+}
+
+.dailyorder-page .row.g-3 {
+    --bs-gutter-x: .75rem;
+    --bs-gutter-y: .35rem;
+}
+
+/* TABLE CARD */
 .dailyorder-page > .card:last-child {
     flex: 1;
     min-height: 0;
@@ -196,21 +126,196 @@ body {
         flex: 1;
         min-height: 0;
         overflow: hidden;
+        padding: 0;
     }
+
+    .dailyorder-page > .card:last-child > .card-footer {
+        display: none;
+    }
+/* TOP SCROLLBAR */
+.table-scroll-top {
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 10px;
+    margin-bottom: 2px;
+    background: #fff;
+}
+
+.table-scroll-top-inner {
+    height: 1px;
+}
+
+.table-scroll-top::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-scroll-top::-webkit-scrollbar-thumb {
+    background: #cfd8e3;
+    border-radius: 10px;
+}
+
+/* TABLE WRAPPER */
+.dailyorder-table-wrapper {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+/* TABLE */
+.dailyorder-table {
+    min-width: 1700px;
+    margin-bottom: 0;
+}
+
+    .dailyorder-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: #1d4ed8;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: 8px 10px;
+    }
+
+    .dailyorder-table tbody td {
+        font-size: 12px;
+        padding: 6px 10px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .dailyorder-table tbody tr:nth-child(even) {
+        background: #f8fbff;
+    }
+
+    .dailyorder-table tbody tr:hover {
+        background: #eef5ff;
+    }
+
+.qty-pack-cell small {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.1;
+}
+
+/* STATUS */
+.status-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+/* SCROLLBAR */
+.dailyorder-table-wrapper::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.dailyorder-table-wrapper::-webkit-scrollbar-thumb {
+    background: #cfd8e3;
+    border-radius: 10px;
+}
+
+.dailyorder-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f3f7;
+}
+
+/* FLOATING MENU */
+.floating-action-menu {
+    position: fixed;
+    min-width: 170px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    padding: 6px 0;
+    z-index: 2000;
+}
+
+.floating-action-item {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+    .floating-action-item:hover {
+        background: #f5f5f5;
+    }
+
+/* TABLET */
+@media (max-width: 991.98px) {
+
+    html,
+    body {
+        overflow: auto;
+    }
+
+    .dailyorder-page {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .dailyorder-table {
+        min-width: 1600px;
+    }
+
+    .summary-card {
+        min-width: 140px;
+    }
+}
+
+/* MOBILE */
+@media (max-width: 575.98px) {
+
+    .dailyorder-page {
+        padding: 10px;
+    }
+
+        .dailyorder-page h2 {
+            font-size: 20px;
+        }
+
+    .summary-value {
+        font-size: 18px;
+    }
+
+    .dailyorder-table {
+        min-width: 1500px;
+    }
+
+        .dailyorder-table thead th {
+            font-size: 11px;
+        }
+
+        .dailyorder-table tbody td {
+            font-size: 11px;
+        }
+}
+
 
 .dailyorder-table-wrapper {
-    height: 100%;
-    max-height: none;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: auto;
+    cursor: grab;
 }
 
-.dailyorder-row {
-    cursor: context-menu;
-}
-
-    .dailyorder-row:hover {
-        background: #eef5ff !important;
+    .dailyorder-table-wrapper.dragging {
+        cursor: grabbing;
+        user-select: none;
     }
+
+        .dailyorder-table-wrapper.dragging table {
+            pointer-events: none;
+        }
+
 
