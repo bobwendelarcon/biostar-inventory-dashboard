@@ -142,7 +142,8 @@ async function loadInventory(page = currentPage) {
             page: currentPage,
             pageSize: pageSize,
             lot_no: document.getElementById("lotNoFilter")?.value || "",
-            product: document.getElementById("productFilter")?.value || "",
+            genericName: document.getElementById("genericNameFilter")?.value || "",
+            brandName: document.getElementById("brandNameFilter")?.value || "",
             from: document.getElementById("dateFromFilter")?.value || "",
             to: document.getElementById("dateToFilter")?.value || "",
             warehouse: document.getElementById("warehouseFilter")?.value || "",
@@ -661,12 +662,14 @@ document.addEventListener("DOMContentLoaded", function () {
             currentPage = 1;
             loadInventory(1);
         });
-    document.getElementById("productFilter")?.addEventListener("input", function () {
-        clearTimeout(productSearchTimeout);
-        productSearchTimeout = setTimeout(() => {
-            currentPage = 1;
-            loadInventory(1);
-        }, 500);
+    ["genericNameFilter", "brandNameFilter"].forEach(id => {
+        document.getElementById(id)?.addEventListener("input", function () {
+            clearTimeout(productSearchTimeout);
+            productSearchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadInventory(1);
+            }, 500);
+        });
     });
 
     document.getElementById("warehouseFilter")?.addEventListener("change", () => {
@@ -702,7 +705,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("clearFilters")?.addEventListener("click", function () {
         const ids = [
             "lotNoFilter",
-            "productFilter",
+            "genericNameFilter",
+            "brandNameFilter",
             "dateFromFilter",
             "dateToFilter",
             "warehouseFilter",
@@ -804,7 +808,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnExportInventory")?.addEventListener("click", function () {
         const params = new URLSearchParams({
             lot_no: document.getElementById("lotNoFilter")?.value || "",
-            product: document.getElementById("productFilter")?.value || "",
+            genericName: document.getElementById("genericNameFilter")?.value || "",
+            brandName: document.getElementById("brandNameFilter")?.value || "",
             category: document.getElementById("categoryFilter")?.value || "",
             from: document.getElementById("dateFromFilter")?.value || "",
             to: document.getElementById("dateToFilter")?.value || "",

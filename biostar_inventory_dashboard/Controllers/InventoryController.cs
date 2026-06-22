@@ -52,7 +52,8 @@ namespace biostar_inventory_dashboard.Controllers
             int page = 1,
             int pageSize = 30,
             string lot_no = "",
-            string product = "",
+            string genericName = "",
+string brandName = "",
            string warehouse = "",
 string category = "",
 string stockStatus = "",
@@ -64,19 +65,20 @@ string stockStatus = "",
         )
         {
             var items = await _apiService.GetInventoryAsync(
-    page,
-    pageSize,
-    lot_no,
-    product,
-    warehouse,
-    category,
-    stockStatus,
-                expiryStatus,
-                months,
-                from,
-                to,
-                order
-            );
+      page,
+      pageSize,
+      lot_no,
+      genericName,
+      brandName,
+      warehouse,
+      category,
+      stockStatus,
+      expiryStatus,
+      months,
+      from,
+      to,
+      order
+  );
 
             return Json(items);
         }
@@ -114,7 +116,8 @@ string stockStatus = "",
         [HttpGet]
         public async Task<IActionResult> ExportExcel(
     string lot_no = "",
-    string product = "",
+   string genericName = "",
+string brandName = "",
     string warehouse = "",
     string category = "",
     string stockStatus = "",
@@ -126,12 +129,19 @@ string stockStatus = "",
 )
         {
             var result = await _apiService.GetInventoryAsync(
-                1, 100000,
-                lot_no, product, warehouse,
-                category,
-                stockStatus, expiryStatus, months,
-                from, to, order
-            );
+      1, 100000,
+      lot_no,
+      genericName,
+      brandName,
+      warehouse,
+      category,
+      stockStatus,
+      expiryStatus,
+      months,
+      from,
+      to,
+      order
+  );
 
             var items = result.Data ?? new();
 

@@ -69,19 +69,20 @@ namespace biostar_inventory_dashboard.Services
         }
 
         public async Task<PagedInventoryResponse> GetInventoryAsync(
-            int page = 1,
-            int pageSize = 30,
-            string lot_no = "",
-            string product = "",
-            string warehouse = "",
-            string category = "",
-            string stockStatus = "",
-            string expiryStatus = "",
-      string months = "",
-      string from = "",
-      string to = "",
-      string order = "desc"
-  )
+     int page = 1,
+     int pageSize = 30,
+     string lot_no = "",
+     string genericName = "",
+     string brandName = "",
+     string warehouse = "",
+     string category = "",
+     string stockStatus = "",
+     string expiryStatus = "",
+     string months = "",
+     string from = "",
+     string to = "",
+     string order = "desc"
+ )
         {
             var queryParams = new List<string>
     {
@@ -92,8 +93,11 @@ namespace biostar_inventory_dashboard.Services
             if (!string.IsNullOrWhiteSpace(lot_no))
                 queryParams.Add($"lot_no={Uri.EscapeDataString(lot_no)}");
 
-            if (!string.IsNullOrWhiteSpace(product))
-                queryParams.Add($"product={Uri.EscapeDataString(product)}");
+            if (!string.IsNullOrWhiteSpace(genericName))
+                queryParams.Add($"genericName={Uri.EscapeDataString(genericName)}");
+
+            if (!string.IsNullOrWhiteSpace(brandName))
+                queryParams.Add($"brandName={Uri.EscapeDataString(brandName)}");
 
             if (!string.IsNullOrWhiteSpace(warehouse))
                 queryParams.Add($"warehouse={Uri.EscapeDataString(warehouse)}");
@@ -186,7 +190,8 @@ namespace biostar_inventory_dashboard.Services
      int page = 1,
      int pageSize = 30,
      string lot_no = "",
-     string product = "",
+     string genericName = "",
+string brandName = "",
      string type = "",
      string from = "",
      string to = "",
@@ -201,8 +206,11 @@ namespace biostar_inventory_dashboard.Services
             if (!string.IsNullOrWhiteSpace(lot_no))
                 url += $"&lot_no={Uri.EscapeDataString(lot_no)}";
 
-            if (!string.IsNullOrWhiteSpace(product))
-                url += $"&product={Uri.EscapeDataString(product)}";
+            if (!string.IsNullOrWhiteSpace(genericName))
+                url += $"&genericName={Uri.EscapeDataString(genericName)}";
+
+            if (!string.IsNullOrWhiteSpace(brandName))
+                url += $"&brandName={Uri.EscapeDataString(brandName)}";
 
             if (!string.IsNullOrWhiteSpace(type))
                 url += $"&type={Uri.EscapeDataString(type)}";
