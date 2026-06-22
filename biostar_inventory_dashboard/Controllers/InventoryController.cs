@@ -1,7 +1,8 @@
 ﻿using biostar_inventory_dashboard.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace biostar_inventory_dashboard.Controllers
 {
@@ -46,6 +47,9 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+       
 
         [HttpGet]
         public async Task<IActionResult> GetInventory(
@@ -246,6 +250,21 @@ string brandName = "",
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetInventoryCategories()
+        {
+            try
+            {
+                var result = await _apiService.GetInventoryCategoriesAsync();
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
 

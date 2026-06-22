@@ -61,53 +61,73 @@ function getExpiryStatus(expiration_date) {
     return "VALID";
 }
 
-function getStatusBadge(availableQty, reservedQty = 0) {
+//function getStatusBadge(availableQty, reservedQty = 0) {
 
+//    const qty = Number(availableQty || 0);
+//    const reserved = Number(reservedQty || 0);
+
+//    // Fully Reserved
+//    if (qty <= 0 && reserved > 0) {
+//        return `
+//            <span class="badge bg-warning text-dark">
+//                Fully Reserved
+//            </span>
+//        `;
+//    }
+
+//    // Out of Stock
+//    if (qty <= 0) {
+//        return `
+//            <span class="badge bg-danger">
+//                Out of Stock
+//            </span>
+//        `;
+//    }
+
+//    // Low Stock
+//    if (qty <= 10) {
+//        return `
+//            <span class="badge bg-warning text-dark">
+//                Low Stock
+//            </span>
+//        `;
+//    }
+
+//    // Normal
+//    if (qty <= 500) {
+//        return `
+//            <span class="badge bg-success">
+//                Normal
+//            </span>
+//        `;
+//    }
+
+//    // Over Stock
+//    return `
+//        <span class="badge bg-primary">
+//            Over Stock
+//        </span>
+//    `;
+//}
+
+function getStatusBadge(availableQty, reservedQty = 0, stockLevel = 0) {
     const qty = Number(availableQty || 0);
     const reserved = Number(reservedQty || 0);
+    const level = Number(stockLevel || 0);
 
-    // Fully Reserved
     if (qty <= 0 && reserved > 0) {
-        return `
-            <span class="badge bg-warning text-dark">
-                Fully Reserved
-            </span>
-        `;
+        return `<span class="badge bg-warning text-dark">Fully Reserved</span>`;
     }
 
-    // Out of Stock
     if (qty <= 0) {
-        return `
-            <span class="badge bg-danger">
-                Out of Stock
-            </span>
-        `;
+        return `<span class="badge bg-danger">Out of Stock</span>`;
     }
 
-    // Low Stock
-    if (qty <= 10) {
-        return `
-            <span class="badge bg-warning text-dark">
-                Low Stock
-            </span>
-        `;
+    if (level > 0 && qty < level) {
+        return `<span class="badge bg-warning text-dark">Low Stock</span>`;
     }
 
-    // Normal
-    if (qty <= 500) {
-        return `
-            <span class="badge bg-success">
-                Normal
-            </span>
-        `;
-    }
-
-    // Over Stock
-    return `
-        <span class="badge bg-primary">
-            Over Stock
-        </span>
-    `;
+    return `<span class="badge bg-success">Normal</span>`;
 }
 
 function formatPack(qty, packQty, packUom, baseUom) {
@@ -164,7 +184,7 @@ async function loadInventory(page = currentPage) {
 
         const json = await response.json();
         let items = json.data || [];
-        loadCategoryFilter(items);
+       // loadCategoryFilter(items);
 
        
 
@@ -280,7 +300,11 @@ async function loadInventory(page = currentPage) {
     ${formatPack(availableQty, item.pack_qty, item.pack_uom, item.uom)}
 </td>
            
-          <td>${getStatusBadge(availableQty, reservedQty)}</td>
+         <td>${getStatusBadge(
+             availableQty,
+             reservedQty,
+             item.stock_level
+         )}</td>
             <td>
     <div class="lot-edit-wrap">
         <span>${item.lot_no ?? ""}</span>
@@ -353,37 +377,30 @@ async function loadInventory(page = currentPage) {
 }
 
 
-function loadCategoryFilter(items) {
-
+async function loadCategoryFilter() {
     const select = document.getElementById("categoryFilter");
     if (!select) return;
 
-    const existing = new Set();
-
-    items.forEach(x => {
-        if (x.category_name) {
-            existing.add(x.category_name);
-        }
-    });
-
     const currentValue = select.value;
 
-    select.innerHTML =
-        `<option value="">All Categories</option>`;
+    const res = await fetch("/Inventory/GetInventoryCategories");
+    const categories = await res.json();
 
-    [...existing]
-        .sort()
-        .forEach(cat => {
+    select.innerHTML = `<option value="">All Categories</option>`;
 
-            select.innerHTML += `
-                <option value="${cat}">
-                    ${cat}
-                </option>
-            `;
-        });
+    categories.forEach(cat => {
+        select.innerHTML += `
+            <option value="${cat}">
+                ${cat}
+            </option>
+        `;
+    });
 
     select.value = currentValue;
 }
+
+
+
 function canShowInventoryAction() {
     const role = String(window.currentUserRole || "").trim().toUpperCase();
 
@@ -638,6 +655,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initInventoryHorizontalScroll();
     initInventoryDragScroll();
     loadWarehouseFilter();
+    loadCategoryFilter();
     document.getElementById("prevBtn")?.addEventListener("click", prevPage);
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
     applyInventoryRoleUI();

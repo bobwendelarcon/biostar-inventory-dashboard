@@ -243,6 +243,19 @@ string brandName = "",
         }
 
 
+
+        public async Task<string> GetInventoryCategoriesAsync()
+        {
+            var response = await _httpClient.GetAsync("api/inventoryDisplay/categories");
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(content);
+
+            return content;
+        }
+
         // categories
         public async Task<List<Categories>> GetCategoriesAsync()
         {
