@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize(Roles = "ADMIN,STAFF")]
+[Authorize(Roles = "ADMIN,STAFF,PRODUCTION")]
 public class ManualStockInController : Controller
 {
     private readonly ApiService _apiService;

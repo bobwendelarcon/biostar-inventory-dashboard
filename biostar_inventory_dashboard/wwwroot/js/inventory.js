@@ -1332,20 +1332,20 @@ document.addEventListener("click", function (e) {
         menu?.classList.add("d-none");
     }
 });
-document.addEventListener("contextmenu", function (e) {
-    const row = e.target.closest(".inventory-row");
-    const menu = document.getElementById("inventoryActionMenu");
+//document.addEventListener("contextmenu", function (e) {
+//    const row = e.target.closest(".inventory-row");
+//    const menu = document.getElementById("inventoryActionMenu");
 
-    if (!row || !menu) return;
+//    if (!row || !menu) return;
 
-    e.preventDefault();
+//    e.preventDefault();
 
-    activeInventoryActionBtn = row;
+//    activeInventoryActionBtn = row;
 
-    menu.style.top = `${e.clientY}px`;
-    menu.style.left = `${e.clientX}px`;
-    menu.classList.remove("d-none");
-});
+//    menu.style.top = `${e.clientY}px`;
+//    menu.style.left = `${e.clientX}px`;
+//    menu.classList.remove("d-none");
+//});
 
 function hideInventoryActionMenu() {
     document.getElementById("inventoryActionMenu")?.classList.add("d-none");
