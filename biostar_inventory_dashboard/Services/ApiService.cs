@@ -672,6 +672,29 @@ string brandName = "",
 
 
 
+        //public async Task<List<ProductLookupDto>> GetProductsLookupAsync(string? categoryId, string? search)
+        //{
+        //    var query = new List<string>();
+
+        //    if (!string.IsNullOrWhiteSpace(categoryId))
+        //        query.Add($"categoryId={Uri.EscapeDataString(categoryId)}");
+
+        //    if (!string.IsNullOrWhiteSpace(search))
+        //        query.Add($"search={Uri.EscapeDataString(search)}");
+
+        //    var url = "api/Products/lookup";
+        //    if (query.Any())
+        //        url += "?" + string.Join("&", query);
+
+        //    var response = await _httpClient.GetAsync(url);
+
+        //    if (!response.IsSuccessStatusCode)
+        //        return new List<ProductLookupDto>();
+
+        //    var json = await response.Content.ReadAsStringAsync();
+        //    return JsonSerializer.Deserialize<List<ProductLookupDto>>(json, _jsonOptions) ?? new List<ProductLookupDto>();
+        //}
+
         public async Task<List<ProductLookupDto>> GetProductsLookupAsync(string? categoryId, string? search)
         {
             var query = new List<string>();
@@ -683,16 +706,11 @@ string brandName = "",
                 query.Add($"search={Uri.EscapeDataString(search)}");
 
             var url = "api/Products/lookup";
+
             if (query.Any())
                 url += "?" + string.Join("&", query);
 
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-                return new List<ProductLookupDto>();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<List<ProductLookupDto>>(json, _jsonOptions) ?? new List<ProductLookupDto>();
+            return await GetAsync<List<ProductLookupDto>>(url);
         }
 
         public async Task<string> GetChecklistListAsync(
@@ -1075,6 +1093,23 @@ string brandName = "",
             var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PutAsync("api/ProductLotNumber/rename-lot", content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> UpdateLotDatesAsync(string json)
+        {
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(
+                "api/inventoryDisplay/update-lot-dates",
+                content
+            );
 
             var result = await response.Content.ReadAsStringAsync();
 

@@ -268,6 +268,20 @@ string brandName = "",
             }
         }
 
+        [HttpPut]
+        public async Task<IActionResult> UpdateLotDates([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.UpdateLotDatesAsync(data.GetRawText());
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
 
     }

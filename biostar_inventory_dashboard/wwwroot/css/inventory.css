@@ -228,9 +228,11 @@
     right: 0;
     background: #fff;
     z-index: 10;
-    min-width: 180px;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    text-align: center;
 }
-
 
 .lot-edit-wrap {
     display: inline-flex;
@@ -238,21 +240,19 @@
     gap: 6px;
 }
 
-.btn-edit-lot {
+.btn-edit-lot,
+.btn-edit-date {
     border: none;
     background: transparent;
-    color: #6b7280;
-    cursor: pointer;
     padding: 0;
-    font-size: 14px;
+    color: #6c757d;
     line-height: 1;
 }
 
-    .btn-edit-lot:hover {
-        color: #2563eb;
-        transform: scale(1.1);
+    .btn-edit-lot:hover,
+    .btn-edit-date:hover {
+        color: #0d6efd;
     }
-
 
 
 .transaction-scroll-area {
@@ -328,3 +328,130 @@
 .inventory-table {
     min-width: 1500px;
 }
+
+
+.inventory-table-wrapper,
+.table-scroll-box {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.inventory-table .dropdown {
+    position: static;
+}
+
+.inventory-table .dropdown-menu {
+    z-index: 3000;
+}
+.inventory-table td.action-col {
+    overflow: visible !important;
+}
+
+.inventory-table .dropdown-menu {
+    z-index: 9999 !important;
+}
+
+
+#historyModal .modal-content {
+    border-radius: 16px;
+}
+
+#historyModal table th {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+#historyModal table td {
+    vertical-align: top;
+    font-size: 14px;
+}
+
+#historyModal .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.inventory-row {
+    cursor: context-menu;
+}
+
+    .inventory-row:hover td {
+        background: #f8fafc;
+    }
+
+
+.location-summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.location-summary-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+}
+
+.location-name {
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-total strong {
+    color: #374151;
+}
+
+.summary-available strong {
+    color: #16a34a;
+}
+
+.summary-expired strong {
+    color: #dc2626;
+}
+
+.summary-table {
+    max-width: 520px;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.product-cell {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    max-width: 320px;
+}
+
+.product-info {
+    min-width: 0;
+}
+
+.product-title {
+    font-weight: 600;
+}
+
+.btn-view-product-lots {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #6b7280;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+    .btn-view-product-lots:hover {
+        background: #f1f5f9;
+        color: #2563eb;
+    }

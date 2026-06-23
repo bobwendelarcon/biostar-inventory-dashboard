@@ -37,19 +37,30 @@ public class ManualStockInController : Controller
         var result = await _apiService.GetPartnersAsync();
         return Content(result, "application/json");
     }
+    //[HttpGet]
+    //public async Task<IActionResult> GetProducts(string? categoryId, string? source)
+    //{
+    //    var result = await _apiService.GetProductsAsync(
+    //        page: 1,
+    //        pageSize: 500,
+    //        search: null,
+    //        categoryId: string.IsNullOrWhiteSpace(categoryId) ? null : categoryId,
+    //        status: null, // optional, safer
+    //        source: string.IsNullOrWhiteSpace(source) ? null : source
+    //    );
+
+    //    return Json(result.items); // 👈 IMPORTANT
+    //}
+
     [HttpGet]
-    public async Task<IActionResult> GetProducts(string? categoryId, string? source)
+    public async Task<IActionResult> GetProducts(string? categoryId, string? search)
     {
-        var result = await _apiService.GetProductsAsync(
-            page: 1,
-            pageSize: 500,
-            search: null,
+        var result = await _apiService.GetProductsLookupAsync(
             categoryId: string.IsNullOrWhiteSpace(categoryId) ? null : categoryId,
-            status: null, // optional, safer
-            source: string.IsNullOrWhiteSpace(source) ? null : source
+            search: string.IsNullOrWhiteSpace(search) ? null : search
         );
 
-        return Json(result.items); // 👈 IMPORTANT
+        return Json(result);
     }
 
     [HttpPost]

@@ -19,7 +19,10 @@
 
     return "";
 }
-
+function toDisplayNumber(value) {
+    const num = Number(value || 0);
+    return Number.isInteger(num) ? num.toString() : num.toFixed(2);
+}
 function getRemainingMonthsDisplay(expiration_date) {
     if (!expiration_date) {
         return `<span class="badge bg-secondary">-</span>`;
@@ -146,6 +149,17 @@ function formatPack(qty, packQty, packUom, baseUom) {
 
     return result || `0 ${baseUom}`;
 }
+function toMonthInputValue(value) {
+    if (!value) return "";
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    return `${year}-${month}`;
+}
 
 let currentPage = 1;
 let pageSize = 30;
@@ -253,13 +267,32 @@ async function loadInventory(page = currentPage) {
             );
 
             tableBody.innerHTML += `
-        <tr>
+       <tr class="inventory-row"
+    data-product="${item.product_id ?? ""}"
+    data-lot="${item.lot_no ?? ""}"
+    data-qty="${availableQty}"
+    data-branch="${item.branch_id ?? ""}"
+    data-warehouse="${item.warehouse ?? ""}"
+    data-uom="${item.uom ?? ""}"
+    data-exp="${item.expiration_date ?? ""}">
             
-            <td>
-    <div>${item.description ?? ""}</div>
-    ${item.product_description
+        <td>
+    <div class="product-cell">
+        <div class="product-info">
+            <div class="product-title">${item.description ?? ""}</div>
+            ${item.product_description
                     ? `<div class="text-muted small">${item.product_description}</div>`
                     : ""}
+        </div>
+
+        <button type="button"
+                class="btn-view-product-lots"
+                title="View all lots for this product"
+                data-generic="${item.description ?? ""}"
+                data-brand="${item.product_description ?? ""}">
+            <i class="bi bi-search"></i>
+        </button>
+    </div>
 </td>
             <td>${item.category_name ?? "-"}</td>
             <td>
@@ -322,43 +355,46 @@ async function loadInventory(page = currentPage) {
         ` : ""}
     </div>
 </td>
-            <td>${formatMonthYear(item.manufacturing_date)} - ${formatMonthYear(item.expiration_date)}</td>
+           <td>
+    <span class="lot-edit-wrap">
+        <span>
+            ${formatMonthYear(item.manufacturing_date)}
+            -
+            ${formatMonthYear(item.expiration_date)}
+        </span>
+
+        <button
+            type="button"
+            class="btn-edit-date"
+            data-product="${item.product_id ?? ""}"
+            data-branch="${item.branch_id ?? ""}"
+            data-lot="${item.lot_no ?? ""}"
+            data-mfg="${item.manufacturing_date ?? ""}"
+            data-exp="${item.expiration_date ?? ""}"
+            title="Edit MFG / EXP Date">
+            <i class="bi bi-pencil-square"></i>
+        </button>
+    </span>
+</td>
             <td>${getRemainingMonthsDisplay(item.expiration_date)}</td>
             <td>${item.warehouse ?? ""}</td>
             ${canShowInventoryAction() ? `
-<td class="text-center action-col">
-    <button
-        class="btn btn-sm btn-outline-primary btn-transfer"
+
+            <td class="text-center action-col">
+    <button class="btn btn-sm btn-outline-secondary btn-inventory-actions"
+        type="button"
         data-product="${item.product_id ?? ""}"
         data-lot="${item.lot_no ?? ""}"
-       data-qty="${availableQty}"
+        data-qty="${availableQty}"
         data-branch="${item.branch_id ?? ""}"
         data-warehouse="${item.warehouse ?? ""}"
         data-uom="${item.uom ?? ""}"
-        ${disableTransfer}>
-        Transfer
-    </button>
-
-    <button
-        class="btn btn-sm btn-outline-warning btn-adjust"
-        data-product="${item.product_id ?? ""}"
-        data-lot="${item.lot_no ?? ""}"
-        data-branch="${item.branch_id ?? ""}"
-       data-qty="${availableQty}"
-        data-exp="${item.expiration_date ?? ""}"
-        ${disableAdjust}
-        title="${adjustTitle}">
-        Adjust
-    </button>
-
-    <button
-        class="btn btn-sm btn-outline-secondary btn-history"
-        data-product="${item.product_id ?? ""}"
-        data-lot="${item.lot_no ?? ""}"
-        data-branch="${item.branch_id ?? ""}">
-        History
+        data-exp="${item.expiration_date ?? ""}">
+        Actions
     </button>
 </td>
+
+
 ` : ""}
         </tr>`;
         });
@@ -446,7 +482,14 @@ async function loadBranchesDropdown() {
         alert("Failed to load branches.");
     }
 }
+function toDateInputValue(value) {
+    if (!value) return "";
 
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return "";
+
+    return date.toISOString().slice(0, 10);
+}
 function renderPagination() {
     const totalPages = Math.ceil(totalRecords / pageSize);
 
@@ -480,6 +523,37 @@ function prevPage() {
     }
 }
 document.addEventListener("click", function (e) {
+
+
+
+    const editDateBtn = e.target.closest(".btn-edit-date");
+    if (editDateBtn) {
+        document.getElementById("editDateProductId").value = editDateBtn.dataset.product || "";
+        document.getElementById("editDateBranchId").value = editDateBtn.dataset.branch || "";
+        document.getElementById("editDateLotNo").value = editDateBtn.dataset.lot || "";
+        document.getElementById("editDateLotDisplay").value = editDateBtn.dataset.lot || "";
+
+        document.getElementById("editMfgDate").value = toMonthInputValue(editDateBtn.dataset.mfg);
+        document.getElementById("editExpDate").value = toMonthInputValue(editDateBtn.dataset.exp);
+
+        new bootstrap.Modal(document.getElementById("editDateModal")).show();
+        return;
+    }
+
+
+
+    const productLotsBtn = e.target.closest(".btn-view-product-lots");
+
+    if (productLotsBtn) {
+
+        openProductLotsModal(
+            productLotsBtn.dataset.generic,
+            productLotsBtn.dataset.brand
+        );
+
+        return;
+    }
+
 
     // VIEW RESERVED DETAILS
     const viewStockBtn = e.target.closest(".btn-view-stock");
@@ -545,96 +619,96 @@ document.addEventListener("click", function (e) {
         return;
     }
 
-    // TRANSFER
-    const btn = e.target.closest(".btn-transfer");
-    if (btn) {
+    //// TRANSFER
+    //const btn = e.target.closest(".btn-transfer");
+    //if (btn) {
+    //    hideInventoryActionMenu(); 
+    //    isEditing = true;
 
-        isEditing = true;
+    //    const maxQty = parseFloat(btn.dataset.qty) || 0;
 
-        const maxQty = parseFloat(btn.dataset.qty) || 0;
+    //    document.getElementById("transferProduct").value = btn.dataset.product || "";
+    //    document.getElementById("transferLot").value = btn.dataset.lot || "";
+    //    document.getElementById("transferFromBranch").value = btn.dataset.branch || "";
+    //    document.getElementById("transferQty").value = "";
+    //    document.getElementById("transferQty").setAttribute("max", String(maxQty));
 
-        document.getElementById("transferProduct").value = btn.dataset.product || "";
-        document.getElementById("transferLot").value = btn.dataset.lot || "";
-        document.getElementById("transferFromBranch").value = btn.dataset.branch || "";
-        document.getElementById("transferQty").value = "";
-        document.getElementById("transferQty").setAttribute("max", String(maxQty));
+    //    const availableQtyLabel = document.getElementById("transferAvailableQty");
+    //    if (availableQtyLabel) {
+    //        availableQtyLabel.innerText = `${btn.dataset.qty || 0} ${btn.dataset.uom || ""}`;
+    //    }
 
-        const availableQtyLabel = document.getElementById("transferAvailableQty");
-        if (availableQtyLabel) {
-            availableQtyLabel.innerText = `${btn.dataset.qty || 0} ${btn.dataset.uom || ""}`;
-        }
+    //    const fromBranchLabel = document.getElementById("transferFromBranchLabel");
+    //    if (fromBranchLabel) {
+    //        fromBranchLabel.innerText = btn.dataset.warehouse || "";
+    //    }
 
-        const fromBranchLabel = document.getElementById("transferFromBranchLabel");
-        if (fromBranchLabel) {
-            fromBranchLabel.innerText = btn.dataset.warehouse || "";
-        }
+    //    loadBranchesDropdown();
 
-        loadBranchesDropdown();
+    //    new bootstrap.Modal(document.getElementById("transferModal")).show();
 
-        new bootstrap.Modal(document.getElementById("transferModal")).show();
+    //    return;
+    //}
 
-        return;
-    }
+    //// ADJUST
+    //const adjustBtn = e.target.closest(".btn-adjust");
+    //if (adjustBtn) {
+    //    hideInventoryActionMenu(); 
+    //    const currentQty = Number(adjustBtn.dataset.qty || 0);
 
-    // ADJUST
-    const adjustBtn = e.target.closest(".btn-adjust");
-    if (adjustBtn) {
+    //    const today = new Date();
+    //    const expDate = adjustBtn.dataset.exp ? new Date(adjustBtn.dataset.exp) : null;
+    //    const isExpired = expDate && expDate < today;
 
-        const currentQty = Number(adjustBtn.dataset.qty || 0);
+    //    document.getElementById("adjustProduct").value = adjustBtn.dataset.product;
+    //    document.getElementById("adjustLot").value = adjustBtn.dataset.lot;
+    //    document.getElementById("adjustBranch").value = adjustBtn.dataset.branch;
 
-        const today = new Date();
-        const expDate = adjustBtn.dataset.exp ? new Date(adjustBtn.dataset.exp) : null;
-        const isExpired = expDate && expDate < today;
+    //    document.getElementById("adjustCurrentQty").innerText = currentQty;
+    //    document.getElementById("adjustQty").value = "";
+    //    document.getElementById("adjustQty").setAttribute("max", currentQty);
 
-        document.getElementById("adjustProduct").value = adjustBtn.dataset.product;
-        document.getElementById("adjustLot").value = adjustBtn.dataset.lot;
-        document.getElementById("adjustBranch").value = adjustBtn.dataset.branch;
+    //    const adjustTypeSelect = document.getElementById("adjustType");
 
-        document.getElementById("adjustCurrentQty").innerText = currentQty;
-        document.getElementById("adjustQty").value = "";
-        document.getElementById("adjustQty").setAttribute("max", currentQty);
+    //    if (isExpired) {
+    //        adjustTypeSelect.innerHTML = `
+    //            <option value="DEDUCT">Deduct (Dispose)</option>
+    //        `;
+    //        document.getElementById("adjustRemarks").value = "EXPIRED DISPOSAL";
+    //    }
+    //    else if (currentQty <= 0) {
+    //        adjustTypeSelect.innerHTML = `
+    //            <option value="ADD">Add</option>
+    //            <option value="SET">Set Exact Qty</option>
+    //        `;
+    //        document.getElementById("adjustRemarks").value = "";
+    //    }
+    //    else {
+    //        adjustTypeSelect.innerHTML = `
+    //            <option value="ADD">Add</option>
+    //            <option value="DEDUCT">Deduct</option>
+    //            <option value="SET">Set Exact Qty</option>
+    //        `;
+    //        document.getElementById("adjustRemarks").value = "";
+    //    }
 
-        const adjustTypeSelect = document.getElementById("adjustType");
+    //    new bootstrap.Modal(document.getElementById("adjustModal")).show();
 
-        if (isExpired) {
-            adjustTypeSelect.innerHTML = `
-                <option value="DEDUCT">Deduct (Dispose)</option>
-            `;
-            document.getElementById("adjustRemarks").value = "EXPIRED DISPOSAL";
-        }
-        else if (currentQty <= 0) {
-            adjustTypeSelect.innerHTML = `
-                <option value="ADD">Add</option>
-                <option value="SET">Set Exact Qty</option>
-            `;
-            document.getElementById("adjustRemarks").value = "";
-        }
-        else {
-            adjustTypeSelect.innerHTML = `
-                <option value="ADD">Add</option>
-                <option value="DEDUCT">Deduct</option>
-                <option value="SET">Set Exact Qty</option>
-            `;
-            document.getElementById("adjustRemarks").value = "";
-        }
+    //    return;
+    //}
 
-        new bootstrap.Modal(document.getElementById("adjustModal")).show();
+    //// HISTORY
+    //const historyBtn = e.target.closest(".btn-history");
+    //if (historyBtn) {
+    //    hideInventoryActionMenu(); 
+    //    loadHistory(
+    //        historyBtn.dataset.product,
+    //        historyBtn.dataset.lot,
+    //        historyBtn.dataset.branch
+    //    );
 
-        return;
-    }
-
-    // HISTORY
-    const historyBtn = e.target.closest(".btn-history");
-    if (historyBtn) {
-
-        loadHistory(
-            historyBtn.dataset.product,
-            historyBtn.dataset.lot,
-            historyBtn.dataset.branch
-        );
-
-        return;
-    }
+    //    return;
+    //}
 
 
     //edit lot number
@@ -843,6 +917,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     document.getElementById("btnSaveLotNo")?.addEventListener("click", saveLotNoEdit);
+    document.getElementById("btnSaveDates")?.addEventListener("click", saveLotDates);
 
 
 
@@ -1062,19 +1137,29 @@ async function loadHistory(productId, lotNo, branchId) {
         } else {
             data.forEach(x => {
                 table.innerHTML += `
-        <tr>
-           <td>${formatPHDateTime(x.created_at)}</td>
-            <td>${x.transaction_type ?? ""}</td>
-            <td>${x.quantity ?? ""}</td>
-            <td>${x.reference ?? ""}</td>
-            <td>${x.warehouse ?? ""}</td>
-            <td>${x.remarks ?? ""}</td>
-            <td>${x.scanned_by ?? ""}</td>
-        </tr>`;
+<tr>
+    <td>${formatPHDateTime(x.created_at)}</td>
+    <td>
+        <span class="badge ${String(x.transaction_type).toUpperCase() === "OUT" ? "bg-danger" : "bg-success"}">
+            ${x.transaction_type ?? ""}
+        </span>
+    </td>
+    <td>
+        <div class="fw-semibold">${toDisplayNumber(x.quantity)} ${x.uom ?? ""}</div>
+        <div class="text-muted small">
+            ${formatPack(x.quantity, x.pack_qty, x.pack_uom, x.uom)}
+        </div>
+    </td>
+    <td>${x.reference ?? "-"}</td>
+    <td>${x.warehouse ?? ""}</td>
+    <td>${x.remarks ?? ""}</td>
+    <td>${x.scanned_by ?? ""}</td>
+</tr>`;
             });
         }
 
         new bootstrap.Modal(document.getElementById("historyModal")).show();
+        hideInventoryActionMenu();
 
     } catch (err) {
         console.error("LOAD HISTORY ERROR:", err);
@@ -1144,4 +1229,408 @@ function initInventoryDragScroll() {
         const topScroll = document.querySelector(".table-scroll-top");
         if (topScroll) topScroll.scrollLeft = scrollBox.scrollLeft;
     });
+}
+
+function openTransfer(btn) {
+    hideInventoryActionMenu();
+    isEditing = true;
+
+    const maxQty = parseFloat(btn.dataset.qty) || 0;
+
+    document.getElementById("transferProduct").value = btn.dataset.product || "";
+    document.getElementById("transferLot").value = btn.dataset.lot || "";
+    document.getElementById("transferFromBranch").value = btn.dataset.branch || "";
+
+    document.getElementById("transferQty").value = "";
+    document.getElementById("transferQty").setAttribute("max", String(maxQty));
+
+    document.getElementById("transferAvailableQty").innerText =
+        `${btn.dataset.qty || 0} ${btn.dataset.uom || ""}`;
+
+    document.getElementById("transferFromBranchLabel").innerText =
+        btn.dataset.warehouse || "";
+
+    loadBranchesDropdown();
+
+    new bootstrap.Modal(document.getElementById("transferModal")).show();
+}
+
+function openAdjust(btn) {
+    hideInventoryActionMenu();
+
+    const currentQty = Number(btn.dataset.qty || 0);
+
+    const today = new Date();
+    const expDate = btn.dataset.exp ? new Date(btn.dataset.exp) : null;
+    const isExpired = expDate && expDate < today;
+
+    document.getElementById("adjustProduct").value = btn.dataset.product || "";
+    document.getElementById("adjustLot").value = btn.dataset.lot || "";
+    document.getElementById("adjustBranch").value = btn.dataset.branch || "";
+
+    document.getElementById("adjustCurrentQty").innerText = currentQty;
+    document.getElementById("adjustQty").value = "";
+    document.getElementById("adjustQty").setAttribute("max", currentQty);
+
+    const adjustTypeSelect = document.getElementById("adjustType");
+
+    if (isExpired) {
+        adjustTypeSelect.innerHTML = `<option value="DEDUCT">Deduct (Dispose)</option>`;
+        document.getElementById("adjustRemarks").value = "EXPIRED DISPOSAL";
+    } else if (currentQty <= 0) {
+        adjustTypeSelect.innerHTML = `
+            <option value="ADD">Add</option>
+            <option value="SET">Set Exact Qty</option>
+        `;
+        document.getElementById("adjustRemarks").value = "";
+    } else {
+        adjustTypeSelect.innerHTML = `
+            <option value="ADD">Add</option>
+            <option value="DEDUCT">Deduct</option>
+            <option value="SET">Set Exact Qty</option>
+        `;
+        document.getElementById("adjustRemarks").value = "";
+    }
+
+    new bootstrap.Modal(document.getElementById("adjustModal")).show();
+}
+
+function openHistory(btn) {
+    hideInventoryActionMenu();
+
+    loadHistory(
+        btn.dataset.product,
+        btn.dataset.lot,
+        btn.dataset.branch
+    );
+}
+
+let activeInventoryActionBtn = null;
+
+document.addEventListener("click", function (e) {
+    const actionBtn = e.target.closest(".btn-inventory-actions");
+    const menu = document.getElementById("inventoryActionMenu");
+
+    if (actionBtn) {
+        activeInventoryActionBtn = actionBtn;
+
+        if (!menu) {
+            console.error("inventoryActionMenu not found");
+            return;
+        }
+
+        const rect = actionBtn.getBoundingClientRect();
+
+        menu.style.top = `${rect.bottom + 6}px`;
+        menu.style.left = `${rect.right - 170}px`;
+        menu.classList.remove("d-none");
+
+        return;
+    }
+
+    if (!e.target.closest("#inventoryActionMenu")) {
+        menu?.classList.add("d-none");
+    }
+});
+document.addEventListener("contextmenu", function (e) {
+    const row = e.target.closest(".inventory-row");
+    const menu = document.getElementById("inventoryActionMenu");
+
+    if (!row || !menu) return;
+
+    e.preventDefault();
+
+    activeInventoryActionBtn = row;
+
+    menu.style.top = `${e.clientY}px`;
+    menu.style.left = `${e.clientX}px`;
+    menu.classList.remove("d-none");
+});
+
+function hideInventoryActionMenu() {
+    document.getElementById("inventoryActionMenu")?.classList.add("d-none");
+}
+
+document.getElementById("menuTransfer")?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!activeInventoryActionBtn) return;
+    openTransfer(activeInventoryActionBtn);
+});
+
+document.getElementById("menuAdjust")?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!activeInventoryActionBtn) return;
+    openAdjust(activeInventoryActionBtn);
+});
+
+document.getElementById("menuHistory")?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!activeInventoryActionBtn) return;
+    openHistory(activeInventoryActionBtn);
+});
+
+document.getElementById("menuStockOut")?.addEventListener("click", function () {
+    if (!activeInventoryActionBtn) return;
+
+    hideInventoryActionMenu();
+
+    const availableQty = Number(activeInventoryActionBtn.dataset.qty || 0);
+
+    document.getElementById("stockOutProduct").value = activeInventoryActionBtn.dataset.product || "";
+    document.getElementById("stockOutLot").value = activeInventoryActionBtn.dataset.lot || "";
+    document.getElementById("stockOutBranch").value = activeInventoryActionBtn.dataset.branch || "";
+
+    document.getElementById("stockOutAvailableQty").innerText =
+        `${availableQty} ${activeInventoryActionBtn.dataset.uom || ""}`;
+
+    document.getElementById("stockOutQty").value = "";
+    document.getElementById("stockOutQty").setAttribute("max", availableQty);
+
+    document.getElementById("stockOutDrNo").value = "";
+    document.getElementById("stockOutInvNo").value = "";
+    document.getElementById("stockOutPoNo").value = "";
+    document.getElementById("stockOutRemarks").value = "";
+
+    new bootstrap.Modal(document.getElementById("stockOutModal")).show();
+});
+
+document.getElementById("btnSaveStockOut")?.addEventListener("click", saveManualStockOut);
+
+async function saveManualStockOut() {
+    const qty = Number(document.getElementById("stockOutQty").value || 0);
+    const maxQty = Number(document.getElementById("stockOutQty").getAttribute("max") || 0);
+
+    const drNo = document.getElementById("stockOutDrNo").value.trim();
+    const invNo = document.getElementById("stockOutInvNo").value.trim();
+    const poNo = document.getElementById("stockOutPoNo").value.trim();
+    const remarks = document.getElementById("stockOutRemarks").value.trim();
+
+    if (!qty || qty <= 0) {
+        alert("Quantity out must be greater than 0.");
+        return;
+    }
+
+    if (qty > maxQty) {
+        alert("Cannot stock out more than available quantity.");
+        return;
+    }
+
+    if (!drNo && !invNo && !poNo) {
+        alert("Please enter at least one reference: DR, INV, or PO.");
+        return;
+    }
+
+    const refParts = [];
+    if (drNo) refParts.push(`DR: ${drNo}`);
+    if (invNo) refParts.push(`INV: ${invNo}`);
+    if (poNo) refParts.push(`PO: ${poNo}`);
+
+    const body = {
+        product_id: document.getElementById("stockOutProduct").value,
+        lot_no: document.getElementById("stockOutLot").value,
+        branch_id: document.getElementById("stockOutBranch").value,
+        adjustment_type: "DEDUCT",
+        quantity: qty,
+        adjusted_by: window.currentUserId || "UNKNOWN",
+
+        reference_type: "MANUAL_STOCK_OUT",
+        dr_no: drNo,
+        inv_no: invNo,
+        po_no: poNo,
+
+        remarks: remarks || "Manual stock out"
+    };
+
+    try {
+        const res = await fetch("/Inventory/Adjust", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+            throw new Error(result.message || "Stock out failed.");
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById("stockOutModal"))?.hide();
+
+        alert("Stock out saved successfully.");
+        loadInventory(currentPage);
+
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function openProductLotsModal(genericName, brandName) {
+    const params = new URLSearchParams({
+        page: 1,
+        pageSize: 100000,
+        genericName: genericName,
+        brandName: brandName,
+        stockStatus: "",
+        expiryStatus: "",
+        months: "",
+        order: "desc"
+    });
+
+    const res = await fetch(`/Inventory/GetInventory?${params.toString()}`);
+    const json = await res.json();
+    const items = (json.data || []).filter(x =>
+        Number(x.available_qty || 0) > 0
+    );
+    renderProductLocationSummary(items);
+
+    document.getElementById("productLotsSubTitle").innerText =
+        `${genericName}${brandName ? " / " + brandName : ""}`;
+
+    const table = document.getElementById("productLotsTable");
+
+    if (!items.length) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    No lots found.
+                </td>
+            </tr>`;
+    } else {
+        table.innerHTML = items.map(x => {
+            const onHandQty = Number(x.qty ?? 0);
+            const reservedQty = Number(x.reserved_qty ?? 0);
+            const availableQty = Number(x.available_qty ?? (onHandQty - reservedQty));
+
+            return `
+                <tr>
+                    <td>${x.lot_no ?? ""}</td>
+                    <td>${x.warehouse ?? ""}</td>
+                    <td>
+                        <div class="fw-semibold">${availableQty} ${x.uom ?? ""}</div>
+                        <div class="text-muted small">OH:${onHandQty} | Res:${reservedQty}</div>
+                    </td>
+                    <td>${formatPack(availableQty, x.pack_qty, x.pack_uom, x.uom)}</td>
+                    <td>${formatMonthYear(x.manufacturing_date)} - ${formatMonthYear(x.expiration_date)}</td>
+                    <td>${getRemainingMonthsDisplay(x.expiration_date)}</td>
+                    <td>${getStatusBadge(availableQty, reservedQty, x.stock_level)}</td>
+                </tr>`;
+        }).join("");
+    }
+
+    new bootstrap.Modal(document.getElementById("productLotsModal")).show();
+}
+function renderProductLocationSummary(items) {
+    const container = document.getElementById("productLotsLocationSummary");
+    if (!container) return;
+
+    const today = new Date();
+
+    const grouped = {};
+
+    items.forEach(x => {
+        const location =
+            x.location_name ||
+            x.warehouse_location ||
+            x.warehouse ||
+            "No Location";
+
+        const onHandQty = Number(x.qty || 0);
+        const reservedQty = Number(x.reserved_qty || 0);
+        const availableQty = Number(x.available_qty ?? (onHandQty - reservedQty));
+
+        const expDate = x.expiration_date ? new Date(x.expiration_date) : null;
+        const isExpired = expDate && expDate < today;
+
+        if (!grouped[location]) {
+            grouped[location] = {
+                total: 0,
+                available: 0,
+                expired: 0
+            };
+        }
+
+        grouped[location].total += onHandQty;
+        grouped[location].available += availableQty;
+
+        if (isExpired) {
+            grouped[location].expired += onHandQty;
+        }
+    });
+
+    const rows = Object.entries(grouped);
+
+    if (!rows.length) {
+        container.innerHTML = "";
+        return;
+    }
+
+    container.innerHTML = `
+    <table class="table table-sm table-bordered summary-table">
+        <thead class="table-light">
+            <tr>
+                <th>Warehouse</th>
+                <th class="text-end">Total</th>
+                <th class="text-end">Available</th>
+                <th class="text-end">Expired</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map(([location, s]) => `
+                <tr>
+                    <td>${location}</td>
+                    <td class="text-end">${toDisplayNumber(s.total)}</td>
+                    <td class="text-end text-success fw-bold">${toDisplayNumber(s.available)}</td>
+                    <td class="text-end text-danger fw-bold">${toDisplayNumber(s.expired)}</td>
+                </tr>
+            `).join("")}
+        </tbody>
+    </table>
+`;
+}
+function monthToDate(value, isExpiration) {
+    if (!value) return null; // value format: YYYY-MM
+
+    const [year, month] = value.split("-").map(Number);
+
+    if (isExpiration) {
+        // last day of selected month
+        const lastDay = new Date(year, month, 0).getDate();
+        return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    }
+
+    // first day of selected month
+    return `${year}-${String(month).padStart(2, "0")}-01`;
+}
+
+async function saveLotDates() {
+    const payload = {
+        product_id: document.getElementById("editDateProductId").value,
+        branch_id: document.getElementById("editDateBranchId").value,
+        lot_no: document.getElementById("editDateLotNo").value,
+        manufacturing_date: monthToDate(document.getElementById("editMfgDate").value, false),
+        expiration_date: monthToDate(document.getElementById("editExpDate").value, true)
+    };
+
+    if (!payload.manufacturing_date || !payload.expiration_date) {
+        alert("Manufacturing Date and Expiration Date are required.");
+        return;
+    }
+
+    const res = await fetch("/Inventory/UpdateLotDates", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    const text = await res.text();
+
+    if (!res.ok) {
+        alert(text || "Failed to update dates.");
+        return;
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById("editDateModal"))?.hide();
+
+    alert("Dates updated successfully.");
+    loadInventory(currentPage);
 }
