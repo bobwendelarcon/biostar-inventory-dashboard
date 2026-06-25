@@ -159,7 +159,7 @@
                                 <th>Customer</th>
                                 <th>Route</th>
                                 <th>Product</th>
-                                <th>Required</th>
+                                <th>Remaining Order</th>
                                 <th>Allocated</th>
                                 <th>Delivery Date</th>
                                 <th>Status</th>
@@ -252,12 +252,15 @@
                                         <th>Expiry Date</th>
                                         <th>Qty</th>
                                         <th>Status</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
 
                                 <tbody id="viewChecklistLinesBody">
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted">No data</td>
+                                        <td colspan="9" class="text-center text-muted">
+                                            No data
+                                        </td>
                                     </tr>
                                 </tbody>
 
@@ -271,22 +274,19 @@
 
             <div class="modal-footer">
 
-                <button class="btn btn-primary btn-confirm-loading" id="btnConfirmLoading">
-                    Confirm Loading
+                <button class="btn btn-danger"
+                        id="btnDeleteChecklist">
+                    Delete Checklist
                 </button>
 
-                <button class="btn btn-danger btn-delete-checklist" id="btnDeleteChecklist">
-                    Delete
-                </button>
-
-                <button class="btn btn-warning" id="btnReopenChecklist">
-                    Reopen
-                </button>
-
-              
-
-                <button class="btn btn-secondary btn-print-checklist" id="btnPrintChecklist">
+                <button class="btn btn-secondary"
+                        id="btnPrintChecklist">
                     Print
+                </button>
+
+                <button class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Close
                 </button>
 
             </div>
@@ -297,6 +297,194 @@
    
 </div>
 
+
+<div class="modal fade" id="completeLineModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="fw-bold mb-0">Complete Checklist Line</h5>
+                    <small class="text-muted">Confirm loading and delivery documents</small>
+                </div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="complete_line_id">
+
+                <div class="border rounded-3 bg-light p-3 mb-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Customer</small>
+                            <div class="fw-semibold" id="complete_customer_text">-</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-muted">Product</small>
+                            <div class="fw-semibold" id="complete_product_text">-</div>
+
+                            <div class="text-primary small fw-semibold mt-1"
+                                 id="complete_product_description_text"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <small class="text-muted">Warehouse</small>
+                            <div class="fw-semibold" id="complete_warehouse_text">-</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <small class="text-muted">Lot No</small>
+                            <div class="fw-semibold" id="complete_lot_no_text">-</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <small class="text-muted">Available Qty</small>
+                            <div class="fw-semibold" id="complete_available_qty_text">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Quantity Out</label>
+                        <input type="number" class="form-control" id="complete_quantity_out" min="0" step="0.01" readonly>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">DR No <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="complete_dr_no">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Invoice No</label>
+                        <input type="text" class="form-control" id="complete_inv_no">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">PO No</label>
+                        <input type="text" class="form-control" id="complete_po_no">
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" class="form-control" id="complete_remarks" placeholder="Delivered to / reason">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button class="btn btn-success" onclick="submitCompleteLine()">
+                    Save & Complete
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editChecklistLotModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <div>
+                    <h5 class="fw-bold mb-0">Change Checklist Lot</h5>
+                    <small class="text-muted" id="editLotProductText"></small>
+                </div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="editLotChecklistLineId">
+
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Lot No</th>
+                            <th>Warehouse</th>
+                            <th>MFG</th>
+                            <th>EXP</th>
+                            <th>On Hand</th>
+                            <th>Reserved</th>
+                            <th>Available</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editChecklistLotTableBody"></tbody>
+                </table>
+            </div>
+
+
+            <div class="modal-footer">
+                <div class="me-auto">
+                    <div class="fw-bold">
+                        Required:
+                        <span id="editLotRequiredQty">0</span>
+                    </div>
+
+                    <div class="fw-bold text-primary">
+                        Total Allocation:
+                        <span id="editLotTotalAllocation">0</span>
+                    </div>
+
+                    <div class="fw-bold text-danger">
+                        Remaining:
+                        <span id="editLotRemainingQty">0</span>
+                    </div>
+                </div>
+
+                <div style="width: 300px;">
+                    <input type="text"
+                           class="form-control"
+                           id="editLotReason"
+                           placeholder="Reason e.g. dents, damaged packaging">
+                </div>
+
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button class="btn btn-primary" onclick="saveChecklistLotReplacement()">
+                    Save Replacement
+                </button>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <style>
+        .modal-parent-dim .modal-content {
+            filter: blur(2px);
+            opacity: .35;
+            pointer-events: none;
+        }
+
+        #editChecklistLotModal {
+            z-index: 1080 !important;
+        }
+
+            #editChecklistLotModal .modal-dialog {
+                z-index: 1081 !important;
+            }
+
+        
+
+       
+    </style>
+    <script>
+        window.currentUserId = "@ViewBag.CurrentUser";
+        window.currentUserName = "@ViewBag.CurrentUser";
+    </script>
+
+
     <script src="~/js/delivery-checklist.js" asp-append-version="true"></script>
 }

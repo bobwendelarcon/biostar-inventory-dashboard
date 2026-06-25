@@ -16,8 +16,19 @@ namespace biostar_inventory_dashboard.Controllers
             _apiService = apiService;
         }
 
+        //public IActionResult Index()
+        //{
+        //    return View();
+        //}
+
         public IActionResult Index()
         {
+            ViewBag.CurrentUser =
+                User.Identity?.Name
+                ?? HttpContext.Session.GetString("FullName")
+                ?? HttpContext.Session.GetString("Username")
+                ?? "UNKNOWN";
+
             return View();
         }
         public IActionResult Print(long id)
@@ -133,6 +144,24 @@ namespace biostar_inventory_dashboard.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CompleteLine([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.CompleteChecklistLineAsync(data);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetChecklistList(DateTime? date, string? status, string? truck, string? search)
         {
@@ -144,6 +173,56 @@ namespace biostar_inventory_dashboard.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateChecklistLineLot([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.UpdateChecklistLineLotAsync(data);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableLotsForChecklistLine(long checklistLineId)
+        {
+            try
+            {
+                var result = await _apiService.GetAvailableLotsForChecklistLineAsync(checklistLineId);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReplaceChecklistLots([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.ReplaceChecklistLotsAsync(data);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
     }

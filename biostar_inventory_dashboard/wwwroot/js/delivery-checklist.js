@@ -1,5 +1,6 @@
 ﻿
 let checklistAutoRefreshTimer = null;
+let checklistModalInstance = null;
 
 function isChecklistModalOpen() {
     const createModal = document.getElementById("createChecklistModal");
@@ -41,6 +42,37 @@ document.addEventListener("DOMContentLoaded", function () {
     initializeCreateChecklistModal();
     initializeSelectAllOrders();
     startChecklistAutoRefresh();
+
+
+
+
+    document.getElementById("completeLineModal")
+        ?.addEventListener("hidden.bs.modal", function () {
+
+            document
+                .getElementById("viewChecklistModal")
+                .classList.remove("modal-parent-dim");
+
+        });
+
+
+    document.getElementById("viewChecklistModal")
+        ?.addEventListener("hidden.bs.modal", cleanupBootstrapModal);
+
+    document.getElementById("completeLineModal")
+        ?.addEventListener("hidden.bs.modal", cleanupBootstrapModal);
+
+
+  
+    document.getElementById("editChecklistLotModal")
+        ?.addEventListener("hidden.bs.modal", function () {
+
+            document
+                .getElementById("viewChecklistModal")
+                ?.classList.remove("modal-parent-dim");
+
+        });
+
 
     const btnReopen = document.getElementById("btnReopenChecklist");
     if (btnReopen) {
@@ -102,12 +134,12 @@ document.addEventListener("DOMContentLoaded", function () {
     //document.getElementById("filterTruck")?.addEventListener("input", debounce(loadChecklistList, 500));
     //document.getElementById("filterSearch")?.addEventListener("input", debounce(loadChecklistList, 500));
 
-    const btnConfirm = document.getElementById("btnConfirmLoading");
-    if (btnConfirm) {
-        btnConfirm.addEventListener("click", function () {
-            confirmLoading();
-        });
-    }
+    //const btnConfirm = document.getElementById("btnConfirmLoading");
+    //if (btnConfirm) {
+    //    btnConfirm.addEventListener("click", function () {
+    //        confirmLoading();
+    //    });
+    //}
 
     const btnDelete = document.getElementById("btnDeleteChecklist");
     if (btnDelete) {
@@ -204,22 +236,40 @@ function applyFilters() {
 //            alert(err.message);
 //        });
 //});
-function setChecklistButtons(status) {
-    const btnConfirm = document.getElementById("btnConfirmLoading");
-    const btnDelete = document.getElementById("btnDeleteChecklist");
-    const btnReopen = document.getElementById("btnReopenChecklist");
 
-    btnConfirm.style.display = "none";
-    btnDelete.style.display = "none";
-    btnReopen.style.display = "none";
+
+
+//function setChecklistButtons(status) {
+//    const btnConfirm = document.getElementById("btnConfirmLoading");
+//    const btnDelete = document.getElementById("btnDeleteChecklist");
+//    const btnReopen = document.getElementById("btnReopenChecklist");
+
+//    btnConfirm.style.display = "none";
+//    btnDelete.style.display = "none";
+//    btnReopen.style.display = "none";
+
+//    status = (status || "").toUpperCase();
+
+//    if (status === "READY") {
+//        btnConfirm.style.display = "inline-block";
+//        btnDelete.style.display = "inline-block";
+//    } else if (status === "LOADING") {
+//        btnReopen.style.display = "inline-block";
+//    }
+//}
+
+function setChecklistButtons(status) {
+    const btnDelete = document.getElementById("btnDeleteChecklist");
+    const btnPrint = document.getElementById("btnPrintChecklist");
 
     status = (status || "").toUpperCase();
 
-    if (status === "READY") {
-        btnConfirm.style.display = "inline-block";
-        btnDelete.style.display = "inline-block";
-    } else if (status === "LOADING") {
-        btnReopen.style.display = "inline-block";
+    if (btnPrint) btnPrint.style.display = "inline-block";
+
+    if (btnDelete) {
+        btnDelete.style.display = status === "READY"
+            ? "inline-block"
+            : "none";
     }
 }
 // ==========================
@@ -258,7 +308,8 @@ async function loadChecklistList(options = {}) {
             throw new Error("Failed to load checklist list.");
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = Array.isArray(result) ? result : (result.data || []);
 
         if (!Array.isArray(data) || data.length === 0) {
             tableBody.innerHTML = `
@@ -282,16 +333,22 @@ async function loadChecklistList(options = {}) {
                     <td>${item.total_customers ?? 0}</td>
                     <td>${escapeHtml(item.createdBy ?? "-")}</td>
                     <td>${getStatusBadge(item.status)}</td>
+                    
                     <td class="text-center">
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="openViewChecklistModal(${item.checklist_id})">
-                                View
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="deleteChecklist(${item.checklist_id})">
-                                Delete
-                            </button>
-                        </div>
-                    </td>
+    <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-primary"
+                onclick="openViewChecklistModal(${item.checklist_id})">
+            View
+        </button>
+
+        <button class="btn btn-outline-danger"
+                onclick="deleteChecklist(${item.checklist_id})">
+            Delete
+        </button>
+    </div>
+</td>
+
+
                 </tr>
             `;
         });
@@ -339,6 +396,7 @@ function initializeCreateChecklistModal() {
 
     modalElement.addEventListener("hidden.bs.modal", function () {
         resetCreateChecklistForm();
+        cleanupBootstrapModal();
     });
 }
 
@@ -564,6 +622,7 @@ async function openViewChecklistModal(id) {
         }
 
         const data = await response.json();
+        window.currentChecklistLines = data.lines || [];
         setChecklistButtons(data.status);
         document.getElementById("view_checklist_no").textContent = data.checklist_no ?? "-";
         document.getElementById("view_route").textContent = data.route_name ?? "-";
@@ -607,22 +666,433 @@ async function openViewChecklistModal(id) {
 
     <td>${formatChecklistQty(line)}</td>
 
-    <td>${getStatusBadge(line.status)}</td>
+   <td>${getStatusBadge(line.status)}</td>
+
+<td class="text-center">
+    ${(line.status || "").toUpperCase() === "READY" ? `
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-warning"
+        onclick="editChecklistLine(${line.checklist_line_id || line.line_id})">
+    Replace Lot
+</button>
+
+            <button class="btn btn-outline-success"
+                    onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
+                Complete
+            </button>
+        </div>
+    ` : `
+        <span class="text-success small">
+            <i class="bi bi-check-circle"></i> Completed
+        </span>
+    `}
+</td>
 </tr>
+
 `;
             });
 
             tbody.innerHTML = rows;
         }
 
-        const modal = new bootstrap.Modal(document.getElementById("viewChecklistModal"));
-        modal.show();
+        checklistModalInstance = bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("viewChecklistModal")
+        );
+
+        checklistModalInstance.show();
     } catch (error) {
         console.error("Error loading checklist details:", error);
         alert("Failed to load checklist details.");
     }
 }
 
+async function submitCompleteLine() {
+    const line = window.currentCompleteLine;
+
+    if (!line) {
+        alert("No checklist line selected.");
+        return;
+    }
+
+    const payload = {
+        checklist_id: window.currentChecklistId,
+        checklist_line_id: Number(document.getElementById("complete_line_id").value),
+
+        product_id: line.product_id,
+        lot_no: line.lot_no,
+        branch_id: line.branch_id,
+
+        adjustment_type: "DEDUCT",
+        quantity: Number(document.getElementById("complete_quantity_out").value),
+        adjusted_by: window.currentUserName || window.currentUserId || "UNKNOWN",
+
+        reference_type: "DELIVERY_CHECKLIST",
+        dr_no: document.getElementById("complete_dr_no").value.trim(),
+        inv_no: document.getElementById("complete_inv_no").value.trim(),
+        po_no: document.getElementById("complete_po_no").value.trim(),
+        remarks: document.getElementById("complete_remarks").value.trim()
+    };
+
+    if (!payload.quantity || payload.quantity <= 0) {
+        alert("Quantity Out must be greater than zero.");
+        return;
+    }
+
+    if (!payload.dr_no) {
+        alert("DR No is required.");
+        return;
+    }
+
+    if (!confirm("Save and complete this checklist line?")) {
+        return;
+    }
+
+    const response = await fetch("/DeliveryChecklist/CompleteLine", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.success === false) {
+        throw new Error(result.message || "Failed to complete checklist line.");
+    }
+
+    alert(result.message || "Checklist line completed.");
+
+    bootstrap.Modal.getInstance(document.getElementById("completeLineModal"))?.hide();
+
+    await openViewChecklistModal(window.currentChecklistId);
+    await loadChecklistList();
+}
+async function editChecklistLine(lineId) {
+    console.log("Replace lot clicked:", lineId);
+
+    const line = window.currentChecklistLines?.find(x =>
+        Number(x.checklist_line_id || x.line_id) === Number(lineId)
+    );
+
+    if (!line) {
+        alert("Line not found.");
+        return;
+    }
+
+    window.currentEditChecklistLine = line;
+
+    document.getElementById("editLotChecklistLineId").value = lineId;
+    document.getElementById("editLotProductText").textContent =
+        `${line.product_name || ""} - Current Lot: ${line.lot_no || "-"}`;
+
+    document.getElementById("editLotRequiredQty").innerText =
+        `${toDisplayNumber(line.checklist_qty)} ${line.uom || ""}`;
+
+    document.getElementById("editLotTotalAllocation").innerText =
+        `0 ${line.uom || ""}`;
+
+    document.getElementById("editLotRemainingQty").innerText =
+        `${toDisplayNumber(line.checklist_qty)} ${line.uom || ""}`;
+
+    document.getElementById("editLotReason").value = "";
+
+    const tbody = document.getElementById("editChecklistLotTableBody");
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="8" class="text-center text-muted">Loading...</td>
+        </tr>
+    `;
+
+    document.activeElement?.blur();
+
+    document
+        .getElementById("viewChecklistModal")
+        ?.classList.add("modal-parent-dim");
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("editChecklistLotModal"),
+        {
+            backdrop: false,
+            keyboard: true
+        }
+    ).show();
+
+    try {
+        const response = await fetch(`/DeliveryChecklist/GetAvailableLotsForChecklistLine?checklistLineId=${lineId}`);
+
+        if (!response.ok) {
+            throw new Error("Failed to load available lots.");
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted">No available lots found.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = `
+            <tr class="table-primary">
+                <td colspan="8">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>${escapeHtml(line.product_name || "-")}</strong>
+                            ${line.product_description
+                ? `<div class="small text-muted">${escapeHtml(line.product_description)}</div>`
+                : ""}
+                            <div class="small">
+                                Current Lot:
+                                <strong>${escapeHtml(line.lot_no || "-")}</strong>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <div>
+                                Checklist Qty:
+                                <strong>${toDisplayNumber(line.checklist_qty)} ${escapeHtml(line.uom || "")}</strong>
+                            </div>
+                            <div>
+                                Current Warehouse:
+                                <strong>${escapeHtml(line.branch_name || line.branch_id || "-")}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        data.forEach(lot => {
+            const maxQty = Number(lot.available_qty || 0);
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${escapeHtml(lot.lot_no || "")}</td>
+                    <td>${escapeHtml(lot.branch_name || lot.branch_id || "")}</td>
+                    <td>${formatDate(lot.manufacturing_date)}</td>
+                    <td>${formatDate(lot.expiration_date)}</td>
+                    <td>${toDisplayNumber(lot.on_hand_qty)}</td>
+                    <td>${toDisplayNumber(lot.reserved_qty)}</td>
+                    <td>${toDisplayNumber(lot.available_qty)}</td>
+                    <td style="width:140px;">
+                        <input type="number"
+                               class="form-control edit-lot-qty-input"
+                               min="0"
+                               max="${maxQty}"
+                               step="0.01"
+                               value="0"
+                               data-lot-no="${escapeAttribute(lot.lot_no || "")}"
+                               data-branch-id="${escapeAttribute(lot.branch_id || "")}"
+                               data-max="${maxQty}">
+                    </td>
+                </tr>
+            `;
+        });
+
+        computeEditLotTotal();
+
+    } catch (error) {
+        console.error("Replace lot load error:", error);
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center text-danger">
+                    ${escapeHtml(error.message || "Failed to load available lots.")}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
+document.addEventListener("input", function (e) {
+    if (!e.target.classList.contains("edit-lot-qty-input")) return;
+
+    const max = Number(e.target.dataset.max || 0);
+    let value = Number(e.target.value || 0);
+
+    if (value > max) {
+        e.target.value = max;
+    }
+
+    computeEditLotTotal();
+});
+
+async function saveChecklistLotReplacement() {
+    const line = window.currentEditChecklistLine;
+
+    if (!line) {
+        alert("No checklist line selected.");
+        return;
+    }
+
+    const required = Number(line.checklist_qty || 0);
+    let total = 0;
+
+    const lots = [];
+
+    document.querySelectorAll(".edit-lot-qty-input").forEach(input => {
+        const qty = Number(input.value || 0);
+
+        if (qty > 0) {
+            total += qty;
+
+            lots.push({
+                lot_no: input.dataset.lotNo,
+                branch_id: input.dataset.branchId,
+                qty: qty
+            });
+        }
+    });
+
+    if (lots.length === 0) {
+        alert("Please allocate at least one lot.");
+        return;
+    }
+
+    if (Math.abs(total - required) > 0.0001) {
+        alert(`Total allocation must equal checklist qty.\nRequired: ${required}\nTotal: ${total}`);
+        return;
+    }
+
+    const reason = document.getElementById("editLotReason").value.trim();
+
+    if (!reason) {
+        alert("Please enter replacement reason.");
+        return;
+    }
+
+    const payload = {
+        checklist_line_id: Number(line.checklist_line_id || line.line_id),
+        reason: reason,
+        lots: lots
+    };
+
+    const response = await fetch("/DeliveryChecklist/ReplaceChecklistLots", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.success === false) {
+        alert(result.message || "Failed to save replacement.");
+        return;
+    }
+
+    alert(result.message || "Replacement saved.");
+
+    bootstrap.Modal.getInstance(document.getElementById("editChecklistLotModal"))?.hide();
+
+    await openViewChecklistModal(window.currentChecklistId);
+}
+
+function computeEditLotTotal() {
+    const line = window.currentEditChecklistLine;
+    if (!line) return;
+
+    const required = Number(line.checklist_qty || 0);
+    let total = 0;
+
+    document.querySelectorAll(".edit-lot-qty-input").forEach(input => {
+        total += Number(input.value || 0);
+    });
+
+    const remaining = Math.max(required - total, 0);
+    const uom = line.uom || "";
+
+    document.getElementById("editLotTotalAllocation").innerText =
+        `${toDisplayNumber(total)} ${uom}`;
+
+    document.getElementById("editLotRemainingQty").innerText =
+        `${toDisplayNumber(remaining)} ${uom}`;
+}
+
+
+//async function selectChecklistLot(lotNo, branchId) {
+//    const checklistLineId = Number(document.getElementById("editLotChecklistLineId").value);
+
+//    if (!confirm(`Use lot ${lotNo} for this checklist line?`)) return;
+
+//    const payload = {
+//        checklist_line_id: checklistLineId,
+//        lot_no: lotNo,
+//        branch_id: branchId
+//    };
+
+//    const response = await fetch("/DeliveryChecklist/UpdateChecklistLineLot", {
+//        method: "POST",
+//        headers: { "Content-Type": "application/json" },
+//        body: JSON.stringify(payload)
+//    });
+
+//    const result = await response.json();
+
+//    if (!response.ok || result.success === false) {
+//        alert(result.message || "Failed to update lot.");
+//        return;
+//    }
+
+//    alert(result.message || "Lot updated.");
+
+//    bootstrap.Modal.getInstance(document.getElementById("editChecklistLotModal"))?.hide();
+//    await openViewChecklistModal(window.currentChecklistId);
+//}
+
+
+function openCompleteLineModal(lineId) {
+  
+    const line = window.currentChecklistLines?.find(x =>
+        Number(x.checklist_line_id || x.line_id) === Number(lineId)
+    );
+
+    if (!line) {
+        alert("Line not found.");
+        return;
+    }
+
+    // IMPORTANT
+    window.currentCompleteLine = line;
+
+    document.getElementById("complete_line_id").value = lineId;
+
+    document.getElementById("complete_line_id").value = lineId;
+    document.getElementById("complete_customer_text").textContent = line.customer_name || "-";
+    document.getElementById("complete_product_text").textContent = line.product_name || "-";
+    document.getElementById("complete_product_description_text").textContent =
+        line.product_description || "";
+    document.getElementById("complete_warehouse_text").textContent = line.branch_name || "-";
+    document.getElementById("complete_lot_no_text").textContent = line.lot_no || "-";
+    document.getElementById("complete_available_qty_text").textContent = formatChecklistQty(line);
+
+    document.getElementById("complete_quantity_out").value = Number(line.checklist_qty || 0);
+
+    document.getElementById("complete_dr_no").value = "";
+    document.getElementById("complete_inv_no").value = "";
+    document.getElementById("complete_po_no").value = "";
+    document.getElementById("complete_remarks").value = "";
+
+    const modalEl = document.getElementById("completeLineModal");
+
+    let modal = bootstrap.Modal.getInstance(modalEl);
+
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl);
+    }
+
+    document
+        .getElementById("viewChecklistModal")
+        .classList.add("modal-parent-dim");
+
+    modal.show();
+}
 // ==========================
 // HELPERS
 // ==========================
@@ -814,36 +1284,26 @@ async function deleteChecklist(id) {
         }
 
         if (!response.ok) {
-
-            const errorText = await response.text();
-
-            console.error(errorText);
-
-            let errorObj = null;
-
-            try {
-                errorObj = JSON.parse(errorText);
-            } catch {
-                errorObj = { message: errorText };
-            }
-
-            throw new Error(
-                errorObj.message ||
-                errorObj.inner ||
-                errorText ||
-                "Failed to load checklist details."
-            );
+            throw new Error(result?.message || resultText || "Failed to delete checklist.");
         }
 
         alert(result?.message || "Checklist deleted successfully.");
-
         await loadChecklistList();
+        cleanupBootstrapModal();
+
     } catch (error) {
         console.error("Error deleting checklist:", error);
         alert(error.message || "Failed to delete checklist.");
+        cleanupBootstrapModal();
     }
+}
 
-   
+function cleanupBootstrapModal() {
+    document.body.classList.remove("modal-open");
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("padding-right");
 
-    
+    document.querySelectorAll(".modal-backdrop").forEach(x => x.remove());
+
+    document.getElementById("replacementBackdrop")?.remove();
 }

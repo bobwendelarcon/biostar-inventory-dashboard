@@ -258,6 +258,27 @@ namespace biostar_inventory_dashboard.Controllers
             }
         }
 
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteOrderLine(
+    long orderId,
+    long orderLineId)
+        {
+            try
+            {
+                var result = await _apiService.DeleteDailyOrderLineAsync(
+                    orderId,
+                    orderLineId
+                );
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> BackToAllocation(long orderId)
         {
@@ -271,6 +292,26 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> AddOrderLine(
+    long orderId,
+    [FromBody] JsonElement request)
+        {
+            try
+            {
+                var result = await _apiService.AddDailyOrderLineAsync(
+                    orderId,
+                    request
+                );
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
 
     }

@@ -695,6 +695,18 @@ string brandName = "",
         //    return JsonSerializer.Deserialize<List<ProductLookupDto>>(json, _jsonOptions) ?? new List<ProductLookupDto>();
         //}
 
+
+        public async Task<string> CompleteChecklistLineAsync(JsonElement data)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/deliveryChecklist/complete-line", data);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(content);
+
+            return content;
+        }
         public async Task<List<ProductLookupDto>> GetProductsLookupAsync(string? categoryId, string? search)
         {
             var query = new List<string>();
@@ -1086,7 +1098,44 @@ string brandName = "",
                 throw new Exception(result);
 
             return result;
+        }public async Task<string> AddDailyOrderLineAsync(
+    long orderId,
+    object request)
+{
+    var json = JsonSerializer.Serialize(request);
+
+    var content = new StringContent(
+        json,
+        Encoding.UTF8,
+        "application/json");
+
+    var response = await _httpClient.PostAsync(
+        $"api/DailyOrders/{orderId}/lines",
+        content);
+
+    var result = await response.Content.ReadAsStringAsync();
+
+    if (!response.IsSuccessStatusCode)
+        throw new Exception(result);
+
+    return result;
+}
+
+        public async Task<string> DeleteDailyOrderLineAsync(
+    long orderId,
+    long orderLineId)
+        {
+            var response = await _httpClient.DeleteAsync(
+                $"api/DailyOrders/{orderId}/lines/{orderLineId}");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
         }
+        
 
         public async Task<string> RenameLotAsync(string jsonData)
         {
@@ -1109,6 +1158,45 @@ string brandName = "",
             var response = await _httpClient.PutAsync(
                 "api/inventoryDisplay/update-lot-dates",
                 content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> GetAvailableLotsForChecklistLineAsync(long checklistLineId)
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/DeliveryChecklist/available-lots-for-line/{checklistLineId}"
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> UpdateChecklistLineLotAsync(JsonElement data)
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                "api/DeliveryChecklist/update-line-lot",
+                data
+            );
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> ReplaceChecklistLotsAsync(JsonElement data)
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                "api/DeliveryChecklist/replace-checklist-lots",
+                data
             );
 
             var result = await response.Content.ReadAsStringAsync();

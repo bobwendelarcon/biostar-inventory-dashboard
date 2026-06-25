@@ -285,13 +285,14 @@ async function loadInventory(page = currentPage) {
                     : ""}
         </div>
 
-        <button type="button"
-                class="btn-view-product-lots"
-                title="View all lots for this product"
-                data-generic="${item.description ?? ""}"
-                data-brand="${item.product_description ?? ""}">
-            <i class="bi bi-search"></i>
-        </button>
+      <button type="button"
+        class="btn-view-product-lots"
+        title="View all lots for this product"
+        data-product-id="${item.product_id ?? ""}"
+        data-generic="${item.description ?? ""}"
+        data-brand="${item.product_description ?? ""}">
+    <i class="bi bi-search"></i>
+</button>
     </div>
 </td>
             <td>${item.category_name ?? "-"}</td>
@@ -547,6 +548,7 @@ document.addEventListener("click", function (e) {
     if (productLotsBtn) {
 
         openProductLotsModal(
+            productLotsBtn.dataset.productId,
             productLotsBtn.dataset.generic,
             productLotsBtn.dataset.brand
         );
@@ -1464,7 +1466,7 @@ async function saveManualStockOut() {
     }
 }
 
-async function openProductLotsModal(genericName, brandName) {
+async function openProductLotsModal(productId, genericName, brandName) {
     const params = new URLSearchParams({
         page: 1,
         pageSize: 100000,
@@ -1479,6 +1481,7 @@ async function openProductLotsModal(genericName, brandName) {
     const res = await fetch(`/Inventory/GetInventory?${params.toString()}`);
     const json = await res.json();
     const items = (json.data || []).filter(x =>
+        String(x.product_id) === String(productId) &&
         Number(x.available_qty || 0) > 0
     );
     renderProductLocationSummary(items);
@@ -1504,7 +1507,8 @@ async function openProductLotsModal(genericName, brandName) {
             return `
                 <tr>
                     <td>${x.lot_no ?? ""}</td>
-                    <td>${x.warehouse ?? ""}</td>
+        <td>${x.category_name ?? "-"}</td>
+        <td>${x.warehouse ?? ""}</td>
                     <td>
                         <div class="fw-semibold">${availableQty} ${x.uom ?? ""}</div>
                         <div class="text-muted small">OH:${onHandQty} | Res:${reservedQty}</div>

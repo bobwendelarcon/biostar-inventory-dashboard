@@ -10,15 +10,16 @@ body {
 
 /* PAGE */
 .dailyorder-page {
-    height: calc(100vh - 50px);
+    height: calc(100vh - 70px);
     display: flex;
     flex-direction: column;
+    padding: 10px 12px 20px 12px;
     overflow: hidden;
 }
 
     /* HEADER */
     .dailyorder-page > .d-flex:first-child {
-        margin-bottom: 4px !important;
+        margin-bottom: 6px !important;
     }
 
 .page-header {
@@ -36,7 +37,7 @@ body {
     display: block;
     font-size: 10px;
     line-height: 1;
-    margin-top: 1px;
+    margin-top: 2px;
     color: #6c757d;
 }
 
@@ -56,17 +57,26 @@ body {
 }
 
 .form-select,
-.form-control {
+.form-control,
+.btn {
     height: 30px;
     min-height: 30px;
     font-size: 12px;
     padding: 2px 8px;
 }
 
-.btn {
-    height: 30px;
-    min-height: 30px;
-    font-size: 12px;
+#btnFilter {
+    display: none !important;
+}
+
+#searchInput {
+    width: 100%;
+    min-width: 260px;
+}
+
+.dailyorder-page .row.g-3 {
+    --bs-gutter-x: .75rem;
+    --bs-gutter-y: .35rem;
 }
 
 /* SUMMARY */
@@ -99,32 +109,20 @@ body {
     line-height: 1;
 }
 
-/* AUTO FILTER */
-#btnFilter {
-    display: none !important;
-}
-
-#searchInput {
-    width: 100%;
-    min-width: 260px;
-}
-
-.dailyorder-page .row.g-3 {
-    --bs-gutter-x: .75rem;
-    --bs-gutter-y: .35rem;
-}
-
 /* TABLE CARD */
 .dailyorder-page > .card:last-child {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
     .dailyorder-page > .card:last-child > .card-body {
-        flex: 1;
+        flex: 1 1 auto;
         min-height: 0;
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
         padding: 0;
     }
@@ -132,8 +130,10 @@ body {
     .dailyorder-page > .card:last-child > .card-footer {
         display: none;
     }
+
 /* TOP SCROLLBAR */
 .table-scroll-top {
+    flex: 0 0 auto;
     overflow-x: auto;
     overflow-y: hidden;
     height: 10px;
@@ -156,14 +156,25 @@ body {
 
 /* TABLE WRAPPER */
 .dailyorder-table-wrapper {
-    flex: 1;
-    height: 100%;
+    flex: 1 1 auto;
     min-height: 0;
     overflow-x: auto !important;
     overflow-y: auto !important;
     border-radius: 10px;
+    cursor: grab;
+    padding-bottom: 60px;
     -webkit-overflow-scrolling: touch;
 }
+
+    .dailyorder-table-wrapper.dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+        .dailyorder-table-wrapper.dragging table {
+            pointer-events: none;
+        }
+
 /* TABLE */
 .dailyorder-table {
     min-width: 1700px;
@@ -255,7 +266,6 @@ body {
 
 /* TABLET */
 @media (max-width: 991.98px) {
-
     html,
     body {
         overflow: auto;
@@ -265,6 +275,7 @@ body {
         height: auto;
         min-height: 100vh;
         overflow: visible;
+        padding: 10px;
     }
 
     .dailyorder-table {
@@ -278,7 +289,6 @@ body {
 
 /* MOBILE */
 @media (max-width: 575.98px) {
-
     .dailyorder-page {
         padding: 10px;
     }
@@ -295,27 +305,8 @@ body {
         min-width: 1500px;
     }
 
-        .dailyorder-table thead th {
-            font-size: 11px;
-        }
-
+        .dailyorder-table thead th,
         .dailyorder-table tbody td {
             font-size: 11px;
         }
 }
-
-
-.dailyorder-table-wrapper {
-    cursor: grab;
-}
-
-    .dailyorder-table-wrapper.dragging {
-        cursor: grabbing;
-        user-select: none;
-    }
-
-        .dailyorder-table-wrapper.dragging table {
-            pointer-events: none;
-        }
-
-

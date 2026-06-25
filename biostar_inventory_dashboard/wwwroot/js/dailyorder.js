@@ -24,6 +24,29 @@ document.addEventListener("DOMContentLoaded", function () {
     //    });
     //}
 
+    document.getElementById("btnAddProductLine")?.addEventListener("click", async function () {
+        if (!window.currentOrderId) {
+            alert("No order selected.");
+            return;
+        }
+
+        //await loadAddOrderCategories();
+        //await loadAddOrderProducts();
+
+        //document.getElementById("addLineQty").value = 1;
+
+        await loadModalAddLineCategories();
+        document.getElementById("modalAddLineQty").value = 1;
+
+        new bootstrap.Modal(
+            document.getElementById("addProductLineModal")
+        ).show();
+    });
+
+    document.getElementById("addLineCategory")?.addEventListener("change", loadAddOrderProducts);
+
+    document.getElementById("btnSaveProductLine")?.addEventListener("click", saveProductLine);
+
     document.getElementById("searchInput")
         ?.addEventListener("input", function () {
 
@@ -352,6 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const dispatchBtn = e.target.closest(".btn-dispatch-order");
         const editQtyBtn = e.target.closest(".btn-edit-line-required-qty");
         const clearAllocationBtn = e.target.closest(".btn-clear-line-allocation");
+        const deleteLineBtn = e.target.closest(".btn-delete-order-line");
 
         if (viewBtn) {
             hideFloatingMenu();
@@ -404,6 +428,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const orderLineId = clearAllocationBtn.dataset.lineId;
             await clearLineAllocation(orderLineId);
         }
+        if (deleteLineBtn) {
+            hideFloatingMenu();
+
+            const orderId = deleteLineBtn.dataset.orderId;
+            const orderLineId = deleteLineBtn.dataset.lineId;
+
+            await deleteOrderLine(orderId, orderLineId);
+        }
 
         if (dispatchBtn) {
             hideFloatingMenu();
@@ -455,7 +487,133 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+//async function saveProductLine() {
+//    const productId = document.getElementById("addLineProduct")?.value;
+//    const requiredQty = Number(document.getElementById("addLineQty")?.value || 0);
 
+//    if (!window.currentOrderId) {
+//        alert("No order selected.");
+//        return;
+//    }
+
+//    if (!productId) {
+//        alert("Please select product.");
+//        return;
+//    }
+
+//    if (requiredQty <= 0) {
+//        alert("Required qty must be greater than zero.");
+//        return;
+//    }
+
+//    try {
+//        const response = await fetch(
+//            `/DailyOrder/AddOrderLine?orderId=${window.currentOrderId}`,
+//            {
+//                method: "POST",
+//                headers: {
+//                    "Content-Type": "application/json"
+//                },
+//                body: JSON.stringify({
+//                    productId: productId,
+//                    requiredQty: requiredQty
+//                })
+//            }
+//        );
+
+//        const text = await response.text();
+
+//        if (!response.ok)
+//            throw new Error(text);
+
+//        alert("Product line added.");
+
+//        bootstrap.Modal
+//            .getInstance(document.getElementById("addProductLineModal"))
+//            ?.hide();
+
+//        await loadDailyOrders();
+//        await openViewModal(window.currentOrderId);
+
+//    } catch (err) {
+//        console.error(err);
+//        alert(err.message || "Failed to add product line.");
+//    }
+//}
+
+async function saveProductLine() {
+    const productId = document.getElementById("modalAddLineProduct")?.value;
+    const requiredQty = Number(document.getElementById("modalAddLineQty")?.value || 0);
+
+    if (!productId) {
+        alert("Please select product.");
+        return;
+    }
+
+    if (requiredQty <= 0) {
+        alert("Required qty must be greater than zero.");
+        return;
+    }
+
+    const response = await fetch(`/DailyOrder/AddOrderLine?orderId=${window.currentOrderId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, requiredQty })
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+        alert(text);
+        return;
+    }
+
+    alert("Product line added.");
+
+    bootstrap.Modal
+        .getInstance(document.getElementById("addProductLineModal"))
+        ?.hide();
+
+    await loadDailyOrders();
+    await openViewModal(window.currentOrderId);
+}
+
+async function loadModalAddLineCategories() {
+    const select = document.getElementById("modalAddLineCategory");
+    select.innerHTML = `<option value="">Loading categories...</option>`;
+
+    const response = await fetch("/DailyOrder/GetCategories");
+    const data = await response.json();
+
+    select.innerHTML = `<option value="">-- Select Category --</option>`;
+
+    data.forEach(c => {
+        select.innerHTML += `<option value="${c.catg_id}">${safe(c.catg_name)}</option>`;
+    });
+
+    await loadModalAddLineProducts();
+}
+
+async function loadModalAddLineProducts() {
+    const categoryId = document.getElementById("modalAddLineCategory")?.value || "";
+    const select = document.getElementById("modalAddLineProduct");
+
+    select.innerHTML = `<option value="">Loading products...</option>`;
+
+    const response = await fetch(`/DailyOrder/GetProductsLookup?categoryId=${encodeURIComponent(categoryId)}`);
+    const data = await response.json();
+
+    select.innerHTML = `<option value="">-- Select Product --</option>`;
+
+    data.forEach(p => {
+        select.innerHTML += `
+            <option value="${p.productId}">
+                ${safe(p.productName)}
+                ${p.productDescription ? " - " + safe(p.productDescription) : ""}
+            </option>
+        `;
+    });
+}
 function initTopScrollbar() {
 
     const top = document.querySelector(".table-scroll-top");
@@ -536,24 +694,53 @@ function renderManualAvailableLotsModal(lines) {
 
         // PRODUCT HEADER
         tbody.innerHTML += `
-           <tr class="table-primary">
+<tr class="table-primary">
     <td colspan="8">
-        <strong>
-            ${safe(line.productName)}
-        </strong>
 
-        <span class="badge bg-secondary ms-2">
-            Required:
-            ${formatNumber(line.remainingQty)}
-            ${line.uom}
-        </span>
+        <div class="d-flex justify-content-between">
 
-        <div class="small text-muted">
-            ${safe(line.productDescription || "")}
+            <div>
+
+                <strong>${safe(line.productName)}</strong>
+
+                <div class="small text-muted">
+                    ${safe(line.productDescription || "")}
+                </div>
+
+            </div>
+
+            <div class="text-end">
+
+                <div>
+                    Required :
+                    <span
+                        class="manual-required"
+                        data-required="${line.remainingQty}">
+                        ${formatNumber(line.remainingQty)} ${line.uom}
+                    </span>
+                </div>
+
+                <div>
+                    Allocated :
+                    <span class="manual-total">
+                        0 ${line.uom}
+                    </span>
+                </div>
+
+                <div>
+                    Remaining :
+                    <span class="manual-remaining">
+                        ${formatNumber(line.remainingQty)} ${line.uom}
+                    </span>
+                </div>
+
+            </div>
+
         </div>
+
     </td>
 </tr>
-        `;
+`;
 
         (line.lots || []).forEach(lot => {
 
@@ -671,20 +858,66 @@ function renderManualAllocationModal(order) {
 
     computeManualAllocationTotal();
 }
+//function computeManualAllocationTotal() {
+
+//    let total = 0;
+
+//    document
+//        .querySelectorAll(".manual-lot-input")
+//        .forEach(input => {
+
+//            total += Number(input.value || 0);
+//        });
+
+//    document.getElementById(
+//        "manualAllocationTotal"
+//    ).innerText = formatNumber(total);
+//}
+
 function computeManualAllocationTotal() {
 
-    let total = 0;
+    let grandTotal = 0;
 
-    document
-        .querySelectorAll(".manual-lot-input")
-        .forEach(input => {
+    document.querySelectorAll(".table-primary").forEach(header => {
 
-            total += Number(input.value || 0);
-        });
+        const requiredSpan = header.querySelector(".manual-required");
+        const allocatedSpan = header.querySelector(".manual-total");
+        const remainingSpan = header.querySelector(".manual-remaining");
 
-    document.getElementById(
-        "manualAllocationTotal"
-    ).innerText = formatNumber(total);
+        if (!requiredSpan)
+            return;
+
+        const required =
+            Number(requiredSpan.dataset.required || 0);
+
+        let allocated = 0;
+
+        let row = header.nextElementSibling;
+
+        while (row && !row.classList.contains("table-primary")) {
+
+            const input = row.querySelector(".manual-lot-input");
+
+            if (input) {
+                allocated += Number(input.value || 0);
+            }
+
+            row = row.nextElementSibling;
+        }
+
+        const remaining = Math.max(required - allocated, 0);
+
+        allocatedSpan.innerHTML =
+            `${formatNumber(allocated)}`;
+
+        remainingSpan.innerHTML =
+            `${formatNumber(remaining)}`;
+
+        grandTotal += allocated;
+    });
+
+    document.getElementById("manualAllocationTotal").innerText =
+        formatNumber(grandTotal);
 }
 
 
@@ -1080,10 +1313,33 @@ function renderDailyOrderTable(data) {
 
     data.forEach(order => {
         let menuItems = `
-            <button type="button" class="floating-action-item btn-view-order" data-id="${order.orderId}">View</button>
-            <button type="button" class="floating-action-item btn-edit-order" data-id="${order.orderId}">Edit</button>
-            <button type="button" class="floating-action-item btn-delete-order text-danger" data-id="${order.orderId}">Delete</button>
-        `;
+    <button type="button"
+        class="floating-action-item btn-view-order"
+        data-id="${order.orderId}">
+        View
+    </button>
+
+    <button type="button"
+        class="floating-action-item btn-edit-order"
+        data-id="${order.orderId}">
+        Edit
+    </button>
+`;
+
+        const allocatedQty = Number(order.allocatedQty || 0);
+        const dispatchedQty = Number(order.dispatchedQty || 0);
+
+        if (allocatedQty <= 0 && dispatchedQty <= 0) {
+            menuItems += `
+        <button
+            type="button"
+            class="floating-action-item btn-delete-order-line text-danger"
+            data-order-id="${order.orderId}"
+            data-line-id="${order.orderLineId}">
+            Delete Line
+        </button>
+    `;
+        }
 
         if (order.status === "For Allocation" || order.status === "Partially Allocated") {
             menuItems += `
@@ -1516,6 +1772,38 @@ async function clearLineAllocation(orderLineId) {
         );
     }
 }
+async function deleteOrderLine(orderId, orderLineId) {
+    if (!orderId || !orderLineId) {
+        alert("Missing order line ID.");
+        return;
+    }
+
+    if (!confirm("Delete this product line only?")) return;
+
+    try {
+        const response = await fetch(
+            `/DailyOrder/DeleteOrderLine?orderId=${orderId}&orderLineId=${orderLineId}`,
+            { method: "DELETE" }
+        );
+
+        const text = await response.text();
+
+        if (!response.ok)
+            throw new Error(text);
+
+        alert("Product line deleted.");
+
+        await loadDailyOrders();
+
+        if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
+            await openViewModal(orderId);
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message || "Failed to delete product line.");
+    }
+}
 function renderModalLotAllocations(lines) {
     const tbody = document.getElementById("modalLotAllocationBody");
     tbody.innerHTML = "";
@@ -1932,51 +2220,23 @@ function formatAllocationStatus(status, remainingQty, allocatedQty, orderStatus 
     const remaining = Number(remainingQty || 0);
     const allocated = Number(allocatedQty || 0);
 
-    // COMPLETED
     if (normalizedOrderStatus === "COMPLETED") {
         return `<span class="text-success fw-bold">✔ Completed</span>`;
     }
 
-    // PARTIALLY DELIVERED
-    if (normalizedOrderStatus === "PARTIALLY DELIVERED") {
-
-        // nothing allocated yet
-        if (remaining > 0 && allocated <= 0) {
-            return `<span class="text-warning fw-bold">⚠ Remaining needs allocation</span>`;
-        }
-
-        // partially allocated remaining
-        if (remaining > 0 && allocated > 0) {
-            return `<span class="text-info fw-bold">↻ Partially reallocated</span>`;
-        }
-
-        // all remaining already allocated
-        if (remaining <= 0 && allocated > 0) {
-            return `<span class="text-success fw-bold">↻ Remaining allocated</span>`;
-        }
-    }
-
-    // NO STOCK
     if (normalizedStatus === "NO STOCK") {
-        return `<span class="text-danger fw-bold">⚠ No stock</span>`;
+        return `<span class="text-danger fw-bold">⚠ No Stock</span>`;
     }
 
-    // NEEDS ALLOCATION
     if (allocated <= 0) {
         return `<span class="text-danger fw-bold">⚠ Needs allocation</span>`;
     }
 
-    // PARTIAL
-    if (allocated > 0 && remaining > 0) {
-        return `<span class="text-warning fw-bold">⚠ Partial</span>`;
+    if (allocated >= remaining) {
+        return `<span class="text-success fw-bold">✔ Fully Allocated</span>`;
     }
 
-    // ALLOCATED
-    if (allocated > 0 && remaining <= 0) {
-        return `<span class="text-success fw-bold">✔ Allocated</span>`;
-    }
-
-    return renderAllocationBadge(status);
+    return `<span class="text-warning fw-bold">⚠ Partial</span>`;
 }
 
 function safe(value) {
