@@ -563,7 +563,9 @@ string brandName = "",
       string? status,
       string? search,
       string? sortBy,
-      string? sortDir)
+      string? sortDir,
+      int page = 1,
+      int pageSize = 50)
         {
             var query = new List<string>();
 
@@ -587,6 +589,9 @@ string brandName = "",
 
             if (!string.IsNullOrWhiteSpace(sortDir))
                 query.Add($"sortDir={Uri.EscapeDataString(sortDir)}");
+
+            query.Add($"page={page}");
+            query.Add($"pageSize={pageSize}");
 
             var url = "api/DailyOrders";
 

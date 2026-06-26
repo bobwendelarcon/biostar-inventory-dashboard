@@ -26,25 +26,30 @@ namespace biostar_inventory_dashboard.Controllers
         }
         [HttpGet]
         public async Task<IActionResult> GetOrders(
-            string? className,
-            int? year,
-            string? month,
-            string? status,
-           string? search,
-string? sortBy,
-string? sortDir)
+     string? className,
+     int? year,
+     string? month,
+     string? status,
+     string? search,
+     string? sortBy,
+     string? sortDir,
+     int page = 1,
+     int pageSize = 50)
         {
             try
             {
                 var result = await _apiService.GetDailyOrdersAsync(
-    className,
-    year,
-    month,
-    status,
-    search,
-    sortBy,
-    sortDir
-);
+                    className,
+                    year,
+                    month,
+                    status,
+                    search,
+                    sortBy,
+                    sortDir,
+                    page,
+                    pageSize
+                );
+
                 return Content(result, "application/json");
             }
             catch (Exception ex)

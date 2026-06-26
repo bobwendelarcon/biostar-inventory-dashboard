@@ -2,6 +2,12 @@
 let isTypingFilter = false;
 let isLoadingDailyOrders = false;
 
+
+let dailyOrderPage = 1;
+let dailyOrderPageSize = 50;
+let dailyOrderHasMore = true;
+let dailyOrderIsAppending = false;
+
 document.addEventListener("DOMContentLoaded", function () {
     loadDailyOrders();
     startDailyOrderAutoRefresh();
@@ -23,6 +29,18 @@ document.addEventListener("DOMContentLoaded", function () {
     //        loadDailyOrders();
     //    });
     //}
+
+    const tableWrapper = document.querySelector(".dailyorder-table-wrapper");
+
+    tableWrapper?.addEventListener("scroll", function () {
+        const nearBottom =
+            tableWrapper.scrollTop + tableWrapper.clientHeight >=
+            tableWrapper.scrollHeight - 120;
+
+        if (nearBottom && dailyOrderHasMore && !isLoadingDailyOrders) {
+            loadDailyOrders(true);
+        }
+    });
 
     document.getElementById("btnAddProductLine")?.addEventListener("click", async function () {
         if (!window.currentOrderId) {
@@ -63,16 +81,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     document.getElementById("classFilter")
-        ?.addEventListener("change", loadDailyOrders);
+        ?.addEventListener("change", () => loadDailyOrders(false));
 
     document.getElementById("yearFilter")
-        ?.addEventListener("change", loadDailyOrders);
+        ?.addEventListener("change", () => loadDailyOrders(false));
 
     document.getElementById("monthFilter")
-        ?.addEventListener("change", loadDailyOrders);
+        ?.addEventListener("change", () => loadDailyOrders(false));
 
     document.getElementById("statusFilter")
-        ?.addEventListener("change", loadDailyOrders);
+        ?.addEventListener("change", () => loadDailyOrders(false));
+
+    document.getElementById("sortByFilter")
+        ?.addEventListener("change", () => loadDailyOrders(false));
+
+    document.getElementById("sortDirFilter")
+        ?.addEventListener("change", () => loadDailyOrders(false));
 
 
 
@@ -445,12 +469,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    document.getElementById("sortByFilter")
-        ?.addEventListener("change", loadDailyOrders);
-
-    document.getElementById("sortDirFilter")
-        ?.addEventListener("change", loadDailyOrders);
-
+ 
 
 
     document.addEventListener("contextmenu", function (e) {
@@ -1133,7 +1152,11 @@ function startDailyOrderAutoRefresh() {
 
         if (isTypingFilter) return;
 
-        loadDailyOrders();
+        const wrapper = document.querySelector(".dailyorder-table-wrapper");
+
+        if (wrapper && wrapper.scrollTop < 100) {
+            loadDailyOrders();
+        }
 
     }, 30000);
 }
@@ -1243,8 +1266,21 @@ function toInputDate(dateStr) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-async function loadDailyOrders() {
+async function loadDailyOrders(append = false) {
+
+    if (append) {
+        if (dailyOrderIsAppending) return;
+        dailyOrderIsAppending = true;
+    }
+
     if (isLoadingDailyOrders) return;
+
+    if (!append) {
+        dailyOrderPage = 1;
+        dailyOrderHasMore = true;
+    }
+
+    if (append && !dailyOrderHasMore) return;
 
     isLoadingDailyOrders = true;
 
@@ -1266,6 +1302,9 @@ async function loadDailyOrders() {
     params.append("sortBy", sortBy);
     params.append("sortDir", sortDir);
 
+    params.append("page", dailyOrderPage);
+    params.append("pageSize", dailyOrderPageSize);
+
     document.getElementById("lastUpdatedText").textContent =
         "Last updated: " + new Date().toLocaleTimeString();
 
@@ -1279,20 +1318,27 @@ async function loadDailyOrders() {
         const result = await response.json();
 
         renderDailyOrderSummary(result.summary);
-        renderDailyOrderTable(result.data || []);
+        renderDailyOrderTable(result.data || [], append);
+
+        dailyOrderHasMore = Boolean(result.hasMore);
+
+        if (dailyOrderHasMore) {
+            dailyOrderPage++;
+        }
 
     } catch (err) {
         console.error(err);
 
         document.getElementById("dailyOrderTableBody").innerHTML = `
             <tr>
-                <td colspan="19" class="text-center text-danger py-4">
+                <td colspan="11" class="text-center text-danger py-4">
                     Failed to load orders.
                 </td>
             </tr>
         `;
     } finally {
         isLoadingDailyOrders = false;
+        dailyOrderIsAppending = false;
     }
 }
 
@@ -1306,17 +1352,20 @@ function renderDailyOrderSummary(summary) {
     document.getElementById("summaryOverdue").textContent = summary?.overdue ?? 0;
     document.getElementById("summaryCompleted").textContent = summary?.completed ?? 0;
 }
-function renderDailyOrderTable(data) {
+function renderDailyOrderTable(data, append = false) {
     const tbody = document.getElementById("dailyOrderTableBody");
 
     if (!data || data.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="19" class="text-center text-muted py-4">
-                    No orders found.
-                </td>
-            </tr>
-        `;
+
+        if (!append) {
+            tbody.innerHTML = `
+        <tr>
+            <td colspan="11" class="text-center text-muted py-4">
+                No orders found.
+            </td>
+        </tr>`;
+        }
+
         return;
     }
 
@@ -1416,7 +1465,11 @@ function renderDailyOrderTable(data) {
         `;
     });
 
-    tbody.innerHTML = rows;
+    if (append) {
+        tbody.insertAdjacentHTML("beforeend", rows);
+    } else {
+        tbody.innerHTML = rows;
+    }
 
     setTimeout(() => {
         initTopScrollbar();
