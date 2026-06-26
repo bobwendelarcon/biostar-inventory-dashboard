@@ -1,15 +1,21 @@
 ﻿@page {
     size: legal portrait;
-    margin: 6mm;
+    margin: 8mm;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
     margin: 0;
     background: #777;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 8px;
+    color: #000;
 }
 
+/* SCREEN TOOLBAR */
 .viewer-toolbar {
     background: #f5f5f5;
     padding: 10px 16px;
@@ -28,199 +34,284 @@ body {
         margin-right: 6px;
     }
 
-.paper {
-    width: 216mm;
-    min-height: 356mm;
-    margin: 20px auto;
-    background: white;
-    padding: 6mm;
-    box-shadow: 0 0 12px rgba(0,0,0,.45);
-    box-sizing: border-box;
+    .viewer-toolbar strong {
+        font-size: 11px;
+        margin-left: 8px;
+    }
+
+/* PAGE WRAPPER */
+#printPages {
+    padding: 18px 0;
 }
 
+/* ONE PRINT PAGE */
+.print-page {
+    width: 216mm;
+    min-height: 356mm;
+    margin: 0 auto 18px auto;
+    background: #fff;
+    padding: 6mm;
+    box-shadow: 0 0 12px rgba(0,0,0,.45);
+    page-break-after: auto;
+    break-after: auto;
+}
+
+    .print-page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+
 /* HEADER */
-.header {
+.checklist-header {
     display: grid;
     grid-template-columns: 42mm 1fr 42mm;
     border: 1px solid #333;
-    height: 22mm;
+    min-height: 22mm;
 }
 
-.logo,
-.title,
-.doc {
-    border-right: 1px solid #333;
-    padding: 4px;
-    box-sizing: border-box;
-}
-
-.logo {
-    text-align: center;
-    font-size: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-    .logo b {
-        font-size: 12px;
-        color: #b21f1f;
+    .checklist-header > div {
+        padding: 4px;
+        border-right: 1px solid #333;
     }
 
-.title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    font-weight: bold;
-    letter-spacing: .5px;
-}
-
-.doc {
-    border-right: none;
-    text-align: right;
-    font-size: 7px;
-    line-height: 1.6;
-}
-
-/* SUB HEADER */
-.sub-header {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-left: 1px solid #333;
-    border-right: 1px solid #333;
-    border-bottom: 1px solid #333;
-}
-
-    .sub-header .block {
-        padding: 3px 5px;
-        box-sizing: border-box;
-    }
-
-        .sub-header .block:first-child {
-            border-right: 1px solid #333;
+        .checklist-header > div:last-child {
+            border-right: none;
         }
 
-.field-row {
-    display: grid;
-    grid-template-columns: 24mm 1fr;
-    align-items: center;
-    height: 12px;
+        .checklist-header > div:first-child {
+            text-align: center;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .checklist-header strong {
+        color: #b21f1f;
+        font-size: 12px;
+    }
+
+    .checklist-header small {
+        font-size: 7px;
+    }
+
+    .checklist-header .title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: .5px;
+        text-align: center;
+    }
+
+.form-code {
+    text-align: right;
+    font-size: 7px;
+    line-height: 1.45;
 }
 
-.line {
-    border-bottom: 1px solid #333;
-    height: 9px;
-    display: block;
-    padding-left: 3px;
-}
-
-/* TABLE */
-.delivery-table {
+/* INFO TABLE */
+.info-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
-    .delivery-table th,
-    .delivery-table td {
+    .info-table td {
+        border: 1px solid #333;
+        padding: 2px 4px;
+        height: 13px;
+        font-size: 7px;
+        vertical-align: middle;
+    }
+
+        .info-table td:nth-child(1),
+        .info-table td:nth-child(3) {
+            width: 22mm;
+        }
+
+        .info-table td:nth-child(2),
+        .info-table td:nth-child(4) {
+            border-bottom: 1px solid #333;
+        }
+
+/* MAIN TABLE */
+.checklist-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+    .checklist-table th,
+    .checklist-table td {
         border: 1px solid #444;
-        padding: 1px;
+        padding: 1px 2px;
         text-align: center;
         vertical-align: middle;
         font-size: 7px;
-        box-sizing: border-box;
+        line-height: 1.15;
         overflow-wrap: break-word;
+        word-break: normal;
     }
 
-    .delivery-table th {
-        font-weight: normal;
+    .checklist-table th {
+        font-weight: 600;
     }
 
-    .delivery-table thead tr:first-child th {
-        height: 19mm;
+    .checklist-table thead tr:first-child th {
+        height: 18mm;
     }
 
-    .delivery-table tbody tr {
-        height: 13.3mm;
+    .checklist-table thead tr:nth-child(2) th {
+        height: 5mm;
     }
-    .delivery-table tbody td {
-        font-size: 10px;
+
+    .checklist-table tbody tr {
+        height: 11.8mm;
+    }
+
+    /* COLUMN WIDTHS */
+    .checklist-table th:nth-child(1),
+    .checklist-table td:nth-child(1) {
+        width: 16%;
+    }
+
+    .checklist-table th:nth-child(2),
+    .checklist-table td:nth-child(2) {
+        width: 18%;
+    }
+
+    .checklist-table th:nth-child(3),
+    .checklist-table td:nth-child(3) {
+        width: 18%;
+    }
+
+    .checklist-table th:nth-child(4),
+    .checklist-table td:nth-child(4) {
+        width: 6%;
+    }
+
+    .checklist-table td {
+        font-size: 7px;
         font-weight: 500;
     }
 
-/* FOOTER */
-.footer {
-    margin-top: 6px;
-    border: 1px solid #333;
-    font-size: 7.5px;
-}
-
-.footer-row {
-    display: grid;
-    grid-template-columns: 1fr 14mm 8mm 14mm 8mm 1fr;
-    align-items: center;
-    min-height: 10mm;
-    border-bottom: 1px solid #333;
-    padding: 2px 4px;
-    box-sizing: border-box;
-}
-
-    .footer-row:last-child {
-        border-bottom: none;
-    }
-
-.box {
-    width: 7mm;
-    height: 7mm;
-    border: 1px solid #333;
-    display: inline-block;
-}
-
-.sign-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    min-height: 22mm;
-    align-items: end;
-    text-align: center;
-    padding: 5px;
-    box-sizing: border-box;
-}
-
-.sig-line {
-    border-top: 1px solid #333;
-    width: 70%;
-    margin: 0 auto 3px auto;
-}
-
-.checked {
-    text-align: left;
-    line-height: 2;
-    padding-left: 10px;
-}
-
 .sub-text {
-    font-size: 8px;
+    font-size: 6.8px;
     font-weight: normal;
     line-height: 1.1;
 }
 
-/* PRINT */
+/* BOTTOM CHECKS */
+.bottom-checks {
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+    border-bottom: 1px solid #333;
+    font-size: 7.5px;
+}
+
+    .bottom-checks div {
+        min-height: 8mm;
+        padding: 3px 4px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        align-items: center;
+    }
+
+        .bottom-checks div:last-child {
+            border-bottom: none;
+        }
+
+/* SIGNATURES */
+.signature-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    min-height: 20mm;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+    border-bottom: 1px solid #333;
+    align-items: end;
+    text-align: center;
+    font-size: 7.5px;
+    padding: 4px;
+}
+
+    .signature-section > div:nth-child(1)::before,
+    .signature-section > div:nth-child(2)::before {
+        content: "";
+        display: block;
+        width: 70%;
+        border-top: 1px solid #333;
+        margin: 0 auto 3px auto;
+    }
+
+    .signature-section > div:nth-child(3) {
+        text-align: left;
+        line-height: 1.8;
+        padding-left: 10px;
+    }
+
+/* PRINT MODE */
 @media print {
+    @page {
+        size: legal portrait;
+        margin: 6mm;
+    }
+
+    html,
     body {
+        margin: 0;
+        padding: 0;
         background: white;
     }
 
     .viewer-toolbar {
-        display: none;
+        display: none !important;
     }
 
-    .paper {
-        margin: 0;
-        box-shadow: none;
-        width: auto;
-        min-height: auto;
+    #printPages {
         padding: 0;
+        margin: 0;
+    }
+
+    .print-page {
+        width: 204mm;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        background: white;
+        page-break-after: auto !important;
+        break-after: auto !important;
+    }
+
+        .print-page + .print-page {
+            page-break-before: always;
+            break-before: page;
+        }
+
+    .page-footer,
+    .bottom-checks,
+    .signature-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
     }
 }
 
+.page-footer {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.bottom-checks {
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.signature-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
 
