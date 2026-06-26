@@ -17,6 +17,12 @@ namespace biostar_inventory_dashboard.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.CurrentUserId =
+                User.Claims.FirstOrDefault(c => c.Type == "user_id")?.Value
+                ?? User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value
+                ?? User.Identity?.Name
+                ?? "admin";
+
             ViewBag.CurrentUser =
                 User.Claims.FirstOrDefault(c => c.Type == "full_name")?.Value
                 ?? User.Identity?.Name

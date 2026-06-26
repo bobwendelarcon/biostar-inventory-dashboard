@@ -1430,17 +1430,23 @@ function renderDailyOrderTable(data, append = false) {
 
         rows += `
            <tr class="dailyorder-row" data-menu='${encodeURIComponent(menuItems)}'>
-    <td>${renderDeliveryPriority(order.deliveryDate, order.status)}</td>
+   <td>${renderDeliveryPriority(order.deliveryDate, order.status)}</td>
 
-    <td>
-        <div class="fw-semibold">${formatDate(order.deliveryDate)}</div>
-        <div>${renderDeliverySubText(order.deliveryDate, order.status)}</div>
-    </td>
+<td>
+    <div class="fw-semibold">
+        ${formatDate(order.dateOrdered)}
+    </div>
+</td>
 
-    <td>
-        <div class="fw-semibold">${safe(order.customerName || "")}</div>
-        <small class="text-muted">${safe(order.orderNo || "")}</small>
-    </td>
+<td>
+    <div class="fw-semibold">${formatDate(order.deliveryDate)}</div>
+    <div>${renderDeliverySubText(order.deliveryDate, order.status)}</div>
+</td>
+
+<td>
+    <div class="fw-semibold">${safe(order.customerName || "")}</div>
+    <small class="text-muted">${safe(order.orderNo || "")}</small>
+</td>
 
     <td>
         <div class="fw-semibold">${safe(order.productName || "")}</div>
