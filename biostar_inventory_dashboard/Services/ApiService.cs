@@ -557,11 +557,13 @@ string brandName = "",
         // daily order
 
         public async Task<string> GetDailyOrdersAsync(
-    string? className,
-    int? year,
-    string? month,
-    string? status,
-    string? search)
+      string? className,
+      int? year,
+      string? month,
+      string? status,
+      string? search,
+      string? sortBy,
+      string? sortDir)
         {
             var query = new List<string>();
 
@@ -580,7 +582,14 @@ string brandName = "",
             if (!string.IsNullOrWhiteSpace(search))
                 query.Add($"search={Uri.EscapeDataString(search)}");
 
+            if (!string.IsNullOrWhiteSpace(sortBy))
+                query.Add($"sortBy={Uri.EscapeDataString(sortBy)}");
+
+            if (!string.IsNullOrWhiteSpace(sortDir))
+                query.Add($"sortDir={Uri.EscapeDataString(sortDir)}");
+
             var url = "api/DailyOrders";
+
             if (query.Any())
                 url += "?" + string.Join("&", query);
 

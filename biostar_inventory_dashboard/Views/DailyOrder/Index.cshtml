@@ -107,7 +107,28 @@
                 </select>
             </div>
 
-                <div class="col-lg-4 col-md-6">
+
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label fw-semibold">Sort By</label>
+                    <select class="form-select" id="sortByFilter">
+                        <option value="deliveryDate" selected>Delivery Date</option>
+                        <option value="dateOrdered">Date Ordered</option>
+                        <option value="customer">Customer</option>
+                        <option value="product">Product</option>
+                        <option value="remainingQty">Remaining Qty</option>
+                        <option value="requiredQty">Required Qty</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label fw-semibold">Direction</label>
+                    <select class="form-select" id="sortDirFilter">
+                        <option value="asc" selected>Oldest First</option>
+                        <option value="desc">Newest First</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
                     <label class="form-label fw-semibold">Search</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="Customer / Product / DR#" />
                 </div>
@@ -226,38 +247,23 @@
                 <table class="table align-middle mb-0 dailyorder-table">
                     <thead>
                         <tr>
-                            <th>Class</th>
-                            <th>Year</th>
-                            <th>Month</th>
-                            <th>DO#</th>
+                            <th>Priority</th>
+                            <th>Delivery</th>
                             <th>Customer</th>
                             <th>Product</th>
-
-                            <!-- PLANNING -->
-                            <th>Required Qty</th>
-                            <th>Allocated Qty</th>
+                            <th>Required</th>
                             <th>Remaining</th>
-                            <th>Dispatched Qty</th>
-                            <th>Allocation</th>
-
-                            <!-- DATES -->
-                            <th>Date Ordered</th>
-                            <th>Delivery Date</th>
-                            <th>Date Delivered</th>
-                            <th>Aging</th>
-
-                            <!-- STATUS -->
                             <th>Status</th>
-
                             <th>Special Instructions</th>
+                            <th>DO#</th>
                             <th>Created By</th>
-                            <th >Actions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
                     <tbody id="dailyOrderTableBody">
                         <tr>
-                            <td colspan="19" class="text-center text-muted py-4">Loading orders...</td>
+                            <td colspan="11" class="text-center text-muted py-4">Loading orders...</td>
                         </tr>
                     </tbody>
                 </table>

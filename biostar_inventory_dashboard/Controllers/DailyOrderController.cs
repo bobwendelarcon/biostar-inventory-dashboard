@@ -30,11 +30,21 @@ namespace biostar_inventory_dashboard.Controllers
             int? year,
             string? month,
             string? status,
-            string? search)
+           string? search,
+string? sortBy,
+string? sortDir)
         {
             try
             {
-                var result = await _apiService.GetDailyOrdersAsync(className, year, month, status, search);
+                var result = await _apiService.GetDailyOrdersAsync(
+    className,
+    year,
+    month,
+    status,
+    search,
+    sortBy,
+    sortDir
+);
                 return Content(result, "application/json");
             }
             catch (Exception ex)

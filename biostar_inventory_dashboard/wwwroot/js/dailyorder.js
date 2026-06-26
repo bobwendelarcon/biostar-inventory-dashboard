@@ -445,6 +445,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
+    document.getElementById("sortByFilter")
+        ?.addEventListener("change", loadDailyOrders);
+
+    document.getElementById("sortDirFilter")
+        ?.addEventListener("change", loadDailyOrders);
+
+
 
     document.addEventListener("contextmenu", function (e) {
 
@@ -1246,6 +1253,8 @@ async function loadDailyOrders() {
     const month = document.getElementById("monthFilter")?.value || "";
     const status = document.getElementById("statusFilter")?.value || "";
     const search = document.getElementById("searchInput")?.value || "";
+    const sortBy = document.getElementById("sortByFilter")?.value || "deliveryDate";
+    const sortDir = document.getElementById("sortDirFilter")?.value || "asc";
 
     const params = new URLSearchParams();
 
@@ -1254,6 +1263,8 @@ async function loadDailyOrders() {
     if (month) params.append("month", month);
     if (status) params.append("status", status);
     if (search) params.append("search", search);
+    params.append("sortBy", sortBy);
+    params.append("sortDir", sortDir);
 
     document.getElementById("lastUpdatedText").textContent =
         "Last updated: " + new Date().toLocaleTimeString();
@@ -1369,38 +1380,39 @@ function renderDailyOrderTable(data) {
         `;
 
         rows += `
-            <tr class="dailyorder-row" data-menu='${encodeURIComponent(menuItems)}'>
-                <td>${safe(order.className)}</td>
-                <td>${safe(order.year)}</td>
-                <td>${safe(order.month)}</td>
-                <td>${safe(order.orderNo)}</td>
-                <td>${safe(order.customerName)}</td>
-                <td>
-                    <div>${safe(order.productName || "")}</div>
-                    ${order.productDescription
+           <tr class="dailyorder-row" data-menu='${encodeURIComponent(menuItems)}'>
+    <td>${renderDeliveryPriority(order.deliveryDate, order.status)}</td>
+
+    <td>
+        <div class="fw-semibold">${formatDate(order.deliveryDate)}</div>
+        <div>${renderDeliverySubText(order.deliveryDate, order.status)}</div>
+    </td>
+
+    <td>
+        <div class="fw-semibold">${safe(order.customerName || "")}</div>
+        <small class="text-muted">${safe(order.orderNo || "")}</small>
+    </td>
+
+    <td>
+        <div class="fw-semibold">${safe(order.productName || "")}</div>
+        ${order.productDescription
                 ? `<div class="text-muted small">${safe(order.productDescription)}</div>`
-                : ""
-            }
-                </td>
-                <td>${formatQtyWithPack(order.requiredQty, order.uom, order.packQty, order.packUom)}</td>
-                <td>${formatQtyWithPack(order.allocatedQty, order.uom, order.packQty, order.packUom)}</td>
-                <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
-                <td>${formatQtyWithPack(order.dispatchedQty, order.uom, order.packQty, order.packUom)}</td>
-                <td>${formatAllocationStatus(
-                order.allocationStatus,
-                order.remainingQty,
-                order.allocatedQty,
-                order.status
-            )}</td>
-                <td>${formatDate(order.dateOrdered)}</td>
-                <td>${formatDate(order.deliveryDate)}</td>
-                <td>${formatDate(order.dateDelivered)}</td>
-                <td>${getAgingBadge(order.agingDays)}</td>
-                <td>${renderStatusBadge(order.status)}</td>
-                <td>${safe(order.specialInstructions || "-")}</td>
-                <td>${safe(order.createdBy || "")}</td>
-                <td class="text-center">${actionButtons}</td>
-            </tr>
+                : ""}
+    </td>
+
+    <td>${formatQtyWithPack(order.requiredQty, order.uom, order.packQty, order.packUom)}</td>
+    <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
+
+    <td>${renderStatusText(order.status)}</td>
+
+    <td class="special-instruction-cell">
+        ${renderSpecialInstruction(order.specialInstructions)}
+    </td>
+
+    <td>${safe(order.orderNo || "")}</td>
+    <td>${safe(order.createdBy || "")}</td>
+    <td class="text-center">${actionButtons}</td>
+</tr>
         `;
     });
 
@@ -1409,6 +1421,81 @@ function renderDailyOrderTable(data) {
     setTimeout(() => {
         initTopScrollbar();
     }, 50);
+}
+
+function renderDeliveryPriority(deliveryDate, status) {
+
+    const statusValue = (status || "").toUpperCase();
+
+    if (statusValue === "COMPLETED") {
+        return `<span class="priority-pill priority-done">DONE</span>`;
+    }
+
+    const days = getDaysUntilDelivery(deliveryDate);
+
+    if (days < 0)
+        return `<span class="priority-pill priority-overdue">OVERDUE</span>`;
+
+    if (days === 0)
+        return `<span class="priority-pill priority-today">TODAY</span>`;
+
+    if (days === 1)
+        return `<span class="priority-pill priority-tomorrow">TOMORROW</span>`;
+
+    if (days <= 7)
+        return `<span class="priority-pill priority-week">THIS WEEK</span>`;
+
+    return `<span class="priority-pill priority-normal">UPCOMING</span>`;
+}
+
+function renderDeliverySubText(deliveryDate, status) {
+
+    const statusValue = (status || "").toUpperCase();
+
+    if (statusValue === "COMPLETED")
+        return `<small class="text-success">Completed</small>`;
+
+    const days = getDaysUntilDelivery(deliveryDate);
+
+    if (days < 0)
+        return `<small class="text-danger">${Math.abs(days)} day(s) overdue</small>`;
+
+    if (days === 0)
+        return `<small class="text-warning">Due today</small>`;
+
+    if (days === 1)
+        return `<small class="text-warning">Due tomorrow</small>`;
+
+    return `<small class="text-muted">${days} day(s) left</small>`;
+}
+
+function getDaysUntilDelivery(value) {
+
+    if (!value) return 9999;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const delivery = new Date(value);
+    delivery.setHours(0, 0, 0, 0);
+
+    return Math.round(
+        (delivery - today) / (1000 * 60 * 60 * 24)
+    );
+}
+
+function renderSpecialInstruction(value) {
+    if (!value || !String(value).trim()) {
+        return `<span class="text-muted">—</span>`;
+    }
+
+    const text = String(value).trim();
+
+    return `
+        <span class="instruction-pill" title="${safeAttr(text)}">
+            📌 ${safe(text)}
+        </span>
+    `;
 }
 
 function getAgingBadge(days) {
@@ -2047,25 +2134,54 @@ function renderAllocationBadge(status) {
     return `<span class="badge bg-secondary-subtle text-secondary">${safe(status || "Draft")}</span>`;
 }
 
-function renderStatusBadge(status) {
-    const value = status || "";
+//function renderStatusBadge(status) {
+//    const value = status || "";
 
-    if (value === "Completed")
-        return `<span class="badge bg-success text-white px-3 py-1">Completed</span>`;
+//    if (value === "Completed")
+//        return `<span class="badge bg-success text-white px-3 py-1">Completed</span>`;
 
-    if (value === "Ready for Dispatch")
-        return `<span class="badge bg-primary text-white px-3 py-1">Ready for Dispatch</span>`;
+//    if (value === "Ready for Dispatch")
+//        return `<span class="badge bg-primary text-white px-3 py-1">Ready for Dispatch</span>`;
 
-    if (value === "Allocated")
-        return `<span class="badge bg-success text-white px-3 py-1">Allocated</span>`;
+//    if (value === "Allocated")
+//        return `<span class="badge bg-success text-white px-3 py-1">Allocated</span>`;
 
-    if (value === "Partially Allocated")
-        return `<span class="badge bg-warning text-dark px-3 py-1">Partially Allocated</span>`;
+//    if (value === "Partially Allocated")
+//        return `<span class="badge bg-warning text-dark px-3 py-1">Partially Allocated</span>`;
 
-    if (value === "Overdue")
-        return `<span class="badge bg-danger text-white px-3 py-1">Overdue</span>`;
+//    if (value === "Overdue")
+//        return `<span class="badge bg-danger text-white px-3 py-1">Overdue</span>`;
 
-    return `<span class="badge bg-secondary text-white px-3 py-1">${safe(value || "Draft")}</span>`;
+//    return `<span class="badge bg-secondary text-white px-3 py-1">${safe(value || "Draft")}</span>`;
+//}
+
+function renderStatusText(status) {
+
+    const value = (status || "").trim();
+
+    switch (value.toUpperCase()) {
+
+        case "FOR ALLOCATION":
+            return `<span class="fw-bold text-danger">⚠ Needs Allocation</span>`;
+
+        case "PARTIALLY ALLOCATED":
+            return `<span class="fw-bold text-warning">⚠ Partially Allocated</span>`;
+
+        case "ALLOCATED":
+            return `<span class="fw-bold text-success">✔ Fully Allocated</span>`;
+
+        case "READY FOR DISPATCH":
+            return `<span class="fw-bold text-primary">🚚 Ready for Dispatch</span>`;
+
+        case "PARTIALLY DELIVERED":
+            return `<span class="fw-bold text-warning">📦 Partially Delivered</span>`;
+
+        case "COMPLETED":
+            return `<span class="fw-bold text-success">✔ Completed</span>`;
+
+        default:
+            return `<span class="fw-bold text-secondary">${safe(value)}</span>`;
+    }
 }
 
 function renderPriorityBadge(rank) {
@@ -2833,6 +2949,34 @@ function initTableDragScroll() {
         const top = document.querySelector(".table-scroll-top");
         if (top) top.scrollLeft = wrapper.scrollLeft;
     });
+}
+function renderStatusBadge(status) {
+
+    const value = (status || "").toUpperCase();
+
+    switch (value) {
+
+        case "FOR ALLOCATION":
+            return `<span class="badge bg-secondary">For Allocation</span>`;
+
+        case "PARTIALLY ALLOCATED":
+            return `<span class="badge bg-warning text-dark">Partially Allocated</span>`;
+
+        case "ALLOCATED":
+            return `<span class="badge bg-success">Allocated</span>`;
+
+        case "READY FOR DISPATCH":
+            return `<span class="badge bg-primary">Ready for Dispatch</span>`;
+
+        case "PARTIALLY DELIVERED":
+            return `<span class="badge bg-info text-dark">Partially Delivered</span>`;
+
+        case "COMPLETED":
+            return `<span class="badge bg-success">Completed</span>`;
+
+        default:
+            return `<span class="badge bg-secondary">${safe(status)}</span>`;
+    }
 }
 async function loadEditBranches(selectedBranchId = "") {
     try {
