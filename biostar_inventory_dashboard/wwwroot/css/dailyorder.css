@@ -334,6 +334,7 @@ body {
 }
 
 /* TABLET */
+/* TABLET / iPad */
 @media (max-width: 991.98px) {
     html,
     body {
@@ -354,7 +355,28 @@ body {
     .summary-card {
         min-width: 140px;
     }
+
+    /* FIX: disable sticky header on iPad/tablet */
+    .dailyorder-table thead th {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+    }
 }
+
+
+@supports (-webkit-touch-callout: none) {
+    .dailyorder-table thead th {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+    }
+
+    .dailyorder-table-wrapper {
+        -webkit-overflow-scrolling: auto;
+    }
+}
+
 
 /* MOBILE */
 @media (max-width: 575.98px) {
