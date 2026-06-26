@@ -422,3 +422,48 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+
+.product-search-results {
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.product-result-card {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+    .product-result-card:hover {
+        background: #f5f8ff;
+    }
+
+    .product-result-card.selected {
+        background: #e8f1ff;
+        border-left: 4px solid #0d6efd;
+    }
+
+.product-result-name {
+    font-weight: 700;
+    color: #222;
+}
+
+.product-result-desc {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.product-result-uom {
+    font-size: 12px;
+    color: #0d6efd;
+    font-weight: 600;
+    margin-top: 3px;
+}

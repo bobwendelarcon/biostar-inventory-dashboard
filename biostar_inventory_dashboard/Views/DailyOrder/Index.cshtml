@@ -706,9 +706,19 @@
 
                 <div class="mb-3">
                     <label class="form-label">Product</label>
-                    <select id="modalAddLineProduct" class="form-select">
-                        <option value="">-- Select Product --</option>
-                    </select>
+
+                    <input type="text"
+                           id="modalAddLineProductSearch"
+                           class="form-control"
+                           placeholder="Search product..." />
+
+                    <input type="hidden" id="modalAddLineProduct" />
+
+                    <div id="modalAddLineProductResults"
+                         class="product-search-results mt-2">
+                    </div>
+
+                    <small id="modalSelectedProductText" class="text-muted d-block mt-2"></small>
                 </div>
 
                 <div class="mb-3">

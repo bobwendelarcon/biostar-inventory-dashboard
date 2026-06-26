@@ -30,6 +30,72 @@ document.addEventListener("DOMContentLoaded", function () {
     //    });
     //}
 
+    document.addEventListener("click", function (e) {
+        const item = e.target.closest(".modal-product-result");
+        if (!item) return;
+
+        //document.getElementById("modalAddLineProduct").value = item.dataset.productId;
+
+        //document.getElementById("modalSelectedProductText").innerHTML =
+        //    `Selected: <strong>${safe(item.dataset.productName)}</strong>
+        // <span class="badge bg-light text-dark border">UOM: ${safe(item.dataset.uom)}</span>`;
+
+
+        document.getElementById("modalAddLineProduct").value =
+            item.dataset.productId;
+
+        document.getElementById("modalAddLineProductSearch").value =
+            item.dataset.productName;
+
+        document.getElementById("modalSelectedProductText").innerHTML = `
+<div class="mt-2">
+
+    <span class="badge bg-success">
+        Selected
+    </span>
+
+    <div class="fw-bold mt-2">
+        ${safe(item.dataset.productName)}
+    </div>
+
+    <small class="text-muted">
+        ${safe(item.dataset.productDesc)}
+    </small>
+
+    <div class="text-primary fw-semibold mt-1">
+        UOM : ${safe(item.dataset.uom)}
+    </div>
+
+</div>
+`;
+
+        document.getElementById("modalAddLineProductResults").innerHTML = "";
+
+        document.querySelectorAll(".modal-product-result")
+            .forEach(x => x.classList.remove("selected"));
+
+        item.classList.add("selected");
+    });
+
+    document
+        .getElementById("modalAddLineCategory")
+        ?.addEventListener("change", loadModalAddLineProducts);
+
+    let modalProductSearchTimer;
+
+    document
+        .getElementById("modalAddLineProductSearch")
+        .addEventListener("input", function () {
+
+            clearTimeout(modalProductSearchTimer);
+
+            modalProductSearchTimer = setTimeout(() => {
+                loadModalAddLineProducts();
+            }, 250);
+
+        });
+
+
     const tableWrapper = document.querySelector(".dailyorder-table-wrapper");
 
     tableWrapper?.addEventListener("scroll", function () {
@@ -622,21 +688,59 @@ async function loadModalAddLineCategories() {
 
 async function loadModalAddLineProducts() {
     const categoryId = document.getElementById("modalAddLineCategory")?.value || "";
-    const select = document.getElementById("modalAddLineProduct");
+    const search = document.getElementById("modalAddLineProductSearch")?.value || "";
+    const hiddenInput = document.getElementById("modalAddLineProduct");
+    const resultsDiv = document.getElementById("modalAddLineProductResults");
+    const selectedText = document.getElementById("modalSelectedProductText");
 
-    select.innerHTML = `<option value="">Loading products...</option>`;
+    hiddenInput.value = "";
+    selectedText.innerText = "";
 
-    const response = await fetch(`/DailyOrder/GetProductsLookup?categoryId=${encodeURIComponent(categoryId)}`);
+    if (!categoryId) {
+        resultsDiv.innerHTML = `<div class="text-muted small p-2">Select category first.</div>`;
+        return;
+    }
+
+    if (!search.trim()) {
+        resultsDiv.innerHTML = `<div class="text-muted small p-2">Type product name to search.</div>`;
+        return;
+    }
+
+    resultsDiv.innerHTML = `<div class="text-muted small p-2">Searching...</div>`;
+
+    const response = await fetch(
+        `/DailyOrder/GetProductsLookup?categoryId=${encodeURIComponent(categoryId)}&search=${encodeURIComponent(search)}`
+    );
+
     const data = await response.json();
+    const products = data.slice(0, 15);
 
-    select.innerHTML = `<option value="">-- Select Product --</option>`;
+    if (!data || data.length === 0) {
+        resultsDiv.innerHTML = `<div class="text-muted small p-2">No products found.</div>`;
+        return;
+    }
 
-    data.forEach(p => {
-        select.innerHTML += `
-            <option value="${p.productId}">
-                ${safe(p.productName)}
-                ${p.productDescription ? " - " + safe(p.productDescription) : ""}
-            </option>
+    resultsDiv.innerHTML = "";
+
+    products.forEach(p => {
+        resultsDiv.innerHTML += `
+            <button type="button"
+                    class="product-result-card modal-product-result"
+                    data-product-id="${safeAttr(p.productId)}"
+                    data-product-name="${safeAttr(p.productName)}"
+                    data-product-desc="${safeAttr(p.productDescription || "")}"
+                    data-uom="${safeAttr(p.uom || "-")}">
+
+                <div class="product-result-name">${safe(p.productName)}</div>
+
+                <div class="product-result-desc">
+                    ${safe(p.productDescription || "")}
+                </div>
+
+                <div class="product-result-uom">
+                    UOM: ${safe(p.uom || "-")}
+                </div>
+            </button>
         `;
     });
 }
