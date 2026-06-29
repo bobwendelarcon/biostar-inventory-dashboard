@@ -1,23 +1,67 @@
 ﻿let partnerModal;
 let partnerFilterTimeout;
+let partnerCache = {};
+
+let partnerPage = 1;
+let partnerPageSize = 50;
+let partnerTotalPages = 1;
+let partnerTotalRecords = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
     const modalEl = document.getElementById("partnerModal");
     partnerModal = new bootstrap.Modal(modalEl);
 
-    document.getElementById("btnFilterPartners")?.addEventListener("click", loadPartners);
+  
     document.getElementById("btnClearPartners")?.addEventListener("click", clearFilters);
     document.getElementById("btnSavePartner")?.addEventListener("click", savePartner);
     document.getElementById("btnAddPartner")?.addEventListener("click", openAddPartnerModal);
 
     document.getElementById("searchPartner")?.addEventListener("input", debouncePartnerLoad);
-    document.getElementById("filterPartnerType")?.addEventListener("change", loadPartners);
-    document.getElementById("filterRegion")?.addEventListener("change", loadPartners);
-    document.getElementById("filterStatus")?.addEventListener("change", loadPartners);
-    document.getElementById("filterAgent")?.addEventListener("change", loadPartners);
-    document.getElementById("sortPartners")?.addEventListener("change", loadPartners);
+
+
+
+
+
+    document.getElementById("btnFilterPartners")?.addEventListener("click", resetPartnerPageAndLoad);
+    document.getElementById("filterPartnerType")?.addEventListener("change", resetPartnerPageAndLoad);
+    document.getElementById("filterRegion")?.addEventListener("change", resetPartnerPageAndLoad);
+    document.getElementById("filterStatus")?.addEventListener("change", resetPartnerPageAndLoad);
+    document.getElementById("filterAgent")?.addEventListener("change", resetPartnerPageAndLoad);
+    document.getElementById("sortPartners")?.addEventListener("change", resetPartnerPageAndLoad);
+
+
 
     document.getElementById("partnerType")?.addEventListener("change", toggleAgentField);
+
+    document.getElementById("btnPrevPartnerPage")?.addEventListener("click", function () {
+        if (partnerPage <= 1) return;
+        partnerPage--;
+        loadPartners();
+    });
+
+    document.getElementById("btnNextPartnerPage")?.addEventListener("click", function () {
+        if (partnerPage >= partnerTotalPages) return;
+        partnerPage++;
+        loadPartners();
+    });
+
+    document.getElementById("partnerPageSize")?.addEventListener("change", function () {
+        partnerPageSize = Number(this.value || 50);
+        partnerPage = 1;
+        loadPartners();
+    });
+
+    document.getElementById("partnerTableBody")?.addEventListener("click", function (e) {
+        const btn = e.target.closest(".btn-edit-partner");
+        if (!btn) return;
+
+        const partnerId = btn.dataset.partnerId;
+        const item = partnerCache[partnerId];
+
+        if (item) {
+            openEditPartnerModal(item);
+        }
+    });
 
     loadAgentFilterDropdown();
     loadPartners();
@@ -25,7 +69,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function debouncePartnerLoad() {
     clearTimeout(partnerFilterTimeout);
-    partnerFilterTimeout = setTimeout(loadPartners, 400);
+    partnerFilterTimeout = setTimeout(() => {
+        partnerPage = 1;
+        loadPartners();
+    }, 400);
 }
 
 async function loadAgentFilterDropdown() {
@@ -113,72 +160,83 @@ async function loadAgentDropdown(selectedAgentId = "") {
 
 async function loadPartners() {
     try {
-        const response = await fetch("/Partner/GetPartners");
-
-        if (!response.ok) {
-            throw new Error("Failed to load partners.");
-        }
-
-        const data = await response.json();
-
-        const searchValue = (document.getElementById("searchPartner")?.value || "").toLowerCase().trim();
-        const typeValue = (document.getElementById("filterPartnerType")?.value || "").toLowerCase().trim();
+        const searchValue = document.getElementById("searchPartner")?.value || "";
+        const typeValue = document.getElementById("filterPartnerType")?.value || "";
         const statusValue = document.getElementById("filterStatus")?.value ?? "";
-        const regionValue = (document.getElementById("filterRegion")?.value || "").toLowerCase().trim();
-        const agentValue = (document.getElementById("filterAgent")?.value || "").trim();
+        const regionValue = document.getElementById("filterRegion")?.value || "";
+        const agentValue = document.getElementById("filterAgent")?.value || "";
         const sortValue = document.getElementById("sortPartners")?.value || "partner_id_asc";
 
-        let filteredData = data;
+        const params = new URLSearchParams();
 
-        if (searchValue) {
-            filteredData = filteredData.filter(x =>
-                (x.partner_id ?? "").toLowerCase().includes(searchValue) ||
-                (x.partner_name ?? "").toLowerCase().includes(searchValue) ||
-                (x.address ?? "").toLowerCase().includes(searchValue) ||
-                (x.contact ?? "").toLowerCase().includes(searchValue) ||
-                (x.contact_no ?? "").toLowerCase().includes(searchValue) ||
-                (x.agent_name ?? "").toLowerCase().includes(searchValue)
-            );
+        params.append("page", partnerPage);
+        params.append("pageSize", partnerPageSize);
+
+        if (searchValue.trim()) params.append("search", searchValue.trim());
+        if (typeValue) params.append("type", typeValue);
+        if (regionValue) params.append("region", regionValue);
+        if (agentValue) params.append("agentId", agentValue);
+        if (statusValue !== "") params.append("isDeleted", statusValue);
+
+        params.append("sort", sortValue);
+
+        document.getElementById("partnerTableBody").innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center text-muted py-4">
+                    Loading partners...
+                </td>
+            </tr>
+        `;
+
+        const response = await fetch(`/Partner/GetPartnersPaged?${params.toString()}`);
+
+        if (!response.ok) {
+            throw new Error(await response.text());
         }
 
-        if (typeValue) {
-            filteredData = filteredData.filter(x =>
-                (x.partner_type ?? "").toLowerCase() === typeValue
-            );
-        }
+        const result = await response.json();
 
-        if (regionValue) {
-            filteredData = filteredData.filter(x =>
-                (x.region ?? "").toLowerCase() === regionValue
-            );
-        }
+        partnerTotalRecords = Number(result.totalRecords || 0);
+        partnerTotalPages = Number(result.totalPages || 1);
 
-        if (agentValue) {
-            filteredData = filteredData.filter(x =>
-                (x.agent_id ?? "") === agentValue
-            );
-        }
-
-        if (statusValue !== "") {
-            const isDeleted = statusValue === "true";
-            filteredData = filteredData.filter(x =>
-                Boolean(x.is_deleted) === isDeleted
-            );
-        }
-
-        filteredData = sortPartnerData(filteredData, sortValue);
-
-        renderPartnerTable(filteredData);
+        renderPartnerTable(result.data || []);
+        renderPartnerPagination(result);
 
     } catch (error) {
         console.error(error);
 
         document.getElementById("partnerTableBody").innerHTML = `
             <tr>
-                <td colspan="9" class="text-center text-danger">${error.message}</td>
+                <td colspan="9" class="text-center text-danger">
+                    ${safeHtml(error.message || "Failed to load partners.")}
+                </td>
             </tr>
         `;
     }
+}
+
+function resetPartnerPageAndLoad() {
+    partnerPage = 1;
+    loadPartners();
+}
+
+function renderPartnerPagination(result) {
+    const page = Number(result.page || partnerPage);
+    const pageSize = Number(result.pageSize || partnerPageSize);
+    const totalRecords = Number(result.totalRecords || 0);
+    const totalPages = Number(result.totalPages || 1);
+
+    const start = totalRecords === 0 ? 0 : ((page - 1) * pageSize) + 1;
+    const end = Math.min(page * pageSize, totalRecords);
+
+    document.getElementById("partnerPageInfo").innerText =
+        `Showing ${start}-${end} of ${totalRecords} partners`;
+
+    document.getElementById("partnerPageNumber").innerText =
+        `Page ${page} of ${totalPages}`;
+
+    document.getElementById("btnPrevPartnerPage").disabled = page <= 1;
+    document.getElementById("btnNextPartnerPage").disabled = page >= totalPages;
 }
 
 function sortPartnerData(data, sortValue) {
@@ -198,9 +256,11 @@ function sortPartnerData(data, sortValue) {
     return sorted;
 }
 
+
+
 function renderPartnerTable(data) {
     const tableBody = document.getElementById("partnerTableBody");
-    tableBody.innerHTML = "";
+    partnerCache = {};
 
     if (!data || data.length === 0) {
         tableBody.innerHTML = `
@@ -211,10 +271,14 @@ function renderPartnerTable(data) {
         return;
     }
 
+    let html = "";
+
     data.forEach(item => {
+        partnerCache[item.partner_id] = item;
+
         const statusText = String(item.is_deleted) === "true" ? "Inactive" : "Active";
 
-        tableBody.innerHTML += `
+        html += `
             <tr>
                 <td>${safeHtml(item.partner_id ?? "")}</td>
                 <td>${safeHtml(item.partner_name ?? "")}</td>
@@ -227,7 +291,7 @@ function renderPartnerTable(data) {
                 <td class="text-end">
                     <button type="button"
                         class="btn btn-sm btn-outline-primary rounded-3 btn-edit-partner"
-                        data-partner='${safeAttr(JSON.stringify(item))}'>
+                        data-partner-id="${safeAttr(item.partner_id ?? "")}">
                         Edit
                     </button>
                 </td>
@@ -235,21 +299,19 @@ function renderPartnerTable(data) {
         `;
     });
 
-    document.querySelectorAll(".btn-edit-partner").forEach(btn => {
-        btn.addEventListener("click", function () {
-            const item = JSON.parse(this.dataset.partner);
-            openEditPartnerModal(item);
-        });
-    });
+    tableBody.innerHTML = html;
 }
 
 function clearFilters() {
+
     document.getElementById("searchPartner").value = "";
     document.getElementById("filterPartnerType").value = "";
     document.getElementById("filterStatus").value = "";
     document.getElementById("filterRegion").value = "";
     document.getElementById("filterAgent").value = "";
     document.getElementById("sortPartners").value = "partner_id_asc";
+
+    partnerPage = 1;
 
     loadPartners();
 }

@@ -420,6 +420,51 @@ string brandName = "",
             return await _httpClient.GetStringAsync("api/Partners");
         }
 
+        public async Task<string> GetPartnersPagedAsync(
+    string? search,
+    string? type,
+    string? region,
+    bool? isDeleted,
+    string? agentId,
+    int page = 1,
+    int pageSize = 50,
+    string sort = "partner_id_asc")
+        {
+            var query = new List<string>
+    {
+        $"page={page}",
+        $"pageSize={pageSize}"
+    };
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add($"search={Uri.EscapeDataString(search)}");
+
+            if (!string.IsNullOrWhiteSpace(type))
+                query.Add($"type={Uri.EscapeDataString(type)}");
+
+            if (!string.IsNullOrWhiteSpace(region))
+                query.Add($"region={Uri.EscapeDataString(region)}");
+
+            if (isDeleted.HasValue)
+                query.Add($"isDeleted={isDeleted.Value.ToString().ToLower()}");
+
+            if (!string.IsNullOrWhiteSpace(agentId))
+                query.Add($"agentId={Uri.EscapeDataString(agentId)}");
+
+            if (!string.IsNullOrWhiteSpace(sort))
+                query.Add($"sort={Uri.EscapeDataString(sort)}");
+
+            var url = "api/Partners/paged?" + string.Join("&", query);
+
+            var response = await _httpClient.GetAsync(url);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
         public async Task<string> AddPartnerAsync(string jsonData)
         {
             var content = new StringContent(

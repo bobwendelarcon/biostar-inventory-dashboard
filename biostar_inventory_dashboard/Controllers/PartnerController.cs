@@ -64,5 +64,29 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("GetPartnersPaged")]
+        public async Task<IActionResult> GetPartnersPaged(
+    string? search,
+    string? type,
+    string? region,
+    bool? isDeleted,
+    string? agentId,
+    int page = 1,
+    int pageSize = 50,
+    string sort = "partner_id_asc")
+        {
+            try
+            {
+                var result = await _apiService.GetPartnersPagedAsync(
+                    search, type, region, isDeleted, agentId, page, pageSize, sort);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
