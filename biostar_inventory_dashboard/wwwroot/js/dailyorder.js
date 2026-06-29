@@ -1838,26 +1838,55 @@ function renderModalLineSummary(lines) {
                     ${renderAllocationBadge(line.allocationResult)}
                 </td>
 
-                <td class="text-nowrap">
+               <td class="text-nowrap">
 
-                    <button
-                        type="button"
-                        class="btn btn-outline-warning btn-sm btn-edit-line-required-qty"
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown">
+            Actions
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end">
+
+            <li>
+                <button type="button"
+                        class="dropdown-item btn-edit-line-required-qty"
                         data-line-id="${line.orderLineId}"
                         data-required-qty="${requiredQty}"
                         data-dispatched-qty="${dispatchedQty}">
-                        Edit Qty
-                    </button>
+                    Edit Qty
+                </button>
+            </li>
 
-                    <button
-                        type="button"
-                        class="btn btn-outline-danger btn-sm btn-clear-line-allocation"
+            <li>
+                <button type="button"
+                        class="dropdown-item btn-clear-line-allocation"
                         data-line-id="${line.orderLineId}"
                         ${allocatedQty <= 0 ? "disabled" : ""}>
-                        Clear Allocation
-                    </button>
+                    Clear Allocation
+                </button>
+            </li>
 
-                </td>
+            ${allocatedQty <= 0 && dispatchedQty <= 0
+                ? `
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button type="button"
+                                class="dropdown-item text-danger btn-delete-order-line"
+                                data-order-id="${window.currentOrderId}"
+                                data-line-id="${line.orderLineId}">
+                            Delete Line
+                        </button>
+                    </li>
+                    `
+                : ""
+            }
+
+        </ul>
+    </div>
+
+</td>
 
             </tr>
         `;

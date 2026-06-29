@@ -1,3 +1,4 @@
+wwwroot\css\dailyorder.css
 wwwroot\css\dashboard.css
 wwwroot\css\delivery-checklist-print.css
 wwwroot\css\inventory.css
@@ -89,5 +90,4 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
-wwwroot\css\dailyorder.css
 wwwroot\js\dailyorder.js
