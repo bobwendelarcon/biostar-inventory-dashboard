@@ -1,0 +1,229 @@
+﻿@model List<biostar_inventory_dashboard.Models.InventoryItem>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Stock Report</title>
+
+    <style>
+        @@page {
+            size: legal landscape;
+            margin: 8mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            color: #111;
+        }
+
+        .header {
+            margin-bottom: 8px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .meta {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        th {
+            border-bottom: 1px solid #000;
+            padding: 4px 3px;
+            text-align: left;
+            font-size: 9px;
+            background: #f2f2f2;
+        }
+
+        td {
+            border-bottom: 1px solid #ccc;
+            padding: 4px 3px;
+            vertical-align: top;
+            font-size: 9px;
+        }
+
+        .product-col {
+            width: 40%;
+        }
+
+        .category-col {
+            width: 10%;
+        }
+
+        .lot-col {
+            width: 11%;
+        }
+
+        .qty-col {
+            width: 10%;
+        }
+
+        .date-col {
+            width: 17%;
+        }
+
+        .warehouse-col {
+            width: 12%;
+        }
+
+        .product-name {
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .description {
+            font-size: 8.5px;
+            color: #333;
+        }
+
+        .qty-main {
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .pack-info {
+            margin-top: 2px;
+            font-size: 8px;
+            color: #666;
+        }
+
+        .footer {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+        }
+
+        .signature {
+            margin-top: 18px;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print" style="margin-bottom:10px;">
+        <button onclick="window.print()">Print</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+
+    <div class="header">
+        <div class="title">BNPI INVENTORY STOCK REPORT</div>
+        <div class="meta">
+            <div><strong>Generated:</strong> @ViewBag.GeneratedAt</div>
+            <div><strong>Printed By:</strong> @ViewBag.PrintedBy</div>
+            <div><strong>Total Records:</strong> @ViewBag.TotalRecords</div>
+            <div><strong>Warehouse:</strong> @ViewBag.Warehouse</div>
+            <div><strong>Category:</strong> @ViewBag.Category</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="product-col">Product / Description</th>
+                <th class="category-col">Category</th>
+                <th class="lot-col">Lot No</th>
+                <th class="qty-col">Qty</th>
+                
+                <th class="date-col">MFG - EXP</th>
+                <th class="warehouse-col">Warehouse</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                decimal availableQty = item.available_qty;
+                decimal packQty = item.pack_qty;
+
+                var packText = "-";
+
+                if (packQty > 0 && availableQty > 0)
+                {
+                    var packs = Math.Floor(availableQty / packQty);
+                    var loose = availableQty % packQty;
+
+                    packText = $"{packs} {item.pack_uom}";
+
+                    if (loose > 0)
+                    {
+                        packText += $" + {loose} {item.uom}";
+                    }
+                }
+
+                var mfg = "";
+                var exp = "";
+
+                if (DateTime.TryParse(Convert.ToString(item.manufacturing_date), out DateTime mfgDate))
+                {
+                    mfg = mfgDate.ToString("MMM yyyy");
+                }
+
+                if (DateTime.TryParse(Convert.ToString(item.expiration_date), out DateTime expDate))
+                {
+                    exp = expDate.ToString("MMM yyyy");
+                }
+
+                <tr>
+                    <td>
+                        <div class="product-name">@item.description</div>
+                        <div class="description">@item.product_description</div>
+                    </td>
+                    <td>@item.category_name</td>
+                    <td>@item.lot_no</td>
+                    <td class="qty-col">
+                        <div class="qty-main">
+                            @availableQty.ToString("N2") @item.uom
+                        </div>
+
+                        <div class="pack-info">
+                            @packText
+                        </div>
+                    </td>
+                    <td>@mfg - @exp</td>
+                    <td>@item.warehouse</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <div class="signature">Prepared By: __________________________</div>
+        <div class="signature">Checked By: __________________________</div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            setTimeout(() => window.print(), 500);
+        };
+    </script>
+</body>
+</html>

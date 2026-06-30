@@ -813,9 +813,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         ids.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.value = "";
-        });
+            if (!el) return;
 
+            if (id === "expiryStatusFilter") {
+                el.value = "available";
+            }
+            else if (id === "orderFilter") {
+                el.value = "desc";
+            }
+            else {
+                el.value = "";
+            }
+        });
         const orderEl = document.getElementById("orderFilter");
         if (orderEl) orderEl.value = "desc";
 
@@ -917,6 +926,24 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = `/Inventory/ExportExcel?${params.toString()}`;
     });
 
+    document.getElementById("btnPrintInventory")?.addEventListener("click", function () {
+        const params = new URLSearchParams({
+            lot_no: document.getElementById("lotNoFilter")?.value || "",
+            genericName: document.getElementById("genericNameFilter")?.value || "",
+            brandName: document.getElementById("brandNameFilter")?.value || "",
+            category: document.getElementById("categoryFilter")?.value || "",
+            from: document.getElementById("dateFromFilter")?.value || "",
+            to: document.getElementById("dateToFilter")?.value || "",
+            warehouse: document.getElementById("warehouseFilter")?.value || "",
+            stockStatus: document.getElementById("stockStatusFilter")?.value || "",
+            expiryStatus: document.getElementById("expiryStatusFilter")?.value || "",
+            months: document.getElementById("monthsFilter")?.value || "",
+            order: document.getElementById("orderFilter")?.value || "desc"
+        });
+
+        window.open(`/Inventory/Print?${params.toString()}`, "_blank");
+    });
+
 
     document.getElementById("btnSaveLotNo")?.addEventListener("click", saveLotNoEdit);
     document.getElementById("btnSaveDates")?.addEventListener("click", saveLotDates);
@@ -925,9 +952,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    const stockStatusEl = document.getElementById("stockStatusFilter");
-    if (stockStatusEl && !stockStatusEl.value) {
-        stockStatusEl.value = "available";
+    const expiryStatusEl = document.getElementById("expiryStatusFilter");
+    if (expiryStatusEl && !expiryStatusEl.value) {
+        expiryStatusEl.value = "available";
     }
 
     loadInventory(1);

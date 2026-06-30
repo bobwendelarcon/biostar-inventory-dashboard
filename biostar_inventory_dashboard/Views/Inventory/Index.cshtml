@@ -13,6 +13,9 @@
     </div>
 
     <div class="action-buttons">
+        <button class="btn btn-outline-secondary" id="btnPrintInventory" type="button">
+            Print
+        </button>
         <button class="btn btn-outline-primary">Import</button>
         <button class="btn btn-primary" id="btnExportInventory">Export</button>
     </div>
@@ -47,17 +50,20 @@
                 <input type="date" class="form-control" id="dateToFilter">
             </div>
 
-            <div class="col-md-1 d-grid">
-                <label class="form-label fw-semibold invisible">Apply</label>
-                <button class="btn btn-primary" id="applyFilters" type="button">Go</button>
+            <div class="col-md-1 d-flex align-items-end">
+                <button class="btn btn-primary w-100 mb-1"
+                        id="applyFilters"
+                        type="button">
+                    Go
+                </button>
             </div>
         </div>
 
         <div class="mt-2 d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
                 Advanced Filters
             </button>
-            <button class="btn btn-sm btn-outline-secondary" id="clearFilters" type="button">
+            <button class="btn btn-outline-danger btn-sm" id="clearFilters" type="button">
                 Clear
             </button>
         </div>
@@ -91,7 +97,7 @@
                     <label class="form-label fw-semibold">Stock Status</label>
                     <select class="form-select" id="stockStatusFilter">
                         <option value="">All</option>
-                        <option value="zero">Zero Stock</option>
+                        <option value="zero">Out of Stock</option>
                         <option value="low">Low Stock</option>
                         <option value="normal">Normal</option>
                         <option value="over">Over Stock</option>
@@ -101,8 +107,8 @@
                 <div class="col-md-2">
                     <label class="form-label fw-semibold">Expiry Status</label>
                     <select class="form-select" id="expiryStatusFilter">
-                        <option value="" >All</option>
-                        <option value="available" selected>Available (Not Expired + With Stock)</option>
+                        <option value="">All</option>
+                        <option value="available" selected>Available / Not Expired</option>
                         <option value="expired">Expired</option>
                         <option value="near">Expiring Soon</option>
                         <option value="safe">Safe</option>

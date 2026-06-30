@@ -282,6 +282,68 @@ string brandName = "",
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Print(
+    string lot_no = "",
+    string genericName = "",
+    string brandName = "",
+    string warehouse = "",
+    string category = "",
+    string stockStatus = "",
+    string expiryStatus = "",
+    string months = "",
+    string from = "",
+    string to = "",
+    string order = "desc"
+)
+        {
+            var result = await _apiService.GetInventoryAsync(
+                1,
+                100000,
+                lot_no,
+                genericName,
+                brandName,
+                warehouse,
+                category,
+                stockStatus,
+                expiryStatus,
+                months,
+                from,
+                to,
+                order
+            );
+
+       
+            // Get warehouse name
+            var branches = await _apiService.GetBranchesAsync();
+
+            string warehouseName = "All";
+
+            if (!string.IsNullOrWhiteSpace(warehouse))
+            {
+                foreach (JsonElement branch in branches)
+                {
+                    var branchId = branch.GetProperty("branch_id").GetString();
+
+                    if (branchId == warehouse)
+                    {
+                        warehouseName = branch.GetProperty("branch_name").GetString()!;
+                        break;
+                    }
+                }
+            }
+
+            ViewBag.GeneratedAt = DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt");
+            ViewBag.Warehouse = warehouseName;
+            ViewBag.Category = string.IsNullOrWhiteSpace(category) ? "All" : category;
+            ViewBag.StockStatus = stockStatus;
+            ViewBag.ExpiryStatus = expiryStatus;
+            ViewBag.TotalRecords = result.Data?.Count ?? 0;
+            ViewBag.PrintedBy = User.Identity?.Name ?? "Unknown";
+
+            return View("Print", result.Data ?? new());
+        }
+
 
 
     }
