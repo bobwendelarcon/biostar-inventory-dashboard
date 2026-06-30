@@ -21,11 +21,13 @@ namespace biostar_inventory_dashboard.Controllers
 
         [HttpGet]
         public async Task<IActionResult> DeliveryKpi(
-            DateTime? dateFrom,
-            DateTime? dateTo,
-            string? customerId,
-            string? routeName,
-            string? region)
+     DateTime? dateFrom,
+     DateTime? dateTo,
+     string? customerId,
+     string? routeName,
+     string? region,
+     int page = 1,
+     int pageSize = 25)
         {
             var query = BuildQuery(new Dictionary<string, string?>
             {
@@ -33,26 +35,33 @@ namespace biostar_inventory_dashboard.Controllers
                 ["dateTo"] = dateTo?.ToString("yyyy-MM-dd"),
                 ["customerId"] = customerId,
                 ["routeName"] = routeName,
-                ["region"] = region
+                ["region"] = region,
+                ["page"] = page.ToString(),
+                ["pageSize"] = pageSize.ToString()
             });
 
             var result = await _apiService.GetAsync<object>($"api/Reports/delivery-kpi{query}");
             return Json(result);
         }
 
+
         [HttpGet]
         public async Task<IActionResult> NearExpiry(
             string? branchId,
             string? productId,
             string? expiryStatus,
-            int? monthsLeft)
+            int? monthsLeft,
+            int page = 1,
+            int pageSize = 25)
         {
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["branchId"] = branchId,
                 ["productId"] = productId,
                 ["expiryStatus"] = expiryStatus,
-                ["monthsLeft"] = monthsLeft?.ToString()
+                ["monthsLeft"] = monthsLeft?.ToString(),
+                ["page"] = page.ToString(),
+                ["pageSize"] = pageSize.ToString()
             });
 
             var result = await _apiService.GetAsync<object>($"api/Reports/near-expiry{query}");
@@ -78,22 +87,27 @@ namespace biostar_inventory_dashboard.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Inventory(
-            string? branchId,
-            string? productId,
-            string? expiryStatus,
-            string? stockStatus)
+     string? branchId,
+     string? productId,
+     string? expiryStatus,
+     string? stockStatus,
+     int page = 1,
+     int pageSize = 25)
         {
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["branchId"] = branchId,
                 ["productId"] = productId,
                 ["expiryStatus"] = expiryStatus,
-                ["stockStatus"] = stockStatus
+                ["stockStatus"] = stockStatus,
+                ["page"] = page.ToString(),
+                ["pageSize"] = pageSize.ToString()
             });
 
             var result = await _apiService.GetAsync<object>($"api/Reports/inventory{query}");
             return Json(result);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Branches()

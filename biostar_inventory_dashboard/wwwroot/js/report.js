@@ -1,14 +1,36 @@
 ﻿let currentReport = "delivery";
+let currentPage = 1;
+let pageSize = 25;
+let lastReportData = null;
 
 const API_BASE = "";
+
 
 document.addEventListener("DOMContentLoaded", async function () {
     bindEvents();
     setPrintDate();
+    setDefaultDateFilters();
 
     await loadDropdowns();
     await loadCurrentReport();
 });
+
+function setDefaultDateFilters() {
+    const today = new Date();
+
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    document.getElementById("dateFrom").value = formatDateInput(firstDay);
+    document.getElementById("dateTo").value = formatDateInput(today);
+}
+
+function formatDateInput(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
 
 function bindEvents() {
     document.querySelectorAll("#reportTabs .nav-link").forEach(btn => {
@@ -17,23 +39,61 @@ function bindEvents() {
             this.classList.add("active");
 
             currentReport = this.dataset.report;
+            currentPage = 1;
             toggleFilters();
             await loadCurrentReport();
         });
+
     });
 
-    document.getElementById("btnLoadReport").addEventListener("click", loadCurrentReport);
+    document.getElementById("btnLoadReport").addEventListener("click", async function () {
+        currentPage = 1;
+        await loadCurrentReport();
+    });
 
     document.getElementById("btnResetFilters").addEventListener("click", async function () {
         document.querySelectorAll("input, select").forEach(el => {
             if (el.id !== "") el.value = "";
         });
+        currentPage = 1;
 
+        await loadCurrentReport();
+    });
+
+    document.getElementById("pageSizeSelect").addEventListener("change", async function () {
+        pageSize = Number(this.value);
+        currentPage = 1;
+        await loadCurrentReport();
+    });
+
+    document.getElementById("btnFirstPage").addEventListener("click", async function () {
+        currentPage = 1;
+        await loadCurrentReport();
+    });
+
+    document.getElementById("btnPrevPage").addEventListener("click", async function () {
+        if (currentPage > 1) {
+            currentPage--;
+            await loadCurrentReport();
+        }
+    });
+
+    document.getElementById("btnNextPage").addEventListener("click", async function () {
+        if (lastReportData?.hasNext) {
+            currentPage++;
+            await loadCurrentReport();
+        }
+    });
+
+    document.getElementById("btnLastPage").addEventListener("click", async function () {
+        currentPage = lastReportData?.totalPages || 1;
         await loadCurrentReport();
     });
 
     toggleFilters();
 }
+
+
 
 function toggleFilters() {
     const showDate = currentReport === "delivery" || currentReport === "returns";
@@ -138,6 +198,9 @@ function getFilters() {
     addParam(params, "expiryStatus", "expiryStatusFilter");
     addParam(params, "stockStatus", "stockStatusFilter");
 
+    params.append("page", currentPage);
+    params.append("pageSize", pageSize);
+
     return params.toString();
 }
 
@@ -192,6 +255,12 @@ function setLoading() {
             <td colspan="20" class="text-center text-muted py-4">Loading report...</td>
         </tr>
     `;
+
+    const pagination = document.getElementById("reportPagination");
+
+    if (pagination) {
+        pagination.style.display = currentReport === "delivery" ? "" : "none";
+    }
 }
 
 function renderCards(cards) {
@@ -256,9 +325,42 @@ function renderDeliveryReport(data) {
                 <td>${statusBadge(x.kpiStatus)}</td>
             </tr>
         `).join("");
+
+    lastReportData = data;
+    renderPagination(data);
+}
+function renderPagination(data) {
+    const pagination = document.getElementById("reportPagination");
+    if (!pagination) return;
+
+    const paginatedReports = ["delivery", "expiry", "inventory"];
+
+    pagination.style.display = paginatedReports.includes(currentReport) ? "" : "none";
+
+    if (!paginatedReports.includes(currentReport)) return;
+
+    const totalRecords = data.totalRecords || 0;
+    const totalPages = data.totalPages || 1;
+    const page = data.page || 1;
+    const size = data.pageSize || pageSize;
+
+    const start = totalRecords === 0 ? 0 : ((page - 1) * size) + 1;
+    const end = Math.min(page * size, totalRecords);
+
+    document.getElementById("paginationInfo").innerText =
+        `Showing ${start}-${end} of ${totalRecords}`;
+
+    document.getElementById("pageNumberText").innerText =
+        `Page ${page} of ${totalPages}`;
+
+    document.getElementById("btnFirstPage").disabled = !data.hasPrevious;
+    document.getElementById("btnPrevPage").disabled = !data.hasPrevious;
+    document.getElementById("btnNextPage").disabled = !data.hasNext;
+    document.getElementById("btnLastPage").disabled = !data.hasNext;
 }
 
 function renderNearExpiryReport(data) {
+   // document.getElementById("reportPagination").style.display = "none";
     document.getElementById("reportTitle").innerText = "Near Expiry Report";
     document.getElementById("reportSubtitle").innerText = "Near expiry threshold: 3 months";
 
@@ -297,9 +399,14 @@ function renderNearExpiryReport(data) {
                 <td>${statusBadge(x.expiryStatus)}</td>
             </tr>
         `).join("");
+
+    lastReportData = data;
+    renderPagination(data);
+
 }
 
 function renderReturnReport(data) {
+    document.getElementById("reportPagination").style.display = "none";
     document.getElementById("reportTitle").innerText = "Return Report";
     document.getElementById("reportSubtitle").innerText = "Returned products and quarantine/release status";
 
@@ -345,6 +452,7 @@ function renderReturnReport(data) {
 }
 
 function renderInventoryReport(data) {
+  //  document.getElementById("reportPagination").style.display = "none";
     document.getElementById("reportTitle").innerText = "Inventory Report";
     document.getElementById("reportSubtitle").innerText = "Current stock snapshot by warehouse, product, and lot";
 
@@ -384,6 +492,9 @@ function renderInventoryReport(data) {
                 <td>${statusBadge(x.stockStatus)}</td>
             </tr>
         `).join("");
+
+    lastReportData = data;
+    renderPagination(data);
 }
 
 function emptyRow(colspan) {
