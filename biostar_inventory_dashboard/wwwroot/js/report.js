@@ -289,7 +289,7 @@ function renderDeliveryReport(data) {
         { label: "Total Deliveries", value: data.summary?.totalDeliveries ?? 0 },
         { label: "On-Time %", value: `${data.summary?.onTimePercent ?? 0}%` },
         { label: "Delayed %", value: `${data.summary?.delayedPercent ?? 0}%` },
-        { label: "Average Days", value: data.summary?.averageDeliveryDays ?? 0 }
+        { label: "Average Delay", value: `${data.summary?.averageDeliveryDays ?? 0} days` }
     ]);
 
     document.getElementById("reportTableHead").innerHTML = `
@@ -301,7 +301,7 @@ function renderDeliveryReport(data) {
             <th>Region</th>
             <th>Delivery Date</th>
             <th>Date Delivered</th>
-            <th>Days</th>
+          <th>Variance</th>
             <th>Target</th>
             <th>Status</th>
         </tr>
@@ -320,7 +320,7 @@ function renderDeliveryReport(data) {
                 <td>${safe(x.region)}</td>
                <td>${formatDatePH(x.deliveryDate)}</td>
                 <td>${formatDatePH(x.dateDelivered)}</td>
-                <td>${safe(x.deliveryDays)}</td>
+                <td>${formatVariance(x.deliveryDays)}</td>
                 <td>${safe(x.targetDays)} days</td>
                 <td>${statusBadge(x.kpiStatus)}</td>
             </tr>
@@ -329,6 +329,14 @@ function renderDeliveryReport(data) {
     lastReportData = data;
     renderPagination(data);
 }
+
+function formatVariance(days) {
+    if (days === 0) return "On Time";
+    if (days < 0) return `${Math.abs(days)} day(s) Early`;
+    return `${days} day(s) Late`;
+}
+
+
 function renderPagination(data) {
     const pagination = document.getElementById("reportPagination");
     if (!pagination) return;
