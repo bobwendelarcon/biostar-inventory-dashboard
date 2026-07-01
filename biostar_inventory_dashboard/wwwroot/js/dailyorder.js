@@ -30,6 +30,9 @@ document.addEventListener("DOMContentLoaded", function () {
     //    });
     //}
 
+    document.getElementById("btnResetFilters")
+        ?.addEventListener("click", resetDailyOrderFilters);
+
     document.addEventListener("click", function (e) {
         const item = e.target.closest(".modal-product-result");
         if (!item) return;
@@ -632,7 +635,21 @@ document.addEventListener("DOMContentLoaded", function () {
 //        alert(err.message || "Failed to add product line.");
 //    }
 //}
+function resetDailyOrderFilters() {
 
+    document.getElementById("classFilter").selectedIndex = 0;
+    document.getElementById("yearFilter").selectedIndex = 1;   // All Year if that's your first option, or adjust accordingly
+    document.getElementById("monthFilter").selectedIndex = 0;
+    document.getElementById("statusFilter").value = "ALL_EXCL_COMPLETED";
+    document.getElementById("sortByFilter").value = "deliveryDate";
+    document.getElementById("sortDirFilter").value = "asc";
+    document.getElementById("searchInput").value = "";
+
+    dailyOrderPage = 1;
+    dailyOrderHasMore = true;
+
+    loadDailyOrders(false);
+}
 async function saveProductLine() {
     const productId = document.getElementById("modalAddLineProduct")?.value;
     const requiredQty = Number(document.getElementById("modalAddLineQty")?.value || 0);
@@ -3203,3 +3220,5 @@ async function loadEditBranches(selectedBranchId = "") {
         console.error(err);
     }
 }
+
+
