@@ -299,7 +299,7 @@ function renderDeliveryReport(data) {
             <th>Reference</th>
             <th>Route</th>
             <th>Region</th>
-            <th>Date Ordered</th>
+            <th>Delivery Date</th>
             <th>Date Delivered</th>
             <th>Days</th>
             <th>Target</th>
@@ -318,7 +318,7 @@ function renderDeliveryReport(data) {
                 <td>${safe(x.transactionReference)}</td>
                 <td>${safe(x.routeName)}</td>
                 <td>${safe(x.region)}</td>
-                <td>${formatDatePH(x.dateOrdered)}</td>
+               <td>${formatDatePH(x.deliveryDate)}</td>
                 <td>${formatDatePH(x.dateDelivered)}</td>
                 <td>${safe(x.deliveryDays)}</td>
                 <td>${safe(x.targetDays)} days</td>

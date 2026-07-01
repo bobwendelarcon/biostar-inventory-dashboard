@@ -17,7 +17,6 @@ namespace biostar_inventory_dashboard.Controllers
         {
             _apiService = apiService;
         }
-
         [HttpGet]
         public IActionResult Index()
         {
@@ -28,6 +27,16 @@ namespace biostar_inventory_dashboard.Controllers
                 if (role == "PRODUCTION")
                 {
                     return RedirectToAction("Index", "ProductToProduce");
+                }
+
+                if (role == "PURCHASING")
+                {
+                    return Redirect("/purchasing/mprf");
+                }
+
+                if (role == "RM_WAREHOUSE")
+                {
+                    return Redirect("/purchasing/mprf");
                 }
 
                 return RedirectToAction("Index", "Dashboard");

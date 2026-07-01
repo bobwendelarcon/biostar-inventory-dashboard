@@ -28,7 +28,6 @@ wwwroot\js\purchasing\canvassing\canvassing.js
 wwwroot\js\purchasing\mprf-review.js
 wwwroot\js\purchasing\mprf.js
 wwwroot\js\purchasing\suppliers\suppliers.js
-wwwroot\js\report.js
 wwwroot\js\returns.js
 wwwroot\js\site.js
 wwwroot\js\transaction.js
@@ -91,3 +90,4 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
+wwwroot\js\report.js
