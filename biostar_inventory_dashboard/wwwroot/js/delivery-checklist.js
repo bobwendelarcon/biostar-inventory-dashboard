@@ -384,12 +384,21 @@ function initializeCreateChecklistModal() {
         const deliveryInput = document.getElementById("create_delivery_date");
         if (deliveryInput) {
             const today = new Date();
+
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, "0");
             const dd = String(today.getDate()).padStart(2, "0");
             const todayStr = `${yyyy}-${mm}-${dd}`;
 
-            deliveryInput.min = todayStr;
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() - 5);
+
+            const minYyyy = minDate.getFullYear();
+            const minMm = String(minDate.getMonth() + 1).padStart(2, "0");
+            const minDd = String(minDate.getDate()).padStart(2, "0");
+            const minDateStr = `${minYyyy}-${minMm}-${minDd}`;
+
+            deliveryInput.min = minDateStr;
             deliveryInput.value = todayStr;
         }
     });
