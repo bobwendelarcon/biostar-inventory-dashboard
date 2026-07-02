@@ -29,9 +29,9 @@ namespace biostar_inventory_dashboard.Controllers
                     return RedirectToAction("Index", "ProductToProduce");
                 }
 
-                if (role == "PURCHASING")
+                if (role == "PURCHASING" || role == "PURCHASING_ADMIN")
                 {
-                    return Redirect("/purchasing/mprf");
+                    return Redirect("/purchasing/mprf/review");
                 }
 
                 if (role == "RM_WAREHOUSE")

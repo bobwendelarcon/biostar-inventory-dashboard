@@ -173,7 +173,9 @@ function getPHDateInputValue() {
 
 
 function resetFilters() {
-    document.getElementById("filterDate").value = "";
+    const today = getPHDateInputValue();
+
+    document.getElementById("filterDate").value = today;
     document.getElementById("filterStatus").value = "";
     document.getElementById("filterTruck").value = "";
     document.getElementById("filterSearch").value = "";
@@ -297,7 +299,7 @@ async function loadChecklistList(options = {}) {
 
         const query = new URLSearchParams();
 
-        if (date) query.append("date", date);
+        if (date && !search) query.append("date", date);
         if (status) query.append("status", status);
         if (truck) query.append("truck", truck);
         if (search) query.append("search", search);
@@ -310,6 +312,14 @@ async function loadChecklistList(options = {}) {
 
         const result = await response.json();
         const data = Array.isArray(result) ? result : (result.data || []);
+
+        if (search && data.length > 0) {
+            const foundDate = data[0].delivery_date;
+
+            if (foundDate) {
+                document.getElementById("filterDate").value = foundDate.substring(0, 10);
+            }
+        }
 
         if (!Array.isArray(data) || data.length === 0) {
             tableBody.innerHTML = `
@@ -325,7 +335,12 @@ async function loadChecklistList(options = {}) {
         data.forEach(item => {
             rows += `
                 <tr>
-                    <td>${escapeHtml(item.checklist_no ?? "")}</td>
+                    <td>
+    <div>${escapeHtml(item.checklist_no ?? "")}</div>
+    ${item.dr_numbers
+                    ? `<div class="text-muted small">DR: ${escapeHtml(item.dr_numbers)}</div>`
+                    : ""}
+</td>
                     <td>${formatDate(item.delivery_date)}</td>
                     <td>${escapeHtml(item.route_name ?? "-")}</td>
                     <td>${escapeHtml(item.truck_name ?? "-")}</td>
@@ -645,61 +660,151 @@ async function openViewChecklistModal(id) {
         if (!Array.isArray(data.lines) || data.lines.length === 0) {
             tbody.innerHTML = `
         <tr>
-            <td colspan="7" class="text-center text-muted">No data</td>
+            <td colspan="9" class="text-center text-muted">No data</td>
         </tr>
     `;
         } else {
+            //let rows = "";
+
+//            data.lines.forEach(line => {
+//                rows += `
+//<tr>
+//    <td>${escapeHtml(line.customer_name ?? "-")}</td>
+
+//    <td>
+//        <div>${escapeHtml(line.product_name ?? "-")}</div>
+//        ${line.product_description
+//                        ? `<div class="text-muted small">${escapeHtml(line.product_description)}</div>`
+//                        : ""}
+//    </td>
+
+//    <td>
+//        ${escapeHtml(line.branch_name ?? "-")}
+//    </td>
+
+//    <td>${escapeHtml(line.lot_no ?? "-")}</td>
+
+//    <td>${formatDate(line.manufacturing_date)}</td>
+
+//    <td>${formatDate(line.expiration_date)}</td>
+
+//    <td>${formatChecklistQty(line)}</td>
+
+//   <td>${getStatusBadge(line.status)}</td>
+
+//<td class="text-center">
+//    ${(line.status || "").toUpperCase() === "READY" ? `
+//        <div class="btn-group btn-group-sm">
+//            <button class="btn btn-outline-warning"
+//        onclick="editChecklistLine(${line.checklist_line_id || line.line_id})">
+//    Replace Lot
+//</button>
+
+//            <button class="btn btn-outline-success"
+//                    onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
+//                Complete
+//            </button>
+//        </div>
+//    ` : `
+//        <span class="text-success small">
+//            <i class="bi bi-check-circle"></i> Completed
+//        </span>
+//    `}
+//</td>
+//</tr>
+
+//`;
+            //            });
+
+
             let rows = "";
 
+            const grouped = {};
+
             data.lines.forEach(line => {
+                const key = `${line.product_id || ""}|${line.product_name || ""}|${line.product_description || ""}`;
+
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        product_name: line.product_name || "-",
+                        product_description: line.product_description || "",
+                        uom: line.uom || "",
+                        pack_qty: line.pack_qty,
+                        pack_uom: line.pack_uom,
+                        lines: [],
+                        total_qty: 0
+                    };
+                }
+
+                grouped[key].lines.push(line);
+                grouped[key].total_qty += Number(line.checklist_qty || 0);
+            });
+
+            Object.values(grouped).forEach(group => {
                 rows += `
+        <tr class="table-secondary">
+            <td colspan="9">
+                <div class="fw-bold">${escapeHtml(group.product_name)}</div>
+                ${group.product_description
+                        ? `<div class="text-muted small">${escapeHtml(group.product_description)}</div>`
+                        : ""}
+            </td>
+        </tr>
+    `;
+
+                group.lines.forEach(line => {
+                    rows += `
 <tr>
     <td>${escapeHtml(line.customer_name ?? "-")}</td>
 
     <td>
-        <div>${escapeHtml(line.product_name ?? "-")}</div>
-        ${line.product_description
-                        ? `<div class="text-muted small">${escapeHtml(line.product_description)}</div>`
-                        : ""}
+        <span class="text-muted small">Lot item</span>
     </td>
 
+    <td>${escapeHtml(line.branch_name ?? "-")}</td>
     <td>
-        ${escapeHtml(line.branch_name ?? "-")}
-    </td>
-
-    <td>${escapeHtml(line.lot_no ?? "-")}</td>
-
-    <td>${formatDate(line.manufacturing_date)}</td>
-
-    <td>${formatDate(line.expiration_date)}</td>
-
-    <td>${formatChecklistQty(line)}</td>
-
-   <td>${getStatusBadge(line.status)}</td>
-
-<td class="text-center">
-    ${(line.status || "").toUpperCase() === "READY" ? `
-        <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-warning"
-        onclick="editChecklistLine(${line.checklist_line_id || line.line_id})">
-    Replace Lot
-</button>
-
-            <button class="btn btn-outline-success"
-                    onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
-                Complete
-            </button>
-        </div>
-    ` : `
-        <span class="text-success small">
-            <i class="bi bi-check-circle"></i> Completed
-        </span>
-    `}
+    <div>${escapeHtml(line.lot_no ?? "-")}</div>
+    ${line.dr_no
+                            ? `<div class="text-muted small">DR: ${escapeHtml(line.dr_no)}</div>`
+                            : ""}
 </td>
-</tr>
+    <td>${formatDate(line.manufacturing_date)}</td>
+    <td>${formatDate(line.expiration_date)}</td>
+    <td>${formatChecklistQty(line)}</td>
+    <td>${getStatusBadge(line.status)}</td>
 
-`;
+    <td class="text-center">
+        ${(line.status || "").toUpperCase() === "READY" ? `
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-warning"
+                        onclick="editChecklistLine(${line.checklist_line_id || line.line_id})">
+                    Replace Lot
+                </button>
+
+                <button class="btn btn-outline-success"
+                        onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
+                    Complete
+                </button>
+            </div>
+        ` : `
+            <span class="text-success small">
+                <i class="bi bi-check-circle"></i> Completed
+            </span>
+        `}
+    </td>
+</tr>`;
+                });
+
+                rows += `
+        <tr class="table-light border-bottom">
+            <td colspan="6" class="text-end fw-bold">Total for ${escapeHtml(group.product_name)}:</td>
+            <td class="fw-bold">${toDisplayNumber(group.total_qty)} ${escapeHtml(group.uom)}</td>
+            <td colspan="2"></td>
+        </tr>
+    `;
             });
+
+            tbody.innerHTML = rows;
 
             tbody.innerHTML = rows;
         }

@@ -2,12 +2,16 @@
 let currentPage = 1;
 const pageSize = 10;
 
+let mprfAutoRefreshTimer = null;
+const mprfAutoRefreshSeconds = 30;
+
 document.addEventListener("DOMContentLoaded", function () {
     const mprfTableBody = document.getElementById("mprfTableBody");
     const mprfLinesBody = document.getElementById("mprfLinesBody");
 
     if (mprfTableBody) {
         loadMprfList();
+        startMprfAutoRefresh();
     }
 
     if (mprfLinesBody) {
@@ -37,6 +41,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
+
+function startMprfAutoRefresh() {
+    if (mprfAutoRefreshTimer) {
+        clearInterval(mprfAutoRefreshTimer);
+    }
+
+    console.log("MPRF auto refresh started");
+
+    mprfAutoRefreshTimer = setInterval(() => {
+        console.log("Refreshing MPRF list...");
+
+        if (document.querySelector(".modal.show")) return;
+        if (document.querySelector(".dropdown-menu.show")) return;
+
+        loadMprfList(false);
+
+    }, 5000);
+}
+
 
 
 async function loadMprfForEdit(id) {
@@ -216,15 +239,21 @@ function updateWeek() {
 //}
 
 
-async function loadMprfList() {
+async function loadMprfList(resetPage = true) {
     const tbody = document.getElementById("mprfTableBody");
 
     try {
-        const response = await fetch("/purchasing/mprf/list");
+        const response = await fetch("/purchasing/mprf/list?t=" + Date.now(), {
+            cache: "no-store"
+        });
+
         const data = await response.json();
 
         mprfListCache = Array.isArray(data) ? data : [];
-        currentPage = 1;
+
+        if (resetPage) {
+            currentPage = 1;
+        }
 
         updateMprfSummary();
         renderMprfList();

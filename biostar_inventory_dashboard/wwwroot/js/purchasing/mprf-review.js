@@ -1,8 +1,15 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿let reviewListCache = [];
+let mprfReviewAutoRefreshTimer = null;
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
     const tableBody = document.getElementById("mprfReviewTableBody");
 
     if (tableBody) {
+        console.log("MPRF Review JS LOADED");
         loadMprfReviewList();
+        startMprfReviewAutoRefresh();
     }
 
     const search = document.getElementById("reviewSearch");
@@ -17,13 +24,33 @@
     }
 });
 
-let reviewListCache = [];
+
+function startMprfReviewAutoRefresh() {
+    if (mprfReviewAutoRefreshTimer) {
+        clearInterval(mprfReviewAutoRefreshTimer);
+    }
+
+    console.log("MPRF Review auto refresh started");
+
+    mprfReviewAutoRefreshTimer = setInterval(() => {
+        console.log("Refreshing MPRF review list...");
+
+        if (document.querySelector(".modal.show")) return;
+        if (document.querySelector(".dropdown-menu.show")) return;
+
+        loadMprfReviewList();
+
+    }, 5000);
+}
+
 
 async function loadMprfReviewList() {
     const tbody = document.getElementById("mprfReviewTableBody");
 
     try {
-        const response = await fetch("/purchasing/mprf/review-list");
+        const response = await fetch("/purchasing/mprf/review-list?t=" + Date.now(), {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
             tbody.innerHTML = `
