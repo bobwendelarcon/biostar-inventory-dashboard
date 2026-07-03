@@ -1265,6 +1265,48 @@ namespace biostar_inventory_dashboard.Services
         }
 
 
+        public async Task<string> CompleteChecklistCustomerAsync(JsonElement data)
+        {
+            var content = new StringContent(
+                data.GetRawText(),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                "api/DeliveryChecklist/complete-customer",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> CompleteChecklistLinesAsync(JsonElement data)
+        {
+            var content = new StringContent(
+                data.GetRawText(),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                "api/DeliveryChecklist/complete-lines",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
 
     }
 }

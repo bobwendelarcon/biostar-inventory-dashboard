@@ -719,94 +719,183 @@ async function openViewChecklistModal(id) {
 
             let rows = "";
 
-            const grouped = {};
+            const customers = {};
 
             data.lines.forEach(line => {
-                const key = `${line.product_id || ""}|${line.product_name || ""}|${line.product_description || ""}`;
+                const customerKey = line.customer_name || "NO CUSTOMER";
 
-                if (!grouped[key]) {
-                    grouped[key] = {
-                        product_name: line.product_name || "-",
-                        product_description: line.product_description || "",
-                        uom: line.uom || "",
-                        pack_qty: line.pack_qty,
-                        pack_uom: line.pack_uom,
-                        lines: [],
-                        total_qty: 0
+                if (!customers[customerKey]) {
+                    customers[customerKey] = {
+                        customer_name: line.customer_name || "-",
+                        lines: []
                     };
                 }
 
-                grouped[key].lines.push(line);
-                grouped[key].total_qty += Number(line.checklist_qty || 0);
+                customers[customerKey].lines.push(line);
             });
 
-            Object.values(grouped).forEach(group => {
+            Object.values(customers).forEach((customer, customerIndex) => {
+
+                const readyCount = customer.lines.filter(x =>
+                    (x.status || "").toUpperCase() === "READY"
+                ).length;
+
+                const completedCount = customer.lines.length - readyCount;
+
+                const isFullyCompleted = readyCount === 0;
+
                 rows += `
-        <tr class="table-secondary">
-            <td colspan="9">
-                <div class="fw-bold">${escapeHtml(group.product_name)}</div>
-                ${group.product_description
-                        ? `<div class="text-muted small">${escapeHtml(group.product_description)}</div>`
-                        : ""}
-            </td>
-        </tr>
-    `;
-
-                group.lines.forEach(line => {
-                    rows += `
-<tr>
-    <td>${escapeHtml(line.customer_name ?? "-")}</td>
-
-    <td>
-        <span class="text-muted small">Lot item</span>
-    </td>
-
-    <td>${escapeHtml(line.branch_name ?? "-")}</td>
-    <td>
-    <div>${escapeHtml(line.lot_no ?? "-")}</div>
-    ${line.dr_no
-                            ? `<div class="text-muted small">DR: ${escapeHtml(line.dr_no)}</div>`
-                            : ""}
-</td>
-    <td>${formatDate(line.manufacturing_date)}</td>
-    <td>${formatDate(line.expiration_date)}</td>
-    <td>${formatChecklistQty(line)}</td>
-    <td>${getStatusBadge(line.status)}</td>
-
-    <td class="text-center">
-        ${(line.status || "").toUpperCase() === "READY" ? `
-            <div class="btn-group btn-group-sm">
-                <button class="btn btn-outline-warning"
-                        onclick="editChecklistLine(${line.checklist_line_id || line.line_id})">
-                    Replace Lot
-                </button>
-
-                <button class="btn btn-outline-success"
-                        onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
-                    Complete
-                </button>
+<tr class="${isFullyCompleted ? "table-success" : "table-dark"}">
+    <td colspan="9">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <div class="fw-bold">
+                    ${isFullyCompleted ? "✓ " : ""}${escapeHtml(customer.customer_name)}
+                </div>
+                <small>
+                    Ready: ${readyCount} | Completed: ${completedCount}
+                </small>
             </div>
-        ` : `
-            <span class="text-success small">
-                <i class="bi bi-check-circle"></i> Completed
-            </span>
-        `}
+
+            ${isFullyCompleted ? `
+                <span class="badge bg-success">Customer Fully Delivered</span>
+            ` : ""}
+        </div>
+
+        ${readyCount > 0 ? `
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="small">DR No *</label>
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           id="cust_dr_${customerIndex}"
+                           oninput="toggleCompleteCustomerButton(${customerIndex})">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="small">Invoice No</label>
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           id="cust_inv_${customerIndex}">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="small">PO No</label>
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           id="cust_po_${customerIndex}">
+                </div>
+
+                <div class="col-md-3">
+                    <button id="btnCompleteCustomer_${customerIndex}"
+                            class="btn btn-success btn-sm w-100"
+                            disabled
+                            onclick="completeCustomer('${escapeAttribute(customer.customer_name)}', ${customerIndex})">
+                        Complete Ready Lines
+                    </button>
+                </div>
+            </div>
+        ` : ""}
     </td>
 </tr>`;
+
+                const products = {};
+
+                customer.lines.forEach(line => {
+                    const productKey = `${line.product_id || ""}|${line.product_name || ""}|${line.product_description || ""}`;
+
+                    if (!products[productKey]) {
+                        products[productKey] = {
+                            product_name: line.product_name || "-",
+                            product_description: line.product_description || "",
+                            uom: line.uom || "",
+                            lines: [],
+                            total_qty: 0
+                        };
+                    }
+
+                    products[productKey].lines.push(line);
+                    products[productKey].total_qty += Number(line.checklist_qty || 0);
                 });
 
-                rows += `
-        <tr class="table-light border-bottom">
-            <td colspan="6" class="text-end fw-bold">Total for ${escapeHtml(group.product_name)}:</td>
-            <td class="fw-bold">${toDisplayNumber(group.total_qty)} ${escapeHtml(group.uom)}</td>
-            <td colspan="2"></td>
-        </tr>
-    `;
+                Object.values(products).forEach(product => {
+
+                    rows += `
+            <tr class="table-secondary">
+                <td colspan="9">
+                    <div class="fw-bold">${escapeHtml(product.product_name)}</div>
+                    ${product.product_description
+                            ? `<div class="text-muted small">${escapeHtml(product.product_description)}</div>`
+                            : ""
+                        }
+                </td>
+            </tr>
+        `;
+
+                    product.lines.forEach(line => {
+                        rows += `
+                <tr>
+                    <td></td>
+
+                    <td>
+                        <span class="text-muted small">Lot item</span>
+                    </td>
+
+                    <td>${escapeHtml(line.branch_name ?? "-")}</td>
+
+                    <td>
+                        <div>${escapeHtml(line.lot_no ?? "-")}</div>
+                        ${line.dr_no
+                                ? `<div class="text-muted small">DR: ${escapeHtml(line.dr_no)}</div>`
+                                : ""
+                            }
+                    </td>
+
+                    <td>${formatDate(line.manufacturing_date)}</td>
+                    <td>${formatDate(line.expiration_date)}</td>
+                    <td>${formatChecklistQty(line)}</td>
+                    <td>${getStatusBadge(line.status)}</td>
+
+                    <td class="text-center">
+                        ${(line.status || "").toUpperCase() === "READY" ? `
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-warning"
+                                        onclick="editChecklistLine(${line.checklist_line_id || line.line_id})">
+                                    Replace Lot
+                                </button>
+
+                                <button class="btn btn-outline-success"
+                                        onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
+                                    Complete
+                                </button>
+                            </div>
+                        ` : `
+                            <span class="text-success small">
+                                <i class="bi bi-check-circle"></i> Completed
+                            </span>
+                        `}
+                    </td>
+                </tr>
+            `;
+                    });
+
+                    rows += `
+            <tr class="table-light">
+                <td colspan="6" class="text-end fw-bold">
+                    Total for ${escapeHtml(product.product_name)}:
+                </td>
+                <td class="fw-bold">
+                    ${toDisplayNumber(product.total_qty)} ${escapeHtml(product.uom)}
+                </td>
+                <td colspan="2"></td>
+            </tr>
+        `;
+                });
             });
 
             tbody.innerHTML = rows;
 
-            tbody.innerHTML = rows;
+          
         }
 
         checklistModalInstance = bootstrap.Modal.getOrCreateInstance(
@@ -819,7 +908,58 @@ async function openViewChecklistModal(id) {
         alert("Failed to load checklist details.");
     }
 }
+async function completeCustomer(customerName, customerIndex) {
+    const drNo = document.getElementById(`cust_dr_${customerIndex}`)?.value.trim() || "";
+    const invNo = document.getElementById(`cust_inv_${customerIndex}`)?.value.trim() || "";
+    const poNo = document.getElementById(`cust_po_${customerIndex}`)?.value.trim() || "";
 
+    if (!drNo) {
+        alert("DR No is required.");
+        return;
+    }
+
+    if (!confirm(`Complete all READY lines for ${customerName}?`)) {
+        return;
+    }
+
+    const payload = {
+        checklist_id: window.currentChecklistId,
+        customer_name: customerName,
+        adjusted_by: window.currentUserName || window.currentUserId || "UNKNOWN",
+        dr_no: drNo,
+        inv_no: invNo,
+        po_no: poNo,
+        remarks: ""
+    };
+
+    const response = await fetch("/DeliveryChecklist/CompleteCustomer", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.success === false) {
+        alert(result.message || "Failed to complete customer.");
+        return;
+    }
+
+    alert(result.message || "Customer completed.");
+
+    await openViewChecklistModal(window.currentChecklistId);
+    await loadChecklistList();
+}
+function toggleCompleteCustomerButton(customerIndex) {
+    const drNo = document.getElementById(`cust_dr_${customerIndex}`)?.value.trim() || "";
+    const btn = document.getElementById(`btnCompleteCustomer_${customerIndex}`);
+
+    if (btn) {
+        btn.disabled = drNo === "";
+    }
+}
 async function submitCompleteLine() {
     const line = window.currentCompleteLine;
 

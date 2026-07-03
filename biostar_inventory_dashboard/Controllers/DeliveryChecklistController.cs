@@ -225,5 +225,41 @@ namespace biostar_inventory_dashboard.Controllers
                 });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CompleteCustomer([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.CompleteChecklistCustomerAsync(data);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CompleteLines([FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService.CompleteChecklistLinesAsync(data);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }
