@@ -56,8 +56,7 @@ namespace biostar_inventory_dashboard.Controllers
             int page = 1,
             int pageSize = 30,
             string lot_no = "",
-            string genericName = "",
-string brandName = "",
+            String search = "",
            string warehouse = "",
 string category = "",
 string stockStatus = "",
@@ -65,6 +64,7 @@ string stockStatus = "",
             string months = "",
             string from = "",
             string to = "",
+            string sortBy = "lot",
             string order = "desc"
         )
         {
@@ -72,8 +72,7 @@ string stockStatus = "",
       page,
       pageSize,
       lot_no,
-      genericName,
-      brandName,
+     search,
       warehouse,
       category,
       stockStatus,
@@ -81,6 +80,7 @@ string stockStatus = "",
       months,
       from,
       to,
+      sortBy,
       order
   );
 
@@ -120,31 +120,32 @@ string stockStatus = "",
         [HttpGet]
         public async Task<IActionResult> ExportExcel(
     string lot_no = "",
-   string genericName = "",
-string brandName = "",
-    string warehouse = "",
-    string category = "",
+   string search = "",
+string warehouse = "",
+string category = "",
     string stockStatus = "",
     string expiryStatus = "",
     string months = "",
     string from = "",
     string to = "",
+    string sortBy = "lot",
     string order = "desc"
 )
         {
             var result = await _apiService.GetInventoryAsync(
-      1, 100000,
+      1,
+      100000,
       lot_no,
-      genericName,
-      brandName,
+      search,
       warehouse,
       category,
       stockStatus,
       expiryStatus,
       months,
       from,
-      to,
-      order
+     to,
+sortBy,
+order
   );
 
             var items = result.Data ?? new();
@@ -285,8 +286,7 @@ string brandName = "",
         [HttpGet]
         public async Task<IActionResult> Print(
     string lot_no = "",
-    string genericName = "",
-    string brandName = "",
+    string search = "",
     string warehouse = "",
     string category = "",
     string stockStatus = "",
@@ -294,26 +294,27 @@ string brandName = "",
     string months = "",
     string from = "",
     string to = "",
+    string sortBy = "lot",
     string order = "desc"
 )
         {
             var result = await _apiService.GetInventoryAsync(
-                1,
-                100000,
-                lot_no,
-                genericName,
-                brandName,
-                warehouse,
-                category,
-                stockStatus,
-                expiryStatus,
-                months,
-                from,
-                to,
-                order
-            );
+      1,
+      100000,
+      lot_no,
+      search,
+      warehouse,
+      category,
+      stockStatus,
+      expiryStatus,
+      months,
+      from,
+      to,
+      sortBy,
+      order
+  );
 
-       
+
             // Get warehouse name
             var branches = await _apiService.GetBranchesAsync();
 

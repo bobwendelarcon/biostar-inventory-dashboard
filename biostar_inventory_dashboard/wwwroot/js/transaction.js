@@ -150,8 +150,7 @@ async function loadTransactions(page = 1) {
         currentPage = page;
 
         const lotNo = document.getElementById("lotNoFilter")?.value.trim() || "";
-        const genericName = document.getElementById("genericNameFilter")?.value.trim() || "";
-        const brandName = document.getElementById("brandNameFilter")?.value.trim() || "";
+        const search = document.getElementById("productSearchFilter")?.value.trim() || "";
         const type = document.getElementById("typeFilter")?.value || "";
 
         let from = document.getElementById("dateFromFilter")?.value || "";
@@ -176,10 +175,14 @@ async function loadTransactions(page = 1) {
 
         let url = `/Transactions/GetTransactions?page=${page}&pageSize=${pageSize}`;
 
-        if (lotNo) url += `&lot_no=${encodeURIComponent(lotNo)}`;
-        if (genericName) url += `&genericName=${encodeURIComponent(genericName)}`;
-        if (brandName) url += `&brandName=${encodeURIComponent(brandName)}`;
-        if (type) url += `&type=${encodeURIComponent(type)}`;
+        if (lotNo)
+            url += `&lot_no=${encodeURIComponent(lotNo)}`;
+
+        if (search)
+            url += `&search=${encodeURIComponent(search)}`;
+
+        if (type)
+            url += `&type=${encodeURIComponent(type)}`;
         if (from) url += `&from=${encodeURIComponent(from)}`;
         if (to) url += `&to=${encodeURIComponent(to)}`;
 
@@ -454,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loadTransactions(1);
     });
 
-    ["genericNameFilter", "brandNameFilter"].forEach(id => {
+    ["productSearchFilter"].forEach(id => {
         document.getElementById(id)?.addEventListener("input", function () {
             clearTimeout(lotSearchTimeout);
             lotSearchTimeout = setTimeout(() => {
@@ -466,8 +469,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("clearFilters")?.addEventListener("click", function () {
         const ids = [
             "lotNoFilter",
-            "genericNameFilter",
-            "brandNameFilter",
+            "productSearchFilter",
             "typeFilter",
             "dateFromFilter",
             "dateToFilter",

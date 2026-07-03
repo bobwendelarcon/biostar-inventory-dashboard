@@ -176,8 +176,9 @@ async function loadInventory(page = currentPage) {
             page: currentPage,
             pageSize: pageSize,
             lot_no: document.getElementById("lotNoFilter")?.value || "",
-            genericName: document.getElementById("genericNameFilter")?.value || "",
-            brandName: document.getElementById("brandNameFilter")?.value || "",
+            //genericName: document.getElementById("genericNameFilter")?.value || "",
+            //brandName: document.getElementById("brandNameFilter")?.value || "",
+            search: document.getElementById("productSearchFilter")?.value || "",
             from: document.getElementById("dateFromFilter")?.value || "",
             to: document.getElementById("dateToFilter")?.value || "",
             warehouse: document.getElementById("warehouseFilter")?.value || "",
@@ -186,6 +187,7 @@ async function loadInventory(page = currentPage) {
             expiryStatus:
                 document.getElementById("expiryStatusFilter")?.value || "",
             months: document.getElementById("monthsFilter")?.value || "",
+            sortBy: document.getElementById("sortByFilter")?.value || "lot",
             order: document.getElementById("orderFilter")?.value || "desc"
         });
 
@@ -736,7 +738,10 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("nextBtn")?.addEventListener("click", nextPage);
     applyInventoryRoleUI();
 
-  
+    document.getElementById("sortByFilter")?.addEventListener("change", () => {
+        currentPage = 1;
+        loadInventory(1);
+    });
 
     document.getElementById("pageSizeFilter")?.addEventListener("change", function () {
         pageSize = parseInt(this.value) || 30;
@@ -756,7 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
             currentPage = 1;
             loadInventory(1);
         });
-    ["genericNameFilter", "brandNameFilter"].forEach(id => {
+    ["productSearchFilter"].forEach(id => {
         document.getElementById(id)?.addEventListener("input", function () {
             clearTimeout(productSearchTimeout);
             productSearchTimeout = setTimeout(() => {
@@ -799,8 +804,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("clearFilters")?.addEventListener("click", function () {
         const ids = [
             "lotNoFilter",
-            "genericNameFilter",
-            "brandNameFilter",
+            "productSearchFilter",
             "dateFromFilter",
             "dateToFilter",
             "warehouseFilter",
@@ -808,6 +812,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "stockStatusFilter",
             "expiryStatusFilter",
             "monthsFilter",
+            "sortByFilter",
             "orderFilter"
         ];
 
@@ -817,6 +822,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (id === "expiryStatusFilter") {
                 el.value = "available";
+            }
+            if (id === "sortByFilter") {
+                el.value = "lot";
             }
             else if (id === "orderFilter") {
                 el.value = "desc";
@@ -911,8 +919,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnExportInventory")?.addEventListener("click", function () {
         const params = new URLSearchParams({
             lot_no: document.getElementById("lotNoFilter")?.value || "",
-            genericName: document.getElementById("genericNameFilter")?.value || "",
-            brandName: document.getElementById("brandNameFilter")?.value || "",
+            search: document.getElementById("productSearchFilter")?.value || "",
             category: document.getElementById("categoryFilter")?.value || "",
             from: document.getElementById("dateFromFilter")?.value || "",
             to: document.getElementById("dateToFilter")?.value || "",

@@ -69,20 +69,20 @@ namespace biostar_inventory_dashboard.Services
         }
 
         public async Task<PagedInventoryResponse> GetInventoryAsync(
-     int page = 1,
-     int pageSize = 30,
-     string lot_no = "",
-     string genericName = "",
-     string brandName = "",
-     string warehouse = "",
-     string category = "",
-     string stockStatus = "",
-     string expiryStatus = "",
-     string months = "",
-     string from = "",
-     string to = "",
-     string order = "desc"
- )
+      int page = 1,
+      int pageSize = 30,
+      string lot_no = "",
+      string search = "",
+      string warehouse = "",
+      string category = "",
+      string stockStatus = "",
+      string expiryStatus = "",
+      string months = "",
+      string from = "",
+      string to = "",
+      string sortBy = "lot",
+      string order = "desc"
+  )
         {
             var queryParams = new List<string>
     {
@@ -93,11 +93,8 @@ namespace biostar_inventory_dashboard.Services
             if (!string.IsNullOrWhiteSpace(lot_no))
                 queryParams.Add($"lot_no={Uri.EscapeDataString(lot_no)}");
 
-            if (!string.IsNullOrWhiteSpace(genericName))
-                queryParams.Add($"genericName={Uri.EscapeDataString(genericName)}");
-
-            if (!string.IsNullOrWhiteSpace(brandName))
-                queryParams.Add($"brandName={Uri.EscapeDataString(brandName)}");
+            if (!string.IsNullOrWhiteSpace(search))
+                queryParams.Add($"search={Uri.EscapeDataString(search)}");
 
             if (!string.IsNullOrWhiteSpace(warehouse))
                 queryParams.Add($"warehouse={Uri.EscapeDataString(warehouse)}");
@@ -119,6 +116,8 @@ namespace biostar_inventory_dashboard.Services
 
             if (!string.IsNullOrWhiteSpace(to))
                 queryParams.Add($"to={Uri.EscapeDataString(to)}");
+            if (!string.IsNullOrWhiteSpace(sortBy))
+                queryParams.Add($"sortBy={Uri.EscapeDataString(sortBy)}");
 
             if (!string.IsNullOrWhiteSpace(order))
                 queryParams.Add($"order={Uri.EscapeDataString(order)}");
@@ -190,8 +189,7 @@ namespace biostar_inventory_dashboard.Services
      int page = 1,
      int pageSize = 30,
      string lot_no = "",
-     string genericName = "",
-string brandName = "",
+     string search = "",
      string type = "",
      string from = "",
      string to = "",
@@ -206,11 +204,8 @@ string brandName = "",
             if (!string.IsNullOrWhiteSpace(lot_no))
                 url += $"&lot_no={Uri.EscapeDataString(lot_no)}";
 
-            if (!string.IsNullOrWhiteSpace(genericName))
-                url += $"&genericName={Uri.EscapeDataString(genericName)}";
-
-            if (!string.IsNullOrWhiteSpace(brandName))
-                url += $"&brandName={Uri.EscapeDataString(brandName)}";
+            if (!string.IsNullOrWhiteSpace(search))
+                url += $"&search={Uri.EscapeDataString(search)}";
 
             if (!string.IsNullOrWhiteSpace(type))
                 url += $"&type={Uri.EscapeDataString(type)}";
@@ -223,6 +218,9 @@ string brandName = "",
 
             if (!string.IsNullOrWhiteSpace(scanned_by))
                 url += $"&scanned_by={Uri.EscapeDataString(scanned_by)}";
+
+            if (!string.IsNullOrWhiteSpace(full_name))
+                url += $"&full_name={Uri.EscapeDataString(full_name)}";
 
             if (!string.IsNullOrWhiteSpace(reference))
                 url += $"&reference={Uri.EscapeDataString(reference)}";

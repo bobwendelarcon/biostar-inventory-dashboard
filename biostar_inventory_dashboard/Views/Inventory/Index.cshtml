@@ -30,7 +30,7 @@
                 <input type="text" class="form-control" id="lotNoFilter" placeholder="Lot no">
             </div>
 
-            <div class="col-md-2">
+            @* <div class="col-md-2">
                 <label class="form-label fw-semibold">Generic Name</label>
                 <input type="text" class="form-control" id="genericNameFilter" placeholder="Generic name">
             </div>
@@ -38,7 +38,15 @@
             <div class="col-md-2">
                 <label class="form-label fw-semibold">Brand Name</label>
                 <input type="text" class="form-control" id="brandNameFilter" placeholder="Brand name">
+            </div> *@
+
+            <div class="col-md-4">
+                <label class="form-label" fw-semibold">Search Product</label>    
+                <input type="text" class="form-control" id="productSearchFilter"
+                placeholder="Search Generic Or Brand Name">
+
             </div>
+
 
             <div class="col-md-2">
                 <label class="form-label fw-semibold">From</label>
@@ -82,6 +90,15 @@
                     <label class="form-label fw-semibold">Category</label>
                     <select class="form-select" id="categoryFilter">
                         <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Sort By</label>
+                    <select class="form-select" id="sortByFilter">
+                        <option value="lot">Lot No</option>
+                        <option value="generic">Generic Name</option>
+                        <option value="brand">Brand Name</option>
                     </select>
                 </div>
 

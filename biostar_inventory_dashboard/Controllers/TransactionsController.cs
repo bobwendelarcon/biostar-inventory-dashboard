@@ -41,8 +41,7 @@ namespace biostar_inventory_dashboard.Controllers
             int page = 1,
             int pageSize = 30,
             string lot_no = "",
-           string genericName = "",
-string brandName = "",
+           string  search = "",
             string type = "",
             string from = "",
             string to = "",
@@ -54,20 +53,19 @@ string brandName = "",
         )
         {
             var data = await _apiService.GetTransactionsAsync(
-                page,
-                pageSize,
-                lot_no,
-                genericName,
-                brandName,
-                type,
-                from,
-                to,
-                scanned_by,
-                full_name,
-                reference,
-                warehouse,
-                order
-            );
+     page,
+     pageSize,
+     lot_no,
+     search,
+     type,
+     from,
+     to,
+     scanned_by,
+     full_name,
+     reference,
+     warehouse,
+     order
+ );
 
             return Json(data);
         }
