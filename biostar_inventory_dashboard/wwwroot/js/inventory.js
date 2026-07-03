@@ -934,17 +934,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById("btnPrintInventory")?.addEventListener("click", function () {
+
         const params = new URLSearchParams({
             lot_no: document.getElementById("lotNoFilter")?.value || "",
-            genericName: document.getElementById("genericNameFilter")?.value || "",
-            brandName: document.getElementById("brandNameFilter")?.value || "",
-            category: document.getElementById("categoryFilter")?.value || "",
-            from: document.getElementById("dateFromFilter")?.value || "",
-            to: document.getElementById("dateToFilter")?.value || "",
+            search: document.getElementById("productSearchFilter")?.value || "",
             warehouse: document.getElementById("warehouseFilter")?.value || "",
+            category: document.getElementById("categoryFilter")?.value || "",
             stockStatus: document.getElementById("stockStatusFilter")?.value || "",
             expiryStatus: document.getElementById("expiryStatusFilter")?.value || "",
             months: document.getElementById("monthsFilter")?.value || "",
+            from: document.getElementById("dateFromFilter")?.value || "",
+            to: document.getElementById("dateToFilter")?.value || "",
+            sortBy: document.getElementById("sortByFilter")?.value || "lot",
             order: document.getElementById("orderFilter")?.value || "desc"
         });
 
