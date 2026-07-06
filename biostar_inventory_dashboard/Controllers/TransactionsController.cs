@@ -38,34 +38,36 @@ namespace biostar_inventory_dashboard.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetTransactions(
-            int page = 1,
-            int pageSize = 30,
-            string lot_no = "",
-           string  search = "",
-            string type = "",
-            string from = "",
-            string to = "",
-            string scanned_by = "",
-            string full_name = "",
-            string reference = "",
-            string warehouse = "",
-            string order = "desc"
-        )
+    int page = 1,
+    int pageSize = 30,
+    string lot_no = "",
+    string search = "",
+    string type = "",
+    string from = "",
+    string to = "",
+    string scanned_by = "",
+    string full_name = "",
+    string reference = "",
+    string warehouse = "",
+    string order = "desc",
+    string customer = ""
+)
         {
             var data = await _apiService.GetTransactionsAsync(
-     page,
-     pageSize,
-     lot_no,
-     search,
-     type,
-     from,
-     to,
-     scanned_by,
-     full_name,
-     reference,
-     warehouse,
-     order
- );
+       page,
+       pageSize,
+       lot_no,
+       search,
+       type,
+       from,
+       to,
+       scanned_by,
+       full_name,
+       reference,
+       warehouse,
+       order,
+       customer
+   );
 
             return Json(data);
         }

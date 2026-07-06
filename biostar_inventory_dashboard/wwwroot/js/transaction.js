@@ -161,7 +161,7 @@ async function loadTransactions(page = 1) {
         const warehouse = document.getElementById("warehouseFilter")?.value || "";
         const order = document.getElementById("orderFilter")?.value || "desc";
         const supplier = document.getElementById("supplierFilter")?.value || "";
-        const customer = document.getElementById("customerFilter")?.value || "";
+        const customer = document.getElementById("customerFilter")?.value.trim() || "";
         const quickFilter = document.getElementById("filterApplied")?.value || "";
 
         if (quickFilter) {
@@ -194,6 +194,8 @@ async function loadTransactions(page = 1) {
 
         if (reference) url += `&reference=${encodeURIComponent(reference)}`;
         if (warehouse) url += `&warehouse=${encodeURIComponent(warehouse)}`;
+        if (customer)
+            url += `&customer=${encodeURIComponent(customer)}`;
         if (order) url += `&order=${encodeURIComponent(order)}`;
 
         console.log("FILTER URL:", url);
@@ -306,6 +308,7 @@ function applyTransactionRoleUI() {
         document.querySelectorAll(".action-col").forEach(el => el.style.display = "none");
     }
 }
+
 
 function renderPagination(total) {
     const totalCount = Number(total) || 0;
@@ -457,7 +460,9 @@ document.addEventListener("DOMContentLoaded", function () {
         loadTransactions(1);
     });
 
-    ["productSearchFilter"].forEach(id => {
+   
+
+    ["productSearchFilter", "customerFilter"].forEach(id => {
         document.getElementById(id)?.addEventListener("input", function () {
             clearTimeout(lotSearchTimeout);
             lotSearchTimeout = setTimeout(() => {

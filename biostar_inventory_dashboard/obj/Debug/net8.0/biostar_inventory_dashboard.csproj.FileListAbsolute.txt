@@ -237,16 +237,6 @@ D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debu
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.pdb
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.genruntimeconfig.cache
 D:\source\repos\biostar_inventory_dashboard\biostar_inventory_dashboard\obj\Debug\net8.0\ref\biostar_inventory_dashboard.dll
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.csproj.AssemblyReference.cache
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\rpswa.dswa.cache.json
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.AssemblyInfoInputs.cache
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.AssemblyInfo.cs
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.csproj.CoreCompileInputs.cache
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.RazorAssemblyInfo.cache
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.RazorAssemblyInfo.cs
-C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.sourcelink.json
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\bin\Debug\net8.0\appsettings.json
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\bin\Debug\net8.0\biostar_inventory_dashboard.staticwebassets.runtime.json
@@ -459,6 +449,16 @@ C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashbo
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.csproj.AssemblyReference.cache
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.AssemblyInfoInputs.cache
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.AssemblyInfo.cs
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.csproj.CoreCompileInputs.cache
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.RazorAssemblyInfo.cache
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.RazorAssemblyInfo.cs
+C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\biostar_inventory_dashboard.sourcelink.json
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\USER\Desktop\BNPI SERVER\source_code\DASHBOARD\biostar_inventory_dashboard\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json

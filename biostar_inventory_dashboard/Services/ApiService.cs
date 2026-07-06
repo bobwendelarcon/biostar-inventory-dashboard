@@ -186,18 +186,19 @@ namespace biostar_inventory_dashboard.Services
         }
 
         public async Task<PagedTransactionResponse> GetTransactionsAsync(
-     int page = 1,
-     int pageSize = 30,
-     string lot_no = "",
-     string search = "",
-     string type = "",
-     string from = "",
-     string to = "",
-     string scanned_by = "",
-     string full_name = "",
-     string reference = "",
-     string warehouse = "",
-     string order = "desc")
+    int page = 1,
+    int pageSize = 30,
+    string lot_no = "",
+    string search = "",
+    string type = "",
+    string from = "",
+    string to = "",
+    string scanned_by = "",
+    string full_name = "",
+    string reference = "",
+    string warehouse = "",
+    string order = "desc",
+    string customer = "")
         {
             var url = $"api/Inventory?page={page}&pageSize={pageSize}";
 
@@ -230,6 +231,9 @@ namespace biostar_inventory_dashboard.Services
 
             if (!string.IsNullOrWhiteSpace(order))
                 url += $"&order={Uri.EscapeDataString(order)}";
+
+            if (!string.IsNullOrWhiteSpace(customer))
+                url += $"&customer={Uri.EscapeDataString(customer)}";
 
             var response = await _httpClient.GetAsync(url);
 
