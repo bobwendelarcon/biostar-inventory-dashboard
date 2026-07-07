@@ -1311,6 +1311,21 @@ namespace biostar_inventory_dashboard.Services
             return result;
         }
 
+        public async Task<string> DeleteChecklistLineAsync(long checklistLineId)
+        {
+            var response = await _httpClient.PostAsync(
+                $"api/DeliveryChecklist/delete-line/{checklistLineId}",
+                null
+            );
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(content);
+
+            return content;
+        }
+
 
     }
 }

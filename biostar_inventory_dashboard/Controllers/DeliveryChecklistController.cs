@@ -261,5 +261,23 @@ namespace biostar_inventory_dashboard.Controllers
                 });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteChecklistLine(long checklistLineId)
+        {
+            try
+            {
+                var result = await _apiService.DeleteChecklistLineAsync(checklistLineId);
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

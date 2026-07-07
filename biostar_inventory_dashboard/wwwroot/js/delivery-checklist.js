@@ -162,6 +162,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
+
 function getPHDateInputValue() {
     return new Intl.DateTimeFormat("en-CA", {
         timeZone: "Asia/Manila",
@@ -259,7 +261,28 @@ function applyFilters() {
 //        btnReopen.style.display = "inline-block";
 //    }
 //}
+async function deleteChecklistLine(checklistLineId) {
+    if (!confirm("Delete this checklist line?")) return;
 
+    const response = await fetch(`/DeliveryChecklist/DeleteChecklistLine?checklistLineId=${checklistLineId}`, {
+        method: "POST"
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+        alert(result.message || "Failed to delete line.");
+        return;
+    }
+
+    alert(result.message || "Checklist line deleted.");
+
+    if (currentChecklistId) {
+        await openChecklistDetails(currentChecklistId);
+    } else {
+        await loadChecklistList();
+    }
+}
 function setChecklistButtons(status) {
     const btnDelete = document.getElementById("btnDeleteChecklist");
     const btnPrint = document.getElementById("btnPrintChecklist");
@@ -868,6 +891,13 @@ async function openViewChecklistModal(id) {
                                         onclick="openCompleteLineModal(${line.checklist_line_id || line.line_id})">
                                     Complete
                                 </button>
+
+                                <button class="btn btn-sm btn-outline-danger"
+                                         onclick="deleteChecklistLine(${line.checklist_line_id})">
+                                    Delete
+                                </button>
+
+
                             </div>
                         ` : `
                             <span class="text-success small">
