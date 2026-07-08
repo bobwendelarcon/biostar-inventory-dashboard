@@ -144,5 +144,21 @@ namespace biostar_inventory_dashboard.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetProductStockLots(string productId)
+        {
+            var result = await _apiService.GetProductStockLotsAsync(productId);
+            return Content(result, "application/json");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateStatus(string productId, bool isDeleted)
+        {
+            var result = await _apiService.UpdateProductStatusAsync(productId, isDeleted);
+            return Content(result, "application/json");
+        }
+
     }
 }

@@ -1326,6 +1326,32 @@ namespace biostar_inventory_dashboard.Services
             return content;
         }
 
+        public async Task<string> GetProductStockLotsAsync(string productId)
+        {
+            var url = $"api/Products/{Uri.EscapeDataString(productId)}/stock-lots";
+
+            var response = await _httpClient.GetAsync(url);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> UpdateProductStatusAsync(string productId, bool isDeleted)
+        {
+            var url = $"api/Products/{Uri.EscapeDataString(productId)}/status?isDeleted={isDeleted.ToString().ToLower()}";
+
+            var response = await _httpClient.PutAsync(url, null);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
 
     }
 }

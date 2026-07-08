@@ -197,29 +197,45 @@ document.addEventListener("DOMContentLoaded", function () {
                     : '<span class="badge bg-success">Active</span>'}
                     </td>
                     <td>${formatProductSource(item.product_source)}</td>
-                    <td class="text-end">
-                        <button
-                            class="btn btn-sm btn-outline-primary me-1 btn-edit-product"
-                            data-id="${item.product_id ?? ""}"
-                            data-name="${item.product_name ?? ""}"
-                            data-category="${item.catg_id ?? ""}"
-                            data-sku="${item.product_sku ?? ""}"
-                            data-price="${item.product_price ?? 0}"
-                            data-stock="${item.stock_level ?? 0}"
-                            data-status="${item.is_deleted ? "true" : "false"}"
-                            data-desc="${item.product_description ?? ""}"
-                            data-uom="${item.uom ?? ""}"
-                            data-packuom="${item.pack_uom ?? ""}"
-                           data-packqty="${item.pack_qty ?? 0}"
-data-source="${item.product_source ?? 'OWN'}">
-Edit
-                        </button>
-                        <button
-                            class="btn btn-sm btn-outline-danger btn-delete-product"
-                            data-id="${item.product_id ?? ""}">
-                            Delete
-                        </button>
-                    </td>
+                   <td class="text-end">
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown">
+            Actions
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <button class="dropdown-item btn-edit-product"
+                    data-id="${item.product_id ?? ""}"
+                    data-name="${item.product_name ?? ""}"
+                    data-category="${item.catg_id ?? ""}"
+                    data-sku="${item.product_sku ?? ""}"
+                    data-price="${item.product_price ?? 0}"
+                    data-stock="${item.stock_level ?? 0}"
+                    data-status="${item.is_deleted ? "true" : "false"}"
+                    data-desc="${item.product_description ?? ""}"
+                    data-uom="${item.uom ?? ""}"
+                    data-packuom="${item.pack_uom ?? ""}"
+                    data-packqty="${item.pack_qty ?? 0}"
+                    data-source="${item.product_source ?? 'OWN'}">
+                    Edit
+                </button>
+            </li>
+
+           <li>
+    <button class="dropdown-item text-warning btn-toggle-product-status"
+        data-id="${item.product_id ?? ""}"
+        data-status="${item.is_deleted}">
+        ${item.is_deleted
+                    ? "✅ Activate"
+                    : "🚫 Inactivate"}
+    </button>
+</li>
+        </ul>
+    </div>
+</td>
                 </tr>
             `;
         });
@@ -269,12 +285,212 @@ Edit
             });
         });
 
-        document.querySelectorAll(".btn-delete-product").forEach(button => {
-            button.addEventListener("click", function () {
+        document.querySelectorAll(".btn-toggle-product-status").forEach(button => {
+            button.addEventListener("click", async function () {
+
                 const id = this.dataset.id;
-                alert(`Temporary only: delete logic for ${id}`);
+                const isDeleted = this.dataset.status === "true";
+
+                if (isDeleted) {
+                    // Activate directly
+                    await toggleProductStatus(id, false);
+                    return;
+                }
+
+                // Inactivate: check stock lots first
+                const response = await fetch(`/Product/GetProductStockLots?productId=${encodeURIComponent(id)}`);
+
+                if (!response.ok) {
+                    alert(await response.text());
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!result.canInactivate) {
+                    showProductStockLotModal(result.product, result.lots);
+                    return;
+                }
+
+                if (confirm("No available stock found. Inactivate this product?")) {
+                    await toggleProductStatus(id, true);
+                }
             });
         });
+    }
+
+    function showProductStockLotModal(product, lots) {
+
+        product = product || {};
+
+        let rows = lots.map(x => {
+
+            let qty = Number(x.quantity || 0);
+            let packQty = Number(x.pack_qty || 0);
+
+            let packDisplay = "";
+
+            if (packQty > 0) {
+
+                const fullBoxes = Math.floor(qty / packQty);
+                const remainingQty = qty % packQty;
+
+                if (fullBoxes > 0) {
+                    packDisplay = `Pack: ${fullBoxes} ${x.pack_uom ?? ""}`;
+
+                    if (remainingQty > 0) {
+                        packDisplay += ` & ${remainingQty} ${x.uom ?? ""}`;
+                    }
+                }
+                else if (remainingQty > 0) {
+                    packDisplay = `Pack: ${remainingQty} ${x.uom ?? ""}`;
+                }
+            }
+
+            return `
+        <tr>
+            <td>${x.lot_no ?? ""}</td>
+
+            <td>
+                <div class="fw-semibold">
+                    ${qty} ${x.uom ?? ""}
+                </div>
+
+               ${packDisplay
+                    ? `<small class="text-muted">${packDisplay}</small>`
+                    : ""}
+            </td>
+
+            <td>${x.location ?? ""}</td>
+        </tr>
+    `;
+        }).join("");
+
+        const html = `
+        <div class="modal fade" id="productStockLotModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-warning">
+                            Product Has Available Stock
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <p class="text-muted mb-3">
+                            This product still has available stock. Please review the lot numbers before inactivating.
+                        </p>
+
+                        <div class="border rounded-3 bg-light p-3 mb-4">
+
+    <div class="row">
+
+        <div class="col-md-2">
+            <small class="text-muted">Product ID</small>
+            <div class="fw-bold">
+                ${product.product_id ?? "-"}
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <small class="text-muted">Product Name</small>
+            <div class="fw-bold">
+                ${product.product_name ?? "-"}
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <small class="text-muted">Category</small>
+            <div class="fw-bold">
+                ${product.category_name ?? "-"}
+            </div>
+        </div>
+
+        <div class="col-12 mt-3">
+            <small class="text-muted">Description</small>
+            <div>
+                ${product.product_description ?? "-"}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width:35%">Lot No</th>
+                                    <th style="width:35%">Quantity</th>
+                                    <th>Warehouse</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                ${rows}
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="modal-footer border-0">
+
+                        <button class="btn btn-light"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button class="btn btn-warning"
+                                id="btnConfirmInactivateProduct">
+                            Inactivate Anyway
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    `;
+
+        const existing = document.getElementById("productStockLotModal");
+        if (existing) existing.remove();
+
+        document.body.insertAdjacentHTML("beforeend", html);
+
+        const modalEl = document.getElementById("productStockLotModal");
+        const modal = new bootstrap.Modal(modalEl);
+
+        modal.show();
+
+        document.getElementById("btnConfirmInactivateProduct")
+            .addEventListener("click", async function () {
+
+                await toggleProductStatus(product.product_id, true);
+
+                modal.hide();
+            });
+    }
+
+    async function toggleProductStatus(productId, isDeleted) {
+        const response = await fetch(`/Product/UpdateStatus?productId=${encodeURIComponent(productId)}&isDeleted=${isDeleted}`, {
+            method: "POST"
+        });
+
+        if (!response.ok) {
+            alert(await response.text());
+            return;
+        }
+
+        alert(isDeleted ? "Product inactivated." : "Product activated.");
+        loadProducts();
     }
     function formatProductSource(source) {
         source = (source || "OWN").toUpperCase();

@@ -3,8 +3,48 @@
   "WorkspaceRootPath": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\products.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\wwwroot\\js\\products.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\product\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\product\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\deliverychecklistcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\controllers\\deliverychecklistcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\deliverychecklist\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\deliverychecklist\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\inventorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\controllers\\inventorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -23,32 +63,8 @@
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\wwwroot\\js\\transaction.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\inventorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\controllers\\inventorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\transactions\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\transactions\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\products.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\wwwroot\\js\\products.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\deliverychecklist\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\deliverychecklist\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\deliverychecklistcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\controllers\\deliverychecklistcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\inventory.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -65,10 +81,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\login\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\login\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\report.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -109,10 +121,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -122,85 +130,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "dailyorder.js",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
-              "ViewState": "AgIAAFYMAAAAAAAAAAAYwJgMAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-06T08:13:25.56Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
-              "ViewState": "AgIAAMECAAAAAAAAAAAkwAQDAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-07-06T08:13:12.499Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "TransactionsController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAwwEIAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-03T00:25:50.106Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
-              "ViewState": "AgIAACsAAAAAAAAAAAArwE0AAABuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-07-03T00:24:12.867Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "transaction.js",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
-              "ViewState": "AgIAABgCAAAAAAAAAADwv1gCAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-03T00:48:08.436Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "ApiService.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "ViewState": "AgIAAOQEAAAAAAAAAAAowCMFAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-01T06:18:05.54Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\appsettings.json",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\appsettings.json",
@@ -213,139 +147,83 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "products.js",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\products.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\products.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\products.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\products.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-05T23:57:14.061Z"
+              "DocumentIndex": 1,
+              "Title": "ApiService.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "ViewState": "AgIAAB4FAAAAAAAAAAAlwEgFAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-01T06:18:05.54Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "delivery-checklist.js",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
-              "ViewState": "AgIAAHICAAAAAAAAAAAUwMcDAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-02T00:41:23.741Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 20,
-              "Title": "LoginController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\LoginController.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\LoginController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\LoginController.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\LoginController.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAowCIAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-01T06:19:01.638Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "InventoryController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
-              "ViewState": "AgIAAB4BAAAAAAAAAAAIwF4BAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-03T00:12:04.98Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "inventory.js",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-02T23:50:41.982Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "DeliveryChecklistController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
-              "ViewState": "AgIAALQAAAAAAAAAAAAwwMoAAAA7AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-02T03:05:16.369Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\DeliveryChecklist\\Index.cshtml",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\DeliveryChecklist\\Index.cshtml",
               "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\DeliveryChecklist\\Index.cshtml",
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\DeliveryChecklist\\Index.cshtml",
-              "ViewState": "AgIAAKkBAAAAAAAAAAAUwMwBAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAAKcBAAAAAAAAAAAkwLoBAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-07-02T02:56:12.097Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
-              "ViewState": "AgIAAEIAAAAAAAAAAAAmwGgAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-07-02T23:50:29.694Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 22,
-              "Title": "user.js",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\user.js",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\user.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\user.js",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\user.js",
-              "ViewState": "AgIAAKYAAAAAAAAAAAAcwB0AAAAcAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-01T06:07:31.277Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "InventoryDashboardController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 10,
+              "Title": "InventoryController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
+              "ViewState": "AgIAACEBAAAAAAAAAAAIwDsBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-03T01:17:35.699Z"
+              "WhenOpened": "2026-07-03T00:12:04.98Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "index.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-07-01T06:16:40.206Z"
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Program.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Program.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Program.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-01T06:18:19.966Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 0,
+              "Title": "products.js",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\products.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\products.js",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\products.js*",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\products.js*",
+              "ViewState": "AgIAAEYBAAAAAAAAAAAmwGgBAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-07-05T23:57:14.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ProductController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\ProductController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\ProductController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\ProductController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\ProductController.cs",
+              "ViewState": "AgIAAE0AAAAAAAAAAAAQwHMAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T05:13:01.851Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\appsettings.Development.json",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\appsettings.Development.json",
@@ -357,7 +235,176 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "index.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Product\\index.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Product\\index.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Product\\index.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Product\\index.cshtml",
+              "ViewState": "AgIAAKwAAAAAAAAAAAAUwO0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-08T05:06:40.198Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "delivery-checklist.js",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\delivery-checklist.js",
+              "ViewState": "AgIAAFQDAAAAAAAAAAArwIYDAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-07-02T00:41:23.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "DeliveryChecklistController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\DeliveryChecklistController.cs",
+              "ViewState": "AgIAAOMAAAAAAAAAAAAQwBgBAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-02T03:05:16.369Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "transaction.js",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\transaction.js",
+              "ViewState": "AgIAABgCAAAAAAAAAADwv1gCAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-07-03T00:48:08.436Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Transactions\\Index.cshtml",
+              "ViewState": "AgIAACsAAAAAAAAAAAArwE0AAABuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-03T00:24:12.867Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "TransactionsController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\TransactionsController.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAwwEIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-03T00:25:50.106Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\DailyOrder\\Index.cshtml",
+              "ViewState": "AgIAAMECAAAAAAAAAAAkwAQDAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-06T08:13:12.499Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "dailyorder.js",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\dailyorder.js",
+              "ViewState": "AgIAAFYMAAAAAAAAAAAYwJgMAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-07-06T08:13:25.56Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\LoginController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\LoginController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\LoginController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\LoginController.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAowCIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-01T06:19:01.638Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "inventory.js",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\inventory.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-07-02T23:50:41.982Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 17,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Inventory\\Index.cshtml",
+              "ViewState": "AgIAAEIAAAAAAAAAAAAmwGgAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-02T23:50:29.694Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "user.js",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\user.js",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\user.js",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\user.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\user.js",
+              "ViewState": "AgIAAKYAAAAAAAAAAAAcwB0AAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-07-01T06:07:31.277Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "InventoryDashboardController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\InventoryDashboardController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-03T01:17:35.699Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "index.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Login\\index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-01T06:16:40.206Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
               "Title": "report.js",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\report.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\report.js",
@@ -369,7 +416,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 26,
               "Title": "mprf-review.js",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf-review.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf-review.js",
@@ -381,7 +428,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 21,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Purchasing\\PurchaseOrders\\Index.cshtml",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Purchasing\\PurchaseOrders\\Index.cshtml",
@@ -393,19 +440,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Program.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Program.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Program.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-01T06:18:19.966Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 24,
               "Title": "index.cshtml",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\User\\index.cshtml",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\User\\index.cshtml",
@@ -417,7 +452,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 22,
               "Title": "_Sidebar.cshtml",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Shared\\_Sidebar.cshtml",
@@ -429,7 +464,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 28,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\Reports\\Index.cshtml",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\Reports\\Index.cshtml",
@@ -441,7 +476,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 27,
               "Title": "mprf.js",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js",
@@ -453,7 +488,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 29,
               "Title": "DashboardController.cs",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\DashboardController.cs",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\DashboardController.cs",
