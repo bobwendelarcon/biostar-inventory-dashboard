@@ -384,18 +384,27 @@ async function loadInventory(page = currentPage) {
             ${canShowInventoryAction() ? `
 
             <td class="text-center action-col">
-    <button class="btn btn-sm btn-outline-secondary btn-inventory-actions"
-        type="button"
-        data-product="${item.product_id ?? ""}"
-        data-lot="${item.lot_no ?? ""}"
-        data-qty="${availableQty}"
-        data-branch="${item.branch_id ?? ""}"
-        data-warehouse="${item.warehouse ?? ""}"
-        data-uom="${item.uom ?? ""}"
-        data-exp="${item.expiration_date ?? ""}">
-        Actions
-    </button>
-</td>
+
+             <button class="btn btn-sm btn-outline-secondary btn-inventory-actions"
+    type="button"
+    data-product="${item.product_id ?? ""}"
+    data-lot="${item.lot_no ?? ""}"
+    data-branch="${item.branch_id ?? ""}"
+
+    data-description="${item.description ?? ""}"
+    data-product-description="${item.product_description ?? ""}"
+    data-warehouse="${item.warehouse ?? ""}"
+
+    data-onhand="${onHandQty}"
+    data-reserved="${reservedQty}"
+    data-available="${availableQty}"
+
+    data-uom="${item.uom ?? ""}"
+    data-exp="${item.expiration_date ?? ""}">
+    Actions
+</button>
+
+            </td>
 
 
 ` : ""}
@@ -1149,43 +1158,56 @@ function syncInventoryTopScrollbar() {
         table.scrollWidth + "px";
 }
 
-async function loadHistory(productId, lotNo, branchId) {
+async function loadHistory(
+    productId, lotNo, branchId,
+    productName, description, warehouse,
+    onHandQty, reservedQty, availableQty
+) {
     try {
         const res = await fetch(`/Inventory/GetHistory?product_id=${encodeURIComponent(productId)}&lot_no=${encodeURIComponent(lotNo)}&branch_id=${encodeURIComponent(branchId)}`);
-
-        const text = await res.text();
-        console.log("HISTORY STATUS:", res.status);
-        console.log("HISTORY BODY:", text);
-
-        if (!res.ok) {
-            throw new Error(text || "Failed to load history.");
-        }
-
-        const data = JSON.parse(text);
+        const data = await res.json();
 
         const table = document.getElementById("historyTable");
+        const info = document.getElementById("historyProductInfo");
+
         table.innerHTML = "";
+
+        info.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <div><b>Product:</b> ${productName || "-"}</div>
+                    <div><b>Description:</b> ${description || "-"}</div>
+                </div>
+                <div class="col-md-6">
+                    <div><b>Warehouse:</b> ${warehouse || "-"}</div>
+                    <div><b>Lot No:</b> ${lotNo || "-"}</div>
+                </div>
+            </div>
+        `;
 
         if (!Array.isArray(data) || data.length === 0) {
             table.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-muted">No history found.</td>
+                    <td colspan="8" class="text-center text-muted">No history found.</td>
                 </tr>`;
         } else {
-            data.forEach(x => {
+            data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            data.forEach((x, index) => {
+                const type = String(x.transaction_type || "").toUpperCase();
+
                 table.innerHTML += `
 <tr>
+    <td class="text-center">${index + 1}</td>
     <td>${formatPHDateTime(x.created_at)}</td>
     <td>
-        <span class="badge ${String(x.transaction_type).toUpperCase() === "OUT" ? "bg-danger" : "bg-success"}">
-            ${x.transaction_type ?? ""}
+        <span class="badge rounded-pill ${type === "OUT" ? "bg-danger" : "bg-success"}">
+            ${type}
         </span>
     </td>
     <td>
         <div class="fw-semibold">${toDisplayNumber(x.quantity)} ${x.uom ?? ""}</div>
-        <div class="text-muted small">
-            ${formatPack(x.quantity, x.pack_qty, x.pack_uom, x.uom)}
-        </div>
+        <div class="text-muted small">${formatPack(x.quantity, x.pack_qty, x.pack_uom, x.uom)}</div>
     </td>
     <td>${x.reference ?? "-"}</td>
     <td>${x.warehouse ?? ""}</td>
@@ -1194,6 +1216,31 @@ async function loadHistory(productId, lotNo, branchId) {
 </tr>`;
             });
         }
+
+        const uom = document.querySelector(".btn-inventory-actions[data-lot='" + lotNo + "']")?.dataset.uom || "";
+
+        table.innerHTML += `
+<tr>
+    <td colspan="8">
+        <div class="d-flex justify-content-end mt-3">
+            <div class="border rounded p-3 bg-light" style="min-width:260px;">
+                <div class="fw-bold mb-2">Inventory Summary</div>
+                <div class="d-flex justify-content-between">
+                    <span>On Hand</span>
+                    <b>${toDisplayNumber(onHandQty)} ${uom}</b>
+                </div>
+                <div class="d-flex justify-content-between text-warning">
+                    <span>Reserved</span>
+                    <b>${toDisplayNumber(reservedQty)} ${uom}</b>
+                </div>
+                <div class="d-flex justify-content-between text-success">
+                    <span>Available</span>
+                    <b>${toDisplayNumber(availableQty)} ${uom}</b>
+                </div>
+            </div>
+        </div>
+    </td>
+</tr>`;
 
         new bootstrap.Modal(document.getElementById("historyModal")).show();
         hideInventoryActionMenu();
@@ -1338,7 +1385,13 @@ function openHistory(btn) {
     loadHistory(
         btn.dataset.product,
         btn.dataset.lot,
-        btn.dataset.branch
+        btn.dataset.branch,
+        btn.dataset.description,
+        btn.dataset.productDescription,
+        btn.dataset.warehouse,
+        btn.dataset.onhand,
+        btn.dataset.reserved,
+        btn.dataset.available
     );
 }
 
@@ -1358,9 +1411,27 @@ document.addEventListener("click", function (e) {
 
         const rect = actionBtn.getBoundingClientRect();
 
-        menu.style.top = `${rect.bottom + 6}px`;
-        menu.style.left = `${rect.right - 170}px`;
         menu.classList.remove("d-none");
+
+        const menuHeight = menu.offsetHeight || 150;
+        const menuWidth = menu.offsetWidth || 180;
+
+        let top = rect.bottom + 6;
+        let left = rect.right - menuWidth;
+
+        // if menu will go below screen, open upward
+        if (top + menuHeight > window.innerHeight) {
+            top = rect.top - menuHeight - 6;
+        }
+
+        // keep inside screen
+        if (left < 8) left = 8;
+        if (left + menuWidth > window.innerWidth) {
+            left = window.innerWidth - menuWidth - 8;
+        }
+
+        menu.style.top = `${top}px`;
+        menu.style.left = `${left}px`;
 
         return;
     }

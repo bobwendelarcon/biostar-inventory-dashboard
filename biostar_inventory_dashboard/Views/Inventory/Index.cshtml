@@ -285,14 +285,29 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Inventory History</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="w-100">
+
+                    <h5 class="modal-title mb-3">
+                        Inventory History
+                    </h5>
+
+                    <div id="historyProductInfo"
+                         class="border rounded bg-light p-3">
+                    </div>
+
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
             </div>
             <div class="modal-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm">
                         <thead class="table-light">
                             <tr>
+                                <th style="width: 50px;">#</th>
                                 <th style="width: 150px;">Date & Time</th>
                                 <th style="width: 80px;">Type</th>
                                 <th style="width: 130px;">Qty</th>
@@ -304,7 +319,7 @@
                         </thead>
                         <tbody id="historyTable">
                             <tr>
-                                <td colspan="7" class="text-center text-muted">No history loaded.</td>
+                                <td colspan="8" class="text-center text-muted">No history loaded.</td>
                             </tr>
                         </tbody>
                     </table>

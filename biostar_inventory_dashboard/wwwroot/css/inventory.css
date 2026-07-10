@@ -455,3 +455,8 @@
         background: #f1f5f9;
         color: #2563eb;
     }
+
+
+#inventoryActionMenu {
+    z-index: 999999 !important;
+}
