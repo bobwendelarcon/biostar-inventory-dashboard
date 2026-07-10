@@ -390,7 +390,7 @@ async function loadInventory(page = currentPage) {
     data-product="${item.product_id ?? ""}"
     data-lot="${item.lot_no ?? ""}"
     data-branch="${item.branch_id ?? ""}"
-
+    data-qty="${availableQty}"
     data-description="${item.description ?? ""}"
     data-product-description="${item.product_description ?? ""}"
     data-warehouse="${item.warehouse ?? ""}"
