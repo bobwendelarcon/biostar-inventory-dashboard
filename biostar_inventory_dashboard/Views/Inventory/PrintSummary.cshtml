@@ -1,0 +1,460 @@
+﻿@model List<biostar_inventory_dashboard.Models.InventoryPrintSummaryDto>
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Daily Inventory";
+
+    var items = Model
+        ?? new List<biostar_inventory_dashboard.Models.InventoryPrintSummaryDto>();
+
+    var groupedCategories = items
+        .GroupBy(x =>
+            string.IsNullOrWhiteSpace(x.category_name)
+                ? "UNCATEGORIZED"
+                : x.category_name.Trim())
+        .OrderBy(x => x.Key)
+        .ToList();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Daily Inventory</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: #000000;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            padding: 14px;
+        }
+
+        .print-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+            .print-toolbar button {
+                padding: 8px 16px;
+                border: 1px solid #444444;
+                border-radius: 4px;
+                background: #ffffff;
+                color: #111111;
+                font-size: 13px;
+                cursor: pointer;
+            }
+
+            .print-toolbar .btn-print {
+                background: #111111;
+                color: #ffffff;
+            }
+
+        .report-header {
+            position: relative;
+            min-height: 42px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .report-title {
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+        }
+
+        .report-subtitle {
+            margin-top: 2px;
+            font-size: 10px;
+            font-weight: 400;
+        }
+
+        .generated-date {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 9px;
+            line-height: 1.4;
+            text-align: right;
+        }
+
+        .report-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 25px;
+            margin-bottom: 8px;
+            font-size: 9px;
+            line-height: 1.45;
+        }
+
+        .report-info-left,
+        .report-info-right {
+            flex: 1;
+        }
+
+        .report-info-right {
+            text-align: right;
+        }
+
+        .info-label {
+            font-weight: bold;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+            .inventory-table th,
+            .inventory-table td {
+                border: 1px solid #555555;
+                padding: 3px 5px;
+                vertical-align: middle;
+                font-size: 9px;
+                line-height: 1.15;
+            }
+
+            .inventory-table th {
+                background: #eeeeee;
+                font-weight: bold;
+                text-align: center;
+            }
+
+        .col-number {
+            width: 5%;
+            text-align: center;
+        }
+
+        .col-product {
+            width: 34%;
+        }
+
+        .col-description {
+            width: 32%;
+        }
+
+        .col-quantity {
+            width: 14%;
+            text-align: right;
+        }
+
+        .col-pack {
+            width: 15%;
+            text-align: right;
+        }
+
+        .category-header td {
+            background: #f4c542;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            padding: 4px 6px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .product-description {
+            color: #333333;
+            word-break: break-word;
+        }
+
+        .quantity-text,
+        .pack-text {
+            display: inline-block;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .zero-stock {
+            color: #777777;
+        }
+
+        .empty-row td {
+            padding: 18px;
+            text-align: center;
+            color: #666666;
+        }
+
+        .report-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 7px;
+            font-size: 8px;
+            color: #333333;
+        }
+
+        @@media print {
+            @@page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .print-toolbar {
+                display: none !important;
+            }
+
+            .inventory-table thead {
+                display: table-header-group;
+            }
+
+            .inventory-table tfoot {
+                display: table-footer-group;
+            }
+
+            .inventory-table tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .category-header {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+
+                .inventory-table th,
+                .category-header td {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="print-toolbar">
+        <button type="button"
+                onclick="window.close()">
+            Close
+        </button>
+
+        <button type="button"
+                class="btn-print"
+                onclick="window.print()">
+            Print
+        </button>
+    </div>
+
+    <div class="report-header">
+        <h1 class="report-title">
+            DAILY INVENTORY
+        </h1>
+
+        <div class="report-subtitle">
+            Product Inventory Summary
+        </div>
+
+        <div class="generated-date">
+            <div>
+                <strong>Generated:</strong>
+                @ViewBag.GeneratedAt
+            </div>
+        </div>
+    </div>
+
+    <div class="report-info">
+        <div class="report-info-left">
+            <div>
+                <span class="info-label">Warehouse:</span>
+                @ViewBag.Warehouse
+            </div>
+
+            <div>
+                <span class="info-label">Category Filter:</span>
+                @ViewBag.Category
+            </div>
+        </div>
+
+        <div class="report-info-right">
+            <div>
+                <span class="info-label">Total Products:</span>
+                @ViewBag.TotalRecords
+            </div>
+
+            <div>
+                <span class="info-label">Printed By:</span>
+                @ViewBag.PrintedBy
+            </div>
+        </div>
+    </div>
+
+    <table class="inventory-table">
+        <thead>
+            <tr>
+                <th class="col-number">
+                    #
+                </th>
+
+                <th class="col-product">
+                    Product Name
+                </th>
+
+                <th class="col-description">
+                    Description
+                </th>
+
+                <th class="col-quantity">
+                    Qty Available
+                </th>
+
+                <th class="col-pack">
+                    Pack
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (!groupedCategories.Any())
+            {
+                <tr class="empty-row">
+                    <td colspan="5">
+                        No inventory products found.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int rowNumber = 1;
+
+                foreach (var categoryGroup in groupedCategories)
+                {
+                    <tr class="category-header">
+                        <td colspan="5">
+                            @categoryGroup.Key
+                        </td>
+                    </tr>
+
+                    foreach (var item in categoryGroup
+                    .OrderBy(x => x.product_name)
+                    .ThenBy(x => x.product_description))
+                    {
+                        bool hasStock = item.available_qty > 0;
+
+                        <tr>
+                            <td class="col-number">
+                                @rowNumber
+                            </td>
+
+                            <td class="col-product">
+                                <div class="product-name">
+                                    @(string.IsNullOrWhiteSpace(item.product_name)
+                                                            ? "-"
+                                                            : item.product_name)
+                                                                            </div>
+                                                                        </td>
+
+                            <td class="col-description">
+                                <div class="product-description">
+                                    @(string.IsNullOrWhiteSpace(item.product_description)
+                                                            ? "-"
+                                                            : item.product_description)
+                    </div>
+                </td>
+
+                            <td class="col-quantity">
+                                <span class="quantity-text @(hasStock ? "" : "zero-stock")">
+                                    @FormatNumber(item.available_qty)
+
+                        @if (!string.IsNullOrWhiteSpace(item.uom))
+                                    {
+                                        <text> @item.uom</text>
+                                    }
+                                </span>
+                            </td>
+
+                            <td class="col-pack">
+                                <span class="pack-text @(hasStock ? "" : "zero-stock")">
+                                    @GetPackDisplay(item)
+                                </span>
+                            </td>
+                        </tr>
+
+                        rowNumber++;
+                    }
+                }
+            }
+        </tbody>
+    </table>
+
+    <div class="report-footer">
+        <div>
+            Available quantities are combined by product across matching inventory lots.
+        </div>
+
+        <div>
+            Warehouse: @ViewBag.Warehouse
+        </div>
+    </div>
+
+</body>
+</html>
+
+@functions {
+    public string FormatNumber(decimal value)
+    {
+        return value % 1 == 0
+            ? value.ToString("0")
+            : value.ToString("0.##");
+    }
+
+    public string GetPackDisplay(
+        biostar_inventory_dashboard.Models.InventoryPrintSummaryDto item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.pack_display))
+        {
+            return item.pack_display;
+        }
+
+        if (item.available_qty <= 0)
+        {
+            if (!string.IsNullOrWhiteSpace(item.pack_uom))
+            {
+                return $"0 {item.pack_uom}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.uom))
+            {
+                return $"0 {item.uom}";
+            }
+
+            return "0";
+        }
+
+        return $"{FormatNumber(item.available_qty)} {item.uom}".Trim();
+    }
+}

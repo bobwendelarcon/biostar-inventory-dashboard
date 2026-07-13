@@ -961,6 +961,42 @@ document.addEventListener("DOMContentLoaded", function () {
         window.open(`/Inventory/Print?${params.toString()}`, "_blank");
     });
 
+    document.getElementById("btnPrintInventorySummary")
+        ?.addEventListener("click", function () {
+
+            const params = new URLSearchParams({
+                search:
+                    document.getElementById(
+                        "productSearchFilter"
+                    )?.value || "",
+
+                warehouse:
+                    document.getElementById(
+                        "warehouseFilter"
+                    )?.value || "",
+
+                category:
+                    document.getElementById(
+                        "categoryFilter"
+                    )?.value || "",
+
+                stockStatus:
+                    document.getElementById(
+                        "stockStatusFilter"
+                    )?.value || "",
+
+                order:
+                    document.getElementById(
+                        "orderFilter"
+                    )?.value || "asc"
+            });
+
+            window.open(
+                `/Inventory/PrintSummary?${params.toString()}`,
+                "_blank"
+            );
+        });
+
 
     document.getElementById("btnSaveLotNo")?.addEventListener("click", saveLotNoEdit);
     document.getElementById("btnSaveDates")?.addEventListener("click", saveLotDates);

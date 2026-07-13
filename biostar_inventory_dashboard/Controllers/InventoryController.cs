@@ -346,6 +346,80 @@ order
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> PrintSummary(
+    string search = "",
+    string warehouse = "",
+    string category = "",
+    string stockStatus = "",
+    string order = "asc")
+        {
+            try
+            {
+                var items =
+                    await _apiService.GetInventoryPrintSummaryAsync(
+                        search,
+                        warehouse,
+                        category,
+                        stockStatus,
+                        order
+                    );
 
+                var branches = await _apiService.GetBranchesAsync();
+
+                string warehouseName = "All Warehouses";
+
+                if (!string.IsNullOrWhiteSpace(warehouse))
+                {
+                    foreach (JsonElement branch in branches)
+                    {
+                        string branchId =
+                            branch.TryGetProperty("branch_id", out var idProperty)
+                                ? idProperty.GetString() ?? ""
+                                : "";
+
+                        if (branchId == warehouse)
+                        {
+                            warehouseName =
+                                branch.TryGetProperty(
+                                    "branch_name",
+                                    out var nameProperty)
+                                    ? nameProperty.GetString() ?? warehouse
+                                    : warehouse;
+
+                            break;
+                        }
+                    }
+                }
+
+                ViewBag.GeneratedAt =
+                    DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt");
+
+                ViewBag.Warehouse = warehouseName;
+
+                ViewBag.Category =
+                    string.IsNullOrWhiteSpace(category)
+                        ? "All Categories"
+                        : category;
+
+                ViewBag.StockStatus =
+                    string.IsNullOrWhiteSpace(stockStatus)
+                        ? "All"
+                        : stockStatus;
+
+                ViewBag.TotalRecords = items.Count;
+
+                ViewBag.PrintedBy =
+                    User.Identity?.Name ?? "Unknown";
+
+                return View("PrintSummary", items);
+            }
+            catch (Exception ex)
+            {
+                return Content(
+                    $"Failed to load inventory summary: {ex.Message}"
+                );
+            }
+        }
     }
 }

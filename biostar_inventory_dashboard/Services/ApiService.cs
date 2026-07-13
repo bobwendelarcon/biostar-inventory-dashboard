@@ -1353,5 +1353,71 @@ namespace biostar_inventory_dashboard.Services
         }
 
 
+        public async Task<List<InventoryPrintSummaryDto>>
+    GetInventoryPrintSummaryAsync(
+        string search = "",
+        string warehouse = "",
+        string category = "",
+        string stockStatus = "",
+        string order = "asc")
+        {
+            var queryParams = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                queryParams.Add(
+                    $"search={Uri.EscapeDataString(search)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(warehouse))
+            {
+                queryParams.Add(
+                    $"warehouse={Uri.EscapeDataString(warehouse)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                queryParams.Add(
+                    $"category={Uri.EscapeDataString(category)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(stockStatus))
+            {
+                queryParams.Add(
+                    $"stockStatus={Uri.EscapeDataString(stockStatus)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(order))
+            {
+                queryParams.Add(
+                    $"order={Uri.EscapeDataString(order)}"
+                );
+            }
+
+            var url = "api/inventoryDisplay/print-summary";
+
+            if (queryParams.Any())
+            {
+                url += "?" + string.Join("&", queryParams);
+            }
+
+            var response = await _httpClient.GetAsync(url);
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(json);
+            }
+
+            return JsonSerializer.Deserialize<List<InventoryPrintSummaryDto>>(
+                json,
+                _jsonOptions
+            ) ?? new List<InventoryPrintSummaryDto>();
+        }
+
     }
 }

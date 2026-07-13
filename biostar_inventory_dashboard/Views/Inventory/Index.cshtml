@@ -12,12 +12,46 @@
         <h2 class="fw-bold mt-2">Inventory List</h2>
     </div>
 
-    <div class="action-buttons">
+    @* <div class="action-buttons">
         <button class="btn btn-outline-secondary" id="btnPrintInventory" type="button">
             Print
         </button>
         <button class="btn btn-outline-primary">Import</button>
         <button class="btn btn-primary" id="btnExportInventory">Export</button>
+    </div> *@
+    <div class="action-buttons d-flex gap-2">
+
+        <!-- Current detailed print by lot -->
+        <button class="btn btn-outline-secondary"
+                id="btnPrintInventory"
+                type="button"
+                title="Print detailed inventory by lot">
+            <i class="bi bi-printer me-1"></i>
+            Detailed Print
+        </button>
+
+        <!-- New summarized inventory print -->
+        <button class="btn btn-success"
+                id="btnPrintInventorySummary"
+                type="button"
+                title="Print total inventory per product">
+            <i class="bi bi-file-earmark-text me-1"></i>
+            Inventory Print
+        </button>
+
+        <button class="btn btn-outline-primary"
+                type="button">
+            <i class="bi bi-upload me-1"></i>
+            Import
+        </button>
+
+        <button class="btn btn-primary"
+                id="btnExportInventory"
+                type="button">
+            <i class="bi bi-download me-1"></i>
+            Export
+        </button>
+
     </div>
 </div>
 
