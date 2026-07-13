@@ -348,11 +348,11 @@ order
 
         [HttpGet]
         public async Task<IActionResult> PrintSummary(
-    string search = "",
-    string warehouse = "",
-    string category = "",
-    string stockStatus = "",
-    string order = "asc")
+     string search = "",
+     string warehouse = "",
+     string categories = "",
+     string stockStatus = "",
+     string order = "asc")
         {
             try
             {
@@ -360,12 +360,13 @@ order
                     await _apiService.GetInventoryPrintSummaryAsync(
                         search,
                         warehouse,
-                        category,
+                        categories,
                         stockStatus,
                         order
                     );
 
-                var branches = await _apiService.GetBranchesAsync();
+                var branches =
+                    await _apiService.GetBranchesAsync();
 
                 string warehouseName = "All Warehouses";
 
@@ -374,7 +375,9 @@ order
                     foreach (JsonElement branch in branches)
                     {
                         string branchId =
-                            branch.TryGetProperty("branch_id", out var idProperty)
+                            branch.TryGetProperty(
+                                "branch_id",
+                                out var idProperty)
                                 ? idProperty.GetString() ?? ""
                                 : "";
 
@@ -392,20 +395,25 @@ order
                     }
                 }
 
+                var selectedCategories =
+                    (categories ?? "")
+                    .Split(
+                        '|',
+                        StringSplitOptions.RemoveEmptyEntries |
+                        StringSplitOptions.TrimEntries
+                    );
+
                 ViewBag.GeneratedAt =
-                    DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt");
+                    DateTime.Now.ToString(
+                        "MMMM dd, yyyy hh:mm tt"
+                    );
 
                 ViewBag.Warehouse = warehouseName;
 
                 ViewBag.Category =
-                    string.IsNullOrWhiteSpace(category)
+                    selectedCategories.Length == 0
                         ? "All Categories"
-                        : category;
-
-                ViewBag.StockStatus =
-                    string.IsNullOrWhiteSpace(stockStatus)
-                        ? "All"
-                        : stockStatus;
+                        : string.Join(", ", selectedCategories);
 
                 ViewBag.TotalRecords = items.Count;
 

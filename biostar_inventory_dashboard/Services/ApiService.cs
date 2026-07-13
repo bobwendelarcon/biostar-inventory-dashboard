@@ -1354,12 +1354,12 @@ namespace biostar_inventory_dashboard.Services
 
 
         public async Task<List<InventoryPrintSummaryDto>>
-    GetInventoryPrintSummaryAsync(
-        string search = "",
-        string warehouse = "",
-        string category = "",
-        string stockStatus = "",
-        string order = "asc")
+       GetInventoryPrintSummaryAsync(
+           string search = "",
+           string warehouse = "",
+           string categories = "",
+           string stockStatus = "",
+           string order = "asc")
         {
             var queryParams = new List<string>();
 
@@ -1377,10 +1377,10 @@ namespace biostar_inventory_dashboard.Services
                 );
             }
 
-            if (!string.IsNullOrWhiteSpace(category))
+            if (!string.IsNullOrWhiteSpace(categories))
             {
                 queryParams.Add(
-                    $"category={Uri.EscapeDataString(category)}"
+                    $"categories={Uri.EscapeDataString(categories)}"
                 );
             }
 
@@ -1398,25 +1398,29 @@ namespace biostar_inventory_dashboard.Services
                 );
             }
 
-            var url = "api/inventoryDisplay/print-summary";
+            var url =
+                "api/inventoryDisplay/print-summary";
 
             if (queryParams.Any())
             {
                 url += "?" + string.Join("&", queryParams);
             }
 
-            var response = await _httpClient.GetAsync(url);
-            var json = await response.Content.ReadAsStringAsync();
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var json =
+                await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
                 throw new Exception(json);
             }
 
-            return JsonSerializer.Deserialize<List<InventoryPrintSummaryDto>>(
-                json,
-                _jsonOptions
-            ) ?? new List<InventoryPrintSummaryDto>();
+            return JsonSerializer.Deserialize<
+                List<InventoryPrintSummaryDto>
+            >(json, _jsonOptions)
+            ?? new List<InventoryPrintSummaryDto>();
         }
 
     }

@@ -4,16 +4,30 @@
     Layout = null;
     ViewData["Title"] = "Daily Inventory";
 
-    var items = Model
-        ?? new List<biostar_inventory_dashboard.Models.InventoryPrintSummaryDto>();
+    var inventoryItems =
+        Model ?? new List<biostar_inventory_dashboard.Models.InventoryPrintSummaryDto>();
 
-    var groupedCategories = items
-        .GroupBy(x =>
-            string.IsNullOrWhiteSpace(x.category_name)
-                ? "UNCATEGORIZED"
-                : x.category_name.Trim())
-        .OrderBy(x => x.Key)
-        .ToList();
+    /*
+     * Number of lines in each side of the page.
+     *
+     * One category heading also counts as one line.
+     * Increase this to fit more products per page.
+     *
+     * Recommended:
+     * 36 = larger rows
+     * 40 = balanced
+     * 44 = compact
+     */
+    const int linesPerSide = 78;
+
+    var reportColumns = BuildReportColumns(
+        inventoryItems,
+        linesPerSide
+    );
+
+    int totalPages = reportColumns.Count == 0
+        ? 1
+        : (int)Math.Ceiling(reportColumns.Count / 2.0);
 }
 
 <!DOCTYPE html>
@@ -41,7 +55,7 @@
         }
 
         body {
-            padding: 14px;
+            padding: 12px;
         }
 
         .print-toolbar {
@@ -53,12 +67,12 @@
 
             .print-toolbar button {
                 padding: 8px 16px;
-                border: 1px solid #444444;
+                border: 1px solid #333333;
                 border-radius: 4px;
                 background: #ffffff;
                 color: #111111;
-                font-size: 13px;
                 cursor: pointer;
+                font-size: 13px;
             }
 
             .print-toolbar .btn-print {
@@ -66,56 +80,57 @@
                 color: #ffffff;
             }
 
+        .report-page {
+            width: 100%;
+            margin: 0 auto 18px;
+            background: #ffffff;
+        }
+
+            .report-page + .report-page {
+                page-break-before: always;
+            }
+
         .report-header {
             position: relative;
-            min-height: 42px;
-            margin-bottom: 6px;
+            min-height: 30px;
+            margin-bottom: 2px;
             text-align: center;
         }
 
         .report-title {
             margin: 0;
-            padding: 0;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 0.6px;
         }
 
         .report-subtitle {
-            margin-top: 2px;
-            font-size: 10px;
-            font-weight: 400;
+            margin-top: 1px;
+            font-size: 8px;
         }
 
-        .generated-date {
+        .generated-info {
             position: absolute;
             top: 0;
             right: 0;
-            font-size: 9px;
+            font-size: 7px;
             line-height: 1.4;
             text-align: right;
         }
 
-        .report-info {
+        .report-meta {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 25px;
-            margin-bottom: 8px;
-            font-size: 9px;
-            line-height: 1.45;
+            margin-bottom: 3px;
+            font-size: 7px;
+            line-height: 1.4;
         }
 
-        .report-info-left,
-        .report-info-right {
-            flex: 1;
-        }
-
-        .report-info-right {
+        .report-meta-right {
             text-align: right;
         }
 
-        .info-label {
+        .meta-label {
             font-weight: bold;
         }
 
@@ -127,11 +142,11 @@
 
             .inventory-table th,
             .inventory-table td {
-                border: 1px solid #555555;
-                padding: 3px 5px;
+                border: 1px solid #444444;
+                padding: 1px 3px;
                 vertical-align: middle;
-                font-size: 9px;
-                line-height: 1.15;
+                font-size: 6.8px;
+                line-height: 1;
             }
 
             .inventory-table th {
@@ -140,45 +155,54 @@
                 text-align: center;
             }
 
-        .col-number {
-            width: 5%;
-            text-align: center;
+        /*
+                 * Each side uses 50% of the full page:
+                 *
+                 * Product: 33%
+                 * Qty:      8.5%
+                 * Pack:     8.5%
+                 */
+        .left-product,
+        .right-product {
+            width: 33%;
         }
 
-        .col-product {
-            width: 34%;
-        }
-
-        .col-description {
-            width: 32%;
-        }
-
-        .col-quantity {
-            width: 14%;
+        .left-qty,
+        .right-qty {
+            width: 8.5%;
             text-align: right;
         }
 
-        .col-pack {
-            width: 15%;
+        .left-pack,
+        .right-pack {
+            width: 8.5%;
             text-align: right;
         }
 
-        .category-header td {
+        .middle-divider {
+            border-left: 2px solid #000000 !important;
+        }
+
+        .category-cell {
             background: #f4c542;
-            font-size: 10px;
+            padding: 3px 4px !important;
+            font-size: 7.5px !important;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.2px;
-            padding: 4px 6px;
+            letter-spacing: 0.1px;
         }
 
         .product-name {
+            font-size: 7.1px;
             font-weight: bold;
             word-break: break-word;
         }
 
         .product-description {
-            color: #333333;
+            margin-top: 1px;
+            color: #444444;
+            font-size: 6.2px;
+            line-height: 1;
             word-break: break-word;
         }
 
@@ -191,27 +215,32 @@
 
         .zero-stock {
             color: #777777;
+            font-weight: normal;
         }
 
-        .empty-row td {
-            padding: 18px;
+        .blank-cell {
+            background: #ffffff;
+        }
+
+        .no-data {
+            padding: 20px !important;
             text-align: center;
             color: #666666;
+            font-size: 10px !important;
         }
 
-        .report-footer {
+        .page-footer {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
-            margin-top: 7px;
-            font-size: 8px;
-            color: #333333;
+            margin-top: 4px;
+            font-size: 6.5px;
+            color: #444444;
         }
 
         @@media print {
             @@page {
-                size: A4 portrait;
-                margin: 10mm;
+                size: legal landscape;
+                margin: 4mm;
             }
 
             html,
@@ -228,29 +257,23 @@
                 display: none !important;
             }
 
-            .inventory-table thead {
-                display: table-header-group;
+            .report-page {
+                margin: 0;
             }
 
-            .inventory-table tfoot {
-                display: table-footer-group;
-            }
+                .report-page + .report-page {
+                    page-break-before: always;
+                }
 
             .inventory-table tr {
                 page-break-inside: avoid;
-                break-inside: avoid;
             }
 
-            .category-header {
-                page-break-after: avoid;
-                break-after: avoid;
+            .inventory-table th,
+            .category-cell {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-
-                .inventory-table th,
-                .category-header td {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
         }
     </style>
 </head>
@@ -270,161 +293,409 @@
         </button>
     </div>
 
-    <div class="report-header">
-        <h1 class="report-title">
-            DAILY INVENTORY
-        </h1>
+    @if (reportColumns.Count == 0)
+    {
+        <section class="report-page">
 
-        <div class="report-subtitle">
-            Product Inventory Summary
-        </div>
+            <div class="report-header">
+                <h1 class="report-title">
+                    DAILY INVENTORY
+                </h1>
 
-        <div class="generated-date">
-            <div>
-                <strong>Generated:</strong>
-                @ViewBag.GeneratedAt
-            </div>
-        </div>
-    </div>
-
-    <div class="report-info">
-        <div class="report-info-left">
-            <div>
-                <span class="info-label">Warehouse:</span>
-                @ViewBag.Warehouse
+                <div class="report-subtitle">
+                    Product Inventory Summary
+                </div>
             </div>
 
-            <div>
-                <span class="info-label">Category Filter:</span>
-                @ViewBag.Category
-            </div>
-        </div>
-
-        <div class="report-info-right">
-            <div>
-                <span class="info-label">Total Products:</span>
-                @ViewBag.TotalRecords
-            </div>
-
-            <div>
-                <span class="info-label">Printed By:</span>
-                @ViewBag.PrintedBy
-            </div>
-        </div>
-    </div>
-
-    <table class="inventory-table">
-        <thead>
-            <tr>
-                <th class="col-number">
-                    #
-                </th>
-
-                <th class="col-product">
-                    Product Name
-                </th>
-
-                <th class="col-description">
-                    Description
-                </th>
-
-                <th class="col-quantity">
-                    Qty Available
-                </th>
-
-                <th class="col-pack">
-                    Pack
-                </th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @if (!groupedCategories.Any())
-            {
-                <tr class="empty-row">
-                    <td colspan="5">
-                        No inventory products found.
-                    </td>
-                </tr>
-            }
-            else
-            {
-                int rowNumber = 1;
-
-                foreach (var categoryGroup in groupedCategories)
-                {
-                    <tr class="category-header">
-                        <td colspan="5">
-                            @categoryGroup.Key
+            <table class="inventory-table">
+                <tbody>
+                    <tr>
+                        <td colspan="6" class="no-data">
+                            No inventory products found.
                         </td>
                     </tr>
+                </tbody>
+            </table>
 
-                    foreach (var item in categoryGroup
-                    .OrderBy(x => x.product_name)
-                    .ThenBy(x => x.product_description))
-                    {
-                        bool hasStock = item.available_qty > 0;
+        </section>
+    }
+    else
+    {
+        @for (int pageIndex = 0;
+            pageIndex < totalPages;
+            pageIndex++)
+        {
+            int leftColumnIndex = pageIndex * 2;
+            int rightColumnIndex = leftColumnIndex + 1;
 
-                        <tr>
-                            <td class="col-number">
-                                @rowNumber
-                            </td>
+            var leftColumn = reportColumns[leftColumnIndex];
 
-                            <td class="col-product">
-                                <div class="product-name">
-                                    @(string.IsNullOrWhiteSpace(item.product_name)
-                                                            ? "-"
-                                                            : item.product_name)
-                                                                            </div>
-                                                                        </td>
+            var rightColumn =
+            rightColumnIndex < reportColumns.Count
+            ? reportColumns[rightColumnIndex]
+            : new List<InventoryReportLine>();
 
-                            <td class="col-description">
-                                <div class="product-description">
-                                    @(string.IsNullOrWhiteSpace(item.product_description)
-                                                            ? "-"
-                                                            : item.product_description)
+            int rowsOnPage = Math.Max(
+            leftColumn.Count,
+            rightColumn.Count
+            );
+
+            <section class="report-page">
+
+                <div class="report-header">
+
+                    <h1 class="report-title">
+                        DAILY INVENTORY
+                    </h1>
+
+                    <div class="report-subtitle">
+                        Product Inventory Summary
                     </div>
-                </td>
 
-                            <td class="col-quantity">
-                                <span class="quantity-text @(hasStock ? "" : "zero-stock")">
-                                    @FormatNumber(item.available_qty)
+                    <div class="generated-info">
+                        <div>
+                            <span class="meta-label">
+                                Generated:
+                            </span>
 
-                        @if (!string.IsNullOrWhiteSpace(item.uom))
-                                    {
-                                        <text> @item.uom</text>
-                                    }
-                                </span>
-                            </td>
+                            @ViewBag.GeneratedAt
+                        </div>
+                    </div>
 
-                            <td class="col-pack">
-                                <span class="pack-text @(hasStock ? "" : "zero-stock")">
-                                    @GetPackDisplay(item)
-                                </span>
-                            </td>
+                </div>
+
+                <div class="report-meta">
+
+                    <div>
+                        <div>
+                            <span class="meta-label">
+                                Warehouse:
+                            </span>
+
+                            @ViewBag.Warehouse
+                        </div>
+
+                        <div>
+                            <span class="meta-label">
+                                Category:
+                            </span>
+
+                            @ViewBag.Category
+                        </div>
+                    </div>
+
+                    <div class="report-meta-right">
+                        <div>
+                            <span class="meta-label">
+                                Total Products:
+                            </span>
+
+                            @ViewBag.TotalRecords
+                        </div>
+
+                        <div>
+                            <span class="meta-label">
+                                Printed By:
+                            </span>
+
+                            @ViewBag.PrintedBy
+                        </div>
+                    </div>
+
+                </div>
+
+                <table class="inventory-table">
+
+                    <thead>
+                        <tr>
+                            <th class="left-product">
+                                Product / Description
+                            </th>
+
+                            <th class="left-qty">
+                                Qty
+                            </th>
+
+                            <th class="left-pack">
+                                Pack
+                            </th>
+
+                            <th class="right-product middle-divider">
+                                Product / Description
+                            </th>
+
+                            <th class="right-qty">
+                                Qty
+                            </th>
+
+                            <th class="right-pack">
+                                Pack
+                            </th>
                         </tr>
+                    </thead>
 
-                        rowNumber++;
-                    }
-                }
-            }
-        </tbody>
-    </table>
+                    <tbody>
 
-    <div class="report-footer">
-        <div>
-            Available quantities are combined by product across matching inventory lots.
-        </div>
+                        @for (int rowIndex = 0;
+                                        rowIndex < rowsOnPage;
+                                        rowIndex++)
+                        {
+                            InventoryReportLine leftLine =
+                            rowIndex < leftColumn.Count
+                            ? leftColumn[rowIndex]
+                            : null;
 
-        <div>
-            Warehouse: @ViewBag.Warehouse
-        </div>
-    </div>
+                            InventoryReportLine rightLine =
+                            rowIndex < rightColumn.Count
+                            ? rightColumn[rowIndex]
+                            : null;
+
+                            <tr>
+
+                                @* LEFT SIDE *@
+
+                                @if (leftLine == null)
+                                {
+                                    <td class="blank-cell"></td>
+                                    <td class="blank-cell"></td>
+                                    <td class="blank-cell"></td>
+                                }
+                                else if (leftLine.IsCategory)
+                                {
+                                    <td colspan="3"
+                                        class="category-cell">
+                                        @leftLine.CategoryName
+                                    </td>
+                                }
+                                else if (leftLine.Item != null)
+                                {
+                                    var item = leftLine.Item;
+                                    bool hasStock =
+                                    item.available_qty > 0;
+
+                                    <td class="left-product">
+
+                                        <div class="product-name">
+                                            @(string.IsNullOrWhiteSpace(
+                                                                        item.product_name)
+                                                                        ? "-"
+                                                                        : item.product_name)
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                                                item.product_description))
+                                        {
+                                            <div class="product-description">
+                                                @item.product_description
+                                            </div>
+                                        }
+
+                                    </td>
+
+                                    <td class="left-qty">
+
+                                        <span class="quantity-text @(hasStock ? "" : "zero-stock")">
+                                            @FormatNumber(item.available_qty)
+
+                                            @if (!string.IsNullOrWhiteSpace(item.uom))
+                                            {
+                                                <text> @item.uom</text>
+                                            }
+                                        </span>
+
+                                    </td>
+
+                                    <td class="left-pack">
+
+                                        <span class="pack-text @(hasStock ? "" : "zero-stock")">
+                                            @GetPackDisplay(item)
+                                        </span>
+
+                                    </td>
+                                }
+
+                                @* RIGHT SIDE *@
+
+                                @if (rightLine == null)
+                                {
+                                    <td class="blank-cell middle-divider"></td>
+                                    <td class="blank-cell"></td>
+                                    <td class="blank-cell"></td>
+                                }
+                                else if (rightLine.IsCategory)
+                                {
+                                    <td colspan="3"
+                                        class="category-cell middle-divider">
+                                        @rightLine.CategoryName
+                                    </td>
+                                }
+                                else if (rightLine.Item != null)
+                                {
+                                    var item = rightLine.Item;
+                                    bool hasStock =
+                                    item.available_qty > 0;
+
+                                    <td class="right-product middle-divider">
+
+                                        <div class="product-name">
+                                            @(string.IsNullOrWhiteSpace(
+                                                                        item.product_name)
+                                                                        ? "-"
+                                                                        : item.product_name)
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                                                item.product_description))
+                                        {
+                                            <div class="product-description">
+                                                @item.product_description
+                                            </div>
+                                        }
+
+                                    </td>
+
+                                    <td class="right-qty">
+
+                                        <span class="quantity-text @(hasStock ? "" : "zero-stock")">
+                                            @FormatNumber(item.available_qty)
+
+                                            @if (!string.IsNullOrWhiteSpace(item.uom))
+                                            {
+                                                <text> @item.uom</text>
+                                            }
+                                        </span>
+
+                                    </td>
+
+                                    <td class="right-pack">
+
+                                        <span class="pack-text @(hasStock ? "" : "zero-stock")">
+                                            @GetPackDisplay(item)
+                                        </span>
+
+                                    </td>
+                                }
+
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+
+                <div class="page-footer">
+
+                    <div>
+                        Available quantities are grouped by product.
+                    </div>
+
+                    <div>
+                        Page @(pageIndex + 1) of @totalPages
+                    </div>
+
+                </div>
+
+            </section>
+        }
+    }
 
 </body>
 </html>
 
 @functions {
+
+    public class InventoryReportLine
+    {
+        public bool IsCategory { get; set; }
+
+        public string CategoryName { get; set; } = "";
+
+        public biostar_inventory_dashboard.Models.InventoryPrintSummaryDto
+            Item
+        { get; set; }
+    }
+
+    public List<List<InventoryReportLine>> BuildReportColumns(
+        List<biostar_inventory_dashboard.Models.InventoryPrintSummaryDto> items,
+        int linesPerSide)
+    {
+        var columns =
+            new List<List<InventoryReportLine>>();
+
+        var currentColumn =
+            new List<InventoryReportLine>();
+
+        var groupedCategories = items
+            .GroupBy(x =>
+                string.IsNullOrWhiteSpace(x.category_name)
+                    ? "UNCATEGORIZED"
+                    : x.category_name.Trim())
+            .OrderBy(x => x.Key)
+            .ToList();
+
+        foreach (var categoryGroup in groupedCategories)
+        {
+            var categoryItems = categoryGroup
+                .OrderBy(x => x.product_name)
+                .ThenBy(x => x.product_description)
+                .ToList();
+
+            /*
+             * Do not leave the category title as the
+             * final line of a column.
+             */
+            if (currentColumn.Count >= linesPerSide - 1)
+            {
+                columns.Add(currentColumn);
+
+                currentColumn =
+                    new List<InventoryReportLine>();
+            }
+
+            currentColumn.Add(
+                new InventoryReportLine
+                {
+                    IsCategory = true,
+                    CategoryName = categoryGroup.Key
+                }
+            );
+
+            foreach (var item in categoryItems)
+            {
+                if (currentColumn.Count >= linesPerSide)
+                {
+                    columns.Add(currentColumn);
+
+                    currentColumn =
+                        new List<InventoryReportLine>();
+
+                    currentColumn.Add(
+                        new InventoryReportLine
+                        {
+                            IsCategory = true,
+                            CategoryName =
+                                categoryGroup.Key + " - CONTINUED"
+                        }
+                    );
+                }
+
+                currentColumn.Add(
+                    new InventoryReportLine
+                    {
+                        IsCategory = false,
+                        Item = item
+                    }
+                );
+            }
+        }
+
+        if (currentColumn.Count > 0)
+        {
+            columns.Add(currentColumn);
+        }
+
+        return columns;
+    }
+
     public string FormatNumber(decimal value)
     {
         return value % 1 == 0
@@ -455,6 +726,7 @@
             return "0";
         }
 
-        return $"{FormatNumber(item.available_qty)} {item.uom}".Trim();
+        return
+            $"{FormatNumber(item.available_qty)} {item.uom}".Trim();
     }
 }

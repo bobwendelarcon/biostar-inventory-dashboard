@@ -1,7 +1,7 @@
 wwwroot\css\dailyorder.css
 wwwroot\css\dashboard.css
 wwwroot\css\delivery-checklist-print.css
-wwwroot\css\inventory.css
+wwwroot\js\inventory.js
 wwwroot\css\login.css
 wwwroot\css\producttoproduce.css
 wwwroot\css\purchasing\mprf.css
@@ -16,7 +16,7 @@ wwwroot\js\dailyorder.js
 wwwroot\js\dashboard.js
 wwwroot\js\delivery-checklist-print.js
 wwwroot\js\delivery-checklist.js
-wwwroot\js\inventory.js
+wwwroot\css\inventory.css
 wwwroot\js\manual-stock-in.js
 wwwroot\js\manufacturing\materials\material-categories.js
 wwwroot\js\manufacturing\materials\materials.js

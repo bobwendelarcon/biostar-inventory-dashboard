@@ -961,8 +961,99 @@ document.addEventListener("DOMContentLoaded", function () {
         window.open(`/Inventory/Print?${params.toString()}`, "_blank");
     });
 
+    //document.getElementById("btnPrintInventorySummary")
+    //    ?.addEventListener("click", function () {
+
+    //        const params = new URLSearchParams({
+    //            search:
+    //                document.getElementById(
+    //                    "productSearchFilter"
+    //                )?.value || "",
+
+    //            warehouse:
+    //                document.getElementById(
+    //                    "warehouseFilter"
+    //                )?.value || "",
+
+    //            category:
+    //                document.getElementById(
+    //                    "categoryFilter"
+    //                )?.value || "",
+
+    //            stockStatus:
+    //                document.getElementById(
+    //                    "stockStatusFilter"
+    //                )?.value || "",
+
+    //            order:
+    //                document.getElementById(
+    //                    "orderFilter"
+    //                )?.value || "asc"
+    //        });
+
+    //        window.open(
+    //            `/Inventory/PrintSummary?${params.toString()}`,
+    //            "_blank"
+    //        );
+    //    });
+
+
     document.getElementById("btnPrintInventorySummary")
+        ?.addEventListener("click", async function () {
+
+            await loadPrintCategoryCheckboxes();
+
+            const warehouseSelect =
+                document.getElementById("warehouseFilter");
+
+            const warehouseName =
+                warehouseSelect?.selectedOptions?.[0]?.text
+                || "All Warehouses";
+
+            document.getElementById("printWarehouseDisplay").innerText =
+                warehouseName;
+
+            const modalElement =
+                document.getElementById("inventoryPrintModal");
+
+            new bootstrap.Modal(modalElement).show();
+        });
+
+    document.getElementById("btnSaveLotNo")?.addEventListener("click", saveLotNoEdit);
+    document.getElementById("btnSaveDates")?.addEventListener("click", saveLotDates);
+
+
+
+    document.getElementById("printSelectAllCategories")
+        ?.addEventListener("change", function () {
+
+            const isChecked = this.checked;
+
+            document.querySelectorAll(
+                ".print-category-checkbox"
+            ).forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+
+            updateSelectedCategoryCount();
+        });
+
+
+    document.getElementById("btnConfirmInventoryPrint")
         ?.addEventListener("click", function () {
+
+            const selectedCategories = Array.from(
+                document.querySelectorAll(
+                    ".print-category-checkbox:checked"
+                )
+            ).map(checkbox =>
+                decodeURIComponent(checkbox.value)
+            );
+
+            if (selectedCategories.length === 0) {
+                alert("Please select at least one category.");
+                return;
+            }
 
             const params = new URLSearchParams({
                 search:
@@ -975,10 +1066,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         "warehouseFilter"
                     )?.value || "",
 
-                category:
-                    document.getElementById(
-                        "categoryFilter"
-                    )?.value || "",
+                categories:
+                    selectedCategories.join("|"),
 
                 stockStatus:
                     document.getElementById(
@@ -997,14 +1086,6 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         });
 
-
-    document.getElementById("btnSaveLotNo")?.addEventListener("click", saveLotNoEdit);
-    document.getElementById("btnSaveDates")?.addEventListener("click", saveLotDates);
-
-
-
-
-
     const expiryStatusEl = document.getElementById("expiryStatusFilter");
     if (expiryStatusEl && !expiryStatusEl.value) {
         expiryStatusEl.value = "available";
@@ -1018,7 +1099,143 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, 5000);
 });
+async function loadPrintCategoryCheckboxes() {
+    const container =
+        document.getElementById("printCategoryList");
 
+    const selectAll =
+        document.getElementById("printSelectAllCategories");
+
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="text-center text-muted py-4">
+            Loading categories...
+        </div>
+    `;
+
+    try {
+        const response =
+            await fetch("/Inventory/GetInventoryCategories");
+
+        if (!response.ok) {
+            throw new Error("Failed to load categories.");
+        }
+
+        const categories = await response.json();
+
+        if (!Array.isArray(categories) || categories.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    No categories found.
+                </div>
+            `;
+
+            updateSelectedCategoryCount();
+            return;
+        }
+
+        const currentCategory =
+            document.getElementById("categoryFilter")?.value || "";
+
+        container.innerHTML = categories.map((category, index) => {
+            const encodedCategory =
+                encodeURIComponent(category);
+
+            const isChecked =
+                currentCategory
+                    ? category === currentCategory
+                    : true;
+
+            return `
+                <div class="form-check border-bottom py-2">
+                    <input class="form-check-input print-category-checkbox"
+                           type="checkbox"
+                           value="${encodedCategory}"
+                           data-category="${escapeHtml(category)}"
+                           id="printCategory_${index}"
+                           ${isChecked ? "checked" : ""}>
+
+                    <label class="form-check-label w-100"
+                           for="printCategory_${index}">
+                        ${escapeHtml(category)}
+                    </label>
+                </div>
+            `;
+        }).join("");
+
+        const checkboxes =
+            document.querySelectorAll(".print-category-checkbox");
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener("change", function () {
+                syncPrintSelectAll();
+                updateSelectedCategoryCount();
+            });
+        });
+
+        syncPrintSelectAll();
+        updateSelectedCategoryCount();
+
+    } catch (error) {
+        container.innerHTML = `
+            <div class="alert alert-danger mb-0">
+                ${escapeHtml(error.message)}
+            </div>
+        `;
+
+        if (selectAll) {
+            selectAll.checked = false;
+        }
+
+        updateSelectedCategoryCount();
+    }
+}
+
+function syncPrintSelectAll() {
+    const selectAll =
+        document.getElementById("printSelectAllCategories");
+
+    const checkboxes = Array.from(
+        document.querySelectorAll(".print-category-checkbox")
+    );
+
+    if (!selectAll || checkboxes.length === 0) return;
+
+    const checkedCount =
+        checkboxes.filter(x => x.checked).length;
+
+    selectAll.checked =
+        checkedCount === checkboxes.length;
+
+    selectAll.indeterminate =
+        checkedCount > 0 &&
+        checkedCount < checkboxes.length;
+}
+
+function updateSelectedCategoryCount() {
+    const checkedCount =
+        document.querySelectorAll(
+            ".print-category-checkbox:checked"
+        ).length;
+
+    const counter =
+        document.getElementById("selectedCategoryCount");
+
+    if (counter) {
+        counter.innerText =
+            `${checkedCount} selected`;
+    }
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 
 //edit lot number
 
