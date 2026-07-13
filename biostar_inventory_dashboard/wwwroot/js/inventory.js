@@ -1027,17 +1027,17 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("printSelectAllCategories")
         ?.addEventListener("change", function () {
 
-            const isChecked = this.checked;
+            const shouldCheckAll = this.checked;
 
-            document.querySelectorAll(
-                ".print-category-checkbox"
-            ).forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
+            document.querySelectorAll(".print-category-checkbox")
+                .forEach(checkbox => {
+                    checkbox.checked = shouldCheckAll;
+                });
+
+            this.indeterminate = false;
 
             updateSelectedCategoryCount();
         });
-
 
     document.getElementById("btnConfirmInventoryPrint")
         ?.addEventListener("click", function () {
@@ -1047,7 +1047,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     ".print-category-checkbox:checked"
                 )
             ).map(checkbox =>
-                decodeURIComponent(checkbox.value)
+                checkbox.dataset.category || ""
+            ).filter(category =>
+                category.trim() !== ""
             );
 
             if (selectedCategories.length === 0) {
@@ -1055,30 +1057,42 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            const params = new URLSearchParams({
-                search:
-                    document.getElementById(
-                        "productSearchFilter"
-                    )?.value || "",
+            const params = new URLSearchParams();
 
-                warehouse:
-                    document.getElementById(
-                        "warehouseFilter"
-                    )?.value || "",
+            params.set(
+                "search",
+                document.getElementById("productSearchFilter")?.value || ""
+            );
 
-                categories:
-                    selectedCategories.join("|"),
+            params.set(
+                "warehouse",
+                document.getElementById("warehouseFilter")?.value || ""
+            );
 
-                stockStatus:
-                    document.getElementById(
-                        "stockStatusFilter"
-                    )?.value || "",
+            params.set(
+                "categories",
+                selectedCategories.join("|")
+            );
 
-                order:
-                    document.getElementById(
-                        "orderFilter"
-                    )?.value || "asc"
-            });
+            params.set(
+                "stockStatus",
+                document.getElementById("stockStatusFilter")?.value || ""
+            );
+
+            params.set(
+                "order",
+                document.getElementById("orderFilter")?.value || "asc"
+            );
+
+            console.log(
+                "Selected print categories:",
+                selectedCategories
+            );
+
+            console.log(
+                "Print URL:",
+                `/Inventory/PrintSummary?${params.toString()}`
+            );
 
             window.open(
                 `/Inventory/PrintSummary?${params.toString()}`,
@@ -1099,14 +1113,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, 5000);
 });
+
+
+
 async function loadPrintCategoryCheckboxes() {
-    const container =
-        document.getElementById("printCategoryList");
+    const container = document.getElementById("printCategoryList");
+    const selectAll = document.getElementById("printSelectAllCategories");
 
-    const selectAll =
-        document.getElementById("printSelectAllCategories");
-
-    if (!container) return;
+    if (!container || !selectAll) return;
 
     container.innerHTML = `
         <div class="text-center text-muted py-4">
@@ -1114,9 +1128,11 @@ async function loadPrintCategoryCheckboxes() {
         </div>
     `;
 
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+
     try {
-        const response =
-            await fetch("/Inventory/GetInventoryCategories");
+        const response = await fetch("/Inventory/GetInventoryCategories");
 
         if (!response.ok) {
             throw new Error("Failed to load categories.");
@@ -1135,46 +1151,37 @@ async function loadPrintCategoryCheckboxes() {
             return;
         }
 
-        const currentCategory =
-            document.getElementById("categoryFilter")?.value || "";
+        container.innerHTML = categories.map((category, index) => `
+            <div class="form-check border-bottom py-2">
+                <input
+                    class="form-check-input print-category-checkbox"
+                    type="checkbox"
+                    id="printCategory_${index}"
+                    data-category="${escapeHtml(category)}">
 
-        container.innerHTML = categories.map((category, index) => {
-            const encodedCategory =
-                encodeURIComponent(category);
+                <label
+                    class="form-check-label w-100"
+                    for="printCategory_${index}">
+                    ${escapeHtml(category)}
+                </label>
+            </div>
+        `).join("");
 
-            const isChecked =
-                currentCategory
-                    ? category === currentCategory
-                    : true;
-
-            return `
-                <div class="form-check border-bottom py-2">
-                    <input class="form-check-input print-category-checkbox"
-                           type="checkbox"
-                           value="${encodedCategory}"
-                           data-category="${escapeHtml(category)}"
-                           id="printCategory_${index}"
-                           ${isChecked ? "checked" : ""}>
-
-                    <label class="form-check-label w-100"
-                           for="printCategory_${index}">
-                        ${escapeHtml(category)}
-                    </label>
-                </div>
-            `;
-        }).join("");
-
-        const checkboxes =
-            document.querySelectorAll(".print-category-checkbox");
-
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener("change", function () {
-                syncPrintSelectAll();
-                updateSelectedCategoryCount();
+        document.querySelectorAll(".print-category-checkbox")
+            .forEach(checkbox => {
+                checkbox.addEventListener("change", function () {
+                    updatePrintSelectAllState();
+                    updateSelectedCategoryCount();
+                });
             });
-        });
 
-        syncPrintSelectAll();
+        // Initially select everything.
+        document.querySelectorAll(".print-category-checkbox")
+            .forEach(checkbox => {
+                checkbox.checked = true;
+            });
+
+        updatePrintSelectAllState();
         updateSelectedCategoryCount();
 
     } catch (error) {
@@ -1184,14 +1191,39 @@ async function loadPrintCategoryCheckboxes() {
             </div>
         `;
 
-        if (selectAll) {
-            selectAll.checked = false;
-        }
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
 
         updateSelectedCategoryCount();
     }
 }
 
+function updatePrintSelectAllState() {
+    const selectAll =
+        document.getElementById("printSelectAllCategories");
+
+    const checkboxes = Array.from(
+        document.querySelectorAll(".print-category-checkbox")
+    );
+
+    if (!selectAll) return;
+
+    if (checkboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+    }
+
+    const checkedCount =
+        checkboxes.filter(checkbox => checkbox.checked).length;
+
+    selectAll.checked =
+        checkedCount === checkboxes.length;
+
+    selectAll.indeterminate =
+        checkedCount > 0 &&
+        checkedCount < checkboxes.length;
+}
 function syncPrintSelectAll() {
     const selectAll =
         document.getElementById("printSelectAllCategories");
