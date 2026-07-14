@@ -8,15 +8,8 @@
         Model ?? new List<biostar_inventory_dashboard.Models.InventoryPrintSummaryDto>();
 
     /*
-     * Number of lines in each side of the page.
-     *
-     * One category heading also counts as one line.
-     * Increase this to fit more products per page.
-     *
-     * Recommended:
-     * 36 = larger rows
-     * 40 = balanced
-     * 44 = compact
+     * Number of report lines placed on each half of a Legal landscape page.
+     * A category heading also counts as one line.
      */
     const int linesPerSide = 40;
 
@@ -58,7 +51,6 @@
             padding: 10px;
         }
 
-        /* Screen toolbar */
         .print-toolbar {
             display: flex;
             justify-content: flex-end;
@@ -66,59 +58,49 @@
             margin-bottom: 10px;
         }
 
-            .print-toolbar button {
-                padding: 7px 15px;
-                border: 1px solid #444444;
-                border-radius: 4px;
-                background: #ffffff;
-                color: #111111;
-                cursor: pointer;
-                font-size: 13px;
-            }
-
-            .print-toolbar .btn-print {
-                background: #111111;
-                color: #ffffff;
-            }
-
-        /* Legal landscape page */
-        .report-page {
-            width: 14in;
-            height: 8.5in;
-            margin: 0 auto 18px;
-            padding: 0.25in 0.35in;
-            overflow: hidden;
+        .print-toolbar button {
+            padding: 7px 15px;
+            border: 1px solid #444444;
+            border-radius: 4px;
             background: #ffffff;
-            page-break-inside: avoid;
-            break-inside: avoid;
+            color: #111111;
+            cursor: pointer;
+            font-size: 13px;
         }
 
-            .report-page + .report-page {
-                page-break-before: always;
-                break-before: page;
-            }
+        .print-toolbar .btn-print {
+            background: #111111;
+            color: #ffffff;
+        }
 
-        /* Header */
+        /*
+         * Browser preview width only.
+         * This fixed width is removed completely when printing.
+         */
+        .report-page {
+            width: 13.5in;
+            max-width: 100%;
+            margin: 0 auto 12px auto;
+            padding: 0.20in;
+            background: #ffffff;
+        }
+
         .report-header {
             position: relative;
             min-height: 0.34in;
-            margin: 0;
             text-align: center;
         }
 
         .report-title {
             margin: 0;
-            padding: 0;
             font-size: 15px;
             font-weight: 700;
             line-height: 1.1;
-            letter-spacing: 0.5px;
         }
 
         .report-subtitle {
             margin-top: 1px;
             font-size: 8px;
-            line-height: 1;
         }
 
         .generated-info {
@@ -126,17 +108,14 @@
             top: 0;
             right: 0;
             font-size: 7px;
-            line-height: 1.3;
             text-align: right;
         }
 
-        /* Report details */
         .report-meta {
-            min-height: 0.30in;
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
-            align-items: start;
-            margin: 0 0 3px;
+            min-height: 0.30in;
+            margin-bottom: 3px;
             font-size: 7px;
             line-height: 1.3;
         }
@@ -149,21 +128,6 @@
             font-weight: 700;
         }
 
-        /* Two-column page */
-        .print-columns {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            column-gap: 0.08in;
-            width: 100%;
-            align-items: start;
-        }
-
-        .print-column {
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        /* Inventory table */
         .inventory-table {
             width: 100%;
             margin: 0;
@@ -171,86 +135,109 @@
             table-layout: fixed;
         }
 
-            .inventory-table col.product-col {
-                width: 71%;
-            }
+        /*
+         * The six columns total exactly 100%.
+         * Each half of the page totals 50%.
+         */
+        .inventory-table th.left-product,
+        .inventory-table td.left-product,
+        .inventory-table th.right-product,
+        .inventory-table td.right-product {
+            width: 39.5%;
+        }
 
-            .inventory-table col.qty-col {
-                width: 13%;
-            }
+        .inventory-table th.left-qty,
+        .inventory-table td.left-qty,
+        .inventory-table th.right-qty,
+        .inventory-table td.right-qty {
+            width: 4%;
+        }
 
-            .inventory-table col.pack-col {
-                width: 16%;
-            }
+        .inventory-table th.left-pack,
+        .inventory-table td.left-pack,
+        .inventory-table th.right-pack,
+        .inventory-table td.right-pack {
+            width: 6.5%;
+        }
 
-            .inventory-table th,
-            .inventory-table td {
-                height: 15px;
-                border: 1px solid #555555;
-                padding: 1px 2px;
-                overflow: hidden;
-                vertical-align: middle;
-                font-size: 6.7px;
-                line-height: 1;
-            }
+        .inventory-table th,
+        .inventory-table td {
+            height: 17px;
+            border: 1px solid #555555;
+            padding: 1px 3px;
+            overflow: hidden;
+            vertical-align: middle;
+            font-size: 7.5px;
+            line-height: 1;
+        }
 
-            .inventory-table th {
-                background: #eeeeee;
-                text-align: center;
-                font-weight: 700;
-            }
+        .inventory-table th {
+            background: #eeeeee;
+            text-align: center;
+            font-weight: 700;
+            white-space: nowrap;
+        }
 
-            .inventory-table tr {
-                page-break-inside: avoid;
-                break-inside: avoid;
-            }
+        .inventory-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
 
-        /* Category heading */
+        .middle-divider {
+            border-left: 2px solid #333333 !important;
+        }
+
         .category-cell {
-            height: 16px !important;
+            height: 18px !important;
             padding: 2px 4px !important;
             background: #f2c54b;
-            font-size: 7.2px !important;
+            font-size: 8px !important;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.1px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Product details */
         .product-name {
+            display: block;
+            width: 100%;
             overflow: hidden;
-            font-size: 6.9px;
-            font-weight: 700;
-            line-height: 1;
             white-space: nowrap;
             text-overflow: ellipsis;
+            font-size: 7.6px;
+            font-weight: 700;
+            line-height: 1;
         }
 
         .product-description {
-            overflow: hidden;
+            display: block;
+            width: 100%;
             margin-top: 1px;
-            color: #555555;
-            font-size: 6px;
-            line-height: 1;
+            overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+            color: #555555;
+            font-size: 6.7px;
+            line-height: 1;
         }
 
-        /* Quantity and pack */
-        .qty-cell,
-        .pack-cell {
+        .left-qty,
+        .right-qty,
+        .left-pack,
+        .right-pack {
             text-align: right;
             white-space: nowrap;
         }
 
         .quantity-text,
         .pack-text {
-            display: inline-block;
-            font-weight: 700;
+            display: block;
+            width: 100%;
+            overflow: hidden;
             white-space: nowrap;
+            text-align: right;
+            font-weight: 700;
         }
 
         .zero-stock {
@@ -258,103 +245,208 @@
             font-weight: 400;
         }
 
-        /* Empty state */
+        .blank-cell {
+            background: #ffffff;
+        }
+
         .no-data {
             padding: 20px !important;
             text-align: center;
-            color: #666666;
-            font-size: 10px !important;
+            font-size: 12px !important;
         }
 
-        /* Footer */
         .page-footer {
             display: flex;
             justify-content: space-between;
-            min-height: 0.16in;
             margin-top: 3px;
             font-size: 6.2px;
-            line-height: 1;
             color: #444444;
         }
 
-        /* Print */
         @@media print {
+
             @@page {
-                size: 14in 8.5in;
-                margin: 0;
+                size: legal landscape;
+                margin: 0 !important;
             }
 
             html,
             body {
-                width: 14in;
                 margin: 0 !important;
                 padding: 0 !important;
-                background: #ffffff;
+                width: 14in !important;
+                background: white !important;
             }
 
             body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .print-toolbar {
                 display: none !important;
             }
-
+            /*
+             * Do not use margin-left.
+             *
+             * The Epson IPP driver appears to ignore or miscalculate it.
+             * This creates actual blank space INSIDE the printed page.
+             */
             .report-page {
+                display: block !important;
                 width: 14in !important;
-                height: 8.5in !important;
+                max-width: 14in !important;
+                min-width: 14in !important;
                 margin: 0 !important;
-                padding: 0.25in 0.35in !important;
-                overflow: hidden !important;
-                page-break-after: always;
-                break-after: page;
-                page-break-inside: avoid;
-                break-inside: avoid;
+                padding-top: 0.30in !important;
+                padding-right: 0.50in !important;
+                padding-bottom: 0.30in !important;
+                padding-left: 1.75in !important;
+                box-sizing: border-box !important;
+                background: white !important;
+                overflow: visible !important;
+                page-break-after: always !important;
+                break-after: page !important;
             }
 
                 .report-page:last-child {
-                    page-break-after: auto;
-                    break-after: auto;
+                    page-break-after: auto !important;
+                    break-after: auto !important;
                 }
-
-            .print-columns {
-                display: grid !important;
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-                column-gap: 0.08in !important;
+            /*
+             * Actual usable width:
+             *
+             * 14in paper
+             * - 1.75in left safety area
+             * - 0.50in right safety area
+             * = 11.75in content area
+             */
+            .report-header,
+            .report-meta,
+            .page-footer,
+            .inventory-table {
                 width: 100% !important;
-            }
-
-            .print-column {
+                max-width: 100% !important;
                 min-width: 0 !important;
-                overflow: hidden !important;
+                margin: 0 !important;
             }
 
             .inventory-table {
-                width: 100% !important;
-                margin: 0 !important;
                 border-collapse: collapse !important;
                 table-layout: fixed !important;
             }
 
+                .inventory-table th.left-product,
+                .inventory-table td.left-product,
+                .inventory-table th.right-product,
+                .inventory-table td.right-product {
+                    width: 39.5% !important;
+                }
+
+                .inventory-table th.left-qty,
+                .inventory-table td.left-qty,
+                .inventory-table th.right-qty,
+                .inventory-table td.right-qty {
+                    width: 4% !important;
+                }
+
+                .inventory-table th.left-pack,
+                .inventory-table td.left-pack,
+                .inventory-table th.right-pack,
+                .inventory-table td.right-pack {
+                    width: 6.5% !important;
+                }
+
                 .inventory-table th,
                 .inventory-table td {
                     height: 15px !important;
+                    min-width: 0 !important;
+                    border: 1px solid #555555 !important;
                     padding: 1px 2px !important;
-                    font-size: 6.7px !important;
+                    overflow: hidden !important;
+                    vertical-align: middle !important;
+                    font-size: 6.5px !important;
                     line-height: 1 !important;
                 }
 
-                .inventory-table tr {
-                    page-break-inside: avoid !important;
-                    break-inside: avoid !important;
-                }
+                    .inventory-table th.left-product,
+                    .inventory-table td.left-product {
+                        padding-left: 5px !important;
+                    }
 
-                .inventory-table th,
-                .category-cell {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
+                    .inventory-table th.left-qty,
+                    .inventory-table td.left-qty,
+                    .inventory-table th.right-qty,
+                    .inventory-table td.right-qty,
+                    .inventory-table th.left-pack,
+                    .inventory-table td.left-pack,
+                    .inventory-table th.right-pack,
+                    .inventory-table td.right-pack {
+                        padding-left: 1px !important;
+                        padding-right: 1px !important;
+                        text-align: right !important;
+                        white-space: nowrap !important;
+                        font-size: 5.9px !important;
+                    }
+
+            .product-name {
+                display: block !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                font-size: 6.7px !important;
+                font-weight: 700 !important;
+                line-height: 1 !important;
+            }
+
+            .product-description {
+                display: block !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                margin: 1px 0 0 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                font-size: 5.9px !important;
+                line-height: 1 !important;
+            }
+
+            .quantity-text,
+            .pack-text {
+                display: block !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+                white-space: nowrap !important;
+                text-align: right !important;
+            }
+
+            .category-cell {
+                height: 16px !important;
+                padding: 2px 5px !important;
+                font-size: 7px !important;
+                line-height: 1 !important;
+            }
+
+            .middle-divider {
+                border-left: 2px solid #333333 !important;
+            }
+
+            .inventory-table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .inventory-table th,
+            .category-cell {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
@@ -403,8 +495,8 @@
     else
     {
         @for (int pageIndex = 0;
-            pageIndex < totalPages;
-            pageIndex++)
+              pageIndex < totalPages;
+              pageIndex++)
         {
             int leftColumnIndex = pageIndex * 2;
             int rightColumnIndex = leftColumnIndex + 1;
@@ -412,13 +504,13 @@
             var leftColumn = reportColumns[leftColumnIndex];
 
             var rightColumn =
-            rightColumnIndex < reportColumns.Count
-            ? reportColumns[rightColumnIndex]
-            : new List<InventoryReportLine>();
+                rightColumnIndex < reportColumns.Count
+                    ? reportColumns[rightColumnIndex]
+                    : new List<InventoryReportLine>();
 
             int rowsOnPage = Math.Max(
-            leftColumn.Count,
-            rightColumn.Count
+                leftColumn.Count,
+                rightColumn.Count
             );
 
             <section class="report-page">
@@ -518,18 +610,18 @@
                     <tbody>
 
                         @for (int rowIndex = 0;
-                                        rowIndex < rowsOnPage;
-                                        rowIndex++)
+                              rowIndex < rowsOnPage;
+                              rowIndex++)
                         {
                             InventoryReportLine leftLine =
-                            rowIndex < leftColumn.Count
-                            ? leftColumn[rowIndex]
-                            : null;
+                                rowIndex < leftColumn.Count
+                                    ? leftColumn[rowIndex]
+                                    : null;
 
                             InventoryReportLine rightLine =
-                            rowIndex < rightColumn.Count
-                            ? rightColumn[rowIndex]
-                            : null;
+                                rowIndex < rightColumn.Count
+                                    ? rightColumn[rowIndex]
+                                    : null;
 
                             <tr>
 
@@ -551,20 +643,17 @@
                                 else if (leftLine.Item != null)
                                 {
                                     var item = leftLine.Item;
-                                    bool hasStock =
-                                    item.available_qty > 0;
+                                    bool hasStock = item.available_qty > 0;
 
                                     <td class="left-product">
 
                                         <div class="product-name">
-                                            @(string.IsNullOrWhiteSpace(
-                                                                        item.product_name)
-                                                                        ? "-"
-                                                                        : item.product_name)
-                        </div>
+                                            @(string.IsNullOrWhiteSpace(item.product_name)
+                                                ? "-"
+                                                : item.product_name)
+                                        </div>
 
-                        @if (!string.IsNullOrWhiteSpace(
-                                                item.product_description))
+                                        @if (!string.IsNullOrWhiteSpace(item.product_description))
                                         {
                                             <div class="product-description">
                                                 @item.product_description
@@ -613,20 +702,17 @@
                                 else if (rightLine.Item != null)
                                 {
                                     var item = rightLine.Item;
-                                    bool hasStock =
-                                    item.available_qty > 0;
+                                    bool hasStock = item.available_qty > 0;
 
                                     <td class="right-product middle-divider">
 
                                         <div class="product-name">
-                                            @(string.IsNullOrWhiteSpace(
-                                                                        item.product_name)
-                                                                        ? "-"
-                                                                        : item.product_name)
-                        </div>
+                                            @(string.IsNullOrWhiteSpace(item.product_name)
+                                                ? "-"
+                                                : item.product_name)
+                                        </div>
 
-                        @if (!string.IsNullOrWhiteSpace(
-                                                item.product_description))
+                                        @if (!string.IsNullOrWhiteSpace(item.product_description))
                                         {
                                             <div class="product-description">
                                                 @item.product_description
@@ -690,9 +776,11 @@
 
         public string CategoryName { get; set; } = "";
 
-        public biostar_inventory_dashboard.Models.InventoryPrintSummaryDto
-            Item
-        { get; set; }
+        public biostar_inventory_dashboard.Models.InventoryPrintSummaryDto Item
+        {
+            get;
+            set;
+        }
     }
 
     public List<List<InventoryReportLine>> BuildReportColumns(
@@ -721,8 +809,8 @@
                 .ToList();
 
             /*
-             * Do not leave the category title as the
-             * final line of a column.
+             * Prevent a category heading from becoming
+             * the final line in a report column.
              */
             if (currentColumn.Count >= linesPerSide - 1)
             {
