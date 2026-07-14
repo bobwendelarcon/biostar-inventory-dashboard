@@ -144,6 +144,13 @@
                                 Materials
                             </a>
                         </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/purchasing/suppliers" ? "active fw-bold" : "")"
+                               href="/purchasing/suppliers">
+                                <span>Suppliers</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -178,12 +185,7 @@
                             </a>
                         </li>
 
-                        <li>
-                            <a class="nav-link @(currentPath == "/purchasing/suppliers" ? "active fw-bold" : "")"
-                               href="/purchasing/suppliers">
-                                <span>Suppliers</span>
-                            </a>
-                        </li>
+                      
                         <li>
                             <a class="nav-link @(currentPath.StartsWith("/purchasing/canvassing") ? "active fw-bold" : "")"
                                href="/purchasing/canvassing">
@@ -198,6 +200,17 @@
 
                         </li>
 
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="/purchasing/receiving-reports/calendar">
+
+                             
+
+                                Receiving Calendar
+                            </a>
+                        </li>
+
                         <li>
                             <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports">
@@ -205,18 +218,41 @@
                             </a>
                         </li>
 
-                        <li>
-                            <a class="nav-link @(currentPath.StartsWith("/purchasing/qc-inspections") ? "active fw-bold" : "")"
-                               href="/purchasing/qc-inspections">
-                                <span>QA/QC Inspection</span>
-                            </a>
-                        </li>
+                      
 
 
                         <li>
                             <a class="nav-link @(currentPath == "/purchasing/mprf/supplier-evaluation" ? "active fw-bold" : "")"
                                href="/purchasing/supplier-evaluation">
                                 <span>Supplier Evaluation</span>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#qualityMenu">
+                    <div>
+                        <i class="bi bi-clipboard2-check me-2"></i>
+                        <span>Quality Control</span>
+                    </div>
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(currentPath.StartsWith("/quality") ? "show" : "")"
+                     id="qualityMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/quality/qc-inspections") ? "active fw-bold" : "")"
+                               href="/quality/qc-inspections">
+                                QA/QC Inspection
                             </a>
                         </li>
 
@@ -257,6 +293,24 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="/purchasing/receiving-reports/calendar">
+
+
+
+                                Receiving Calendar
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
+                               href="/purchasing/receiving-reports">
+                                <span>Receiving Reports</span>
+                            </a>
+                        </li>
+
+
                         
 
                     </ul>
@@ -264,12 +318,45 @@
                 </div>
             </li>
 
+           
+
 
             <!-- Purchasing -->
             @* Copy your existing Purchasing menu here exactly as it is *@
         }
 
+        else if (userRole == "QA_QC")
+        {
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#qualityMenu">
 
+                    <div>
+                        <i class="bi bi-clipboard2-check me-2"></i>
+                        <span>Quality Control</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(currentPath.StartsWith("/quality") ? "show" : "")"
+                     id="qualityMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/quality/qc-inspections") ? "active fw-bold" : "")"
+                               href="/quality/qc-inspections">
+
+                                <span>QA/QC Inspection</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </li>
+        }
 
         else
         {
@@ -550,6 +637,13 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a class="nav-link @(currentPath == "/purchasing/suppliers" ? "active fw-bold" : "")"
+                               href="/purchasing/suppliers">
+                                <span>Suppliers</span>
+                            </a>
+                        </li>
+
 
 
                     </ul>
@@ -588,12 +682,7 @@
                             </a>
                         </li>
 
-                        <li>
-                            <a class="nav-link @(currentPath == "/purchasing/suppliers" ? "active fw-bold" : "")"
-                               href="/purchasing/suppliers">
-                                <span>Suppliers</span>
-                            </a>
-                        </li>
+                     
                         <li>
                             <a class="nav-link @(currentPath.StartsWith("/purchasing/canvassing") ? "active fw-bold" : "")"
                                href="/purchasing/canvassing">
@@ -608,6 +697,16 @@
 
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="/purchasing/receiving-reports/calendar">
+
+                               
+
+                                Receiving Calendar
+                            </a>
+                        </li>
+
                         <li>
                             <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports">
@@ -615,18 +714,44 @@
                             </a>
                         </li>
 
-                        <li>
-                            <a class="nav-link @(currentPath.StartsWith("/purchasing/qc-inspections") ? "active fw-bold" : "")"
-                               href="/purchasing/qc-inspections">
-                                <span>QA/QC Inspection</span>
-                            </a>
-                        </li>
+                     
 
 
                         <li>
                             <a class="nav-link @(currentPath == "/purchasing/mprf/supplier-evaluation" ? "active fw-bold" : "")"
                                href="/purchasing/supplier-evaluation">
                                 <span>Supplier Evaluation</span>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+            </li>
+
+
+
+
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#qualityMenu">
+                    <div>
+                        <i class="bi bi-clipboard2-check me-2"></i>
+                        <span>Quality Control</span>
+                    </div>
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(currentPath.StartsWith("/quality") ? "show" : "")"
+                     id="qualityMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentPath.StartsWith("/quality/qc-inspections") ? "active fw-bold" : "")"
+                               href="/quality/qc-inspections">
+                                QA/QC Inspection
                             </a>
                         </li>
 

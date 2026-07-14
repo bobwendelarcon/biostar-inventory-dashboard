@@ -152,6 +152,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHVyY2hhc2luZ1xRY0luc3BlY3Rpb25zXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Purchasing/ReceivingReports/Calendar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHVyY2hhc2luZ1xSZWNlaXZpbmdSZXBvcnRzXENhbGVuZGFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Purchasing/ReceivingReports/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHVyY2hhc2luZ1xSZWNlaXZpbmdSZXBvcnRzXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -170,6 +174,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Purchasing/Suppliers/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHVyY2hhc2luZ1xTdXBwbGllcnNcaW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Quality/QcInspections/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUXVhbGl0eVxRY0luc3BlY3Rpb25zXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/Index.cshtml]

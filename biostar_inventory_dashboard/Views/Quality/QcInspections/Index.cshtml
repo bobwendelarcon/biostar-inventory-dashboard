@@ -1,0 +1,697 @@
+﻿@{
+    ViewData["Title"] = "QA/QC Inspections";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <div class="text-muted small mb-1">
+                Quality Control &gt; QA/QC Inspections
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                QA/QC Inspections
+            </h2>
+
+            <div class="text-muted">
+                Evaluate deliveries submitted by the warehouse.
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm qc-summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        For Inspection
+                    </div>
+
+                    <div id="forInspectionCount"
+                         class="fs-3 fw-bold text-info">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm qc-summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Accepted
+                    </div>
+
+                    <div id="acceptedCount"
+                         class="fs-3 fw-bold text-success">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm qc-summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Partially Accepted
+                    </div>
+
+                    <div id="partialCount"
+                         class="fs-3 fw-bold text-primary">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm qc-summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Rejected
+                    </div>
+
+                    <div id="rejectedCount"
+                         class="fs-3 fw-bold text-danger">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="row g-3 mb-3">
+
+                <div class="col-md-4">
+                    <input id="qcSearch"
+                           class="form-control"
+                           placeholder="Search QC No, RR No, PO No, Supplier">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="qcStatusFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option value="FOR_INSPECTION">
+                            For Inspection
+                        </option>
+
+                        <option value="ACCEPTED">
+                            Accepted
+                        </option>
+
+                        <option value="PARTIALLY_ACCEPTED">
+                            Partially Accepted
+                        </option>
+
+                        <option value="REJECTED">
+                            Rejected
+                        </option>
+
+                        <option value="FOR_VALIDATION">
+                            For Validation
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="table-responsive qc-table-wrapper">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>QC No</th>
+                            <th>RR No</th>
+                            <th>PO No</th>
+                            <th>Supplier</th>
+                            <th>Date Received</th>
+                            <th>Materials</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th class="text-end"
+                                style="width:120px;">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="qcTableBody">
+                        <tr>
+                            <td colspan="9"
+                                class="text-center text-muted py-4">
+                                Loading QA/QC inspections...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<div class="modal fade"
+     id="qcInspectionModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        QA/QC Inspection
+                    </h5>
+
+                    <div class="text-muted small">
+                        Evaluate the received delivery and record the final disposition.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-2">
+                                <label class="form-label">QC No</label>
+                                <input id="modalQcNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">RR No</label>
+                                <input id="modalRrNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">PO No</label>
+                                <input id="modalPoNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Supplier</label>
+                                <input id="modalSupplierName"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Date Received</label>
+                                <input id="modalDateReceived"
+                                       type="date"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        Inspection Lines
+                    </h5>
+
+                    <div class="text-muted small">
+                        Accepted Qty + Rejected Qty must equal Received Qty.
+                    </div>
+                </div>
+
+                <div class="table-responsive qc-lines-wrapper">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Material</th>
+                                <th style="min-width:130px;">Lot No.</th>
+                                <th style="min-width:140px;">Mfg Date</th>
+                                <th style="min-width:140px;">Expiry Date</th>
+                                <th class="text-end">Received Qty</th>
+                                <th class="text-end" style="width:130px;">Accepted Qty</th>
+                                <th class="text-end" style="width:130px;">Rejected Qty</th>
+                                <th style="min-width:180px;">Evaluation</th>
+                                <th style="min-width:180px;">Remarks</th>
+                                <th style="min-width:160px;">Decision</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="qcLineBody"></tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="row g-3 mt-3">
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            Overall Decision
+                        </label>
+
+                        <select id="overallDecision"
+                                class="form-select">
+
+                            <option value="">
+                                Select decision
+                            </option>
+
+                            <option value="ACCEPTED">
+                                Accepted
+                            </option>
+
+                            <option value="PARTIALLY_ACCEPTED">
+                                Partially Accepted
+                            </option>
+
+                            <option value="REJECTED">
+                                Rejected
+                            </option>
+
+                            <option value="FOR_VALIDATION">
+                                For Validation
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label">
+                            Overall Remarks
+                        </label>
+
+                        <textarea id="overallRemarks"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Enter overall QC findings, follow-up requirements, or laboratory notes"></textarea>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button id="btnSaveQc"
+                        type="button"
+                        class="btn btn-outline-primary">
+                    Save Draft
+                </button>
+
+                <button id="btnCompleteQc"
+                        type="button"
+                        class="btn btn-success">
+                    Complete Inspection
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .qc-summary-card {
+        border-radius: 14px;
+    }
+
+    .qc-table-wrapper {
+        overflow: visible !important;
+    }
+
+    #qcInspectionModal .modal-dialog {
+        max-width: 1700px;
+    }
+
+    #qcInspectionModal .modal-content {
+        border-radius: 14px;
+    }
+
+    #qcInspectionModal .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    #qcInspectionModal input[readonly] {
+        background-color: #f3f4f6;
+    }
+
+    .qc-lines-wrapper {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        max-height: 450px;
+    }
+
+        .qc-lines-wrapper thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+    .qc-accepted-input {
+        background-color: #ecfdf5;
+        font-weight: 600;
+    }
+
+    .qc-rejected-input {
+        background-color: #fef2f2;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        #qcInspectionModal .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+</style>
+
+
+<script>
+    let qcModal;
+
+    const qcInspections = [
+        {
+            qcId: 1,
+            qcNo: "QC-2026-0001",
+            rrNo: "RR-2026-0001",
+            poNo: "PO-2026-0001",
+            supplierName: "ROSBET PRINTING",
+            dateReceived: "2026-07-14",
+            materialCount: 1,
+            status: "FOR_INSPECTION",
+            createdAt: "2026-07-14T08:30:00",
+            lines: [
+                {
+                    materialName: "ALUMINUM POUCH",
+                    receivedQty: 110,
+                    uom: "PCS"
+                }
+            ]
+        }
+    ];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        qcModal = new bootstrap.Modal(
+            document.getElementById("qcInspectionModal")
+        );
+
+        document.getElementById("qcSearch")
+            .addEventListener("input", renderQcTable);
+
+        document.getElementById("qcStatusFilter")
+            .addEventListener("change", renderQcTable);
+
+        renderQcTable();
+    });
+
+
+    function renderQcTable() {
+        const tbody =
+            document.getElementById("qcTableBody");
+
+        const search =
+            document.getElementById("qcSearch")
+                .value.toLowerCase();
+
+        const status =
+            document.getElementById("qcStatusFilter").value;
+
+        const filtered = qcInspections.filter(item => {
+            const searchText = `
+                ${item.qcNo}
+                ${item.rrNo}
+                ${item.poNo}
+                ${item.supplierName}
+            `.toLowerCase();
+
+            return searchText.includes(search) &&
+                   (!status || item.status === status);
+        });
+
+        tbody.innerHTML = "";
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="text-center text-muted py-4">
+                        No QA/QC inspections found.
+                    </td>
+                </tr>
+            `;
+
+            updateSummary([]);
+            return;
+        }
+
+        filtered.forEach(item => {
+            tbody.insertAdjacentHTML("beforeend", `
+                <tr>
+                    <td class="fw-semibold">
+                        ${item.qcNo}
+                    </td>
+
+                    <td>${item.rrNo}</td>
+                    <td>${item.poNo}</td>
+                    <td>${item.supplierName}</td>
+                    <td>${formatDate(item.dateReceived)}</td>
+                    <td>${item.materialCount}</td>
+                    <td>${renderQcStatus(item.status)}</td>
+                    <td>${formatDateTime(item.createdAt)}</td>
+
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary"
+                                onclick="openQcInspection(${item.qcId})">
+                            Inspect
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+
+        updateSummary(qcInspections);
+    }
+
+
+    function openQcInspection(qcId) {
+        const item =
+            qcInspections.find(x => x.qcId === qcId);
+
+        if (!item) {
+            alert("QC inspection not found.");
+            return;
+        }
+
+        document.getElementById("modalQcNo").value =
+            item.qcNo;
+
+        document.getElementById("modalRrNo").value =
+            item.rrNo;
+
+        document.getElementById("modalPoNo").value =
+            item.poNo;
+
+        document.getElementById("modalSupplierName").value =
+            item.supplierName;
+
+        document.getElementById("modalDateReceived").value =
+            item.dateReceived;
+
+        document.getElementById("overallDecision").value = "";
+        document.getElementById("overallRemarks").value = "";
+
+        renderQcLines(item.lines);
+
+        qcModal.show();
+    }
+
+
+    function renderQcLines(lines) {
+        const tbody =
+            document.getElementById("qcLineBody");
+
+        tbody.innerHTML = "";
+
+        lines.forEach((line, index) => {
+            tbody.insertAdjacentHTML("beforeend", `
+                <tr data-line-index="${index}">
+
+                    <td>
+                        <div class="fw-semibold">
+                            ${line.materialName}
+                        </div>
+
+                        <div class="text-muted small">
+                            ${line.uom}
+                        </div>
+                    </td>
+
+                    <td>
+                        <input class="form-control form-control-sm qc-lot-no">
+                    </td>
+
+                    <td>
+                        <input type="date"
+                               class="form-control form-control-sm qc-mfg-date">
+                    </td>
+
+                    <td>
+                        <input type="date"
+                               class="form-control form-control-sm qc-expiry-date">
+                    </td>
+
+                    <td class="text-end fw-semibold">
+                        ${formatQty(line.receivedQty)}
+                    </td>
+
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm text-end qc-accepted-input"
+                               min="0"
+                               step="0.0001"
+                               value="${line.receivedQty}">
+                    </td>
+
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm text-end qc-rejected-input"
+                               min="0"
+                               step="0.0001"
+                               value="0">
+                    </td>
+
+                    <td>
+                        <input class="form-control form-control-sm qc-evaluation"
+                               placeholder="Visual/physical findings">
+                    </td>
+
+                    <td>
+                        <input class="form-control form-control-sm qc-remarks"
+                               placeholder="Optional remarks">
+                    </td>
+
+                    <td>
+                        <select class="form-select form-select-sm qc-decision">
+                            <option value="ACCEPTED">Accepted</option>
+                            <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
+                            <option value="REJECTED">Rejected</option>
+                            <option value="FOR_VALIDATION">For Validation</option>
+                        </select>
+                    </td>
+
+                </tr>
+            `);
+        });
+    }
+
+
+    function updateSummary(data) {
+        document.getElementById("forInspectionCount").textContent =
+            data.filter(x => x.status === "FOR_INSPECTION").length;
+
+        document.getElementById("acceptedCount").textContent =
+            data.filter(x => x.status === "ACCEPTED").length;
+
+        document.getElementById("partialCount").textContent =
+            data.filter(x => x.status === "PARTIALLY_ACCEPTED").length;
+
+        document.getElementById("rejectedCount").textContent =
+            data.filter(x => x.status === "REJECTED").length;
+    }
+
+
+    function renderQcStatus(status) {
+        let badge = "bg-secondary";
+        let label = status;
+
+        if (status === "FOR_INSPECTION") {
+            badge = "bg-info text-dark";
+            label = "FOR INSPECTION";
+        }
+
+        if (status === "ACCEPTED") {
+            badge = "bg-success";
+        }
+
+        if (status === "PARTIALLY_ACCEPTED") {
+            badge = "bg-primary";
+            label = "PARTIALLY ACCEPTED";
+        }
+
+        if (status === "REJECTED") {
+            badge = "bg-danger";
+        }
+
+        if (status === "FOR_VALIDATION") {
+            badge = "bg-warning text-dark";
+            label = "FOR VALIDATION";
+        }
+
+        return `<span class="badge ${badge}">${label}</span>`;
+    }
+
+
+    function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+
+
+    function formatDate(value) {
+        if (!value) return "-";
+
+        return new Date(value).toLocaleDateString();
+    }
+
+
+    function formatDateTime(value) {
+        if (!value) return "-";
+
+        return new Date(value).toLocaleString();
+    }
+</script>

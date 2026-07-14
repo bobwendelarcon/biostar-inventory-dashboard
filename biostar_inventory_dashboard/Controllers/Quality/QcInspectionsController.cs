@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
 
-namespace biostar_inventory_dashboard.Controllers.Purchasing.QcInspections
+namespace biostar_inventory_dashboard.Controllers.Quality
 {
-    [Route("purchasing/qc-inspections")]
+    //[Authorize(Roles = "QA_QC")]
+    [Route("quality/qc-inspections")]
     public class QcInspectionsController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public QcInspectionsController(IHttpClientFactory httpClientFactory)
+        public QcInspectionsController(
+            IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
@@ -22,14 +25,19 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.QcInspections
         [HttpGet]
         public IActionResult Index()
         {
-            return View("~/Views/Purchasing/QcInspections/Index.cshtml");
+            return View(
+                "~/Views/Quality/QcInspections/Index.cshtml"
+            );
         }
 
-        [HttpGet("details/{id}")]
+        [HttpGet("details/{id:int}")]
         public IActionResult Details(int id)
         {
             ViewBag.QcId = id;
-            return View("~/Views/Purchasing/QcInspections/Details.cshtml");
+
+            return View(
+                "~/Views/Quality/QcInspections/Details.cshtml"
+            );
         }
 
         [HttpGet("list")]
@@ -37,26 +45,38 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.QcInspections
         {
             var client = CreateClient();
 
-            var result = await client.GetStringAsync(
+            var response = await client.GetAsync(
                 "api/purchasing/qc-inspections"
             );
 
-            return Content(result, "application/json");
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var client = CreateClient();
 
-            var result = await client.GetStringAsync(
+            var response = await client.GetAsync(
                 $"api/purchasing/qc-inspections/{id}"
             );
 
-            return Content(result, "application/json");
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
         }
 
-        [HttpPost("{id}/save-inspection")]
+        [HttpPost("{id:int}/save-inspection")]
         public async Task<IActionResult> SaveInspection(
             int id,
             [FromBody] object dto)
@@ -74,13 +94,17 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.QcInspections
                 content
             );
 
-            var result = await response.Content.ReadAsStringAsync();
+            var result =
+                await response.Content.ReadAsStringAsync();
 
-            return StatusCode((int)response.StatusCode, result);
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
         }
 
-        [HttpPost("{id}/commit")]
-        public async Task<IActionResult> Commit(int id)
+        [HttpPost("{id:int}/complete")]
+        public async Task<IActionResult> CompleteInspection(int id)
         {
             var client = CreateClient();
 
@@ -95,9 +119,13 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.QcInspections
                 content
             );
 
-            var result = await response.Content.ReadAsStringAsync();
+            var result =
+                await response.Content.ReadAsStringAsync();
 
-            return StatusCode((int)response.StatusCode, result);
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
         }
     }
 }

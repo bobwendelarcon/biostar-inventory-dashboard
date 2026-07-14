@@ -136,7 +136,7 @@
         <td>${x.supplierName}</td>
         <td>${formatMoney(x.totalAmount)}</td>
         <td>${renderStatus(x.status)}</td>
-        <td>${x.createdBy ?? ""}</td>
+       <td>${x.createdByName ?? x.createdBy ?? ""}</td>
 
         <td class="text-end">
             <div class="dropdown position-static">

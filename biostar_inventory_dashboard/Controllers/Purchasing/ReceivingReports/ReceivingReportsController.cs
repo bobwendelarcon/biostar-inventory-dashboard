@@ -25,12 +25,12 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
             return View("~/Views/Purchasing/ReceivingReports/Index.cshtml");
         }
 
-        [HttpGet("create/{poId}")]
-        public IActionResult Create(int poId)
-        {
-            ViewBag.PoId = poId;
-            return View("~/Views/Purchasing/ReceivingReports/Create.cshtml");
-        }
+        //[HttpGet("create/{poId}")]
+        //public IActionResult Create(int poId)
+        //{
+        //    ViewBag.PoId = poId;
+        //    return View("~/Views/Purchasing/ReceivingReports/Create.cshtml");
+        //}
 
         [HttpGet("create-options/{poId}")]
         public async Task<IActionResult> GetCreateOptions(int poId)
@@ -71,8 +71,8 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
                          ?? "";
 
             var json = JsonSerializer.Deserialize<Dictionary<string, object>>(
-                JsonSerializer.Serialize(payload)
-            );
+       JsonSerializer.Serialize(payload)
+   ) ?? new Dictionary<string, object>();
 
             json["createdBy"] = userId;
 
@@ -194,7 +194,52 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
             return View("~/Views/Purchasing/ReceivingReports/Details.cshtml");
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("calendar")]
+        public IActionResult Calendar()
+        {
+            return View("~/Views/Purchasing/ReceivingReports/Calendar.cshtml");
+        }
+
+        [HttpGet("calendar-list")]
+        public async Task<IActionResult> CalendarList(
+            [FromQuery] DateTime start,
+            [FromQuery] DateTime end)
+        {
+            try
+            {
+                if (end <= start)
+                {
+                    return BadRequest(new
+                    {
+                        message = "End date must be later than start date."
+                    });
+                }
+
+                var client = CreateClient();
+
+                var url =
+                    "api/purchasing/receiving-reports/calendar" +
+                    $"?start={Uri.EscapeDataString(start.ToString("yyyy-MM-dd"))}" +
+                    $"&end={Uri.EscapeDataString(end.ToString("yyyy-MM-dd"))}";
+
+                var response = await client.GetAsync(url);
+                var result = await response.Content.ReadAsStringAsync();
+
+                return StatusCode(
+                    (int)response.StatusCode,
+                    result
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var client = CreateClient();
@@ -204,5 +249,10 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
 
             return StatusCode((int)response.StatusCode, result);
         }
+
+
+     
+
+
     }
 }

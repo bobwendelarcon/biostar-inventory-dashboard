@@ -27,6 +27,7 @@
                         <option value="DRAFT">Draft</option>
                         <option value="FOR_QC">For QC</option>
                         <option value="ACCEPTED">Accepted</option>
+                        <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
                         <option value="REJECTED">Rejected</option>
                         <option value="COMMITTED">Committed</option>
                     </select>
@@ -147,52 +148,67 @@
                     <td>${formatDateTime(rr.createdAt)}</td>
 
 
-                         <td class="text-end">
-    <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown">
-                                Action
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="/purchasing/receiving-reports/details/${rr.rrId}">
-                                        View
-                                    </a>
-                                </li>
+                        <td class="text-end">
+        <div class="dropdown position-static">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown">
+                Action
+            </button>
 
-                                ${rr.status === "DRAFT" ? `
-                                    <li>
-                                        <button class="dropdown-item" onclick="submitForQc(${rr.rrId})">
-                                            Submit for QC
-                                        </button>
-                                    </li>
-                                ` : ""}
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item"
+                       href="/purchasing/receiving-reports/details/${rr.rrId}">
+                        View Details
+                    </a>
+                </li>
 
-                                ${rr.status === "FOR_QC" ? `
-                                    <li>
-                                        <button class="dropdown-item" onclick="acceptRr(${rr.rrId})">
-                                            Accept
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button class="dropdown-item text-danger" onclick="rejectRr(${rr.rrId})">
-                                            Reject
-                                        </button>
-                                    </li>
-                                ` : ""}
+                ${rr.status === "DRAFT" ? `
+                    <li>
+                        <button class="dropdown-item"
+                                onclick="submitForQc(${rr.rrId})">
+                            Submit for QC
+                        </button>
+                    </li>
+                ` : ""}
 
-                                ${rr.status === "ACCEPTED" ? `
-                                    <li>
-                                        <button class="dropdown-item text-success" onclick="commitRr(${rr.rrId})">
-                                            Commit Inventory
-                                        </button>
-                                    </li>
-                                ` : ""}
-                            </ul>
-                        </div>
-                    </td>
+                ${rr.status === "FOR_QC" ? `
+                    <li>
+                        <span class="dropdown-item-text text-muted">
+                            Waiting for QC inspection
+                        </span>
+                    </li>
+                ` : ""}
 
+                ${rr.status === "ACCEPTED" ||
+                  rr.status === "PARTIALLY_ACCEPTED" ? `
+                    <li>
+                        <button class="dropdown-item text-success"
+                                onclick="commitRr(${rr.rrId})">
+                            Commit Accepted Qty
+                        </button>
+                    </li>
+                ` : ""}
+
+                ${rr.status === "REJECTED" ? `
+                    <li>
+                        <span class="dropdown-item-text text-danger">
+                            Rejected by QC
+                        </span>
+                    </li>
+                ` : ""}
+
+                ${rr.status === "COMMITTED" ? `
+                    <li>
+                        <span class="dropdown-item-text text-muted">
+                            Already committed
+                        </span>
+                    </li>
+                ` : ""}
+            </ul>
+        </div>
+    </td>
 
                 </tr>
             `;
@@ -205,17 +221,7 @@
         await postAction(`/purchasing/receiving-reports/${rrId}/submit-qc`);
     }
 
-    async function acceptRr(rrId) {
-        if (!confirm("Accept this RR?")) return;
-
-        await postAction(`/purchasing/receiving-reports/${rrId}/accept`);
-    }
-
-    async function rejectRr(rrId) {
-        if (!confirm("Reject this RR?")) return;
-
-        await postAction(`/purchasing/receiving-reports/${rrId}/reject`);
-    }
+   
 
     async function commitRr(rrId) {
         if (!confirm("Commit this RR to inventory?")) return;
@@ -244,16 +250,41 @@
         }
     }
 
-    function renderStatus(status) {
+       function renderStatus(status) {
         let badge = "bg-secondary";
+        let label = status ?? "";
 
-        if (status === "DRAFT") badge = "bg-warning text-dark";
-        if (status === "FOR_QC") badge = "bg-info text-dark";
-        if (status === "ACCEPTED") badge = "bg-success";
-        if (status === "REJECTED") badge = "bg-danger";
-        if (status === "COMMITTED") badge = "bg-dark";
+        if (status === "DRAFT") {
+            badge = "bg-warning text-dark";
+            label = "DRAFT";
+        }
 
-        return `<span class="badge ${badge}">${status}</span>`;
+        if (status === "FOR_QC") {
+            badge = "bg-info text-dark";
+            label = "FOR QC";
+        }
+
+        if (status === "ACCEPTED") {
+            badge = "bg-success";
+            label = "ACCEPTED";
+        }
+
+        if (status === "PARTIALLY_ACCEPTED") {
+            badge = "bg-primary";
+            label = "PARTIALLY ACCEPTED";
+        }
+
+        if (status === "REJECTED") {
+            badge = "bg-danger";
+            label = "REJECTED";
+        }
+
+        if (status === "COMMITTED") {
+            badge = "bg-dark";
+            label = "COMMITTED";
+        }
+
+        return `<span class="badge ${badge}">${label}</span>`;
     }
 
     function formatDate(value) {

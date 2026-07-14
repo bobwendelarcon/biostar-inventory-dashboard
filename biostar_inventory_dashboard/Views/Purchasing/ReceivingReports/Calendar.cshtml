@@ -1,0 +1,1027 @@
+﻿@{
+    ViewData["Title"] = "Receiving Calendar";
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" />
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <div class="text-muted small mb-1">
+                Purchasing &gt; Receiving Reports &gt; Calendar
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Receiving Calendar
+            </h2>
+
+            <div class="text-muted">
+                Scheduled deliveries from approved Purchase Orders.
+            </div>
+        </div>
+
+        <a href="/purchasing/receiving-reports"
+           class="btn btn-outline-secondary">
+            View Receiving Reports
+        </a>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Scheduled Deliveries
+                    </div>
+
+                    <div id="scheduledCount"
+                         class="fs-3 fw-bold">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Approved Purchase Orders
+                    </div>
+
+                    <div id="approvedCount"
+                         class="fs-3 fw-bold text-success">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Partially Received
+                    </div>
+
+                    <div id="partialCount"
+                         class="fs-3 fw-bold text-warning">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card border-0 shadow-sm calendar-card">
+        <div class="card-body">
+            <div id="receivingCalendar"></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade"
+     id="createReceivingModal"
+     tabindex="-1"
+     aria-labelledby="createReceivingModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1"
+                        id="createReceivingModalLabel">
+                        Create Receiving Report
+                    </h5>
+
+                    <div class="text-muted small">
+                        Receive full or partial delivery from the selected Purchase Order.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="receivingModalLoading"
+                     class="text-center text-muted py-5">
+
+                    <div class="spinner-border spinner-border-sm me-2"
+                         role="status">
+                    </div>
+
+                    Loading receiving information...
+                </div>
+
+                <div id="receivingModalError"
+                     class="alert alert-danger d-none">
+                </div>
+
+                <div id="receivingModalContent"
+                     class="d-none">
+
+                    <div class="card border-0 bg-light mb-4">
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-lg-2 col-md-4">
+                                    <label class="form-label">
+                                        RR No
+                                    </label>
+
+                                    <input id="modalRrNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-lg-2 col-md-4">
+                                    <label class="form-label">
+                                        System PO No
+                                    </label>
+
+                                    <input id="modalPoNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-lg-2 col-md-4">
+                                    <label class="form-label">
+                                        Printed PO No
+                                    </label>
+
+                                    <input id="modalPrintedPoNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6">
+                                    <label class="form-label">
+                                        Supplier
+                                    </label>
+
+                                    <input id="modalSupplierName"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6">
+                                    <label class="form-label">
+                                        Actual Delivery Date
+                                    </label>
+
+                                    <input id="modalDeliveryDate"
+                                           type="date"
+                                           class="form-control">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        SI / DR No
+                                    </label>
+
+                                    <input id="modalSiDrNo"
+                                           class="form-control"
+                                           placeholder="Enter SI or DR number">
+                                </div>
+
+                                <div class="col-md-8">
+                                    <label class="form-label">
+                                        Remarks
+                                    </label>
+
+                                    <input id="modalRemarks"
+                                           class="form-control"
+                                           placeholder="Optional remarks">
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <h5 class="fw-bold mb-0">
+                            Receiving Lines
+                        </h5>
+
+                        <div class="text-muted small">
+                            Enter only the quantity received today.
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive receiving-lines-wrapper">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Material Code</th>
+                                    <th>Material Name</th>
+
+                                    <th class="text-end">
+                                        PO Qty
+                                    </th>
+
+                                    <th class="text-end">
+                                        Previously Received
+                                    </th>
+
+                                    <th class="text-end">
+                                        Balance
+                                    </th>
+
+                                    <th class="text-end"
+                                        style="width:150px;">
+                                        Receive Qty
+                                    </th>
+
+                                    <th>UOM</th>
+
+                                    <th style="min-width:190px;">
+                                        Remarks
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="modalRrLineBody">
+
+                                <tr>
+                                    <td colspan="8"
+                                        class="text-center text-muted py-4">
+                                        Waiting for Purchase Order data...
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button id="btnModalSaveRr"
+                        type="button"
+                        class="btn btn-success"
+                        disabled>
+                    Save Receiving Report
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<style>
+    .summary-card,
+    .calendar-card {
+        border-radius: 14px;
+    }
+
+    #receivingCalendar {
+        min-height: 680px;
+    }
+
+    .fc .fc-toolbar {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .fc .fc-button {
+        text-transform: capitalize;
+    }
+
+    .fc .fc-button-primary {
+        background-color: #334155;
+        border-color: #334155;
+    }
+
+        .fc .fc-button-primary:hover {
+            background-color: #1e293b;
+            border-color: #1e293b;
+        }
+
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+    .fc-daygrid-day-number {
+        color: #111827;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .fc-col-header-cell-cushion {
+        color: #111827;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .fc-day-today {
+        background-color: #eef2ff !important;
+    }
+
+    .fc-daygrid-event {
+        cursor: pointer;
+        border-radius: 5px;
+        padding: 3px 5px;
+        white-space: normal;
+        font-size: 12px;
+    }
+
+    .receiving-approved {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: white !important;
+    }
+
+    .receiving-partial {
+        background-color: #ffc107 !important;
+        border-color: #ffc107 !important;
+        color: #212529 !important;
+    }
+
+    .receiving-quantity-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .calendar-loading {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+
+
+    #createReceivingModal .modal-dialog {
+        max-width: 1700px;
+    }
+
+    #createReceivingModal .modal-content {
+        border-radius: 14px;
+    }
+
+    #createReceivingModal .modal-header,
+    #createReceivingModal .modal-footer {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    #createReceivingModal .modal-body {
+        padding: 1.5rem;
+    }
+
+    .receiving-lines-wrapper {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        max-height: 430px;
+    }
+
+        .receiving-lines-wrapper thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+    #createReceivingModal .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    #createReceivingModal input[readonly] {
+        background-color: #f3f4f6;
+    }
+
+    @@media (max-width: 768px) {
+        #createReceivingModal .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        #createReceivingModal .modal-body {
+            padding: 1rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .fc .fc-toolbar {
+            display: block;
+            text-align: center;
+        }
+
+        .fc .fc-toolbar-chunk {
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+<script>
+        let calendar;
+    let createReceivingModal;
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+          const modalElement =
+        document.getElementById("createReceivingModal");
+
+    createReceivingModal =
+        new bootstrap.Modal(modalElement);
+
+        const calendarElement =
+            document.getElementById("receivingCalendar");
+
+        calendar = new FullCalendar.Calendar(calendarElement, {
+
+            initialView: "dayGridMonth",
+
+            height: "auto",
+
+            firstDay: 0,
+
+            headerToolbar: {
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,listMonth"
+            },
+
+            buttonText: {
+                today: "Today",
+                month: "Month",
+                list: "List"
+            },
+
+            noEventsContent: "No scheduled receiving for this period.",
+
+            dayMaxEvents: 4,
+
+            eventDisplay: "block",
+
+            events: async function (
+                fetchInfo,
+                successCallback,
+                failureCallback
+            ) {
+                try {
+                    const start =
+                        fetchInfo.startStr.substring(0, 10);
+
+                    const end =
+                        fetchInfo.endStr.substring(0, 10);
+
+                    const response = await fetch(
+                        `/purchasing/receiving-reports/calendar-list` +
+                        `?start=${encodeURIComponent(start)}` +
+                        `&end=${encodeURIComponent(end)}`
+                    );
+
+                    if (!response.ok) {
+                        let message =
+                            "Failed to load receiving calendar.";
+
+                        try {
+                            const errorResult =
+                                await response.json();
+
+                            message =
+                                errorResult.message ?? message;
+                        }
+                        catch {
+                        }
+
+                        throw new Error(message);
+                    }
+
+                    const data = await response.json();
+
+                    updateCalendarSummary(data);
+
+                    const events = data.map(item => {
+
+                        const eventClass =
+                            item.status === "PARTIALLY_RECEIVED"
+                                ? "receiving-partial"
+                                : "receiving-approved";
+
+                        return {
+                            id: item.poId.toString(),
+
+                            title:
+                                `${item.poNo} - ${item.supplierName}`,
+
+                            start:
+                                getDateOnly(item.deliveryDate),
+
+                            allDay: true,
+
+                            classNames: [
+                                eventClass
+                            ],
+
+                            extendedProps: {
+                                poId: item.poId,
+                                poNo: item.poNo,
+                                supplierId: item.supplierId,
+                                supplierName: item.supplierName,
+                                deliveryDate: item.deliveryDate,
+                                status: item.status,
+                                totalAmount: item.totalAmount,
+                                materialCount: item.materialCount,
+                                totalPoQty: item.totalPoQty,
+                                totalReceivedQty: item.totalReceivedQty,
+                                totalBalanceQty: item.totalBalanceQty
+                            }
+                        };
+                    });
+
+                    successCallback(events);
+                }
+                catch (error) {
+                    console.error(error);
+
+                    updateCalendarSummary([]);
+
+                    failureCallback(error);
+                }
+            },
+
+               eventClick: function (info) {
+        info.jsEvent.preventDefault();
+
+        openReceivingModal(info.event.extendedProps.poId);
+    }
+        });
+
+        calendar.render();
+
+        document
+    .getElementById("btnModalSaveRr")
+    .addEventListener("click", saveReceivingReport);
+    });
+
+
+
+     let selectedReceivingPoId = 0;
+    let modalReceivingData = null;
+
+    async function openReceivingModal(poId) {
+        selectedReceivingPoId = Number(poId);
+        modalReceivingData = null;
+
+        const loading =
+            document.getElementById("receivingModalLoading");
+
+        const errorBox =
+            document.getElementById("receivingModalError");
+
+        const content =
+            document.getElementById("receivingModalContent");
+
+        const saveButton =
+            document.getElementById("btnModalSaveRr");
+
+        clearReceivingModal();
+
+        loading.classList.remove("d-none");
+        errorBox.classList.add("d-none");
+        content.classList.add("d-none");
+        saveButton.disabled = true;
+
+        createReceivingModal.show();
+
+        try {
+            const [numberResponse, optionsResponse] = await Promise.all([
+                fetch("/purchasing/receiving-reports/next-number"),
+
+                fetch(
+                    `/purchasing/receiving-reports/create-options/${selectedReceivingPoId}`
+                )
+            ]);
+
+            const numberData = await numberResponse.json();
+            const optionsData = await optionsResponse.json();
+
+            if (!numberResponse.ok) {
+                throw new Error(
+                    numberData.message ??
+                    "Unable to generate the next RR number."
+                );
+            }
+
+            if (!optionsResponse.ok) {
+                throw new Error(
+                    optionsData.message ??
+                    "Unable to load Purchase Order data."
+                );
+            }
+
+            modalReceivingData = optionsData;
+
+            document.getElementById("modalRrNo").value =
+                numberData.rr_no ??
+                numberData.rrNo ??
+                "";
+
+            document.getElementById("modalPoNo").value =
+                optionsData.poNo ?? "";
+
+            document.getElementById("modalPrintedPoNo").value =
+                optionsData.printedPoNo ?? "";
+
+            document.getElementById("modalSupplierName").value =
+                optionsData.supplierName ?? "";
+
+            document.getElementById("modalDeliveryDate").value =
+                getLocalToday();
+
+            renderModalReceivingLines(
+                optionsData.lines ?? []
+            );
+
+            loading.classList.add("d-none");
+            content.classList.remove("d-none");
+
+            saveButton.disabled =
+                !optionsData.lines ||
+                optionsData.lines.length === 0;
+        }
+        catch (error) {
+            console.error(error);
+
+            loading.classList.add("d-none");
+
+            errorBox.textContent =
+                error.message ??
+                "Failed to load receiving information.";
+
+            errorBox.classList.remove("d-none");
+        }
+    }
+
+        function clearReceivingModal() {
+        document.getElementById("modalRrNo").value = "";
+        document.getElementById("modalPoNo").value = "";
+        document.getElementById("modalPrintedPoNo").value = "";
+        document.getElementById("modalSupplierName").value = "";
+        document.getElementById("modalDeliveryDate").value = "";
+        document.getElementById("modalSiDrNo").value = "";
+        document.getElementById("modalRemarks").value = "";
+
+        document.getElementById("modalRrLineBody").innerHTML = `
+            <tr>
+                <td colspan="8"
+                    class="text-center text-muted py-4">
+                    Loading receiving lines...
+                </td>
+            </tr>
+        `;
+    }
+
+        function renderModalReceivingLines(lines) {
+        const tbody =
+            document.getElementById("modalRrLineBody");
+
+        tbody.innerHTML = "";
+
+        if (!lines || lines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-muted py-4">
+                        No remaining PO balance to receive.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+
+        lines.forEach(line => {
+            tbody.insertAdjacentHTML("beforeend", `
+              <tr data-po-line-id="${Number(line.poLineId)}"
+    data-balance-qty="${Number(line.balanceQty ?? 0)}">
+
+                    <td>
+                        ${escapeHtml(line.materialCode ?? "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(line.materialName ?? "")}
+                    </td>
+
+                    <td class="text-end">
+                        ${formatQty(line.poQty)}
+                    </td>
+
+                    <td class="text-end">
+                        ${formatQty(line.previouslyReceivedQty)}
+                    </td>
+
+                    <td class="text-end fw-semibold">
+                        ${formatQty(line.balanceQty)}
+                    </td>
+
+                    <td>
+                       <input type="number"
+       class="form-control form-control-sm text-end modal-receive-qty"
+       min="0"
+       step="0.0001"
+       value="0">
+                    </td>
+
+                    <td>
+                        ${escapeHtml(line.uom ?? "")}
+                    </td>
+
+                    <td>
+                        <input type="text"
+                               class="form-control form-control-sm modal-line-remarks"
+                               placeholder="Optional">
+                    </td>
+
+                </tr>
+            `);
+        });
+    }
+
+          async function saveReceivingReport() {
+
+        if (!modalReceivingData) {
+            alert("Purchase Order data not loaded.");
+            return;
+        }
+
+        const deliveryDate =
+            document.getElementById("modalDeliveryDate").value;
+
+        if (!deliveryDate) {
+            alert("Delivery Date is required.");
+            return;
+        }
+
+        const rows = document.querySelectorAll(
+            "#modalRrLineBody tr[data-po-line-id]"
+        );
+
+        const lines = [];
+        let hasOverReceived = false;
+
+        for (const row of rows) {
+
+            const poLineId =
+                Number(row.dataset.poLineId);
+
+            const balance =
+                Number(row.dataset.balanceQty || 0);
+
+            const receiveQty =
+                Number(
+                    row.querySelector(".modal-receive-qty").value || 0
+                );
+
+            if (receiveQty > balance) {
+                hasOverReceived = true;
+            }
+
+            if (receiveQty > 0) {
+
+                lines.push({
+
+                    poLineId: poLineId,
+
+                    receiveQty: receiveQty,
+
+                    remarks:
+                        row.querySelector(".modal-line-remarks").value
+
+                });
+
+            }
+        }
+
+        if (lines.length === 0) {
+            alert("Please enter at least one Receive Qty.");
+            return;
+        }
+
+        if (hasOverReceived) {
+
+            const proceed = confirm(
+                "One or more items exceed the remaining PO quantity.\n\nContinue as OVER RECEIVING?"
+            );
+
+            if (!proceed)
+                return;
+        }
+
+        const payload = {
+
+            poId: selectedReceivingPoId,
+
+            deliveryDate: deliveryDate,
+
+            siDrNo:
+                document.getElementById("modalSiDrNo").value,
+
+            remarks:
+                document.getElementById("modalRemarks").value,
+
+            lines: lines
+        };
+
+        const btn =
+            document.getElementById("btnModalSaveRr");
+
+        btn.disabled = true;
+        btn.innerHTML = "Saving...";
+
+        try {
+
+            const response = await fetch(
+                "/purchasing/receiving-reports/create",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+
+                alert(
+                    result.message ??
+                    "Failed to create Receiving Report."
+                );
+
+                return;
+            }
+
+            alert(
+                result.message ??
+                "Receiving Report created successfully."
+            );
+
+            createReceivingModal.hide();
+
+            calendar.refetchEvents();
+
+        }
+        catch (ex) {
+
+            alert(ex.message);
+
+        }
+        finally {
+
+            btn.disabled = false;
+            btn.innerHTML = "Save Receiving Report";
+
+        }
+    }
+
+        function getLocalToday() {
+        const date = new Date();
+
+        const year = date.getFullYear();
+
+        const month = String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
+        const day = String(
+            date.getDate()
+        ).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
+
+        function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+
+    function updateCalendarSummary(data) {
+
+        const approvedCount = data.filter(
+            item => item.status === "APPROVED"
+        ).length;
+
+        const partialCount = data.filter(
+            item => item.status === "PARTIALLY_RECEIVED"
+        ).length;
+
+        document.getElementById("scheduledCount").textContent =
+            data.length;
+
+        document.getElementById("approvedCount").textContent =
+            approvedCount;
+
+        document.getElementById("partialCount").textContent =
+            partialCount;
+    }
+
+
+ 
+
+
+    function getDateOnly(value) {
+
+        if (!value) {
+            return null;
+        }
+
+        return value.toString().substring(0, 10);
+    }
+
+
+    function formatDate(value) {
+
+        if (!value) {
+            return "";
+        }
+
+        const dateOnly =
+            value.toString().substring(0, 10);
+
+        const parts = dateOnly.split("-");
+
+        if (parts.length !== 3) {
+            return value;
+        }
+
+        return `${parts[1]}/${parts[2]}/${parts[0]}`;
+    }
+
+
+
+
+
+    function formatMoney(value) {
+
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+        function escapeHtml(value) {
+        if (value === null || value === undefined)
+            return "";
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+</script>
