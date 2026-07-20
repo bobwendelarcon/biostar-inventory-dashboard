@@ -1,0 +1,156 @@
+﻿@{
+    ViewData["Title"] = "Stock Overview";
+    ViewData["Subtitle"] = "Total inventory quantity grouped by product";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <small class="text-muted">Inventory / Stock Overview</small>
+        <h2 class="fw-bold mt-2 mb-0">Stock Overview</h2>
+    </div>
+
+    <div>
+        <button type="button"
+                class="btn btn-outline-primary"
+                onclick="loadStockOverview()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Refresh
+        </button>
+
+        @* <a href="/Inventory/PrintSummary"
+           class="btn btn-success">
+            <i class="bi bi-printer"></i>
+            Inventory Print
+        </a> *@
+
+        <button type="button"
+                class="btn btn-success"
+                id="btnInventoryPrint">
+            <i class="bi bi-printer me-1"></i>
+            Inventory Print
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Search Product</label>
+                <input type="text"
+                       id="stockOverviewSearch"
+                       class="form-control"
+                       placeholder="Search product or description">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <select id="stockOverviewCategory"
+                        class="form-select">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Stock Status</label>
+                <select id="stockOverviewStatus"
+                        class="form-select">
+                    <option value="">All</option>
+                    <option value="normal">Normal</option>
+                    <option value="low">Low Stock</option>
+                    <option value="zero">Out of Stock</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button"
+                        class="btn btn-primary w-100"
+                        onclick="loadStockOverview()">
+                    Go
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span id="stockOverviewResultCount"
+                      class="text-muted small">
+                    0 product(s)
+                </span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+
+           
+
+
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Product / Description</th>
+                        <th>Category</th>
+                        <th class="text-end">Total Qty</th>
+                        <th class="text-end">Reserved</th>
+                        <th class="text-end">Available</th>
+                        <th class="text-end">Stock Level</th>
+                        <th class="text-end">Deficit</th>
+                        <th>Status</th>
+                        <th>Pack Equivalent</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="stockOverviewTableBody">
+                    <tr>
+                        <td colspan="10"
+                            class="text-center text-muted py-4">
+                            Loading...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+
+                <div id="lblPaginationInfo"
+                     class="text-muted small">
+                    Showing 0-0 of 0 products
+                </div>
+
+                <div class="btn-group">
+
+                    <button id="btnPrevPage"
+                            class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-chevron-left"></i>
+                        Previous
+                    </button>
+
+                    <button class="btn btn-light btn-sm disabled"
+                            id="btnCurrentPage">
+                        Page 1
+                    </button>
+
+                    <button id="btnNextPage"
+                            class="btn btn-outline-secondary btn-sm">
+                        Next
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/stock-overview.js"
+            asp-append-version="true"></script>
+}

@@ -76,8 +76,20 @@
 
             <div class="col-md-4">
                 <label class="form-label" fw-semibold">Search Product</label>    
-                <input type="text" class="form-control" id="productSearchFilter"
-                placeholder="Search Generic Or Brand Name">
+
+                @* <input type="text" class="form-control" id="productSearchFilter"
+                placeholder="Search Generic Or Brand Name"> *@
+
+
+                <input type="text"
+                       id="productSearchFilter"
+                       class="form-control"
+                       value="@ViewBag.Search"
+                       placeholder="Search product or description" />
+
+                <input type="hidden"
+                       id="selectedProductId"
+                       value="@ViewBag.ProductId" />
 
             </div>
 

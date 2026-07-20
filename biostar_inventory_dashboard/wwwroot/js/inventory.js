@@ -175,20 +175,54 @@ async function loadInventory(page = currentPage) {
         const params = new URLSearchParams({
             page: currentPage,
             pageSize: pageSize,
-            lot_no: document.getElementById("lotNoFilter")?.value || "",
-            //genericName: document.getElementById("genericNameFilter")?.value || "",
-            //brandName: document.getElementById("brandNameFilter")?.value || "",
-            search: document.getElementById("productSearchFilter")?.value || "",
-            from: document.getElementById("dateFromFilter")?.value || "",
-            to: document.getElementById("dateToFilter")?.value || "",
-            warehouse: document.getElementById("warehouseFilter")?.value || "",
-            category: document.getElementById("categoryFilter")?.value || "",
-            stockStatus: document.getElementById("stockStatusFilter")?.value || "",
+
+            productId:
+                document.getElementById("selectedProductId")
+                    ?.value || "",
+
+            lot_no:
+                document.getElementById("lotNoFilter")
+                    ?.value || "",
+
+            search:
+                document.getElementById("productSearchFilter")
+                    ?.value || "",
+
+            from:
+                document.getElementById("dateFromFilter")
+                    ?.value || "",
+
+            to:
+                document.getElementById("dateToFilter")
+                    ?.value || "",
+
+            warehouse:
+                document.getElementById("warehouseFilter")
+                    ?.value || "",
+
+            category:
+                document.getElementById("categoryFilter")
+                    ?.value || "",
+
+            stockStatus:
+                document.getElementById("stockStatusFilter")
+                    ?.value || "",
+
             expiryStatus:
-                document.getElementById("expiryStatusFilter")?.value || "",
-            months: document.getElementById("monthsFilter")?.value || "",
-            sortBy: document.getElementById("sortByFilter")?.value || "lot",
-            order: document.getElementById("orderFilter")?.value || "desc"
+                document.getElementById("expiryStatusFilter")
+                    ?.value || "",
+
+            months:
+                document.getElementById("monthsFilter")
+                    ?.value || "",
+
+            sortBy:
+                document.getElementById("sortByFilter")
+                    ?.value || "lot",
+
+            order:
+                document.getElementById("orderFilter")
+                    ?.value || "desc"
         });
 
         const response = await fetch(`/Inventory/GetInventory?${params.toString()}`);

@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<!-- SUMMARY CARDS -->
+
 <!-- SUMMARY CARDS -->
 <div class="row g-3 mb-4">
 
@@ -70,12 +70,34 @@
     </div>
 
     <div class="col-md-4 col-lg">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
+        <button type="button"
+                class="card border-0 shadow-sm rounded-4 h-100 w-100 text-start dashboard-summary-card"
+                id="lowStockSummaryCard"
+                onclick="openLowStockModal()">
+
             <div class="card-body">
-                <small class="text-muted">Low Stock</small>
-                <h3 id="lowStockCount" class="fw-bold mt-2 mb-0 text-danger">@Model.LowStock</h3>
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-muted">
+                            Low Stock
+                        </small>
+
+                        <h3 id="lowStockCount"
+                            class="fw-bold mt-2 mb-0 text-danger">
+                            @Model.LowStock
+                        </h3>
+                    </div>
+
+                    <span class="text-danger fs-4">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </span>
+                </div>
+
+                <small class="text-muted d-block mt-2">
+                    View low-stock products
+                </small>
             </div>
-        </div>
+        </button>
     </div>
 
     <div class="col-md-4 col-lg">
@@ -457,6 +479,135 @@
 
     <!-- Quick Actions -->
     <!-- Recent Returns -->
+
+
+    <div class="modal fade"
+         id="lowStockModal"
+         tabindex="-1">
+
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content rounded-4">
+
+                <div class="modal-header">
+                    <div>
+                        <h5 class="fw-bold mb-0">
+                            Low Stock Products
+                        </h5>
+
+                        <small class="text-muted">
+                            Total quantity from all active lots compared
+                            with the product stock level
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label">
+                                Search Product
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+
+                                <input type="text"
+                                       class="form-control"
+                                       id="lowStockSearch"
+                                       placeholder="Search product name or description">
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                Category
+                            </label>
+
+                            <select class="form-select"
+                                    id="lowStockCategoryFilter">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+
+
+
+                        <div class="col-md-2">
+                            <label class="form-label">
+                                Stock Status
+                            </label>
+
+                            <select class="form-select"
+                                    id="lowStockStatusFilter">
+                                <option value="">All</option>
+                                <option value="OUT OF STOCK">
+                                    Out of Stock
+                                </option>
+                                <option value="LOW STOCK">
+                                    Low Stock
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="small text-muted pb-2"
+                                 id="lowStockResultCount">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Product</th>
+                                    <th class="text-end">Total Qty</th>
+                                    <th class="text-end">Stock Level</th>
+                                    <th class="text-end">Deficit</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="lowStockModalTableBody">
+                                <tr>
+                                    <td colspan="7"
+                                        class="text-center text-muted py-4">
+                                        Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <a href="/Inventory"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-box-seam"></i>
+                        Open Inventory
+                    </a>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
    
 
 </div>

@@ -49,3 +49,26 @@
 .dashboard-card-auto {
     height: auto;
 }
+
+
+
+.dashboard-summary-card {
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+    .dashboard-summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .dashboard-summary-card:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.2), 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .dashboard-summary-card:disabled {
+        cursor: default;
+        opacity: 0.65;
+    }

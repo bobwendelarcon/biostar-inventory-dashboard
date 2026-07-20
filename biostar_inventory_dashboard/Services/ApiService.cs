@@ -69,26 +69,33 @@ namespace biostar_inventory_dashboard.Services
         }
 
         public async Task<PagedInventoryResponse> GetInventoryAsync(
-      int page = 1,
-      int pageSize = 30,
-      string lot_no = "",
-      string search = "",
-      string warehouse = "",
-      string category = "",
-      string stockStatus = "",
-      string expiryStatus = "",
-      string months = "",
-      string from = "",
-      string to = "",
-      string sortBy = "lot",
-      string order = "desc"
-  )
+    int page = 1,
+    int pageSize = 30,
+    string productId = "",
+    string lot_no = "",
+    string search = "",
+    string warehouse = "",
+    string category = "",
+    string stockStatus = "",
+    string expiryStatus = "",
+    string months = "",
+    string from = "",
+    string to = "",
+    string sortBy = "lot",
+    string order = "desc")
         {
             var queryParams = new List<string>
     {
         $"page={page}",
         $"pageSize={pageSize}"
     };
+
+            if (!string.IsNullOrWhiteSpace(productId))
+            {
+                queryParams.Add(
+                    $"productId={Uri.EscapeDataString(productId)}"
+                );
+            }
 
             if (!string.IsNullOrWhiteSpace(lot_no))
                 queryParams.Add($"lot_no={Uri.EscapeDataString(lot_no)}");
@@ -1501,6 +1508,46 @@ namespace biostar_inventory_dashboard.Services
                 throw new Exception(result);
 
             return result;
+        }
+
+
+        public async Task<StockOverviewPagedResult> GetStockOverviewAsync(
+       int page = 1,
+       int pageSize = 25,
+       string search = "",
+       string warehouse = "",
+       string categories = "",
+       string stockStatus = "",
+       string order = "asc")
+        {
+            var query = new Dictionary<string, string?>
+            {
+                ["page"] = page.ToString(),
+                ["pageSize"] = pageSize.ToString(),
+                ["search"] = search,
+                ["warehouse"] = warehouse,
+                ["categories"] = categories,
+                ["stockStatus"] = stockStatus,
+                ["order"] = order
+            };
+
+            var queryString = string.Join(
+                "&",
+                query.Select(x =>
+                    $"{Uri.EscapeDataString(x.Key)}=" +
+                    $"{Uri.EscapeDataString(x.Value ?? "")}")
+            );
+
+            var url =
+                $"api/inventoryDisplay/stock-overview?{queryString}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content
+                .ReadFromJsonAsync<StockOverviewPagedResult>()
+                ?? new StockOverviewPagedResult();
         }
 
     }

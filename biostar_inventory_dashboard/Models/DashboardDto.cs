@@ -15,6 +15,9 @@
         public List<DashboardInventoryAlertDto> InventoryAlerts { get; set; } = new();
         public List<DashboardTransactionDto> RecentTransactions { get; set; } = new();
         public List<DashboardReturnDto> RecentReturns { get; set; } = new();
+
+        public List<InventoryProductSummaryDto> LowStockProducts { get; set; }
+            = new();
     }
 
     public class DashboardChecklistDto

@@ -106,9 +106,17 @@
 
                 <div class="collapse @(isInventoryOpen ? "show" : "")" id="inventoryMenu">
                     <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            @*<a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory"> *@
+                                <span>Stock Overview</span>
+                            @* </a> *@
+                        </li>
+
+
                         <li>
                             <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
-                                <span>Stock Overview</span>
+                                <span>Inventory List</span>
                             </a>
                         </li>
                         <li>
@@ -484,9 +492,16 @@
 
                 <div class="collapse @(isInventoryOpen ? "show" : "")" id="inventoryMenu">
                     <ul class="nav flex-column ms-3 mt-1">
+
+                        <a class="nav-link @(currentController == "StockOverview" ? "active fw-bold" : "")"
+                           href="/Inventory/StockOverview">
+                            <span>Stock Overview</span>
+                        </a>
+
+
                         <li>
                             <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
-                                <span>Stock Overview</span>
+                                <span>Inventory List</span>
                             </a>
                         </li>
                         <li>

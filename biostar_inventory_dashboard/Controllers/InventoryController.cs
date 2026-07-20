@@ -15,11 +15,16 @@ namespace biostar_inventory_dashboard.Controllers
             _apiService = apiService;
         }
 
-        public IActionResult Index()
+        [HttpGet]
+        public IActionResult Index(
+    string productId = "",
+    string search = "")
         {
+            ViewBag.ProductId = productId;
+            ViewBag.Search = search;
+
             return View();
         }
-
         [HttpPost]
         public async Task<IActionResult> Transfer([FromBody] JsonElement data)
         {
@@ -49,44 +54,44 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
 
-       
+
 
         [HttpGet]
         public async Task<IActionResult> GetInventory(
-            int page = 1,
-            int pageSize = 30,
-            string lot_no = "",
-            String search = "",
-           string warehouse = "",
-string category = "",
-string stockStatus = "",
-            string expiryStatus = "",
-            string months = "",
-            string from = "",
-            string to = "",
-            string sortBy = "lot",
-            string order = "desc"
-        )
+        int page = 1,
+        int pageSize = 30,
+        string productId = "",
+        string lot_no = "",
+        string search = "",
+        string warehouse = "",
+        string category = "",
+        string stockStatus = "",
+        string expiryStatus = "",
+        string months = "",
+        string from = "",
+        string to = "",
+        string sortBy = "lot",
+        string order = "desc")
         {
             var items = await _apiService.GetInventoryAsync(
-      page,
-      pageSize,
-      lot_no,
-     search,
-      warehouse,
-      category,
-      stockStatus,
-      expiryStatus,
-      months,
-      from,
-      to,
-      sortBy,
-      order
-  );
+                page,
+                pageSize,
+                productId,
+                lot_no,
+                search,
+                warehouse,
+                category,
+                stockStatus,
+                expiryStatus,
+                months,
+                from,
+                to,
+                sortBy,
+                order
+            );
 
             return Json(items);
         }
-
 
 
         [HttpPost]

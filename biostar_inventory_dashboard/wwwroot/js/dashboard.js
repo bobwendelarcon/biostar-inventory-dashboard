@@ -2,48 +2,48 @@
 
 
 
+let dashboardLowStockItems = [];
 
 
+//function updateDashboardInventoryAlerts(items) {
+//    const list = document.getElementById("dashboardInventoryAlertsBody");
+//    if (!list) return;
 
-function updateDashboardInventoryAlerts(items) {
-    const list = document.getElementById("dashboardInventoryAlertsBody");
-    if (!list) return;
+//    if (!items.length) {
+//        list.innerHTML = `
+//            <li class="list-group-item px-0 text-center text-muted">
+//                No inventory alerts
+//            </li>`;
+//        return;
+//    }
 
-    if (!items.length) {
-        list.innerHTML = `
-            <li class="list-group-item px-0 text-center text-muted">
-                No inventory alerts
-            </li>`;
-        return;
-    }
+//    list.innerHTML = items.map(item => {
+//        const alertType = (item.alertType || "").toUpperCase();
 
-    list.innerHTML = items.map(item => {
-        const alertType = (item.alertType || "").toUpperCase();
+//        const badgeClass = alertType === "OUT OF STOCK"
+//            ? "bg-danger"
+//            : "bg-warning text-dark";
 
-        const badgeClass = alertType === "OUT OF STOCK"
-            ? "bg-danger"
-            : "bg-warning text-dark";
+//        let detailText = "";
 
-        let detailText = "";
+//        if (alertType === "PLANNING SHORTAGE") {
+//            detailText = `(${formatNumber(item.availableQty)} / ${formatNumber(item.requiredQty)} ${escapeHtml(item.uom || "")}) → Short ${formatNumber(item.shortageQty)} ${escapeHtml(item.uom || "")}`;
+//        } else {
+//            detailText = `(${formatNumber(item.quantity)} ${escapeHtml(item.uom || "")} available)`;
+//        }
 
-        if (alertType === "PLANNING SHORTAGE") {
-            detailText = `(${formatNumber(item.availableQty)} / ${formatNumber(item.requiredQty)} ${escapeHtml(item.uom || "")}) → Short ${formatNumber(item.shortageQty)} ${escapeHtml(item.uom || "")}`;
-        } else {
-            detailText = `(${formatNumber(item.quantity)} ${escapeHtml(item.uom || "")} available)`;
-        }
-
-        return `
-            <li class="list-group-item d-flex justify-content-between px-0">
-                <span>
-                    ${escapeHtml(item.productName || "")}
-                    <small class="text-muted">${detailText}</small>
-                </span>
-                <span class="badge ${badgeClass}">
-                    ${escapeHtml(item.alertType || "")}
-                </span>
-            </li>`;
-    }).join("");
-}
+//        return `
+//            <li class="list-group-item d-flex justify-content-between px-0">
+//                <span>
+//                    ${escapeHtml(item.productName || "")}
+//                    <small class="text-muted">${detailText}</small>
+//                </span>
+//                <span class="badge ${badgeClass}">
+//                    ${escapeHtml(item.alertType || "")}
+//                </span>
+//            </li>`;
+//    }).join("");
+//}
 
 
 let dashboardRefreshTimer = null;
@@ -58,8 +58,40 @@ let dashboardRefreshTimer = null;
 document.addEventListener("DOMContentLoaded", function () {
     refreshDashboardData();
     startDashboardAutoRefresh();
+
+    document.getElementById("lowStockSearch")
+        ?.addEventListener(
+            "input",
+            debounce(renderLowStockModal, 200)
+        );
+
+    document.getElementById("lowStockStatusFilter")
+        ?.addEventListener(
+            "change",
+            renderLowStockModal
+        );
+
+    document.getElementById("lowStockCategoryFilter")
+        ?.addEventListener(
+            "change",
+            renderLowStockModal
+        );
+
 });
 
+
+function debounce(func, delay) {
+    let timeout;
+
+    return function (...args) {
+        clearTimeout(timeout);
+
+        timeout = setTimeout(
+            () => func.apply(this, args),
+            delay
+        );
+    };
+}
 function startDashboardAutoRefresh() {
     if (dashboardRefreshTimer) {
         clearInterval(dashboardRefreshTimer);
@@ -91,6 +123,13 @@ async function refreshDashboardData() {
 
         const data = await response.json();
 
+        dashboardLowStockItems =
+            Array.isArray(data.lowStockProducts)
+                ? data.lowStockProducts
+                : [];
+
+
+        populateLowStockCategoryFilter();
         updateDashboardCards(data);
         updateDashboardChecklist(data.checklist || []);
         updateDashboardPartialOrders(data.partialOrders || []);
@@ -203,6 +242,205 @@ async function refreshDashboardData() {
     <td><span class="badge ${badgeClass}">${escapeHtml(item.type || "")}</span></td>
 </tr>`;
         }).join("");
+}
+
+
+function openLowStockModal() {
+    const modalElement =
+        document.getElementById("lowStockModal");
+
+    if (!modalElement) return;
+
+    const search =
+        document.getElementById("lowStockSearch");
+
+    const statusFilter =
+        document.getElementById("lowStockStatusFilter");
+
+    const categoryFilter =
+        document.getElementById("lowStockCategoryFilter");
+
+    if (search) search.value = "";
+    if (statusFilter) statusFilter.value = "";
+    if (categoryFilter) categoryFilter.value = "";
+
+    populateLowStockCategoryFilter();
+    renderLowStockModal();
+
+    bootstrap.Modal
+        .getOrCreateInstance(modalElement)
+        .show();
+}
+
+function renderLowStockModal() {
+    const tbody = document.getElementById("lowStockModalTableBody");
+    const resultCount = document.getElementById("lowStockResultCount");
+
+    if (!tbody) return;
+
+    const search =
+        document.getElementById("lowStockSearch")
+            ?.value.trim().toLowerCase() || "";
+
+    const statusFilter =
+        document.getElementById("lowStockStatusFilter")
+            ?.value.trim().toUpperCase() || "";
+
+    const categoryFilter =
+        document.getElementById("lowStockCategoryFilter")
+            ?.value.trim().toLowerCase() || "";
+
+    const filtered = dashboardLowStockItems.filter(item => {
+        const productText = [
+            item.productId,
+            item.productName,
+            item.productDescription,
+            item.categoryName
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+        const stockStatus =
+            (item.stockStatus || "")
+                .trim()
+                .toUpperCase();
+
+        const categoryName =
+            (item.categoryName || "")
+                .trim()
+                .toLowerCase();
+
+        const matchesSearch =
+            !search || productText.includes(search);
+
+        const matchesStatus =
+            !statusFilter || stockStatus === statusFilter;
+
+        const matchesCategory =
+            !categoryFilter || categoryName === categoryFilter;
+
+        return (
+            matchesSearch &&
+            matchesStatus &&
+            matchesCategory
+        );
+    });
+
+    if (resultCount) {
+        resultCount.textContent =
+            `${filtered.length} of ${dashboardLowStockItems.length} product(s)`;
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7"
+                    class="text-center text-muted py-4">
+                    No matching low-stock products.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(item => {
+        const totalQty = Number(item.totalQty || 0);
+        const stockLevel = Number(item.stockLevel || 0);
+        const deficitQty = Number(item.deficitQty || 0);
+
+        const stockStatus =
+            (item.stockStatus || "LOW STOCK")
+                .trim()
+                .toUpperCase();
+
+        const badgeClass =
+            stockStatus === "OUT OF STOCK"
+                ? "bg-danger"
+                : "bg-warning text-dark";
+
+        return `
+            <tr>
+                <td>
+                    ${escapeHtml(item.categoryName || "Uncategorized")}
+                </td>
+
+                <td>
+                    <div class="fw-semibold">
+                        ${escapeHtml(item.productName || "-")}
+                    </div>
+
+                    ${item.productDescription
+                ? `
+                                <div class="small text-muted">
+                                    ${escapeHtml(item.productDescription)}
+                                </div>
+                              `
+                : ""
+            }
+                </td>
+
+                <td class="text-end">
+                    ${formatNumber(totalQty)}
+                    ${escapeHtml(item.uom || "")}
+                </td>
+
+                <td class="text-end">
+                    ${formatNumber(stockLevel)}
+                    ${escapeHtml(item.uom || "")}
+                </td>
+
+                <td class="text-end text-danger fw-semibold">
+                    ${formatNumber(deficitQty)}
+                    ${escapeHtml(item.uom || "")}
+                </td>
+
+                <td>
+                    <span class="badge ${badgeClass}">
+                        ${escapeHtml(stockStatus)}
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <a
+                        href="/Inventory?search=${encodeURIComponent(
+                item.productName || ""
+            )}"
+                        class="btn btn-sm btn-outline-primary">
+                        View Stock
+                    </a>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+function populateLowStockCategoryFilter() {
+    const categoryFilter =
+        document.getElementById("lowStockCategoryFilter");
+
+    if (!categoryFilter) return;
+
+    const selectedValue = categoryFilter.value;
+
+    const categories = [
+        ...new Set(
+            dashboardLowStockItems
+                .map(item => item.categoryName)
+                .filter(Boolean)
+        )
+    ].sort((a, b) => a.localeCompare(b));
+
+    categoryFilter.innerHTML = `
+        <option value="">All Categories</option>
+        ${categories.map(category => `
+            <option value="${escapeHtml(category.toLowerCase())}">
+                ${escapeHtml(category)}
+            </option>
+        `).join("")}
+    `;
+
+    categoryFilter.value = selectedValue;
 }
 function formatLot(lotNo) {
     if (!lotNo) return "-";
