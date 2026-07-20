@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
@@ -78,29 +79,66 @@ namespace biostar_inventory_dashboard.Controllers.Quality
 
         [HttpPost("{id:int}/save-inspection")]
         public async Task<IActionResult> SaveInspection(
-            int id,
-            [FromBody] object dto)
+     int id,
+     [FromBody] object dto)
         {
-            var client = CreateClient();
+            try
+            {
+                var userId =
+                    User.FindFirstValue("user_id")
+                    ?? User.FindFirstValue("UserId")
+                    ?? User.FindFirstValue("userId")
+                    ?? User.FindFirstValue("id")
+                    ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue("sub")
+                    ?? User.Identity?.Name;
 
-            var content = new StringContent(
-                JsonSerializer.Serialize(dto),
-                Encoding.UTF8,
-                "application/json"
-            );
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new
+                    {
+                        message =
+                            "Dashboard login does not contain a valid user ID."
+                    });
+                }
 
-            var response = await client.PostAsync(
-                $"api/purchasing/qc-inspections/{id}/save-inspection",
-                content
-            );
+                var client = CreateClient();
 
-            var result =
-                await response.Content.ReadAsStringAsync();
+                using var request = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    $"api/purchasing/qc-inspections/{id}/save-inspection"
+                );
 
-            return StatusCode(
-                (int)response.StatusCode,
-                result
-            );
+                request.Content = new StringContent(
+                    JsonSerializer.Serialize(dto),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                request.Headers.TryAddWithoutValidation(
+                    "X-User-Id",
+                    userId.Trim()
+                );
+
+                var response = await client.SendAsync(request);
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = result,
+                    ContentType = "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
         }
 
         [HttpPost("{id:int}/complete")]

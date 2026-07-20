@@ -11,6 +11,13 @@
     var currentPath = Context.Request.Path.ToString().ToLower();
     var isManufacturingOpen = currentPath.StartsWith("/manufacturing");
     var isPurchasingOpen = currentPath.StartsWith("/purchasing");
+    var isReceivingCalendar =
+    currentPath == "/purchasing/receiving-reports/calendar";
+
+    var isReceivingReports =
+        currentPath == "/purchasing/receiving-reports";
+
+
 
     var isReceivingOpen =
     currentController == "ManualStockIn";
@@ -202,17 +209,14 @@
 
 
                         <li class="nav-item">
-                            <a class="nav-link"
+                            <a class="nav-link @(isReceivingCalendar ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports/calendar">
-
-                             
-
                                 Receiving Calendar
                             </a>
                         </li>
 
                         <li>
-                            <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
+                            <a class="nav-link @(isReceivingReports ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports">
                                 <span>Receiving Reports</span>
                             </a>
@@ -294,17 +298,14 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link"
+                            <a class="nav-link @(isReceivingCalendar ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports/calendar">
-
-
-
                                 Receiving Calendar
                             </a>
                         </li>
 
                         <li>
-                            <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
+                            <a class="nav-link @(isReceivingReports ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports">
                                 <span>Receiving Reports</span>
                             </a>
@@ -698,17 +699,14 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link"
+                            <a class="nav-link @(isReceivingCalendar ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports/calendar">
-
-                               
-
                                 Receiving Calendar
                             </a>
                         </li>
 
                         <li>
-                            <a class="nav-link @(currentPath.StartsWith("/purchasing/receiving-reports") ? "active fw-bold" : "")"
+                            <a class="nav-link @(isReceivingReports ? "active fw-bold" : "")"
                                href="/purchasing/receiving-reports">
                                 <span>Receiving Reports</span>
                             </a>

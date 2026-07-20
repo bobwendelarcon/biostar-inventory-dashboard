@@ -40,8 +40,28 @@
                 </div>
 
                 <div class="col-md-3">
+                    <label class="form-label">Delivery Plan</label>
+
+                    <select id="deliveryPlanType"
+                            class="form-select"
+                            onchange="changeDeliveryPlanType()">
+                        <option value="SINGLE">
+                            One-Time Delivery
+                        </option>
+
+                        <option value="STAGGERED">
+                            Planned Staggered Delivery
+                        </option>
+                    </select>
+                </div>
+
+                <div id="singleDeliveryDateColumn"
+                     class="col-md-3">
                     <label class="form-label">Delivery Date</label>
-                    <input id="deliveryDate" type="date" class="form-control">
+
+                    <input id="deliveryDate"
+                           type="date"
+                           class="form-control">
                 </div>
 
                 <div class="col-md-4">
@@ -76,7 +96,64 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
+
+
+<!-- Planned Delivery Schedule -->
+<div id="plannedSchedulesCard"
+     class="card border-0 shadow-sm mb-4 d-none">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div>
+                <h5 class="fw-bold mb-1">
+                    Planned Delivery Schedules
+                </h5>
+
+                <div class="text-muted small">
+                    Divide each material's PO quantity across one or more delivery dates.
+                </div>
+            </div>
+
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    onclick="addPlannedSchedule()">
+                Add Delivery Date
+            </button>
+
+        </div>
+
+        <div id="plannedScheduleGroups"></div>
+
+        <div class="alert alert-light border mb-0">
+
+            <div class="d-flex justify-content-between">
+                <span>Total PO Quantity</span>
+                <strong id="plannedTotalPoQty">0.00</strong>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <span>Total Scheduled</span>
+                <strong id="plannedTotalAssigned">0.00</strong>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <span>Unassigned</span>
+                <strong id="plannedTotalUnassigned"
+                        class="text-danger">
+                    0.00
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Materials -->
+<div class="card border-0 shadow-sm">
         <div class="card-body">
 
             <h5 class="fw-bold mb-3">Materials</h5>
@@ -146,6 +223,9 @@
     let canvassData = null;
     let supplierLines = [];
 
+            let plannedSchedules = [];
+        let nextPlannedScheduleId = 1;
+
 
     document.addEventListener("DOMContentLoaded", function () {
         setDefaultDates();
@@ -197,6 +277,11 @@
 
         canvassData = data;
 
+        document.getElementById("requestedBy").value =
+    data.requesting_department ??
+    data.requestingDepartment ??
+    "";
+
         const supplierSelect =
             document.getElementById("supplierId");
 
@@ -225,6 +310,9 @@
         renderSupplierLines();
     }
     }
+        
+
+
 
     function loadSuppliersFromQuotes() {
         const supplierSelect = document.getElementById("supplierId");
@@ -263,6 +351,404 @@
         });
     }
 
+
+        function changeDeliveryPlanType() {
+            const type =
+                document.getElementById("deliveryPlanType").value;
+
+            const singleColumn =
+                document.getElementById("singleDeliveryDateColumn");
+
+            const staggeredCard =
+                document.getElementById("plannedSchedulesCard");
+
+            if (type === "STAGGERED") {
+                singleColumn.classList.add("d-none");
+                staggeredCard.classList.remove("d-none");
+
+                if (plannedSchedules.length === 0 &&
+                    supplierLines.length > 0) {
+                    addPlannedSchedule(true);
+                }
+            }
+            else {
+                singleColumn.classList.remove("d-none");
+                staggeredCard.classList.add("d-none");
+            }
+
+            updatePlannedScheduleTotals();
+        }
+                function resetPlannedSchedules() {
+            plannedSchedules = [];
+            nextPlannedScheduleId = 1;
+
+            document.getElementById(
+                "plannedScheduleGroups"
+            ).innerHTML = "";
+
+            if (
+                document.getElementById("deliveryPlanType").value ===
+                "STAGGERED" &&
+                supplierLines.length > 0
+            ) {
+                addPlannedSchedule(true);
+            }
+
+            updatePlannedScheduleTotals();
+        }
+
+
+            function addPlannedSchedule(assignAll = false) {
+        if (supplierLines.length === 0) {
+            alert("Select a supplier first.");
+            return;
+        }
+
+        const id = nextPlannedScheduleId++;
+
+        const newLines = supplierLines.map(line => {
+            const alreadyAssigned =
+                getPlannedAssignedQty(line.canvassLineId);
+
+            const remainingQty = Math.max(
+                0,
+                Number(line.poQty) - alreadyAssigned
+            );
+
+            return {
+                canvassLineId: line.canvassLineId,
+                materialName: line.materialName,
+                uom: line.uom,
+                poQty: Number(line.poQty),
+
+                scheduledQty:
+                    assignAll
+                        ? Number(line.poQty)
+                        : remainingQty
+            };
+        });
+
+        const hasRemaining =
+            newLines.some(line => line.scheduledQty > 0);
+
+        if (!hasRemaining && plannedSchedules.length > 0) {
+            alert("All PO quantities are already assigned.");
+            return;
+        }
+
+        plannedSchedules.push({
+            id: id,
+            scheduledDate: "",
+            remarks: "",
+            lines: newLines
+        });
+
+        renderPlannedSchedules();
+    }
+
+
+                function removePlannedSchedule(id) {
+            if (plannedSchedules.length <= 1) {
+                alert("At least one delivery schedule is required.");
+                return;
+            }
+
+            plannedSchedules =
+                plannedSchedules.filter(x => x.id !== id);
+
+            renderPlannedSchedules();
+        }
+
+
+                function renderPlannedSchedules() {
+            const container =
+                document.getElementById("plannedScheduleGroups");
+
+            container.innerHTML = "";
+
+            plannedSchedules.forEach((schedule, index) => {
+                   const lineRows = schedule.lines.map(line => {
+        const totalAssigned =
+            getPlannedAssignedQty(line.canvassLineId);
+
+        const remaining =
+            Number(line.poQty) - totalAssigned;
+
+        return `
+            <tr>
+                <td>
+                    ${escapeAttr(line.materialName)}
+                </td>
+
+                <td class="text-end">
+                    ${formatQty(line.poQty)}
+                </td>
+
+                   <td style="width:180px;">
+        <input type="number"
+               min="0"
+               step="0.0001"
+               class="form-control form-control-sm text-end"
+               value="${line.scheduledQty}"
+               onchange="updatePlannedScheduleQty(
+                   ${schedule.id},
+                   ${line.canvassLineId},
+                   this.value
+               )">
+    </td>
+
+    <td
+        id="remaining_${schedule.id}_${line.canvassLineId}"
+        class="text-end ${
+            remaining > 0.0001
+                ? "text-danger fw-semibold"
+                : "text-success fw-semibold"
+        }">
+        ${formatQty(remaining)}
+    </td>
+
+                <td>${escapeAttr(line.uom)}</td>
+            </tr>
+        `;
+    }).join("");
+
+                container.insertAdjacentHTML("beforeend", `
+                    <div class="card border mb-3">
+
+                        <div class="card-header bg-light">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <strong>
+                                    Delivery Schedule ${index + 1}
+                                </strong>
+
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="removePlannedSchedule(${schedule.id})">
+                                    Remove
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3 mb-3">
+
+                                <div class="col-md-4">
+                                    <label class="form-label">
+                                        Scheduled Date
+                                    </label>
+
+                                    <input type="date"
+                                           class="form-control"
+                                           value="${escapeAttr(schedule.scheduledDate)}"
+                                           onchange="updatePlannedScheduleDate(
+                                               ${schedule.id},
+                                               this.value
+                                           )">
+                                </div>
+
+                                <div class="col-md-8">
+                                    <label class="form-label">
+                                        Remarks
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control"
+                                           value="${escapeAttr(schedule.remarks)}"
+                                           placeholder="Optional schedule remarks"
+                                           onchange="updatePlannedScheduleRemarks(
+                                               ${schedule.id},
+                                               this.value
+                                           )">
+                                </div>
+
+                            </div>
+
+                            <div class="table-responsive border rounded">
+
+                                <table class="table table-sm align-middle mb-0">
+
+                                    <thead class="table-light">
+                                            <tr>
+        <th>Material</th>
+        <th class="text-end">PO Qty</th>
+        <th>Scheduled Qty</th>
+        <th class="text-end">Unassigned</th>
+        <th>UOM</th>
+    </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        ${lineRows}
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                `);
+            });
+
+            updatePlannedScheduleTotals();
+        }
+
+                function updatePlannedScheduleDate(id, value) {
+            const schedule =
+                plannedSchedules.find(x => x.id === id);
+
+            if (schedule)
+                schedule.scheduledDate = value;
+        }
+
+                function updatePlannedScheduleRemarks(id, value) {
+            const schedule =
+                plannedSchedules.find(x => x.id === id);
+
+            if (schedule)
+                schedule.remarks = value;
+        }
+
+
+            function updatePlannedScheduleQty(
+        scheduleId,
+        canvassLineId,
+        value)
+    {
+        const schedule =
+            plannedSchedules.find(x =>
+                x.id === scheduleId);
+
+        if (!schedule)
+            return;
+
+        const line =
+            schedule.lines.find(x =>
+                x.canvassLineId === canvassLineId);
+
+        if (!line)
+            return;
+
+        let newQty = Number(value || 0);
+
+        if (newQty < 0)
+            newQty = 0;
+
+        const assignedByOtherSchedules =
+            plannedSchedules
+                .filter(x => x.id !== scheduleId)
+                .reduce((total, item) => {
+                    const otherLine = item.lines.find(x =>
+                        x.canvassLineId === canvassLineId);
+
+                    return total +
+                        Number(otherLine?.scheduledQty || 0);
+                }, 0);
+
+        const maximumAllowed = Math.max(
+            0,
+            Number(line.poQty) - assignedByOtherSchedules
+        );
+
+        if (newQty > maximumAllowed) {
+            alert(
+                `Maximum quantity available for this schedule is ` +
+                `${formatQty(maximumAllowed)} ${line.uom}.`
+            );
+
+            newQty = maximumAllowed;
+        }
+
+           line.scheduledQty = newQty;
+
+    // Only update totals
+    updatePlannedScheduleTotals();
+
+    // Update only the Unassigned cell
+    const totalAssigned =
+        getPlannedAssignedQty(canvassLineId);
+
+    const remaining =
+        Number(line.poQty) - totalAssigned;
+
+    const remainingCell =
+        document.getElementById(
+            `remaining_${scheduleId}_${canvassLineId}`
+        );
+
+    if (remainingCell) {
+        remainingCell.innerHTML = formatQty(remaining);
+
+        remainingCell.className =
+            "text-end " +
+            (remaining > 0.0001
+                ? "text-danger fw-semibold"
+                : "text-success fw-semibold");
+    }
+    }
+
+
+                function getPlannedAssignedQty(canvassLineId) {
+            return plannedSchedules.reduce(
+                (total, schedule) => {
+                    const line = schedule.lines.find(x =>
+                        x.canvassLineId === canvassLineId);
+
+                    return total +
+                        Number(line?.scheduledQty || 0);
+                },
+                0
+            );
+        }
+
+                function updatePlannedScheduleTotals() {
+            const totalPoQty = supplierLines.reduce(
+                (sum, line) =>
+                    sum + Number(line.poQty || 0),
+                0
+            );
+
+            const assignedTotal = plannedSchedules.reduce(
+                (scheduleTotal, schedule) =>
+                    scheduleTotal +
+                    schedule.lines.reduce(
+                        (lineTotal, line) =>
+                            lineTotal +
+                            Number(line.scheduledQty || 0),
+                        0
+                    ),
+                0
+            );
+
+            document.getElementById(
+                "plannedTotalPoQty"
+            ).textContent = formatQty(totalPoQty);
+
+            document.getElementById(
+                "plannedTotalAssigned"
+            ).textContent = formatQty(assignedTotal);
+
+            document.getElementById(
+                "plannedTotalUnassigned"
+            ).textContent = formatQty(
+                totalPoQty - assignedTotal
+            );
+        }
+
+                function formatQty(value) {
+            return Number(value ?? 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            });
+        }
+
+
     function renderSupplierLines() {
         const supplierSelect = document.getElementById("supplierId");
         const supplierId = Number(supplierSelect.value);
@@ -278,7 +764,8 @@
                         Select supplier to load materials.
                     </td>
                 </tr>`;
-            updateGrandTotal();
+             updateGrandTotal();
+    resetPlannedSchedules();
             return;
         }
 
@@ -368,6 +855,12 @@
             supplierLines[index][field] = value;
         }
 
+                if (field === "poQty" &&
+            document.getElementById("deliveryPlanType").value === "STAGGERED")
+        {
+            resetPlannedSchedules();
+        }
+
         const total = supplierLines[index].poQty * supplierLines[index].poUnitPrice;
         document.getElementById(`lineTotal_${index}`).innerText = formatMoney(total);
 
@@ -399,13 +892,91 @@
             return;
         }
 
+                const deliveryPlanType =
+            document.getElementById("deliveryPlanType").value;
+
+        let schedules = [];
+
+        if (deliveryPlanType === "SINGLE") {
+            const deliveryDate =
+                document.getElementById("deliveryDate").value;
+
+            if (!deliveryDate) {
+                alert("Delivery Date is required.");
+                return;
+            }
+        }
+        else {
+            if (plannedSchedules.length === 0) {
+                alert("Add at least one planned delivery schedule.");
+                return;
+            }
+
+            for (const schedule of plannedSchedules) {
+                if (!schedule.scheduledDate) {
+                    alert("Every planned schedule must have a delivery date.");
+                    return;
+                }
+
+                const hasQuantity =
+                    schedule.lines.some(x =>
+                        Number(x.scheduledQty) > 0);
+
+                if (!hasQuantity) {
+                    alert(
+                        "Every planned schedule must contain at least one quantity."
+                    );
+
+                    return;
+                }
+            }
+
+            for (const poLine of supplierLines) {
+                const assigned =
+                    getPlannedAssignedQty(poLine.canvassLineId);
+
+                if (
+                    Math.abs(
+                        assigned - Number(poLine.poQty)
+                    ) > 0.0001
+                ) {
+                    alert(
+                        `${poLine.materialName}: scheduled quantity must equal ` +
+                        `${formatQty(poLine.poQty)} ${poLine.uom}. ` +
+                        `Currently assigned: ${formatQty(assigned)}.`
+                    );
+
+                    return;
+                }
+            }
+
+            schedules = plannedSchedules.map(schedule => ({
+                scheduledDate: schedule.scheduledDate,
+                remarks: schedule.remarks,
+
+                lines: schedule.lines
+                    .filter(line =>
+                        Number(line.scheduledQty) > 0)
+                    .map(line => ({
+                        canvassLineId: line.canvassLineId,
+                        scheduledQty:
+                            Number(line.scheduledQty)
+                    }))
+            }));
+        }
+
         const payload = {
             canvassId: canvassId,
             supplierId: supplierId,
 
             printedPoNo: document.getElementById("printedPoNo").value,
             poDate: document.getElementById("poDate").value,
-            deliveryDate: document.getElementById("deliveryDate").value || null,
+                    deliveryDate:
+            deliveryPlanType === "SINGLE"
+                ? document.getElementById("deliveryDate").value
+                : null,
+
+        schedules: schedules,
 
             paymentTerms: document.getElementById("paymentTerms").value,
             supplierAddress: document.getElementById("supplierAddress").value,

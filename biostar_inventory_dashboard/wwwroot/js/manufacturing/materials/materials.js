@@ -174,7 +174,7 @@ function renderMaterials() {
 
         tbody.innerHTML = `
         <tr>
-            <td colspan="10"
+            <td colspan="11"
                 class="text-center text-muted py-4">
                 No materials found.
             </td>
@@ -198,6 +198,19 @@ function renderMaterials() {
             <td>${escapeHtml(m.pack_uom ?? "-")}</td>
             <td>${formatNumber(m.pack_qty ?? 0)}</td>
             <td>${formatNumber(m.minimum_stock ?? 0)}</td>
+
+            <td>
+    ${
+            m.is_lot_tracked
+                ? `<span class="badge bg-primary">
+                    Yes
+               </span>`
+                : `<span class="badge bg-secondary">
+                    No
+               </span>`
+    }
+</td>
+
 
             <td>
                 <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
@@ -328,6 +341,8 @@ async function editMaterial(id) {
     document.getElementById("packQty").value = m.pack_qty ?? 0;
     document.getElementById("minimumStock").value = m.minimum_stock ?? 0;
     document.getElementById("description").value = m.description ?? "";
+    document.getElementById("isLotTracked").checked =
+        m.is_lot_tracked ?? false;
 
     materialModal.show();
 }
@@ -347,7 +362,9 @@ async function saveMaterial() {
         pack_uom: document.getElementById("packUom").value.trim() || null,
         pack_qty: parseFloat(document.getElementById("packQty").value || 0),
         minimum_stock: parseFloat(document.getElementById("minimumStock").value || 0),
-        description: document.getElementById("description").value.trim()
+        description: document.getElementById("description").value.trim(),
+
+        is_lot_tracked: document.getElementById("isLotTracked").checked
     };
 
     if (!dto.material_code || !dto.material_name || !dto.material_category_id || !dto.uom) {
@@ -422,6 +439,7 @@ function clearForm() {
     document.getElementById("packQty").value = 0;
     document.getElementById("minimumStock").value = 0;
     document.getElementById("description").value = "";
+    document.getElementById("isLotTracked").checked = false;
 }
 
 function formatNumber(value) {

@@ -12,7 +12,7 @@
     </div>
 
     <div class="mb-3 d-flex gap-2">
-        <a href="/purchasing/qc-inspections" class="btn btn-outline-secondary btn-sm">
+        <a href="/quality/qc-inspections" class="btn btn-outline-secondary btn-sm">
             Back to QC List
         </a>
 
@@ -20,9 +20,7 @@
             Save Inspection
         </button>
 
-        <button id="btnCommitInventory" class="btn btn-dark btn-sm d-none">
-            Commit Inventory
-        </button>
+     
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -110,17 +108,17 @@
         loadQcDetails();
 
         document.getElementById("btnSaveInspection").addEventListener("click", saveInspection);
-        document.getElementById("btnCommitInventory").addEventListener("click", commitInventory);
+      
     });
 
     async function loadQcDetails() {
         try {
-            const response = await fetch(`/purchasing/qc-inspections/${qcId}`);
+            const response = await fetch(`/quality/qc-inspections/${qcId}`);
             const data = await response.json();
 
             if (!response.ok) {
                 alert(data.message ?? "QC inspection not found.");
-                window.location.href = "/purchasing/qc-inspections";
+               window.location.href = "/quality/qc-inspections";
                 return;
             }
 
@@ -213,46 +211,83 @@
         });
     }
 
-    function setupButtons(qc) {
-        document.getElementById("btnSaveInspection").classList.add("d-none");
-        document.getElementById("btnCommitInventory").classList.add("d-none");
+        function setupButtons(qc) {
+
+        const btn =
+            document.getElementById("btnSaveInspection");
+
+        btn.classList.add("d-none");
 
         if (qc.status === "FOR_INSPECTION") {
-            document.getElementById("btnSaveInspection").classList.remove("d-none");
-        }
-
-        if (qc.status === "ACCEPTED" || qc.status === "PARTIALLY_ACCEPTED") {
-            document.getElementById("btnCommitInventory").classList.remove("d-none");
+            btn.classList.remove("d-none");
         }
     }
 
     async function saveInspection() {
         const lines = [];
 
-        document.querySelectorAll("#qcLineBody tr[data-qc-line-id]").forEach(row => {
-            const qcLineId = Number(row.dataset.qcLineId);
-            const receivedQty = Number(row.dataset.receivedQty);
-            const acceptedQty = Number(row.querySelector(".accepted-qty").value ?? 0);
-            const rejectedQty = Number(row.querySelector(".rejected-qty").value ?? 0);
-            const rejectionReason = row.querySelector(".rejection-reason").value;
-            const remarks = row.querySelector(".line-remarks").value;
+           const rows = document.querySelectorAll(
+        "#qcLineBody tr[data-qc-line-id]"
+    );
 
-            if ((acceptedQty + rejectedQty).toFixed(4) !== receivedQty.toFixed(4)) {
-                throw new Error("Accepted qty plus rejected qty must equal received qty.");
-            }
+    for (const row of rows) {
+        const qcLineId =
+            Number(row.dataset.qcLineId);
 
-            if (rejectedQty > 0 && rejectionReason.trim() === "") {
-                throw new Error("Rejection reason is required when rejected qty is greater than zero.");
-            }
+        const receivedQty =
+            Number(row.dataset.receivedQty);
 
-            lines.push({
-                qcLineId,
-                acceptedQty,
-                rejectedQty,
-                rejectionReason,
-                remarks
-            });
+        const acceptedQty =
+            Number(
+                row.querySelector(".accepted-qty").value || 0
+            );
+
+        const rejectedQty =
+            Number(
+                row.querySelector(".rejected-qty").value || 0
+            );
+
+        const rejectionReason =
+            row.querySelector(".rejection-reason").value;
+
+        const remarks =
+            row.querySelector(".line-remarks").value;
+
+        if (
+            Math.abs(
+                acceptedQty +
+                rejectedQty -
+                receivedQty
+            ) > 0.0001
+        ) {
+            alert(
+                "Accepted quantity plus rejected quantity " +
+                "must equal received quantity."
+            );
+
+            return;
+        }
+
+        if (
+            rejectedQty > 0 &&
+            rejectionReason.trim() === ""
+        ) {
+            alert(
+                "Rejection reason is required when " +
+                "rejected quantity is greater than zero."
+            );
+
+            return;
+        }
+
+        lines.push({
+            qcLineId,
+            acceptedQty,
+            rejectedQty,
+            rejectionReason,
+            remarks
         });
+    }
 
         const payload = {
             inspectionDate: document.getElementById("inspectionDate").value,
@@ -263,7 +298,7 @@
         if (!confirm("Save this QC inspection?")) return;
 
         try {
-            const response = await fetch(`/purchasing/qc-inspections/${qcId}/save-inspection`, {
+            const response = await fetch(`/quality/qc-inspections/${qcId}/save-inspection`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -286,50 +321,55 @@
         }
     }
 
-       async function commitInventory() {
-        if (!confirm("Commit accepted quantities to inventory?")) return;
 
-        try {
-            const response = await fetch(`/purchasing/qc-inspections/${qcId}/commit`, {
-                method: "POST"
-            });
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                alert(result.message ?? "Failed to commit inventory.");
-                return;
-            }
-
-            alert(result.message ?? "Inventory committed.");
-            await loadQcDetails();
-
-        } catch (error) {
-            alert("Failed to commit inventory.");
-        }
-    }
-
-    function renderStatus(status) {
+       function renderStatus(status) {
         let badge = "bg-secondary";
 
-        if (status === "FOR_INSPECTION") badge = "bg-info text-dark";
-        if (status === "ACCEPTED") badge = "bg-success";
-        if (status === "PARTIALLY_ACCEPTED") badge = "bg-warning text-dark";
-        if (status === "REJECTED") badge = "bg-danger";
-        if (status === "COMMITTED") badge = "bg-dark";
+        if (status === "FOR_INSPECTION")
+            badge = "bg-info text-dark";
 
-        return `<span class="badge ${badge}">${status}</span>`;
+        if (status === "INSPECTED")
+            badge = "bg-success";
+
+        if (status === "COMMITTED")
+            badge = "bg-dark";
+
+        return `
+            <span class="badge ${badge}">
+                ${formatStatus(status)}
+            </span>
+        `;
     }
 
-    function renderLineStatus(status) {
+        function formatStatus(value) {
+        if (!value)
+            return "-";
+
+        return String(value)
+            .replaceAll("_", " ");
+    }
+
+       function renderLineStatus(status) {
         let badge = "bg-secondary";
 
-        if (status === "PENDING") badge = "bg-warning text-dark";
-        if (status === "ACCEPTED") badge = "bg-success";
-        if (status === "PARTIALLY_ACCEPTED") badge = "bg-warning text-dark";
-        if (status === "REJECTED") badge = "bg-danger";
+        if (status === "PENDING")
+            badge = "bg-warning text-dark";
 
-        return `<span class="badge ${badge}">${status}</span>`;
+        if (status === "ACCEPTED")
+            badge = "bg-success";
+
+        if (status === "PARTIALLY_ACCEPTED")
+            badge = "bg-warning text-dark";
+
+        if (status === "REJECTED")
+            badge = "bg-danger";
+
+        return `
+            <span class="badge ${badge}">
+                ${formatStatus(status)}
+            </span>
+        `;
     }
 
     function formatQty(value) {

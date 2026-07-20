@@ -1423,5 +1423,85 @@ namespace biostar_inventory_dashboard.Services
             ?? new List<InventoryPrintSummaryDto>();
         }
 
+
+        public async Task<string> GetAvailableLinesForChecklistAsync(long checklistId)
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/DeliveryChecklist/{checklistId}/available-lines");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+        public async Task<string> AddLinesToChecklistAsync(
+    JsonElement data)
+        {
+            var content = new StringContent(
+                data.GetRawText(),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                "api/DeliveryChecklist/add-lines",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> RemoveCustomerFromChecklistAsync(
+    JsonElement data)
+        {
+            var content = new StringContent(
+                data.GetRawText(),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                "api/DeliveryChecklist/remove-customer",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string>
+    UpdateChecklistTripInfoAsync(JsonElement data)
+        {
+            var content = new StringContent(
+                data.GetRawText(),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(
+                "api/DeliveryChecklist/update-trip-info",
+                content
+            );
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
     }
 }

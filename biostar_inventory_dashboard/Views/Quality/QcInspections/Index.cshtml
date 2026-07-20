@@ -2,35 +2,79 @@
     ViewData["Title"] = "QA/QC Inspections";
 }
 
+<style>
+    .qc-summary-card {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+    }
+
+        .qc-summary-card .count {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+    .qc-table-wrapper {
+        position: relative;
+        overflow: visible !important;
+    }
+
+    .qc-modal-header-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .qc-modal-table {
+        min-width: 1100px;
+    }
+
+    .accepted-qty {
+        background-color: #ecfdf5;
+    }
+
+    .rejected-qty {
+        background-color: #fff1f2;
+    }
+
+    .modal-dialog-qc {
+        max-width: 96vw;
+    }
+
+    .inspection-note {
+        font-size: 13px;
+        color: #6c757d;
+    }
+</style>
+
 <div class="container-fluid px-4 py-4">
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <div class="text-muted small mb-1">
-                Quality Control &gt; QA/QC Inspections
-            </div>
+    <div class="mb-4">
+        <div class="text-muted small mb-1">
+            Quality Control &gt; QA/QC Inspections
+        </div>
 
-            <h2 class="fw-bold mb-1">
-                QA/QC Inspections
-            </h2>
+        <h2 class="fw-bold mb-1">
+            QA/QC Inspections
+        </h2>
 
-            <div class="text-muted">
-                Evaluate deliveries submitted by the warehouse.
-            </div>
+        <div class="text-muted">
+            Evaluate deliveries submitted by the warehouse.
         </div>
     </div>
 
+    <!-- Summary cards -->
     <div class="row g-3 mb-4">
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm qc-summary-card">
+            <div class="card qc-summary-card">
                 <div class="card-body">
                     <div class="text-muted small">
                         For Inspection
                     </div>
 
                     <div id="forInspectionCount"
-                         class="fs-3 fw-bold text-info">
+                         class="count text-info">
                         0
                     </div>
                 </div>
@@ -38,14 +82,14 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm qc-summary-card">
+            <div class="card qc-summary-card">
                 <div class="card-body">
                     <div class="text-muted small">
                         Accepted
                     </div>
 
                     <div id="acceptedCount"
-                         class="fs-3 fw-bold text-success">
+                         class="count text-success">
                         0
                     </div>
                 </div>
@@ -53,14 +97,14 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm qc-summary-card">
+            <div class="card qc-summary-card">
                 <div class="card-body">
                     <div class="text-muted small">
                         Partially Accepted
                     </div>
 
-                    <div id="partialCount"
-                         class="fs-3 fw-bold text-primary">
+                    <div id="partiallyAcceptedCount"
+                         class="count text-primary">
                         0
                     </div>
                 </div>
@@ -68,14 +112,14 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm qc-summary-card">
+            <div class="card qc-summary-card">
                 <div class="card-body">
                     <div class="text-muted small">
                         Rejected
                     </div>
 
                     <div id="rejectedCount"
-                         class="fs-3 fw-bold text-danger">
+                         class="count text-danger">
                         0
                     </div>
                 </div>
@@ -84,19 +128,21 @@
 
     </div>
 
+    <!-- QC list -->
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
-            <div class="row g-3 mb-3">
+            <div class="row g-2 mb-3">
 
                 <div class="col-md-4">
                     <input id="qcSearch"
+                           type="text"
                            class="form-control"
                            placeholder="Search QC No, RR No, PO No, Supplier">
                 </div>
 
                 <div class="col-md-3">
-                    <select id="qcStatusFilter"
+                    <select id="statusFilter"
                             class="form-select">
 
                         <option value="">
@@ -107,20 +153,8 @@
                             For Inspection
                         </option>
 
-                        <option value="ACCEPTED">
-                            Accepted
-                        </option>
-
-                        <option value="PARTIALLY_ACCEPTED">
-                            Partially Accepted
-                        </option>
-
-                        <option value="REJECTED">
-                            Rejected
-                        </option>
-
-                        <option value="FOR_VALIDATION">
-                            For Validation
+                        <option value="COMMITTED">
+                            Committed
                         </option>
 
                     </select>
@@ -129,6 +163,7 @@
             </div>
 
             <div class="table-responsive qc-table-wrapper">
+
                 <table class="table table-hover align-middle">
 
                     <thead class="table-light">
@@ -137,10 +172,10 @@
                             <th>RR No</th>
                             <th>PO No</th>
                             <th>Supplier</th>
-                            <th>Date Received</th>
-                            <th>Materials</th>
+                            <th>Inspection Date</th>
+                            <th>Inspector</th>
                             <th>Status</th>
-                            <th>Created At</th>
+                            <th>Decision</th>
                             <th class="text-end"
                                 style="width:120px;">
                                 Action
@@ -152,12 +187,13 @@
                         <tr>
                             <td colspan="9"
                                 class="text-center text-muted py-4">
-                                Loading QA/QC inspections...
+                                Loading QC inspections...
                             </td>
                         </tr>
                     </tbody>
 
                 </table>
+
             </div>
 
         </div>
@@ -165,14 +201,15 @@
 
 </div>
 
-
+<!-- QA/QC Inspection Modal -->
 <div class="modal fade"
      id="qcInspectionModal"
      tabindex="-1"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow">
+    <div class="modal-dialog modal-dialog-qc modal-dialog-centered modal-dialog-scrollable">
+
+        <div class="modal-content">
 
             <div class="modal-header">
 
@@ -195,130 +232,117 @@
 
             <div class="modal-body">
 
-                <div class="card border-0 bg-light mb-4">
-                    <div class="card-body">
+                <input type="hidden"
+                       id="modalQcId">
 
-                        <div class="row g-3">
+                <!-- Header details -->
+                <div class="qc-modal-header-card mb-4">
 
-                            <div class="col-md-2">
-                                <label class="form-label">QC No</label>
-                                <input id="modalQcNo"
-                                       class="form-control"
-                                       readonly>
-                            </div>
+                    <div class="row g-3">
 
-                            <div class="col-md-2">
-                                <label class="form-label">RR No</label>
-                                <input id="modalRrNo"
-                                       class="form-control"
-                                       readonly>
-                            </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                QC No
+                            </label>
 
-                            <div class="col-md-2">
-                                <label class="form-label">PO No</label>
-                                <input id="modalPoNo"
-                                       class="form-control"
-                                       readonly>
-                            </div>
+                            <input id="modalQcNo"
+                                   class="form-control"
+                                   readonly>
+                        </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label">Supplier</label>
-                                <input id="modalSupplierName"
-                                       class="form-control"
-                                       readonly>
-                            </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                RR No
+                            </label>
 
-                            <div class="col-md-3">
-                                <label class="form-label">Date Received</label>
-                                <input id="modalDateReceived"
-                                       type="date"
-                                       class="form-control"
-                                       readonly>
-                            </div>
+                            <input id="modalRrNo"
+                                   class="form-control"
+                                   readonly>
+                        </div>
 
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                PO No
+                            </label>
+
+                            <input id="modalPoNo"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                Supplier
+                            </label>
+
+                            <input id="modalSupplier"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                Inspection Date
+                            </label>
+
+                            <input id="modalInspectionDate"
+                                   type="date"
+                                   class="form-control">
                         </div>
 
                     </div>
+
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+
                     <h5 class="fw-bold mb-0">
                         Inspection Lines
                     </h5>
 
-                    <div class="text-muted small">
+                    <div class="inspection-note">
                         Accepted Qty + Rejected Qty must equal Received Qty.
                     </div>
+
                 </div>
 
-                <div class="table-responsive qc-lines-wrapper">
+                <div class="table-responsive border rounded">
 
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 qc-modal-table">
 
                         <thead class="table-light">
                             <tr>
-                                <th>Material</th>
-                                <th style="min-width:130px;">Lot No.</th>
-                                <th style="min-width:140px;">Mfg Date</th>
-                                <th style="min-width:140px;">Expiry Date</th>
-                                <th class="text-end">Received Qty</th>
-                                <th class="text-end" style="width:130px;">Accepted Qty</th>
-                                <th class="text-end" style="width:130px;">Rejected Qty</th>
-                                <th style="min-width:180px;">Evaluation</th>
-                                <th style="min-width:180px;">Remarks</th>
-                                <th style="min-width:160px;">Decision</th>
+                                <th style="width:100%;">
+                                    Inspection Lines
+                                </th>
                             </tr>
                         </thead>
 
-                        <tbody id="qcLineBody"></tbody>
+                        <tbody id="modalQcLineBody">
+
+                            <tr>
+                                <td colspan="7"
+                                    class="text-center text-muted py-4">
+                                    Loading inspection...
+                                </td>
+                            </tr>
+
+                        </tbody>
 
                     </table>
 
                 </div>
 
-                <div class="row g-3 mt-3">
+                <div class="mt-4">
 
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            Overall Decision
-                        </label>
+                    <label class="form-label fw-semibold">
+                        Overall Remarks
+                    </label>
 
-                        <select id="overallDecision"
-                                class="form-select">
-
-                            <option value="">
-                                Select decision
-                            </option>
-
-                            <option value="ACCEPTED">
-                                Accepted
-                            </option>
-
-                            <option value="PARTIALLY_ACCEPTED">
-                                Partially Accepted
-                            </option>
-
-                            <option value="REJECTED">
-                                Rejected
-                            </option>
-
-                            <option value="FOR_VALIDATION">
-                                For Validation
-                            </option>
-
-                        </select>
-                    </div>
-
-                    <div class="col-md-8">
-                        <label class="form-label">
-                            Overall Remarks
-                        </label>
-
-                        <textarea id="overallRemarks"
-                                  class="form-control"
-                                  rows="3"
-                                  placeholder="Enter overall QC findings, follow-up requirements, or laboratory notes"></textarea>
-                    </div>
+                    <textarea id="modalQcRemarks"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Enter overall QC findings, follow-up requirements, or laboratory notes"></textarea>
 
                 </div>
 
@@ -332,14 +356,8 @@
                     Cancel
                 </button>
 
-                <button id="btnSaveQc"
-                        type="button"
-                        class="btn btn-outline-primary">
-                    Save Draft
-                </button>
-
-                <button id="btnCompleteQc"
-                        type="button"
+                <button type="button"
+                        id="btnCompleteInspection"
                         class="btn btn-success">
                     Complete Inspection
                 </button>
@@ -347,128 +365,176 @@
             </div>
 
         </div>
+
     </div>
+
 </div>
 
-
-<style>
-    .qc-summary-card {
-        border-radius: 14px;
-    }
-
-    .qc-table-wrapper {
-        overflow: visible !important;
-    }
-
-    #qcInspectionModal .modal-dialog {
-        max-width: 1700px;
-    }
-
-    #qcInspectionModal .modal-content {
-        border-radius: 14px;
-    }
-
-    #qcInspectionModal .form-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
-    }
-
-    #qcInspectionModal input[readonly] {
-        background-color: #f3f4f6;
-    }
-
-    .qc-lines-wrapper {
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        max-height: 450px;
-    }
-
-        .qc-lines-wrapper thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            white-space: nowrap;
-        }
-
-    .qc-accepted-input {
-        background-color: #ecfdf5;
-        font-weight: 600;
-    }
-
-    .qc-rejected-input {
-        background-color: #fef2f2;
-        font-weight: 600;
-    }
-
-    @@media (max-width: 768px) {
-        #qcInspectionModal .modal-dialog {
-            margin: 0.5rem;
-        }
-    }
-</style>
-
-
 <script>
-    let qcModal;
-
-    const qcInspections = [
-        {
-            qcId: 1,
-            qcNo: "QC-2026-0001",
-            rrNo: "RR-2026-0001",
-            poNo: "PO-2026-0001",
-            supplierName: "ROSBET PRINTING",
-            dateReceived: "2026-07-14",
-            materialCount: 1,
-            status: "FOR_INSPECTION",
-            createdAt: "2026-07-14T08:30:00",
-            lines: [
-                {
-                    materialName: "ALUMINUM POUCH",
-                    receivedQty: 110,
-                    uom: "PCS"
-                }
-            ]
-        }
-    ];
+    let qcList = [];
+    let qcInspectionModal = null;
+    let currentQcData = null;
 
     document.addEventListener("DOMContentLoaded", function () {
-        qcModal = new bootstrap.Modal(
+
+        qcInspectionModal = new bootstrap.Modal(
             document.getElementById("qcInspectionModal")
         );
 
-        document.getElementById("qcSearch")
-            .addEventListener("input", renderQcTable);
+        document
+            .getElementById("qcSearch")
+            .addEventListener("input", renderTable);
 
-        document.getElementById("qcStatusFilter")
-            .addEventListener("change", renderQcTable);
+        document
+            .getElementById("statusFilter")
+            .addEventListener("change", renderTable);
 
-        renderQcTable();
+        document
+            .getElementById("btnCompleteInspection")
+            .addEventListener("click", completeQcInspection);
+
+            document
+    .getElementById("modalQcLineBody")
+    .addEventListener("input", function (event) {
+        const lotRow =
+            event.target.closest(".lot-row");
+
+        if (!lotRow)
+            return;
+
+        syncLotRowToData(lotRow);
     });
 
+        loadQcInspections();
+    });
 
-    function renderQcTable() {
+    async function loadQcInspections() {
+        const tbody =
+            document.getElementById("qcTableBody");
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9"
+                    class="text-center text-muted py-4">
+                    Loading QC inspections...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const response = await fetch(
+                "/quality/qc-inspections/list"
+            );
+
+            const data = await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Failed to load QC inspections."
+                );
+            }
+
+            qcList = Array.isArray(data)
+                ? data
+                : [];
+
+            updateSummaryCards();
+            renderTable();
+
+        } catch (error) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="text-center text-danger py-4">
+                        ${escapeHtml(
+                            error.message ??
+                            "Failed to load QC inspections."
+                        )}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function updateSummaryCards() {
+        const forInspection =
+            qcList.filter(x =>
+                normalizeStatus(x.status) === "FOR_INSPECTION"
+            ).length;
+
+        const accepted =
+            qcList.filter(x =>
+                normalizeStatus(x.decision) === "ACCEPTED"
+            ).length;
+
+        const partiallyAccepted =
+            qcList.filter(x =>
+                normalizeStatus(x.decision) ===
+                "PARTIALLY_ACCEPTED"
+            ).length;
+
+        const rejected =
+            qcList.filter(x =>
+                normalizeStatus(x.decision) === "REJECTED"
+            ).length;
+
+        document.getElementById(
+            "forInspectionCount"
+        ).innerText = forInspection;
+
+        document.getElementById(
+            "acceptedCount"
+        ).innerText = accepted;
+
+        document.getElementById(
+            "partiallyAcceptedCount"
+        ).innerText = partiallyAccepted;
+
+        document.getElementById(
+            "rejectedCount"
+        ).innerText = rejected;
+    }
+
+    function renderTable() {
         const tbody =
             document.getElementById("qcTableBody");
 
         const search =
             document.getElementById("qcSearch")
-                .value.toLowerCase();
+                .value
+                .trim()
+                .toLowerCase();
 
-        const status =
-            document.getElementById("qcStatusFilter").value;
+        const selectedStatus =
+            normalizeStatus(
+                document.getElementById(
+                    "statusFilter"
+                ).value
+            );
 
-        const filtered = qcInspections.filter(item => {
-            const searchText = `
-                ${item.qcNo}
-                ${item.rrNo}
-                ${item.poNo}
-                ${item.supplierName}
-            `.toLowerCase();
+        const filtered = qcList.filter(qc => {
 
-            return searchText.includes(search) &&
-                   (!status || item.status === status);
+            const searchText = [
+                qc.qcNo,
+                qc.rrNo,
+                qc.poNo,
+                qc.supplierName
+            ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+            const matchesSearch =
+                !search ||
+                searchText.includes(search);
+
+            const matchesStatus =
+                !selectedStatus ||
+                normalizeStatus(qc.status) ===
+                selectedStatus;
+
+            return matchesSearch && matchesStatus;
         });
 
         tbody.innerHTML = "";
@@ -478,220 +544,1961 @@
                 <tr>
                     <td colspan="9"
                         class="text-center text-muted py-4">
-                        No QA/QC inspections found.
+                        No QC inspections found.
                     </td>
                 </tr>
             `;
 
-            updateSummary([]);
             return;
         }
 
-        filtered.forEach(item => {
-            tbody.insertAdjacentHTML("beforeend", `
+        for (const qc of filtered) {
+            const canInspect =
+                normalizeStatus(qc.status) ===
+                "FOR_INSPECTION";
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <tr>
+                        <td class="fw-semibold">
+                            ${escapeHtml(qc.qcNo ?? "")}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(qc.rrNo ?? "")}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(qc.poNo ?? "")}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(qc.supplierName ?? "")}
+                        </td>
+
+                        <td>
+                            ${formatDate(qc.inspectionDate)}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(qc.inspectorId ?? "-")}
+                        </td>
+
+                        <td>
+                            ${renderStatus(qc.status)}
+                        </td>
+
+                        <td>
+                            ${renderDecision(qc.decision)}
+                        </td>
+
+                        <td class="text-end">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    onclick="openQcInspection(${Number(qc.qcId)})">
+
+                                ${canInspect ? "Inspect" : "View"}
+
+                            </button>
+                        </td>
+                    </tr>
+                `
+            );
+        }
+    }
+
+    async function openQcInspection(qcId) {
+        resetInspectionModal();
+
+        qcInspectionModal.show();
+
+        try {
+            const response = await fetch(
+                `/quality/qc-inspections/${qcId}`
+            );
+
+            const data = await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "QC inspection not found."
+                );
+            }
+
+            currentQcData = data;
+
+            document.getElementById(
+                "modalQcId"
+            ).value = data.qcId;
+
+            document.getElementById(
+                "modalQcNo"
+            ).value = data.qcNo ?? "";
+
+            document.getElementById(
+                "modalRrNo"
+            ).value = data.rrNo ?? "";
+
+            document.getElementById(
+                "modalPoNo"
+            ).value = data.poNo ?? "";
+
+            document.getElementById(
+                "modalSupplier"
+            ).value = data.supplierName ?? "";
+
+            document.getElementById(
+                "modalInspectionDate"
+            ).value =
+                data.inspectionDate
+                    ? String(data.inspectionDate)
+                        .split("T")[0]
+                    : getTodayDate();
+
+            document.getElementById(
+                "modalQcRemarks"
+            ).value = data.remarks ?? "";
+
+            renderModalLines(
+                data.lines ?? [],
+                data.status
+            );
+
+            const editable =
+                normalizeStatus(data.status) ===
+                "FOR_INSPECTION";
+
+            document.getElementById(
+                "modalInspectionDate"
+            ).disabled = !editable;
+
+            document.getElementById(
+                "modalQcRemarks"
+            ).disabled = !editable;
+
+            document.getElementById(
+                "btnCompleteInspection"
+            ).classList.toggle(
+                "d-none",
+                !editable
+            );
+
+        } catch (error) {
+            document.getElementById(
+                "modalQcLineBody"
+            ).innerHTML = `
                 <tr>
-                    <td class="fw-semibold">
-                        ${item.qcNo}
-                    </td>
-
-                    <td>${item.rrNo}</td>
-                    <td>${item.poNo}</td>
-                    <td>${item.supplierName}</td>
-                    <td>${formatDate(item.dateReceived)}</td>
-                    <td>${item.materialCount}</td>
-                    <td>${renderQcStatus(item.status)}</td>
-                    <td>${formatDateTime(item.createdAt)}</td>
-
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary"
-                                onclick="openQcInspection(${item.qcId})">
-                            Inspect
-                        </button>
+                    <td colspan="7"
+                        class="text-center text-danger py-4">
+                        ${escapeHtml(
+                            error.message ??
+                            "Failed to load inspection."
+                        )}
                     </td>
                 </tr>
-            `);
-        });
-
-        updateSummary(qcInspections);
+            `;
+        }
     }
 
+    function resetInspectionModal() {
+        currentQcData = null;
 
-    function openQcInspection(qcId) {
-        const item =
-            qcInspections.find(x => x.qcId === qcId);
+        document.getElementById(
+            "modalQcId"
+        ).value = "";
 
-        if (!item) {
-            alert("QC inspection not found.");
-            return;
+        document.getElementById(
+            "modalQcNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalRrNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalPoNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalSupplier"
+        ).value = "";
+
+        document.getElementById(
+            "modalInspectionDate"
+        ).value = getTodayDate();
+
+        document.getElementById(
+            "modalQcRemarks"
+        ).value = "";
+
+        document.getElementById(
+            "modalQcLineBody"
+        ).innerHTML = `
+            <tr>
+                <td colspan="7"
+                    class="text-center text-muted py-4">
+                    Loading inspection...
+                </td>
+            </tr>
+        `;
+
+        document.getElementById(
+            "btnCompleteInspection"
+        ).classList.add("d-none");
+    }
+
+        function renderLotTrackedInspection(line, editable) {
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div>
+                    <span class="fw-semibold">
+                        Lot Breakdown
+                    </span>
+
+                    <span class="text-muted small ms-2">
+                        Total lot received quantity must equal
+                        ${formatQty(line.receivedQty)}.
+                    </span>
+                </div>
+
+                ${
+                    editable
+                        ? `
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    onclick="addLotRow(${Number(line.qcLineId)})">
+                                + Add Lot
+                            </button>
+                          `
+                        : ""
+                }
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle mb-2">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th style="min-width:140px;">
+                                Lot No
+                            </th>
+
+                            <th style="min-width:140px;">
+                                Mfg Date
+                            </th>
+
+                            <th style="min-width:140px;">
+                                Exp Date
+                            </th>
+
+                            <th style="min-width:120px;">
+                                Received
+                            </th>
+
+                            <th style="min-width:120px;">
+                                Accepted
+                            </th>
+
+                            <th style="min-width:120px;">
+                                Rejected
+                            </th>
+
+                            <th style="min-width:220px;">
+                                Rejection Reason
+                            </th>
+
+                            <th style="min-width:220px;">
+                                Remarks
+                            </th>
+
+                            ${
+                                editable
+                                    ? `
+                                        <th style="width:80px;">
+                                            Remove
+                                        </th>
+                                      `
+                                    : ""
+                            }
+                        </tr>
+                    </thead>
+
+                    <tbody class="lot-table-body"
+                           data-qc-line-id="${Number(line.qcLineId)}">
+
+                        ${renderLotRows(line, editable)}
+
+                    </tbody>
+
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3"
+                                class="text-end">
+                                Totals
+                            </th>
+
+                            <th class="lot-total-received">
+                                0
+                            </th>
+
+                            <th class="lot-total-accepted">
+                                0
+                            </th>
+
+                            <th class="lot-total-rejected">
+                                0
+                            </th>
+
+                            <th colspan="${editable ? 3 : 2}">
+                            </th>
+                        </tr>
+                    </tfoot>
+
+                </table>
+
+            </div>
+
+            <div class="row g-3 mt-1">
+
+                <div class="col-md-8">
+                    <label class="form-label">
+                        Line Remarks
+                    </label>
+
+                    <input type="text"
+                           class="form-control line-remarks"
+                           value="${escapeAttribute(line.remarks ?? "")}"
+                           placeholder="Optional line remarks"
+                           ${editable ? "" : "disabled"}>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">
+                        Line Status
+                    </label>
+
+                    <div class="line-status-cell pt-2">
+                        ${renderLineStatus(line.status)}
+                    </div>
+                </div>
+
+            </div>
+        `;
+    }
+
+        function renderNonLotInspection(line, editable) {
+        const allocation =
+            line.lots?.[0] ?? {};
+
+        const receivedQty =
+            Number(line.receivedQty ?? 0);
+
+        let acceptedQty =
+            Number(allocation.acceptedQty ?? line.acceptedQty ?? 0);
+
+        let rejectedQty =
+            Number(allocation.rejectedQty ?? line.rejectedQty ?? 0);
+
+        /*
+         * For a new inspection, default all quantity to accepted.
+         */
+        if (
+            acceptedQty === 0 &&
+            rejectedQty === 0 &&
+            receivedQty > 0
+        ) {
+            acceptedQty = receivedQty;
+            rejectedQty = 0;
+
+            allocation.acceptedQty = acceptedQty;
+            allocation.rejectedQty = rejectedQty;
         }
 
-        document.getElementById("modalQcNo").value =
-            item.qcNo;
+        return `
+            <div class="alert alert-light border mb-3">
+                This material does not require a supplier lot number.
+                Enter only the accepted and rejected quantities.
+            </div>
 
-        document.getElementById("modalRrNo").value =
-            item.rrNo;
+            <div class="row g-3">
 
-        document.getElementById("modalPoNo").value =
-            item.poNo;
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">
+                        Received Quantity
+                    </label>
 
-        document.getElementById("modalSupplierName").value =
-            item.supplierName;
+                    <input type="number"
+                           class="form-control text-end nonlot-received-qty"
+                           value="${formatInputNumber(receivedQty)}"
+                           readonly>
+                </div>
 
-        document.getElementById("modalDateReceived").value =
-            item.dateReceived;
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">
+                        Accepted Quantity
+                    </label>
 
-        document.getElementById("overallDecision").value = "";
-        document.getElementById("overallRemarks").value = "";
+                    <input type="number"
+                           class="form-control text-end accepted-qty nonlot-accepted-qty"
+                           min="0"
+                           step="0.0001"
+                           value="${formatInputNumber(acceptedQty)}"
+                           oninput="nonLotAcceptedChanged(this)"
+                           ${editable ? "" : "disabled"}>
+                </div>
 
-        renderQcLines(item.lines);
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">
+                        Rejected Quantity
+                    </label>
 
-        qcModal.show();
+                    <input type="number"
+                           class="form-control text-end rejected-qty nonlot-rejected-qty"
+                           min="0"
+                           step="0.0001"
+                           value="${formatInputNumber(rejectedQty)}"
+                           oninput="nonLotRejectedChanged(this)"
+                           ${editable ? "" : "disabled"}>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">
+                        Line Status
+                    </label>
+
+                    <div class="line-status-cell pt-2">
+                        ${renderLineStatus(line.status)}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Rejection Reason
+                    </label>
+
+                    <input type="text"
+                           class="form-control nonlot-rejection-reason"
+                           value="${escapeAttribute(
+                               allocation.rejectionReason ?? ""
+                           )}"
+                           placeholder="Required when rejected quantity is greater than zero"
+                           ${editable ? "" : "disabled"}>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Line Remarks
+                    </label>
+
+                    <input type="text"
+                           class="form-control line-remarks"
+                           value="${escapeAttribute(line.remarks ?? "")}"
+                           placeholder="Optional line remarks"
+                           ${editable ? "" : "disabled"}>
+                </div>
+
+            </div>
+        `;
     }
 
+        function nonLotAcceptedChanged(input) {
+        const row =
+            input.closest("tr[data-qc-line-id]");
 
-    function renderQcLines(lines) {
+        if (!row)
+            return;
+
+        const receivedQty =
+            Number(row.dataset.receivedQty || 0);
+
+        let acceptedQty =
+            Number(input.value || 0);
+
+        acceptedQty = Math.max(
+            0,
+            Math.min(receivedQty, acceptedQty)
+        );
+
+        const rejectedQty =
+            receivedQty - acceptedQty;
+
+        input.value =
+            formatInputNumber(acceptedQty);
+
+        row.querySelector(
+            ".nonlot-rejected-qty"
+        ).value =
+            formatInputNumber(rejectedQty);
+
+        syncNonLotRowToData(row);
+        updateNonLotStatus(
+            Number(row.dataset.qcLineId)
+        );
+    }
+
+    function nonLotRejectedChanged(input) {
+        const row =
+            input.closest("tr[data-qc-line-id]");
+
+        if (!row)
+            return;
+
+        const receivedQty =
+            Number(row.dataset.receivedQty || 0);
+
+        let rejectedQty =
+            Number(input.value || 0);
+
+        rejectedQty = Math.max(
+            0,
+            Math.min(receivedQty, rejectedQty)
+        );
+
+        const acceptedQty =
+            receivedQty - rejectedQty;
+
+        input.value =
+            formatInputNumber(rejectedQty);
+
+        row.querySelector(
+            ".nonlot-accepted-qty"
+        ).value =
+            formatInputNumber(acceptedQty);
+
+        syncNonLotRowToData(row);
+        updateNonLotStatus(
+            Number(row.dataset.qcLineId)
+        );
+    }
+
+        function syncNonLotRowToData(row) {
+        if (!currentQcData)
+            return;
+
+        const qcLineId =
+            Number(row.dataset.qcLineId);
+
+        const line =
+            currentQcData.lines?.find(
+                x => Number(x.qcLineId) === qcLineId
+            );
+
+        if (!line)
+            return;
+
+        if (!Array.isArray(line.lots)) {
+            line.lots = [];
+        }
+
+        if (line.lots.length === 0) {
+            line.lots.push({
+                qcLineLotId: null,
+                lotNo: "",
+                manufacturingDate: null,
+                expirationDate: null,
+                receivedQty:
+                    Number(line.receivedQty ?? 0),
+                acceptedQty: 0,
+                rejectedQty: 0,
+                rejectionReason: "",
+                remarks: "",
+                status: "PENDING"
+            });
+        }
+
+        const allocation =
+            line.lots[0];
+
+        allocation.receivedQty =
+            Number(line.receivedQty ?? 0);
+
+        allocation.acceptedQty =
+            Number(
+                row.querySelector(
+                    ".nonlot-accepted-qty"
+                ).value || 0
+            );
+
+        allocation.rejectedQty =
+            Number(
+                row.querySelector(
+                    ".nonlot-rejected-qty"
+                ).value || 0
+            );
+
+        allocation.rejectionReason =
+            row.querySelector(
+                ".nonlot-rejection-reason"
+            ).value.trim();
+
+        allocation.lotNo = "";
+        allocation.manufacturingDate = null;
+        allocation.expirationDate = null;
+    }
+
+        function updateNonLotStatus(qcLineId) {
+        const row =
+            document.querySelector(
+                `#modalQcLineBody tr[data-qc-line-id="${qcLineId}"]`
+            );
+
+        if (!row)
+            return;
+
+        const receivedQty =
+            Number(row.dataset.receivedQty || 0);
+
+        const acceptedQty =
+            Number(
+                row.querySelector(
+                    ".nonlot-accepted-qty"
+                )?.value || 0
+            );
+
+        const rejectedQty =
+            Number(
+                row.querySelector(
+                    ".nonlot-rejected-qty"
+                )?.value || 0
+            );
+
+        let status = "PENDING";
+
+        if (
+            Math.abs(
+                acceptedQty + rejectedQty - receivedQty
+            ) <= 0.0001
+        ) {
+            if (
+                Math.abs(
+                    acceptedQty - receivedQty
+                ) <= 0.0001
+            ) {
+                status = "ACCEPTED";
+            }
+            else if (
+                Math.abs(
+                    rejectedQty - receivedQty
+                ) <= 0.0001
+            ) {
+                status = "REJECTED";
+            }
+            else {
+                status = "PARTIALLY_ACCEPTED";
+            }
+        }
+
+        row.querySelector(
+            ".line-status-cell"
+        ).innerHTML =
+            renderLineStatus(status);
+    }
+
+            function renderModalLines(lines, status) {
         const tbody =
-            document.getElementById("qcLineBody");
+            document.getElementById("modalQcLineBody");
 
         tbody.innerHTML = "";
 
-        lines.forEach((line, index) => {
-            tbody.insertAdjacentHTML("beforeend", `
-                <tr data-line-index="${index}">
-
-                    <td>
-                        <div class="fw-semibold">
-                            ${line.materialName}
-                        </div>
-
-                        <div class="text-muted small">
-                            ${line.uom}
-                        </div>
+        if (!Array.isArray(lines) || lines.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td class="text-center text-muted py-4">
+                        No QC inspection lines found.
                     </td>
-
-                    <td>
-                        <input class="form-control form-control-sm qc-lot-no">
-                    </td>
-
-                    <td>
-                        <input type="date"
-                               class="form-control form-control-sm qc-mfg-date">
-                    </td>
-
-                    <td>
-                        <input type="date"
-                               class="form-control form-control-sm qc-expiry-date">
-                    </td>
-
-                    <td class="text-end fw-semibold">
-                        ${formatQty(line.receivedQty)}
-                    </td>
-
-                    <td>
-                        <input type="number"
-                               class="form-control form-control-sm text-end qc-accepted-input"
-                               min="0"
-                               step="0.0001"
-                               value="${line.receivedQty}">
-                    </td>
-
-                    <td>
-                        <input type="number"
-                               class="form-control form-control-sm text-end qc-rejected-input"
-                               min="0"
-                               step="0.0001"
-                               value="0">
-                    </td>
-
-                    <td>
-                        <input class="form-control form-control-sm qc-evaluation"
-                               placeholder="Visual/physical findings">
-                    </td>
-
-                    <td>
-                        <input class="form-control form-control-sm qc-remarks"
-                               placeholder="Optional remarks">
-                    </td>
-
-                    <td>
-                        <select class="form-select form-select-sm qc-decision">
-                            <option value="ACCEPTED">Accepted</option>
-                            <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
-                            <option value="REJECTED">Rejected</option>
-                            <option value="FOR_VALIDATION">For Validation</option>
-                        </select>
-                    </td>
-
                 </tr>
-            `);
+            `;
+
+            return;
+        }
+
+        const editable =
+            normalizeStatus(status) === "FOR_INSPECTION";
+
+        for (const line of lines) {
+            line.isLotTracked =
+                line.isLotTracked === true;
+
+            if (!Array.isArray(line.lots)) {
+                line.lots = [];
+            }
+
+            /*
+             * Non-lot-tracked materials still use one internal
+             * inspection allocation object.
+             */
+            if (!line.isLotTracked && line.lots.length === 0) {
+                line.lots.push({
+                    qcLineLotId: null,
+                    lotNo: "",
+                    manufacturingDate: null,
+                    expirationDate: null,
+                    receivedQty:
+                        Number(line.receivedQty ?? 0),
+                    acceptedQty:
+                        Number(line.acceptedQty ?? line.receivedQty ?? 0),
+                    rejectedQty:
+                        Number(line.rejectedQty ?? 0),
+                    rejectionReason: "",
+                    remarks: "",
+                    status: "PENDING"
+                });
+            }
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <tr data-qc-line-id="${Number(line.qcLineId)}"
+                        data-received-qty="${Number(line.receivedQty ?? 0)}"
+                        data-is-lot-tracked="${line.isLotTracked}">
+
+                        <td class="p-3">
+
+                            <div class="card border">
+
+                                <div class="card-header bg-light">
+
+                                    <div class="d-flex justify-content-between align-items-center">
+
+                                        <div>
+                                            <div class="fw-bold">
+                                                ${escapeHtml(line.materialName ?? "")}
+                                            </div>
+
+                                            <div class="text-muted small">
+                                                ${escapeHtml(line.materialCode ?? "")}
+                                            </div>
+
+                                            <div class="mt-1">
+                                                ${
+                                                    line.isLotTracked
+                                                        ? `
+                                                            <span class="badge bg-primary">
+                                                                Lot Tracked
+                                                            </span>
+                                                          `
+                                                        : `
+                                                            <span class="badge bg-secondary">
+                                                                Non-Lot Tracked
+                                                            </span>
+                                                          `
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="text-end">
+                                            <div class="text-muted small">
+                                                Received Quantity
+                                            </div>
+
+                                            <div class="fw-bold">
+                                                ${formatQty(line.receivedQty)}
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="card-body">
+
+                                    ${
+                                        line.isLotTracked
+                                            ? renderLotTrackedInspection(
+                                                line,
+                                                editable
+                                            )
+                                            : renderNonLotInspection(
+                                                line,
+                                                editable
+                                            )
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                `
+            );
+
+            if (line.isLotTracked) {
+                updateLineLotTotals(
+                    Number(line.qcLineId)
+                );
+            } else {
+                updateNonLotStatus(
+                    Number(line.qcLineId)
+                );
+            }
+        }
+    }
+
+        function renderLotRows(line, editable) {
+        const lots =
+            Array.isArray(line.lots)
+                ? line.lots
+                : [];
+
+        if (lots.length === 0) {
+            return `
+                <tr class="no-lot-row">
+                    <td colspan="${editable ? 9 : 8}"
+                        class="text-center text-muted py-3">
+                        No lots added.
+                    </td>
+                </tr>
+            `;
+        }
+
+        return lots
+            .map((lot, index) => renderLotRow(
+                line.qcLineId,
+                lot,
+                index,
+                editable
+            ))
+            .join("");
+    }
+
+       
+
+        function renderLotRow(
+        qcLineId,
+        lot,
+        index,
+        editable
+    ) {
+        return `
+            <tr class="lot-row"
+                data-lot-index="${index}"
+                data-qc-line-lot-id="${lot.qcLineLotId ?? ""}">
+
+                <td>
+                    <input type="text"
+                           class="form-control form-control-sm lot-no"
+                           value="${escapeAttribute(lot.lotNo ?? "")}"
+                           placeholder="Lot No"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="date"
+                           class="form-control form-control-sm manufacturing-date"
+                           value="${formatDateInput(lot.manufacturingDate)}"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="date"
+                           class="form-control form-control-sm expiration-date"
+                           value="${formatDateInput(lot.expirationDate)}"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="number"
+                           class="form-control form-control-sm text-end lot-received-qty"
+                           min="0"
+                           step="0.0001"
+                           value="${formatInputNumber(lot.receivedQty ?? 0)}"
+                           oninput="lotQtyChanged(this)"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="number"
+                           class="form-control form-control-sm text-end accepted-qty"
+                           min="0"
+                           step="0.0001"
+                           value="${formatInputNumber(lot.acceptedQty ?? 0)}"
+                           oninput="lotAcceptedQtyChanged(this)"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="number"
+                           class="form-control form-control-sm text-end rejected-qty"
+                           min="0"
+                           step="0.0001"
+                           value="${formatInputNumber(lot.rejectedQty ?? 0)}"
+                           oninput="lotRejectedQtyChanged(this)"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="text"
+                           class="form-control form-control-sm rejection-reason"
+                           value="${escapeAttribute(lot.rejectionReason ?? "")}"
+                           placeholder="Reason if rejected"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                <td>
+                    <input type="text"
+                           class="form-control form-control-sm lot-remarks"
+                           value="${escapeAttribute(lot.remarks ?? "")}"
+                           placeholder="Optional remarks"
+                           ${editable ? "" : "disabled"}>
+                </td>
+
+                ${
+                    editable
+                        ? `
+                            <td class="text-center">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="removeLotRow(this)">
+                                    Remove
+                                </button>
+                            </td>
+                          `
+                        : ""
+                }
+
+            </tr>
+        `;
+    }
+
+     function addLotRow(qcLineId) {
+        const line =
+            currentQcData?.lines?.find(
+                x => Number(x.qcLineId) === Number(qcLineId)
+            );
+
+        if (!line)
+            return;
+
+        if (!Array.isArray(line.lots))
+            line.lots = [];
+
+        line.lots.push({
+            qcLineLotId: null,
+            lotNo: "",
+            manufacturingDate: null,
+            expirationDate: null,
+            receivedQty: 0,
+            acceptedQty: 0,
+            rejectedQty: 0,
+            rejectionReason: "",
+            remarks: "",
+            status: "PENDING"
         });
+
+        refreshSingleQcLine(qcLineId);
     }
 
+        function refreshSingleQcLine(qcLineId) {
+        if (!currentQcData)
+            return;
 
-    function updateSummary(data) {
-        document.getElementById("forInspectionCount").textContent =
-            data.filter(x => x.status === "FOR_INSPECTION").length;
-
-        document.getElementById("acceptedCount").textContent =
-            data.filter(x => x.status === "ACCEPTED").length;
-
-        document.getElementById("partialCount").textContent =
-            data.filter(x => x.status === "PARTIALLY_ACCEPTED").length;
-
-        document.getElementById("rejectedCount").textContent =
-            data.filter(x => x.status === "REJECTED").length;
+        renderModalLines(
+            currentQcData.lines ?? [],
+            currentQcData.status
+        );
     }
 
+        function lotQtyChanged(input) {
+        const lotRow = input.closest(".lot-row");
 
-    function renderQcStatus(status) {
+        let receivedQty =
+            Number(
+                lotRow.querySelector(
+                    ".lot-received-qty"
+                ).value || 0
+            );
+
+        let acceptedQty =
+            Number(
+                lotRow.querySelector(
+                    ".accepted-qty"
+                ).value || 0
+            );
+
+        receivedQty = Math.max(0, receivedQty);
+        acceptedQty = Math.max(
+            0,
+            Math.min(receivedQty, acceptedQty)
+        );
+
+        lotRow.querySelector(
+            ".lot-received-qty"
+        ).value = formatInputNumber(receivedQty);
+
+        lotRow.querySelector(
+            ".accepted-qty"
+        ).value = formatInputNumber(acceptedQty);
+
+        lotRow.querySelector(
+            ".rejected-qty"
+        ).value = formatInputNumber(
+            receivedQty - acceptedQty
+        );
+
+        syncLotRowToData(lotRow);
+        updateLineLotTotalsFromRow(lotRow);
+    }
+
+        function lotAcceptedQtyChanged(input) {
+        const lotRow = input.closest(".lot-row");
+
+        const receivedQty =
+            Number(
+                lotRow.querySelector(
+                    ".lot-received-qty"
+                ).value || 0
+            );
+
+        let acceptedQty =
+            Number(input.value || 0);
+
+        acceptedQty = Math.max(
+            0,
+            Math.min(receivedQty, acceptedQty)
+        );
+
+        input.value =
+            formatInputNumber(acceptedQty);
+
+        lotRow.querySelector(
+            ".rejected-qty"
+        ).value = formatInputNumber(
+            receivedQty - acceptedQty
+        );
+
+        syncLotRowToData(lotRow);
+        updateLineLotTotalsFromRow(lotRow);
+    }
+
+        function lotRejectedQtyChanged(input) {
+        const lotRow = input.closest(".lot-row");
+
+        const receivedQty =
+            Number(
+                lotRow.querySelector(
+                    ".lot-received-qty"
+                ).value || 0
+            );
+
+        let rejectedQty =
+            Number(input.value || 0);
+
+        rejectedQty = Math.max(
+            0,
+            Math.min(receivedQty, rejectedQty)
+        );
+
+        input.value =
+            formatInputNumber(rejectedQty);
+
+        lotRow.querySelector(
+            ".accepted-qty"
+        ).value = formatInputNumber(
+            receivedQty - rejectedQty
+        );
+
+        syncLotRowToData(lotRow);
+        updateLineLotTotalsFromRow(lotRow);
+    }
+
+        function syncLotRowToData(lotRow) {
+        const lineRow =
+            lotRow.closest(
+                "tr[data-qc-line-id]"
+            );
+
+        if (!lineRow || !currentQcData)
+            return;
+
+        const qcLineId =
+            Number(lineRow.dataset.qcLineId);
+
+        const lotIndex =
+            Number(lotRow.dataset.lotIndex);
+
+        const line =
+            currentQcData.lines.find(
+                x => Number(x.qcLineId) === qcLineId
+            );
+
+        if (!line ||
+            !Array.isArray(line.lots) ||
+            !line.lots[lotIndex]) {
+            return;
+        }
+
+        const lot = line.lots[lotIndex];
+
+        lot.lotNo =
+            lotRow.querySelector(
+                ".lot-no"
+            ).value.trim();
+
+        lot.manufacturingDate =
+            lotRow.querySelector(
+                ".manufacturing-date"
+            ).value || null;
+
+        lot.expirationDate =
+            lotRow.querySelector(
+                ".expiration-date"
+            ).value || null;
+
+        lot.receivedQty =
+            Number(
+                lotRow.querySelector(
+                    ".lot-received-qty"
+                ).value || 0
+            );
+
+        lot.acceptedQty =
+            Number(
+                lotRow.querySelector(
+                    ".accepted-qty"
+                ).value || 0
+            );
+
+        lot.rejectedQty =
+            Number(
+                lotRow.querySelector(
+                    ".rejected-qty"
+                ).value || 0
+            );
+
+        lot.rejectionReason =
+            lotRow.querySelector(
+                ".rejection-reason"
+            ).value.trim();
+
+        lot.remarks =
+            lotRow.querySelector(
+                ".lot-remarks"
+            ).value.trim();
+    }
+
+        function updateLineLotTotalsFromRow(lotRow) {
+        const lineRow =
+            lotRow.closest(
+                "tr[data-qc-line-id]"
+            );
+
+        if (!lineRow)
+            return;
+
+        updateLineLotTotals(
+            Number(lineRow.dataset.qcLineId)
+        );
+    }
+
+        function updateLineLotTotals(qcLineId) {
+        const lineRow =
+            document.querySelector(
+                `#modalQcLineBody tr[data-qc-line-id="${qcLineId}"]`
+            );
+
+        if (!lineRow)
+            return;
+
+        const lotRows =
+            lineRow.querySelectorAll(".lot-row");
+
+        let totalReceived = 0;
+        let totalAccepted = 0;
+        let totalRejected = 0;
+
+        for (const lotRow of lotRows) {
+            totalReceived += Number(
+                lotRow.querySelector(
+                    ".lot-received-qty"
+                ).value || 0
+            );
+
+            totalAccepted += Number(
+                lotRow.querySelector(
+                    ".accepted-qty"
+                ).value || 0
+            );
+
+            totalRejected += Number(
+                lotRow.querySelector(
+                    ".rejected-qty"
+                ).value || 0
+            );
+        }
+
+        lineRow.querySelector(
+            ".lot-total-received"
+        ).innerText = formatQty(totalReceived);
+
+        lineRow.querySelector(
+            ".lot-total-accepted"
+        ).innerText = formatQty(totalAccepted);
+
+        lineRow.querySelector(
+            ".lot-total-rejected"
+        ).innerText = formatQty(totalRejected);
+
+        const qcReceivedQty =
+            Number(lineRow.dataset.receivedQty || 0);
+
+        let status = "PENDING";
+
+        if (
+            Math.abs(
+                totalReceived - qcReceivedQty
+            ) <= 0.0001
+        ) {
+            if (
+                Math.abs(
+                    totalAccepted - qcReceivedQty
+                ) <= 0.0001
+            ) {
+                status = "ACCEPTED";
+            }
+            else if (
+                Math.abs(
+                    totalRejected - qcReceivedQty
+                ) <= 0.0001
+            ) {
+                status = "REJECTED";
+            }
+            else {
+                status = "PARTIALLY_ACCEPTED";
+            }
+        }
+
+        lineRow.querySelector(
+            ".line-status-cell"
+        ).innerHTML =
+            renderLineStatus(status);
+    }
+
+        function removeLotRow(button) {
+        const lotRow =
+            button.closest(".lot-row");
+
+        const lineRow =
+            button.closest("tr[data-qc-line-id]");
+
+        if (!lotRow || !lineRow)
+            return;
+
+        const qcLineId =
+            Number(lineRow.dataset.qcLineId);
+
+        const lotIndex =
+            Number(lotRow.dataset.lotIndex);
+
+        const line =
+            currentQcData?.lines?.find(
+                x => Number(x.qcLineId) === qcLineId
+            );
+
+        if (!line || !Array.isArray(line.lots))
+            return;
+
+        line.lots.splice(lotIndex, 1);
+
+        refreshSingleQcLine(qcLineId);
+    }
+        function formatDateInput(value) {
+        if (!value)
+            return "";
+
+        return String(value).split("T")[0];
+    }
+
+    function acceptedQtyChanged(input) {
+        const row = input.closest(
+            "tr[data-qc-line-id]"
+        );
+
+        const receivedQty =
+            Number(row.dataset.receivedQty || 0);
+
+        let acceptedQty =
+            Number(input.value || 0);
+
+        acceptedQty =
+            Math.max(
+                0,
+                Math.min(receivedQty, acceptedQty)
+            );
+
+        input.value = acceptedQty;
+
+        const rejectedInput =
+            row.querySelector(".rejected-qty");
+
+        rejectedInput.value =
+            formatInputNumber(
+                receivedQty - acceptedQty
+            );
+
+        updateLiveLineStatus(row);
+    }
+
+    function rejectedQtyChanged(input) {
+        const row = input.closest(
+            "tr[data-qc-line-id]"
+        );
+
+        const receivedQty =
+            Number(row.dataset.receivedQty || 0);
+
+        let rejectedQty =
+            Number(input.value || 0);
+
+        rejectedQty =
+            Math.max(
+                0,
+                Math.min(receivedQty, rejectedQty)
+            );
+
+        input.value = rejectedQty;
+
+        const acceptedInput =
+            row.querySelector(".accepted-qty");
+
+        acceptedInput.value =
+            formatInputNumber(
+                receivedQty - rejectedQty
+            );
+
+        updateLiveLineStatus(row);
+    }
+
+    function updateLiveLineStatus(row) {
+        const receivedQty =
+            Number(row.dataset.receivedQty || 0);
+
+        const acceptedQty =
+            Number(
+                row.querySelector(
+                    ".accepted-qty"
+                ).value || 0
+            );
+
+        const rejectedQty =
+            Number(
+                row.querySelector(
+                    ".rejected-qty"
+                ).value || 0
+            );
+
+        let status = "PENDING";
+
+        if (
+            Math.abs(
+                acceptedQty - receivedQty
+            ) <= 0.0001
+        ) {
+            status = "ACCEPTED";
+        }
+        else if (
+            Math.abs(
+                rejectedQty - receivedQty
+            ) <= 0.0001
+        ) {
+            status = "REJECTED";
+        }
+        else if (
+            acceptedQty > 0 ||
+            rejectedQty > 0
+        ) {
+            status = "PARTIALLY_ACCEPTED";
+        }
+
+        row.querySelector(
+            ".line-status-cell"
+        ).innerHTML =
+            renderLineStatus(status);
+    }
+
+      async function completeQcInspection() {
+        const qcId =
+            Number(
+                document.getElementById(
+                    "modalQcId"
+                ).value
+            );
+
+        if (!qcId) {
+            alert("QC inspection was not loaded.");
+            return;
+        }
+
+        if (!currentQcData) {
+            alert("QC inspection data was not loaded.");
+            return;
+        }
+
+        const lines = [];
+
+        const rows =
+            document.querySelectorAll(
+                "#modalQcLineBody tr[data-qc-line-id]"
+            );
+
+        for (const row of rows) {
+            const qcLineId =
+                Number(row.dataset.qcLineId);
+
+            const receivedQty =
+                Number(row.dataset.receivedQty || 0);
+
+            const isLotTracked =
+                String(row.dataset.isLotTracked)
+                    .toLowerCase() === "true";
+
+            const lineData =
+                currentQcData.lines?.find(
+                    x =>
+                        Number(x.qcLineId) ===
+                        qcLineId
+                );
+
+            if (!lineData) {
+                alert(
+                    `QC line ${qcLineId} was not found.`
+                );
+
+                return;
+            }
+
+            const lineRemarks =
+                row.querySelector(
+                    ".line-remarks"
+                )?.value.trim() ?? "";
+
+            const lots = [];
+
+            /*
+             * LOT-TRACKED MATERIAL
+             */
+            if (isLotTracked) {
+                const lotRows =
+                    row.querySelectorAll(".lot-row");
+
+                if (lotRows.length === 0) {
+                    alert(
+                        `${lineData.materialName}: At least one lot is required.`
+                    );
+
+                    return;
+                }
+
+                let totalLotReceived = 0;
+
+                for (const lotRow of lotRows) {
+                    const qcLineLotIdValue =
+                        lotRow.dataset.qcLineLotId;
+
+                    const lotNo =
+                        lotRow.querySelector(
+                            ".lot-no"
+                        )?.value.trim() ?? "";
+
+                    const manufacturingDate =
+                        lotRow.querySelector(
+                            ".manufacturing-date"
+                        )?.value || null;
+
+                    const expirationDate =
+                        lotRow.querySelector(
+                            ".expiration-date"
+                        )?.value || null;
+
+                    const lotReceivedQty =
+                        Number(
+                            lotRow.querySelector(
+                                ".lot-received-qty"
+                            )?.value || 0
+                        );
+
+                    const acceptedQty =
+                        Number(
+                            lotRow.querySelector(
+                                ".accepted-qty"
+                            )?.value || 0
+                        );
+
+                    const rejectedQty =
+                        Number(
+                            lotRow.querySelector(
+                                ".rejected-qty"
+                            )?.value || 0
+                        );
+
+                    const rejectionReason =
+                        lotRow.querySelector(
+                            ".rejection-reason"
+                        )?.value.trim() ?? "";
+
+                    const remarks =
+                        lotRow.querySelector(
+                            ".lot-remarks"
+                        )?.value.trim() ?? "";
+
+                    if (!lotNo) {
+                        alert(
+                            `${lineData.materialName}: Lot number is required.`
+                        );
+
+                        lotRow.querySelector(
+                            ".lot-no"
+                        )?.focus();
+
+                        return;
+                    }
+
+                    if (lotReceivedQty <= 0) {
+                        alert(
+                            `${lineData.materialName}: Lot received quantity must be greater than zero.`
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        acceptedQty < 0 ||
+                        rejectedQty < 0
+                    ) {
+                        alert(
+                            `${lineData.materialName}: Accepted and rejected quantities cannot be negative.`
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        Math.abs(
+                            acceptedQty +
+                            rejectedQty -
+                            lotReceivedQty
+                        ) > 0.0001
+                    ) {
+                        alert(
+                            `${lineData.materialName}: Accepted plus rejected must equal the lot received quantity.`
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        rejectedQty > 0 &&
+                        !rejectionReason
+                    ) {
+                        alert(
+                            `${lineData.materialName}: Rejection reason is required for lot ${lotNo}.`
+                        );
+
+                        lotRow.querySelector(
+                            ".rejection-reason"
+                        )?.focus();
+
+                        return;
+                    }
+
+                    if (
+                        manufacturingDate &&
+                        expirationDate &&
+                        expirationDate <
+                        manufacturingDate
+                    ) {
+                        alert(
+                            `${lineData.materialName}: Expiration date cannot be earlier than manufacturing date.`
+                        );
+
+                        return;
+                    }
+
+                    totalLotReceived += lotReceivedQty;
+
+                    lots.push({
+                        qcLineLotId:
+                            qcLineLotIdValue
+                                ? Number(
+                                    qcLineLotIdValue
+                                )
+                                : null,
+
+                        lotNo,
+                        manufacturingDate,
+                        expirationDate,
+                        receivedQty:
+                            lotReceivedQty,
+                        acceptedQty,
+                        rejectedQty,
+                        rejectionReason:
+                            rejectionReason || null,
+                        remarks:
+                            remarks || null
+                    });
+                }
+
+                if (
+                    Math.abs(
+                        totalLotReceived -
+                        receivedQty
+                    ) > 0.0001
+                ) {
+                    alert(
+                        `${lineData.materialName}: Total lot received quantity must equal ${formatQty(receivedQty)}.`
+                    );
+
+                    return;
+                }
+            }
+
+            /*
+             * NON-LOT-TRACKED MATERIAL
+             */
+            else {
+                const acceptedQty =
+                    Number(
+                        row.querySelector(
+                            ".nonlot-accepted-qty"
+                        )?.value || 0
+                    );
+
+                const rejectedQty =
+                    Number(
+                        row.querySelector(
+                            ".nonlot-rejected-qty"
+                        )?.value || 0
+                    );
+
+                const rejectionReason =
+                    row.querySelector(
+                        ".nonlot-rejection-reason"
+                    )?.value.trim() ?? "";
+
+                if (
+                    acceptedQty < 0 ||
+                    rejectedQty < 0
+                ) {
+                    alert(
+                        `${lineData.materialName}: Accepted and rejected quantities cannot be negative.`
+                    );
+
+                    return;
+                }
+
+                if (
+                    Math.abs(
+                        acceptedQty +
+                        rejectedQty -
+                        receivedQty
+                    ) > 0.0001
+                ) {
+                    alert(
+                        `${lineData.materialName}: Accepted plus rejected quantity must equal received quantity.`
+                    );
+
+                    return;
+                }
+
+                if (
+                    rejectedQty > 0 &&
+                    !rejectionReason
+                ) {
+                    alert(
+                        `${lineData.materialName}: Rejection reason is required.`
+                    );
+
+                    row.querySelector(
+                        ".nonlot-rejection-reason"
+                    )?.focus();
+
+                    return;
+                }
+
+                const existingAllocation =
+                    Array.isArray(lineData.lots)
+                        ? lineData.lots[0]
+                        : null;
+
+                lots.push({
+                    qcLineLotId:
+                        existingAllocation?.qcLineLotId ??
+                        null,
+
+                    lotNo: "",
+                    manufacturingDate: null,
+                    expirationDate: null,
+                    receivedQty,
+                    acceptedQty,
+                    rejectedQty,
+                    rejectionReason:
+                        rejectionReason || null,
+                    remarks: null
+                });
+            }
+
+            lines.push({
+                qcLineId,
+                remarks:
+                    lineRemarks || null,
+                lots
+            });
+        }
+
+        if (lines.length === 0) {
+            alert(
+                "QC inspection must contain at least one line."
+            );
+
+            return;
+        }
+
+        if (
+            !confirm(
+                "Complete this QA/QC inspection?"
+            )
+        ) {
+            return;
+        }
+
+        const button =
+            document.getElementById(
+                "btnCompleteInspection"
+            );
+
+        button.disabled = true;
+        button.innerText =
+            "Completing Inspection...";
+
+        const payload = {
+            inspectionDate:
+                document.getElementById(
+                    "modalInspectionDate"
+                ).value || null,
+
+            remarks:
+                document.getElementById(
+                    "modalQcRemarks"
+                ).value.trim() || null,
+
+            lines
+        };
+
+        console.log(
+            "QC Save Payload:",
+            payload
+        );
+
+        try {
+            const response = await fetch(
+                `/quality/qc-inspections/${qcId}/save-inspection`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            const result =
+                await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Failed to complete QC inspection."
+                );
+            }
+
+            alert(
+                result.message ??
+                "QC inspection completed successfully."
+            );
+
+            qcInspectionModal.hide();
+
+            await loadQcInspections();
+        }
+        catch (error) {
+            console.error(
+                "QC inspection error:",
+                error
+            );
+
+            alert(
+                error.message ??
+                "Failed to complete QC inspection."
+            );
+        }
+        finally {
+            button.disabled = false;
+            button.innerText =
+                "Complete Inspection";
+        }
+    }
+
+    function renderStatus(status) {
+        const normalized =
+            normalizeStatus(status);
+
         let badge = "bg-secondary";
-        let label = status;
 
-        if (status === "FOR_INSPECTION") {
+        if (normalized === "FOR_INSPECTION")
             badge = "bg-info text-dark";
-            label = "FOR INSPECTION";
-        }
 
-        if (status === "ACCEPTED") {
+        if (normalized === "INSPECTED")
             badge = "bg-success";
-        }
 
-        if (status === "PARTIALLY_ACCEPTED") {
-            badge = "bg-primary";
-            label = "PARTIALLY ACCEPTED";
-        }
+        if (normalized === "COMMITTED")
+            badge = "bg-dark";
 
-        if (status === "REJECTED") {
-            badge = "bg-danger";
-        }
+        return `
+            <span class="badge ${badge}">
+                ${escapeHtml(formatStatus(normalized))}
+            </span>
+        `;
+    }
 
-        if (status === "FOR_VALIDATION") {
+    function renderDecision(decision) {
+        const normalized =
+            normalizeStatus(decision);
+
+        if (!normalized)
+            return "-";
+
+        let badge = "bg-secondary";
+
+        if (normalized === "ACCEPTED")
+            badge = "bg-success";
+
+        if (normalized === "PARTIALLY_ACCEPTED")
             badge = "bg-warning text-dark";
-            label = "FOR VALIDATION";
+
+        if (normalized === "REJECTED")
+            badge = "bg-danger";
+
+        return `
+            <span class="badge ${badge}">
+                ${escapeHtml(formatStatus(normalized))}
+            </span>
+        `;
+    }
+
+    function renderLineStatus(status) {
+        const normalized =
+            normalizeStatus(status);
+
+        let badge = "bg-secondary";
+
+        if (normalized === "PENDING")
+            badge = "bg-warning text-dark";
+
+        if (normalized === "ACCEPTED")
+            badge = "bg-success";
+
+        if (normalized === "PARTIALLY_ACCEPTED")
+            badge = "bg-warning text-dark";
+
+        if (normalized === "REJECTED")
+            badge = "bg-danger";
+
+        return `
+            <span class="badge ${badge}">
+                ${escapeHtml(formatStatus(normalized))}
+            </span>
+        `;
+    }
+
+    async function readJsonResponse(response) {
+        const text =
+            await response.text();
+
+        if (!text)
+            return {};
+
+        try {
+            return JSON.parse(text);
         }
-
-        return `<span class="badge ${badge}">${label}</span>`;
+        catch {
+            return {
+                message: text
+            };
+        }
     }
 
-
-    function formatQty(value) {
-        return Number(value ?? 0).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 4
-        });
+    function normalizeStatus(value) {
+        return String(value ?? "")
+            .trim()
+            .toUpperCase();
     }
 
+    function formatStatus(value) {
+        if (!value)
+            return "-";
+
+        return String(value)
+            .replaceAll("_", " ");
+    }
 
     function formatDate(value) {
-        if (!value) return "-";
+        if (!value)
+            return "-";
 
-        return new Date(value).toLocaleDateString();
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime()))
+            return "-";
+
+        return date.toLocaleDateString();
     }
 
+    function formatQty(value) {
+        return Number(value ?? 0)
+            .toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            });
+    }
 
-    function formatDateTime(value) {
-        if (!value) return "-";
+    function formatInputNumber(value) {
+        return Number(value ?? 0)
+            .toFixed(4)
+            .replace(/\.?0+$/, "");
+    }
 
-        return new Date(value).toLocaleString();
+    function getTodayDate() {
+        const now = new Date();
+
+        const timezoneOffset =
+            now.getTimezoneOffset() * 60000;
+
+        return new Date(
+            now.getTime() - timezoneOffset
+        )
+        .toISOString()
+        .split("T")[0];
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+        return escapeHtml(value);
     }
 </script>

@@ -47,11 +47,13 @@
             </div>
         </div>
 
+     
+
         <div class="col-md-4">
             <div class="card border-0 shadow-sm summary-card">
                 <div class="card-body">
                     <div class="text-muted small">
-                        Approved Purchase Orders
+                        Open Delivery Schedules
                     </div>
 
                     <div id="approvedCount"
@@ -79,6 +81,57 @@
 
     </div>
 
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+
+            <div class="d-flex flex-wrap align-items-center gap-3">
+
+                <span class="fw-semibold text-secondary">
+                    Legend
+                </span>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot bg-success"></span>
+                    <span class="small">Scheduled Receiving</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot bg-warning"></span>
+                    <span class="small">Partially Received</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot bg-info"></span>
+                    <span class="small">Waiting for QA/QC</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot legend-purple"></span>
+                    <span class="small">No Confirmation</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot legend-orange"></span>
+                    <span class="small">Rescheduled</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot bg-danger"></span>
+                    <span class="small">Cancelled</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot bg-secondary"></span>
+                    <span class="small">Completed</span>
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm calendar-card">
         <div class="card-body">
             <div id="receivingCalendar"></div>
@@ -104,7 +157,7 @@
                     </h5>
 
                     <div class="text-muted small">
-                        Receive full or partial delivery from the selected Purchase Order.
+                        Receive the actual truck arrival against the selected delivery schedule.
                     </div>
                 </div>
 
@@ -244,7 +297,7 @@
                                     </th>
 
                                     <th class="text-end">
-                                        Balance
+                                        Scheduled Balance
                                     </th>
 
                                     <th class="text-end"
@@ -299,6 +352,377 @@
         </div>
     </div>
 </div>
+<div class="modal fade"
+     id="scheduleDetailsModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        Delivery Schedule Details
+                    </h5>
+
+                    <div class="text-muted small">
+                        View scheduled, received, and remaining quantities.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="scheduleDetailsLoading"
+                     class="text-center text-muted py-5">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    Loading delivery schedule...
+                </div>
+
+                <div id="scheduleDetailsError"
+                     class="alert alert-danger d-none">
+                </div>
+
+                <div id="scheduleDetailsContent"
+                     class="d-none">
+
+                    <div class="card border-0 bg-light mb-4">
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">
+                                        PO No
+                                    </label>
+                                    <input id="detailsPoNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        Schedule No
+                                    </label>
+                                    <input id="detailsScheduleNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">
+                                        Scheduled Date
+                                    </label>
+                                    <input id="detailsScheduledDate"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        Status
+                                    </label>
+                                    <input id="detailsScheduleStatus"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        RR No
+                                    </label>
+                                    <input id="detailsRrNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Supplier
+                                    </label>
+                                    <input id="detailsSupplierName"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        RR Status
+                                    </label>
+                                    <input id="detailsRrStatus"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        QC No
+                                    </label>
+                                    <input id="detailsQcNo"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        QC Status
+                                    </label>
+                                    <input id="detailsQcStatus"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">
+                                        QC Decision
+                                    </label>
+                                    <input id="detailsQcDecision"
+                                           class="form-control"
+                                           readonly>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-4">
+                            <div class="receiving-quantity-box">
+                                <div class="text-muted small">
+                                    Total Scheduled
+                                </div>
+                                <div id="detailsTotalScheduled"
+                                     class="fs-4 fw-bold">
+                                    0
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="receiving-quantity-box">
+                                <div class="text-muted small">
+                                    Total Received
+                                </div>
+                                <div id="detailsTotalReceived"
+                                     class="fs-4 fw-bold text-success">
+                                    0
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="receiving-quantity-box">
+                                <div class="text-muted small">
+                                    Total Remaining
+                                </div>
+                                <div id="detailsTotalRemaining"
+                                     class="fs-4 fw-bold text-warning">
+                                    0
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive border rounded">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Material Code</th>
+                                    <th>Material Name</th>
+                                    <th class="text-end">PO Qty</th>
+                                    <th class="text-end">Scheduled</th>
+                                    <th class="text-end">Received</th>
+                                    <th class="text-end">Remaining</th>
+                                    <th>UOM</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="scheduleDetailsLineBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <button id="btnOpenRescheduleModal"
+                        type="button"
+                        class="btn btn-warning d-none">
+                    Reschedule Remaining
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade"
+     id="rescheduleRemainingModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        Reschedule Remaining Delivery
+                    </h5>
+
+                    <div class="text-muted small">
+                        Create a new delivery schedule for the remaining quantity.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            PO No
+                        </label>
+                        <input id="reschedulePoNo"
+                               class="form-control"
+                               readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Source Schedule
+                        </label>
+                        <input id="rescheduleSourceSchedule"
+                               class="form-control"
+                               readonly>
+                    </div>
+
+                   
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Total Remaining
+                        </label>
+                        <input id="rescheduleTotalRemaining"
+                               class="form-control"
+                               readonly>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Reason
+                        </label>
+                        <textarea id="rescheduleReason"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Enter rescheduling reason"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div>
+                        <h6 class="fw-bold mb-1">
+                            New Delivery Schedules
+                        </h6>
+
+                        <div class="text-muted small">
+                            Assign all remaining quantities to one or more delivery dates.
+                        </div>
+                    </div>
+
+                    <button id="btnAddRescheduleGroup"
+                            type="button"
+                            class="btn btn-outline-primary btn-sm">
+                        Add Delivery Date
+                    </button>
+
+                </div>
+
+                <div id="rescheduleScheduleGroups"></div>
+
+                <div class="alert alert-light border mt-3 mb-0">
+
+                    <div class="d-flex justify-content-between">
+                        <span>Total Remaining:</span>
+
+                        <strong id="rescheduleRequiredTotal">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span>Total Assigned:</span>
+
+                        <strong id="rescheduleAssignedTotal">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span>Unassigned:</span>
+
+                        <strong id="rescheduleUnassignedTotal"
+                                class="text-danger">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button id="btnSaveReschedule"
+                        type="button"
+                        class="btn btn-warning">
+                    Create New Schedule
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
 
 
 
@@ -378,6 +802,30 @@
         color: #212529 !important;
     }
 
+    .receiving-qc {
+        background: #0dcaf0 !important;
+        border-color: #0dcaf0 !important;
+        color: #212529 !important;
+    }
+
+    .receiving-no-confirmation {
+        background: #8B5CF6 !important;
+        border-color: #8B5CF6 !important;
+        color: white !important;
+    }
+
+    .receiving-rescheduled {
+        background: #F97316 !important;
+        border-color: #F97316 !important;
+        color: white !important;
+    }
+
+    .receiving-cancelled {
+        background: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: white !important;
+    }
+
     .receiving-quantity-box {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -433,6 +881,12 @@
         background-color: #f3f4f6;
     }
 
+    .receiving-completed {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: white !important;
+    }
+
     @@media (max-width: 768px) {
         #createReceivingModal .modal-dialog {
             margin: 0.5rem;
@@ -453,6 +907,23 @@
             margin-bottom: 10px;
         }
     }
+
+    .legend-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        border: 1px solid rgba(0,0,0,.15);
+    }
+
+    .legend-purple {
+        background: #8B5CF6;
+    }
+
+    .legend-orange {
+        background: #F97316;
+    }
 </style>
 
 
@@ -462,7 +933,46 @@
         let calendar;
     let createReceivingModal;
 
+       let scheduleDetailsModal;
+    let rescheduleRemainingModal;
+
+    let selectedScheduleDetailsId = 0;
+    let selectedScheduleDetailsData = null;
+
+        let rescheduleGroups = [];
+    let nextRescheduleGroupId = 1;
+
     document.addEventListener("DOMContentLoaded", function () {
+
+
+
+
+
+        document
+    .getElementById("btnAddRescheduleGroup")
+    .addEventListener("click", function () {
+        addRescheduleGroup();
+    });
+
+
+
+            scheduleDetailsModal = new bootstrap.Modal(
+        document.getElementById("scheduleDetailsModal")
+    );
+
+    rescheduleRemainingModal = new bootstrap.Modal(
+        document.getElementById("rescheduleRemainingModal")
+    );
+
+    document
+        .getElementById("btnOpenRescheduleModal")
+        .addEventListener("click", openRescheduleRemainingModal);
+
+    document
+        .getElementById("btnSaveReschedule")
+        .addEventListener("click", saveRescheduleRemaining);
+
+
 
           const modalElement =
         document.getElementById("createReceivingModal");
@@ -538,43 +1048,76 @@
 
                     updateCalendarSummary(data);
 
-                    const events = data.map(item => {
+                      const events = data.map(item => {
 
-                        const eventClass =
-                            item.status === "PARTIALLY_RECEIVED"
-                                ? "receiving-partial"
-                                : "receiving-approved";
+        let eventClass = "receiving-approved";
 
-                        return {
-                            id: item.poId.toString(),
+           switch (item.status) {
+        case "OPEN":
+            eventClass = "receiving-approved";
+            break;
 
-                            title:
-                                `${item.poNo} - ${item.supplierName}`,
+        case "PARTIALLY_RECEIVED":
+            eventClass = "receiving-partial";
+            break;
 
-                            start:
-                                getDateOnly(item.deliveryDate),
+        case "RECEIVED":
+            eventClass = "receiving-completed";
+            break;
 
-                            allDay: true,
+        case "FOR_QC":
+            eventClass = "receiving-qc";
+            break;
 
-                            classNames: [
-                                eventClass
-                            ],
+        case "NO_CONFIRMATION":
+            eventClass = "receiving-no-confirmation";
+            break;
 
-                            extendedProps: {
-                                poId: item.poId,
-                                poNo: item.poNo,
-                                supplierId: item.supplierId,
-                                supplierName: item.supplierName,
-                                deliveryDate: item.deliveryDate,
-                                status: item.status,
-                                totalAmount: item.totalAmount,
-                                materialCount: item.materialCount,
-                                totalPoQty: item.totalPoQty,
-                                totalReceivedQty: item.totalReceivedQty,
-                                totalBalanceQty: item.totalBalanceQty
-                            }
-                        };
-                    });
+        case "RESCHEDULED":
+            eventClass = "receiving-rescheduled";
+            break;
+
+        case "CANCELLED":
+            eventClass = "receiving-cancelled";
+            break;
+    }
+
+    const displayPoNo =
+    item.printedPoNo?.trim() || item.poNo;
+
+        return {
+            id: item.scheduleId.toString(),
+
+             title:
+        `${displayPoNo} - ${item.supplierName} (Schedule ${item.scheduleNo})`,
+
+            start:
+                getDateOnly(item.deliveryDate),
+
+            allDay: true,
+
+            classNames: [
+                eventClass
+            ],
+
+            extendedProps: {
+                scheduleId: item.scheduleId,
+                scheduleNo: item.scheduleNo,
+                poId: item.poId,
+                printedPoNo: item.printedPoNo,
+                poNo: item.poNo,
+                supplierId: item.supplierId,
+                supplierName: item.supplierName,
+                deliveryDate: item.deliveryDate,
+                status: item.status,
+                totalAmount: item.totalAmount,
+                materialCount: item.materialCount,
+                totalPoQty: item.totalPoQty,
+                totalReceivedQty: item.totalReceivedQty,
+                totalBalanceQty: item.totalBalanceQty
+            }
+        };
+    });
 
                     successCallback(events);
                 }
@@ -587,10 +1130,21 @@
                 }
             },
 
-               eventClick: function (info) {
+                 eventClick: function (info) {
         info.jsEvent.preventDefault();
 
-        openReceivingModal(info.event.extendedProps.poId);
+        const status =
+            info.event.extendedProps.status;
+
+        const scheduleId =
+            info.event.extendedProps.scheduleId;
+
+        if (status === "OPEN") {
+            openReceivingModal(scheduleId);
+            return;
+        }
+
+        openScheduleDetailsModal(scheduleId);
     }
         });
 
@@ -603,11 +1157,11 @@
 
 
 
-     let selectedReceivingPoId = 0;
+    let selectedReceivingScheduleId = 0;
     let modalReceivingData = null;
 
-    async function openReceivingModal(poId) {
-        selectedReceivingPoId = Number(poId);
+    async function openReceivingModal(scheduleId) {
+    selectedReceivingScheduleId = Number(scheduleId);
         modalReceivingData = null;
 
         const loading =
@@ -635,9 +1189,9 @@
             const [numberResponse, optionsResponse] = await Promise.all([
                 fetch("/purchasing/receiving-reports/next-number"),
 
-                fetch(
-                    `/purchasing/receiving-reports/create-options/${selectedReceivingPoId}`
-                )
+                   fetch(
+        `/purchasing/receiving-reports/create-options/${selectedReceivingScheduleId}`
+    )
             ]);
 
             const numberData = await numberResponse.json();
@@ -698,6 +1252,578 @@
 
             errorBox.classList.remove("d-none");
         }
+    }
+
+
+
+
+        async function openScheduleDetailsModal(scheduleId) {
+        selectedScheduleDetailsId = Number(scheduleId);
+        selectedScheduleDetailsData = null;
+
+        const loading =
+            document.getElementById("scheduleDetailsLoading");
+
+        const errorBox =
+            document.getElementById("scheduleDetailsError");
+
+        const content =
+            document.getElementById("scheduleDetailsContent");
+
+        const rescheduleButton =
+            document.getElementById("btnOpenRescheduleModal");
+
+        loading.classList.remove("d-none");
+        errorBox.classList.add("d-none");
+        content.classList.add("d-none");
+        rescheduleButton.classList.add("d-none");
+
+        scheduleDetailsModal.show();
+
+        try {
+                  const response = await fetch(
+        `/purchasing/receiving-reports/schedules/${selectedScheduleDetailsId}`
+    );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Unable to load delivery schedule."
+                );
+            }
+
+            selectedScheduleDetailsData = result;
+
+            document.getElementById("detailsPoNo").value =
+                result.poNo ?? "";
+
+            document.getElementById("detailsScheduleNo").value =
+                `Schedule ${result.scheduleNo}`;
+
+            document.getElementById("detailsScheduledDate").value =
+                formatDate(result.scheduledDate);
+
+            document.getElementById("detailsScheduleStatus").value =
+                formatStatus(result.scheduleStatus);
+
+            document.getElementById("detailsSupplierName").value =
+                result.supplierName ?? "";
+
+            document.getElementById("detailsRrNo").value =
+                result.rrNo ?? "—";
+
+            document.getElementById("detailsRrStatus").value =
+                formatStatus(result.rrStatus) || "—";
+
+            document.getElementById("detailsQcNo").value =
+                result.qcNo ?? "—";
+
+            document.getElementById("detailsQcStatus").value =
+                formatStatus(result.qcStatus) || "—";
+
+            document.getElementById("detailsQcDecision").value =
+                formatStatus(result.qcDecision) || "—";
+
+            document.getElementById("detailsTotalScheduled").textContent =
+                formatQty(result.totalScheduledQty);
+
+            document.getElementById("detailsTotalReceived").textContent =
+                formatQty(result.totalReceivedQty);
+
+            document.getElementById("detailsTotalRemaining").textContent =
+                formatQty(result.totalRemainingQty);
+
+            renderScheduleDetailsLines(result.lines ?? []);
+
+            if (result.canReschedule) {
+                rescheduleButton.classList.remove("d-none");
+            }
+
+            loading.classList.add("d-none");
+            content.classList.remove("d-none");
+        }
+        catch (error) {
+            loading.classList.add("d-none");
+
+            errorBox.textContent =
+                error.message ??
+                "Unable to load delivery schedule.";
+
+            errorBox.classList.remove("d-none");
+        }
+    }
+
+        function renderScheduleDetailsLines(lines) {
+        const tbody =
+            document.getElementById("scheduleDetailsLineBody");
+
+        tbody.innerHTML = "";
+
+        if (!lines.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-muted py-4">
+                        No schedule lines found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        lines.forEach(line => {
+            tbody.insertAdjacentHTML("beforeend", `
+                <tr>
+                    <td>${escapeHtml(line.materialCode ?? "")}</td>
+                    <td>${escapeHtml(line.materialName ?? "")}</td>
+                    <td class="text-end">${formatQty(line.poQty)}</td>
+                    <td class="text-end">${formatQty(line.scheduledQty)}</td>
+                    <td class="text-end">${formatQty(line.receivedQty)}</td>
+                    <td class="text-end fw-semibold">
+                        ${formatQty(line.remainingQty)}
+                    </td>
+                    <td>${escapeHtml(line.uom ?? "")}</td>
+                    <td>${escapeHtml(formatStatus(line.status))}</td>
+                </tr>
+            `);
+        });
+    }
+
+          function openRescheduleRemainingModal() {
+        if (!selectedScheduleDetailsData) {
+            alert("Schedule details are not loaded.");
+            return;
+        }
+
+        const data = selectedScheduleDetailsData;
+
+        document.getElementById("reschedulePoNo").value =
+            data.poNo ?? "";
+
+        document.getElementById("rescheduleSourceSchedule").value =
+            `Schedule ${data.scheduleNo}`;
+
+        document.getElementById("rescheduleTotalRemaining").value =
+            formatQty(data.totalRemainingQty);
+
+        document.getElementById("rescheduleReason").value = "";
+
+        rescheduleGroups = [];
+        nextRescheduleGroupId = 1;
+
+        document.getElementById(
+            "rescheduleScheduleGroups"
+        ).innerHTML = "";
+
+        addRescheduleGroup(true);
+
+        updateRescheduleTotals();
+
+        scheduleDetailsModal.hide();
+        rescheduleRemainingModal.show();
+    }
+
+
+        function addRescheduleGroup(assignAllRemaining = false) {
+        if (!selectedScheduleDetailsData)
+            return;
+
+        const groupId = nextRescheduleGroupId++;
+
+        const lines = (selectedScheduleDetailsData.lines ?? [])
+            .filter(line => Number(line.remainingQty) > 0)
+            .map(line => ({
+                scheduleLineId: Number(line.scheduleLineId),
+                materialCode: line.materialCode ?? "",
+                materialName: line.materialName ?? "",
+                uom: line.uom ?? "",
+                remainingQty: Number(line.remainingQty),
+                quantity: assignAllRemaining
+                    ? Number(line.remainingQty)
+                    : 0
+            }));
+
+        rescheduleGroups.push({
+            id: groupId,
+            scheduledDate: "",
+            remarks: "",
+            lines: lines
+        });
+
+        renderRescheduleGroups();
+    }
+
+        function removeRescheduleGroup(groupId) {
+        if (rescheduleGroups.length <= 1) {
+            alert("At least one delivery schedule is required.");
+            return;
+        }
+
+        rescheduleGroups =
+            rescheduleGroups.filter(x => x.id !== groupId);
+
+        renderRescheduleGroups();
+    }
+
+         function renderRescheduleGroups() {
+        const container =
+            document.getElementById("rescheduleScheduleGroups");
+
+        container.innerHTML = "";
+
+        rescheduleGroups.forEach((group, index) => {
+            const lineRows = group.lines.map(line => `
+                <tr>
+                    <td>
+                        ${escapeHtml(line.materialCode)}
+                        -
+                        ${escapeHtml(line.materialName)}
+                    </td>
+
+                    <td class="text-end">
+                        ${formatQty(line.remainingQty)}
+                    </td>
+
+                    <td style="width:180px;">
+                        <input type="number"
+                               class="form-control form-control-sm text-end"
+                               min="0"
+                               step="0.0001"
+                               value="${line.quantity}"
+                               onchange="updateRescheduleGroupQty(
+                                   ${group.id},
+                                   ${line.scheduleLineId},
+                                   this.value
+                               )">
+                    </td>
+
+                    <td>
+                        ${escapeHtml(line.uom)}
+                    </td>
+                </tr>
+            `).join("");
+
+            container.insertAdjacentHTML("beforeend", `
+                <div class="card border mb-3"
+                     data-reschedule-group-id="${group.id}">
+
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <strong>
+                                New Schedule ${index + 1}
+                            </strong>
+
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="removeRescheduleGroup(${group.id})">
+                                Remove
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row g-3 mb-3">
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    Scheduled Date
+                                </label>
+
+                                <input type="date"
+                                       class="form-control"
+                                       value="${escapeHtml(group.scheduledDate)}"
+                                       onchange="updateRescheduleGroupDate(
+                                           ${group.id},
+                                           this.value
+                                       )">
+                            </div>
+
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">
+                                    Remarks
+                                </label>
+
+                                <input type="text"
+                                       class="form-control"
+                                       value="${escapeHtml(group.remarks)}"
+                                       placeholder="Optional schedule remarks"
+                                       onchange="updateRescheduleGroupRemarks(
+                                           ${group.id},
+                                           this.value
+                                       )">
+                            </div>
+
+                        </div>
+
+                        <div class="table-responsive border rounded">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Material</th>
+                                        <th class="text-end">
+                                            Total Remaining
+                                        </th>
+                                        <th>
+                                            Qty for This Schedule
+                                        </th>
+                                        <th>UOM</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    ${lineRows}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            `);
+        });
+
+        updateRescheduleTotals();
+    }
+
+        function updateRescheduleGroupDate(groupId, value) {
+        const group =
+            rescheduleGroups.find(x => x.id === groupId);
+
+        if (group)
+            group.scheduledDate = value;
+    }
+
+        function updateRescheduleGroupRemarks(groupId, value) {
+        const group =
+            rescheduleGroups.find(x => x.id === groupId);
+
+        if (group)
+            group.remarks = value;
+    }
+
+        function updateRescheduleGroupQty(
+        groupId,
+        scheduleLineId,
+        value)
+    {
+        const group =
+            rescheduleGroups.find(x => x.id === groupId);
+
+        if (!group)
+            return;
+
+        const line =
+            group.lines.find(x =>
+                x.scheduleLineId === scheduleLineId);
+
+        if (!line)
+            return;
+
+        line.quantity = Number(value || 0);
+
+        updateRescheduleTotals();
+    }
+
+        function getRescheduleAssignments() {
+        const assignments = new Map();
+
+        rescheduleGroups.forEach(group => {
+            group.lines.forEach(line => {
+                const current =
+                    assignments.get(line.scheduleLineId) ?? 0;
+
+                assignments.set(
+                    line.scheduleLineId,
+                    current + Number(line.quantity || 0)
+                );
+            });
+        });
+
+        return assignments;
+    }
+
+        function updateRescheduleTotals() {
+        if (!selectedScheduleDetailsData)
+            return;
+
+        const requiredTotal =
+            Number(
+                selectedScheduleDetailsData.totalRemainingQty ?? 0
+            );
+
+        const assignedTotal =
+            rescheduleGroups.reduce(
+                (scheduleTotal, group) =>
+                    scheduleTotal +
+                    group.lines.reduce(
+                        (lineTotal, line) =>
+                            lineTotal +
+                            Number(line.quantity || 0),
+                        0
+                    ),
+                0
+            );
+
+        const unassigned =
+            requiredTotal - assignedTotal;
+
+        document.getElementById(
+            "rescheduleRequiredTotal"
+        ).textContent = formatQty(requiredTotal);
+
+        document.getElementById(
+            "rescheduleAssignedTotal"
+        ).textContent = formatQty(assignedTotal);
+
+        document.getElementById(
+            "rescheduleUnassignedTotal"
+        ).textContent = formatQty(unassigned);
+    }
+
+           async function saveRescheduleRemaining() {
+        if (!selectedScheduleDetailsData) {
+            alert("Schedule details are not loaded.");
+            return;
+        }
+
+        for (const group of rescheduleGroups) {
+            if (!group.scheduledDate) {
+                alert("Each new schedule must have a delivery date.");
+                return;
+            }
+
+            const hasQty =
+                group.lines.some(line =>
+                    Number(line.quantity) > 0);
+
+            if (!hasQty) {
+                alert(
+                    "Each new schedule must contain at least one quantity."
+                );
+                return;
+            }
+        }
+
+        const assignments = getRescheduleAssignments();
+
+        for (const sourceLine of selectedScheduleDetailsData.lines) {
+            const remainingQty =
+                Number(sourceLine.remainingQty || 0);
+
+            if (remainingQty <= 0)
+                continue;
+
+            const assignedQty =
+                assignments.get(
+                    Number(sourceLine.scheduleLineId)
+                ) ?? 0;
+
+            if (Math.abs(assignedQty - remainingQty) > 0.0001) {
+                alert(
+                    `${sourceLine.materialCode} must assign exactly ` +
+                    `${formatQty(remainingQty)} ${sourceLine.uom}. ` +
+                    `Currently assigned: ${formatQty(assignedQty)}.`
+                );
+
+                return;
+            }
+        }
+
+        const payload = {
+            reason:
+                document.getElementById(
+                    "rescheduleReason"
+                ).value,
+
+            schedules: rescheduleGroups.map(group => ({
+                scheduledDate: group.scheduledDate,
+                remarks: group.remarks,
+
+                lines: group.lines
+                    .filter(line =>
+                        Number(line.quantity) > 0)
+                    .map(line => ({
+                        scheduleLineId:
+                            line.scheduleLineId,
+
+                        rescheduleQty:
+                            Number(line.quantity)
+                    }))
+            }))
+        };
+
+        const confirmed = confirm(
+            `Create ${payload.schedules.length} new delivery schedule(s)?`
+        );
+
+        if (!confirmed)
+            return;
+
+        const button =
+            document.getElementById("btnSaveReschedule");
+
+        button.disabled = true;
+        button.textContent = "Creating...";
+
+        try {
+            const response = await fetch(
+                `/purchasing/receiving-reports/schedules/` +
+                `${selectedScheduleDetailsId}/reschedule-remaining`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            const responseText = await response.text();
+
+            let result = {};
+
+            if (responseText) {
+                result = JSON.parse(responseText);
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Unable to reschedule remaining delivery."
+                );
+            }
+
+            alert(
+                result.message ??
+                "Remaining delivery rescheduled successfully."
+            );
+
+            rescheduleRemainingModal.hide();
+
+            calendar.refetchEvents();
+        }
+        catch (error) {
+            alert(error.message);
+        }
+        finally {
+            button.disabled = false;
+            button.textContent = "Create New Schedule";
+        }
+    }
+
+        function formatStatus(value) {
+        if (!value)
+            return "";
+
+        return String(value)
+            .replaceAll("_", " ")
+            .toLowerCase()
+            .replace(/\b\w/g, letter => letter.toUpperCase());
     }
 
         function clearReceivingModal() {
@@ -858,20 +1984,19 @@
                 return;
         }
 
-        const payload = {
+            const payload = {
+        scheduleId: selectedReceivingScheduleId,
 
-            poId: selectedReceivingPoId,
+        deliveryDate: deliveryDate,
 
-            deliveryDate: deliveryDate,
+        siDrNo:
+            document.getElementById("modalSiDrNo").value,
 
-            siDrNo:
-                document.getElementById("modalSiDrNo").value,
+        remarks:
+            document.getElementById("modalRemarks").value,
 
-            remarks:
-                document.getElementById("modalRemarks").value,
-
-            lines: lines
-        };
+        lines: lines
+    };
 
         const btn =
             document.getElementById("btnModalSaveRr");
@@ -951,9 +2076,9 @@
 
     function updateCalendarSummary(data) {
 
-        const approvedCount = data.filter(
-            item => item.status === "APPROVED"
-        ).length;
+           const approvedCount = data.filter(
+        item => item.status === "OPEN"
+    ).length;
 
         const partialCount = data.filter(
             item => item.status === "PARTIALLY_RECEIVED"

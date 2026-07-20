@@ -69,6 +69,7 @@
                             <th>Pack UOM</th>
                             <th>Pack Qty</th>
                             <th>Minimum Stock</th>
+                            <th>Lot Tracked</th>
                             <th>Status</th>
                             <th style="width:140px;">Action</th>
                         </tr>
@@ -76,7 +77,7 @@
 
                     <tbody id="materialsTableBody">
                         <tr>
-                            <td colspan="10"
+                            <td colspan="11"
                                 class="text-center text-muted py-4">
                                 Loading materials...
                             </td>
@@ -216,6 +217,34 @@
                                value="0">
                     </div>
 
+
+                    <!-- Lot Tracking -->
+                    <div class="col-md-12">
+                        <div class="border rounded p-3 bg-light">
+
+                            <div class="form-check form-switch">
+
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       id="isLotTracked">
+
+                                <label class="form-check-label fw-semibold"
+                                       for="isLotTracked">
+                                    Lot Tracked Material
+                                </label>
+
+                            </div>
+
+                            <div class="text-muted small mt-1">
+                                Enable this when receiving and QA/QC must record supplier lot
+                                numbers, manufacturing dates, and expiration dates.
+                            </div>
+
+                        </div>
+                    </div>
+
+
                     <!-- Description -->
                     <div class="col-md-12">
                         <label class="form-label">
@@ -253,5 +282,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/manufacturing/materials/materials.js?v=5"></script>
+    <script src="~/js/manufacturing/materials/materials.js?v=6"></script>
 }

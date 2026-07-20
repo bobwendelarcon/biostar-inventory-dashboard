@@ -279,5 +279,84 @@ namespace biostar_inventory_dashboard.Controllers
                 });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableLinesForChecklist(long checklistId)
+        {
+            try
+            {
+                var result =
+                    await _apiService.GetAvailableLinesForChecklistAsync(checklistId);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddLinesToChecklist(
+    [FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService
+                    .AddLinesToChecklistAsync(data);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveCustomerFromChecklist(
+    [FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService
+                    .RemoveCustomerFromChecklistAsync(data);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateTripInfo(
+    [FromBody] JsonElement data)
+        {
+            try
+            {
+                var result = await _apiService
+                    .UpdateChecklistTripInfoAsync(data);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

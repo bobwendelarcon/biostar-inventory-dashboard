@@ -32,13 +32,13 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
         //    return View("~/Views/Purchasing/ReceivingReports/Create.cshtml");
         //}
 
-        [HttpGet("create-options/{poId}")]
-        public async Task<IActionResult> GetCreateOptions(int poId)
+        [HttpGet("create-options/{scheduleId:int}")]
+        public async Task<IActionResult> GetCreateOptions(int scheduleId)
         {
             var client = CreateClient();
 
             var response = await client.GetAsync(
-                $"api/purchasing/receiving-reports/create-options/{poId}"
+                $"api/purchasing/receiving-reports/create-options/{scheduleId}"
             );
 
             var result = await response.Content.ReadAsStringAsync();
@@ -92,26 +92,7 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
             return StatusCode((int)response.StatusCode, result);
         }
 
-        [HttpPost("{id}/submit-qc")]
-        public async Task<IActionResult> SubmitQc(int id)
-        {
-            var client = CreateClient();
-
-            var content = new StringContent(
-                JsonSerializer.Serialize(new { }),
-                Encoding.UTF8,
-                "application/json"
-            );
-
-            var response = await client.PostAsync(
-                $"api/purchasing/receiving-reports/{id}/submit-qc",
-                content
-            );
-
-            var result = await response.Content.ReadAsStringAsync();
-
-            return StatusCode((int)response.StatusCode, result);
-        }
+       
 
         [HttpPost("{id}/accept")]
         public async Task<IActionResult> Accept(int id)
@@ -250,8 +231,67 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
             return StatusCode((int)response.StatusCode, result);
         }
 
+        [HttpGet("schedules/{scheduleId:int}")]
+        public async Task<IActionResult> GetScheduleDetails(int scheduleId)
+        {
+            var client = CreateClient();
 
-     
+            var response = await client.GetAsync(
+                $"api/purchasing/receiving-reports/schedules/{scheduleId}"
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
+        }
+
+        [HttpPost("schedules/{scheduleId:int}/reschedule-remaining")]
+        public async Task<IActionResult> RescheduleRemaining(
+    int scheduleId,
+    [FromBody] object payload)
+        {
+            var client = CreateClient();
+
+            var userId =
+                User.FindFirst("user_id")?.Value
+                ?? User.FindFirst("UserId")?.Value
+                ?? User.Identity?.Name
+                ?? "";
+
+            var json =
+                JsonSerializer.Deserialize<Dictionary<string, object>>(
+                    JsonSerializer.Serialize(payload)
+                )
+                ?? new Dictionary<string, object>();
+
+            json["createdBy"] = userId;
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(json),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await client.PostAsync(
+                $"api/purchasing/receiving-reports/schedules/{scheduleId}/reschedule-remaining",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
+        }
+
+
+
+
+
 
 
     }

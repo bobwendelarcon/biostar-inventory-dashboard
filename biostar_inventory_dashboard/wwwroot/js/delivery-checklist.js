@@ -42,9 +42,17 @@ document.addEventListener("DOMContentLoaded", function () {
     initializeCreateChecklistModal();
     initializeSelectAllOrders();
     startChecklistAutoRefresh();
+    initializeCustomerSearch();
 
+    document.getElementById("editChecklistTripModal")
+        ?.addEventListener("hidden.bs.modal", function () {
 
+            document
+                .getElementById("viewChecklistModal")
+                ?.classList.remove("modal-parent-dim");
 
+            cleanupBootstrapModal();
+        });
 
     document.getElementById("completeLineModal")
         ?.addEventListener("hidden.bs.modal", function () {
@@ -53,6 +61,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 .getElementById("viewChecklistModal")
                 .classList.remove("modal-parent-dim");
 
+        });
+
+
+    document.getElementById("addChecklistCustomerModal")
+        ?.addEventListener("hidden.bs.modal", function () {
+
+            document
+                .getElementById("viewChecklistModal")
+                ?.classList.remove("modal-parent-dim");
+
+            cleanupBootstrapModal();
         });
 
 
@@ -162,7 +181,125 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+async function saveChecklistTripInfo() {
+    const checklistId = Number(
+        document.getElementById(
+            "edit_trip_checklist_id"
+        )?.value || 0
+    );
 
+    const routeName =
+        document.getElementById(
+            "edit_trip_route"
+        )?.value.trim() || "";
+
+    const truckName =
+        document.getElementById(
+            "edit_trip_truck"
+        )?.value.trim() || "";
+
+    const driverName =
+        document.getElementById(
+            "edit_trip_driver"
+        )?.value.trim() || "";
+
+    if (checklistId <= 0) {
+        alert("Invalid checklist.");
+        return;
+    }
+
+    if (!routeName) {
+        alert("Route is required.");
+        return;
+    }
+
+    if (!truckName) {
+        alert("Truck is required.");
+        return;
+    }
+
+    if (!driverName) {
+        alert("Driver is required.");
+        return;
+    }
+
+    const button =
+        document.getElementById(
+            "btnSaveChecklistTrip"
+        );
+
+    if (button) {
+        button.disabled = true;
+    }
+
+    try {
+        const response = await fetch(
+            "/DeliveryChecklist/UpdateTripInfo",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    checklist_id: checklistId,
+                    route_name: routeName,
+                    truck_name: truckName,
+                    driver_name: driverName
+                })
+            }
+        );
+
+        const responseText =
+            await response.text();
+
+        let result;
+
+        try {
+            result = JSON.parse(responseText);
+        } catch {
+            result = {
+                message: responseText
+            };
+        }
+
+        if (!response.ok ||
+            result.success === false) {
+            throw new Error(
+                result.message ||
+                "Failed to update trip information."
+            );
+        }
+
+        alert(
+            result.message ||
+            "Trip information updated successfully."
+        );
+
+        bootstrap.Modal.getInstance(
+            document.getElementById(
+                "editChecklistTripModal"
+            )
+        )?.hide();
+
+        await openViewChecklistModal(checklistId);
+        await loadChecklistList();
+
+    } catch (error) {
+        console.error(
+            "Update checklist trip info:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to update trip information."
+        );
+    } finally {
+        if (button) {
+            button.disabled = false;
+        }
+    }
+}
 
 function getPHDateInputValue() {
     return new Intl.DateTimeFormat("en-CA", {
@@ -277,9 +414,14 @@ async function deleteChecklistLine(checklistLineId) {
 
     alert(result.message || "Checklist line deleted.");
 
-    if (currentChecklistId) {
-        await openChecklistDetails(currentChecklistId);
-    } else {
+    if (window.currentChecklistId) {
+        await openViewChecklistModal(
+            window.currentChecklistId
+        );
+
+        await loadChecklistList();
+    }
+    else {
         await loadChecklistList();
     }
 }
@@ -448,15 +590,135 @@ function initializeCreateChecklistModal() {
 }
 
 function initializeSelectAllOrders() {
-    const selectAll = document.getElementById("selectAllOrders");
+    const selectAll =
+        document.getElementById("selectAllOrders");
+
     if (!selectAll) return;
 
     selectAll.addEventListener("change", function () {
-        const checkboxes = document.querySelectorAll(".checklist-line-checkbox");
-        checkboxes.forEach(cb => {
-            cb.checked = selectAll.checked;
+        const visibleRows = Array.from(
+            document.querySelectorAll(
+                ".create-checklist-order-row"
+            )
+        ).filter(row => row.style.display !== "none");
+
+        visibleRows.forEach(row => {
+            const checkbox =
+                row.querySelector(".checklist-line-checkbox");
+
+            if (checkbox) {
+                checkbox.checked = selectAll.checked;
+            }
         });
     });
+
+    document.addEventListener("change", function (event) {
+        if (
+            event.target.classList.contains(
+                "checklist-line-checkbox"
+            )
+        ) {
+            updateSelectAllOrdersState();
+        }
+    });
+}
+function initializeCustomerSearch() {
+    const searchInput = document.getElementById("create_customer_search");
+    const clearButton = document.getElementById("btnClearCustomerSearch");
+
+    if (searchInput) {
+        searchInput.addEventListener(
+            "input",
+            debounce(filterCreateChecklistCustomers, 200)
+        );
+    }
+
+    if (clearButton) {
+        clearButton.addEventListener("click", function () {
+            if (searchInput) {
+                searchInput.value = "";
+                searchInput.focus();
+            }
+
+            filterCreateChecklistCustomers();
+        });
+    }
+}
+
+function filterCreateChecklistCustomers() {
+    const searchInput =
+        document.getElementById("create_customer_search");
+
+    const resultText =
+        document.getElementById("customerSearchResultText");
+
+    const searchValue =
+        (searchInput?.value || "").trim().toLowerCase();
+
+    const rows = Array.from(
+        document.querySelectorAll(".create-checklist-order-row")
+    );
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const customerName =
+            (row.dataset.customerName || "").toLowerCase();
+
+        const isMatch =
+            searchValue === "" ||
+            customerName.includes(searchValue);
+
+        row.style.display = isMatch ? "" : "none";
+
+        if (isMatch) {
+            visibleCount++;
+        }
+    });
+
+    if (resultText) {
+        if (rows.length === 0) {
+            resultText.textContent = "";
+        } else if (searchValue === "") {
+            resultText.textContent =
+                `${rows.length} order line(s) available`;
+        } else {
+            resultText.textContent =
+                `${visibleCount} of ${rows.length} order line(s) shown`;
+        }
+    }
+
+    updateSelectAllOrdersState();
+}
+
+function updateSelectAllOrdersState() {
+    const selectAll =
+        document.getElementById("selectAllOrders");
+
+    if (!selectAll) return;
+
+    const visibleCheckboxes = Array.from(
+        document.querySelectorAll(
+            ".create-checklist-order-row:not([style*='display: none']) " +
+            ".checklist-line-checkbox"
+        )
+    );
+
+    if (visibleCheckboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+    }
+
+    const checkedCount =
+        visibleCheckboxes.filter(cb => cb.checked).length;
+
+    selectAll.checked =
+        checkedCount === visibleCheckboxes.length;
+
+    selectAll.indeterminate =
+        checkedCount > 0 &&
+        checkedCount < visibleCheckboxes.length;
 }
 
 async function loadReadyForChecklist() {
@@ -491,7 +753,8 @@ async function loadReadyForChecklist() {
 
         data.forEach(item => {
             rows += `
-                <tr>
+        <tr class="create-checklist-order-row"
+            data-customer-name="${escapeAttribute(item.customer_name ?? "")}">
                     <td>
                         <input 
                             type="checkbox" 
@@ -532,11 +795,17 @@ data-pack-qty="${toNumber(item.pack_qty)}"
         });
 
         tableBody.innerHTML = rows;
+      
 
         const selectAll = document.getElementById("selectAllOrders");
         if (selectAll) {
             selectAll.checked = false;
         }
+
+
+        filterCreateChecklistCustomers();
+
+
     } catch (error) {
         console.error("Error loading ready-for-checklist:", error);
         tableBody.innerHTML = `
@@ -639,7 +908,14 @@ function resetCreateChecklistForm() {
     const driver = document.getElementById("create_driver");
     const selectAll = document.getElementById("selectAllOrders");
     const tableBody = document.getElementById("createChecklistTableBody");
+    const customerSearch =
+        document.getElementById("create_customer_search");
 
+    const customerSearchResult =
+        document.getElementById("customerSearchResultText");
+
+    if (customerSearch) customerSearch.value = "";
+    if (customerSearchResult) customerSearchResult.textContent = "";
     if (deliveryDate) deliveryDate.value = "";
     if (route) route.value = "";
     if (truck) truck.value = "";
@@ -669,8 +945,10 @@ async function openViewChecklistModal(id) {
         }
 
         const data = await response.json();
+        window.currentChecklistDetails = data;
         window.currentChecklistLines = data.lines || [];
         setChecklistButtons(data.status);
+        setChecklistTripEditButton(data.status);
         document.getElementById("view_checklist_no").textContent = data.checklist_no ?? "-";
         document.getElementById("view_route").textContent = data.route_name ?? "-";
         document.getElementById("view_truck").textContent = data.truck_name ?? "-";
@@ -770,20 +1048,47 @@ async function openViewChecklistModal(id) {
                 rows += `
 <tr class="${isFullyCompleted ? "table-success" : "table-dark"}">
     <td colspan="9">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-                <div class="fw-bold">
-                    ${isFullyCompleted ? "✓ " : ""}${escapeHtml(customer.customer_name)}
-                </div>
-                <small>
-                    Ready: ${readyCount} | Completed: ${completedCount}
-                </small>
-            </div>
-
-            ${isFullyCompleted ? `
-                <span class="badge bg-success">Customer Fully Delivered</span>
-            ` : ""}
+       <div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+        <div class="fw-bold">
+            ${isFullyCompleted ? "✓ " : ""}
+            ${escapeHtml(customer.customer_name)}
         </div>
+
+        <small>
+            Ready: ${readyCount} |
+            Completed: ${completedCount}
+        </small>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+
+        ${isFullyCompleted ? `
+            <span class="badge bg-success">
+                Customer Fully Delivered
+            </span>
+        ` : ""}
+
+        ${completedCount === 0 ? `
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="removeChecklistCustomer(
+                        '${escapeAttribute(customer.customer_name)}'
+                    )">
+                <i class="bi bi-person-dash"></i>
+                Remove Customer
+            </button>
+        ` : `
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    disabled
+                    title="Completed lines cannot be removed">
+                <i class="bi bi-lock"></i>
+                Cannot Remove
+            </button>
+        `}
+    </div>
+</div>
 
         ${readyCount > 0 ? `
             <div class="row g-2 align-items-end">
@@ -936,6 +1241,666 @@ async function openViewChecklistModal(id) {
     } catch (error) {
         console.error("Error loading checklist details:", error);
         alert("Failed to load checklist details.");
+    }
+}
+
+function openEditChecklistTripModal() {
+    const data = window.currentChecklistDetails;
+
+    if (!data || !window.currentChecklistId) {
+        alert("No checklist selected.");
+        return;
+    }
+
+    document.getElementById(
+        "edit_trip_checklist_id"
+    ).value = window.currentChecklistId;
+
+    document.getElementById(
+        "edit_trip_route"
+    ).value = data.route_name || "";
+
+    document.getElementById(
+        "edit_trip_truck"
+    ).value = data.truck_name || "";
+
+    document.getElementById(
+        "edit_trip_driver"
+    ).value = data.driver_name || "";
+
+    document
+        .getElementById("viewChecklistModal")
+        ?.classList.add("modal-parent-dim");
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById(
+            "editChecklistTripModal"
+        ),
+        {
+            backdrop: false,
+            keyboard: true
+        }
+    ).show();
+}
+
+function setChecklistTripEditButton(status) {
+    const button =
+        document.getElementById(
+            "btnEditChecklistTrip"
+        );
+
+    if (!button) return;
+
+    const normalizedStatus =
+        (status || "").trim().toUpperCase();
+
+    const editableStatuses = [
+        "READY",
+        "LOADING",
+        "PARTIALLY_COMPLETED",
+        "PARTIAL"
+    ];
+
+    button.style.display =
+        editableStatuses.includes(normalizedStatus)
+            ? "inline-block"
+            : "none";
+}
+
+async function openAddChecklistCustomerModal() {
+    if (!window.currentChecklistId) {
+        alert("No checklist selected.");
+        return;
+    }
+
+    const parentModal =
+        document.getElementById("viewChecklistModal");
+
+    parentModal?.classList.add("modal-parent-dim");
+
+    const modalElement =
+        document.getElementById("addChecklistCustomerModal");
+
+    bootstrap.Modal.getOrCreateInstance(
+        modalElement,
+        {
+            backdrop: false,
+            keyboard: true
+        }
+    ).show();
+
+    document.getElementById(
+        "addChecklistCustomerSearch"
+    ).value = "";
+
+    await loadAvailableCustomersForChecklist();
+}
+async function loadAvailableCustomersForChecklist() {
+    const tbody =
+        document.getElementById(
+            "addChecklistCustomerTableBody"
+        );
+
+    if (!tbody) return;
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="9"
+                class="text-center text-muted py-3">
+                Loading...
+            </td>
+        </tr>
+    `;
+
+    try {
+        const response = await fetch(
+            `/DeliveryChecklist/GetAvailableLinesForChecklist` +
+            `?checklistId=${window.currentChecklistId}`
+        );
+
+        const resultText = await response.text();
+
+        let data;
+
+        try {
+            data = JSON.parse(resultText);
+        } catch {
+            throw new Error(
+                resultText ||
+                "Invalid server response."
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                data?.message ||
+                "Failed to load available customers."
+            );
+        }
+
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9"
+                        class="text-center text-muted py-3">
+                        No available allocated order lines found.
+                    </td>
+                </tr>
+            `;
+
+            updateAddChecklistCustomerResult();
+            return;
+        }
+
+        let rows = "";
+
+        data.forEach(item => {
+            rows += `
+                <tr class="add-checklist-customer-row"
+                    data-customer-name="${escapeAttribute(
+                item.customer_name ?? ""
+            )
+                }">
+
+                    <td>
+                        <input type="checkbox"
+                               class="form-check-input
+                                      add-checklist-line-checkbox"
+
+                               data-order-id="${item.order_id
+                }"
+
+                               data-order-no="${escapeAttribute(
+                    item.order_no ?? ""
+                )
+                }"
+
+                               data-order-line-id="${item.order_line_id
+                }"
+
+                               data-customer-id="${escapeAttribute(
+                    item.customer_id ?? ""
+                )
+                }"
+
+                               data-customer-name="${escapeAttribute(
+                    item.customer_name ?? ""
+                )
+                }"
+
+                               data-product-id="${escapeAttribute(
+                    item.product_id ?? ""
+                )
+                }"
+
+                               data-product-name="${escapeAttribute(
+                    item.product_name ?? ""
+                )
+                }"
+
+                               data-product-description="${escapeAttribute(
+                    item.product_description ?? ""
+                )
+                }"
+
+                               data-uom="${escapeAttribute(
+                    item.uom ?? ""
+                )
+                }"
+
+                               data-pack-uom="${escapeAttribute(
+                    item.pack_uom ?? ""
+                )
+                }"
+
+                               data-pack-qty="${toNumber(item.pack_qty)
+                }"
+
+                               data-required-qty="${toNumber(item.required_qty)
+                }"
+
+                               data-allocated-qty="${toNumber(item.allocated_qty)
+                }"
+
+                               data-checklist-qty="${toNumber(item.allocated_qty)
+                }">
+                    </td>
+
+                    <td>
+                        ${escapeHtml(item.order_no ?? "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(item.customer_name ?? "-")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(item.route_name ?? "-")}
+                    </td>
+
+                    <td>
+                        <div>
+                            ${escapeHtml(
+                    item.product_name ?? "-"
+                )}
+                        </div>
+
+                        ${item.product_description
+                    ? `
+                                <div class="text-muted small">
+                                    ${escapeHtml(
+                        item.product_description
+                    )}
+                                </div>
+                              `
+                    : ""}
+                    </td>
+
+                    <td>
+                        ${toDisplayNumber(item.required_qty)}
+                    </td>
+
+                    <td>
+                        ${toDisplayNumber(item.allocated_qty)}
+                    </td>
+
+                    <td>
+                        ${formatDate(item.delivery_date)}
+                    </td>
+
+                    <td>
+                        ${getAllocationBadge(
+                        item.allocation_status
+                    )}
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = rows;
+
+        const selectAll =
+            document.getElementById(
+                "selectAllAddChecklistLines"
+            );
+
+        if (selectAll) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        }
+
+        filterAddChecklistCustomers();
+
+    } catch (error) {
+        console.error(
+            "Load available checklist customers:",
+            error
+        );
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9"
+                    class="text-center text-danger py-3">
+                    ${escapeHtml(
+            error.message ||
+            "Failed to load available customers."
+        )}
+                </td>
+            </tr>
+        `;
+    }
+}
+document.addEventListener("input", function (event) {
+    if (
+        event.target.id ===
+        "addChecklistCustomerSearch"
+    ) {
+        filterAddChecklistCustomers();
+    }
+});
+
+function filterAddChecklistCustomers() {
+    const search =
+        document.getElementById(
+            "addChecklistCustomerSearch"
+        )?.value.trim().toLowerCase() || "";
+
+    const rows = Array.from(
+        document.querySelectorAll(
+            ".add-checklist-customer-row"
+        )
+    );
+
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const customer =
+            (row.dataset.customerName || "")
+                .toLowerCase();
+
+        const visible =
+            !search || customer.includes(search);
+
+        row.style.display = visible ? "" : "none";
+
+        if (visible) {
+            visibleCount++;
+        }
+    });
+
+    updateAddChecklistCustomerResult(
+        visibleCount,
+        rows.length,
+        search
+    );
+}
+
+function updateAddChecklistCustomerResult(
+    visibleCount = 0,
+    totalCount = 0,
+    search = ""
+) {
+    const text =
+        document.getElementById(
+            "addChecklistCustomerResultText"
+        );
+
+    if (!text) return;
+
+    if (totalCount === 0) {
+        text.textContent = "No available lines";
+    } else if (!search) {
+        text.textContent =
+            `${totalCount} order line(s) available`;
+    } else {
+        text.textContent =
+            `${visibleCount} of ${totalCount} ` +
+            `order line(s) shown`;
+    }
+}
+
+function clearAddChecklistCustomerSearch() {
+    const input =
+        document.getElementById(
+            "addChecklistCustomerSearch"
+        );
+
+    if (input) {
+        input.value = "";
+        input.focus();
+    }
+
+    filterAddChecklistCustomers();
+}
+async function submitAddChecklistCustomers() {
+    if (!window.currentChecklistId) {
+        alert("No checklist selected.");
+        return;
+    }
+
+    const selected = Array.from(
+        document.querySelectorAll(
+            ".add-checklist-line-checkbox:checked"
+        )
+    );
+
+    if (selected.length === 0) {
+        alert(
+            "Please select at least one order line."
+        );
+        return;
+    }
+
+    const lines = selected.map(cb => ({
+        order_id:
+            parseInt(cb.dataset.orderId || "0"),
+
+        order_no:
+            cb.dataset.orderNo || "",
+
+        order_line_id:
+            parseInt(cb.dataset.orderLineId || "0"),
+
+        customer_id:
+            cb.dataset.customerId || "",
+
+        customer_name:
+            cb.dataset.customerName || "",
+
+        product_id:
+            cb.dataset.productId || "",
+
+        product_name:
+            cb.dataset.productName || "",
+
+        product_description:
+            cb.dataset.productDescription || "",
+
+        uom:
+            cb.dataset.uom || "",
+
+        pack_uom:
+            cb.dataset.packUom || "",
+
+        pack_qty:
+            parseFloat(cb.dataset.packQty || "0") ||
+            null,
+
+        required_qty:
+            parseFloat(
+                cb.dataset.requiredQty || "0"
+            ),
+
+        allocated_qty:
+            parseFloat(
+                cb.dataset.allocatedQty || "0"
+            ),
+
+        checklist_qty:
+            parseFloat(
+                cb.dataset.checklistQty || "0"
+            )
+    }));
+
+    if (
+        !confirm(
+            `Add ${lines.length} order line(s) ` +
+            `to this checklist?`
+        )
+    ) {
+        return;
+    }
+
+    const button =
+        document.getElementById(
+            "btnConfirmAddChecklistCustomer"
+        );
+
+    if (button) {
+        button.disabled = true;
+    }
+
+    try {
+        const response = await fetch(
+            "/DeliveryChecklist/AddLinesToChecklist",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    checklist_id:
+                        window.currentChecklistId,
+                    lines: lines
+                })
+            }
+        );
+
+        const resultText = await response.text();
+
+        let result;
+
+        try {
+            result = JSON.parse(resultText);
+        } catch {
+            result = {
+                message: resultText
+            };
+        }
+
+        if (!response.ok || result.success === false) {
+            throw new Error(
+                result.message ||
+                "Failed to add customer."
+            );
+        }
+
+        alert(
+            result.message ||
+            "Customer added successfully."
+        );
+
+        bootstrap.Modal.getInstance(
+            document.getElementById(
+                "addChecklistCustomerModal"
+            )
+        )?.hide();
+
+        await openViewChecklistModal(
+            window.currentChecklistId
+        );
+
+        await loadChecklistList();
+
+    } catch (error) {
+        console.error(
+            "Add checklist customer:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to add customer."
+        );
+    } finally {
+        if (button) {
+            button.disabled = false;
+        }
+    }
+}
+async function removeChecklistCustomer(customerName) {
+    if (!window.currentChecklistId) {
+        alert("No checklist selected.");
+        return;
+    }
+
+    const customerLines =
+        window.currentChecklistLines?.filter(
+            line =>
+                (line.customer_name || "") ===
+                customerName
+        ) || [];
+
+    if (customerLines.length === 0) {
+        alert("Customer lines were not found.");
+        return;
+    }
+
+    const completedLines =
+        customerLines.filter(
+            line =>
+                (line.status || "")
+                    .toUpperCase() !== "READY"
+        );
+
+    if (completedLines.length > 0) {
+        alert(
+            "This customer cannot be removed because " +
+            "one or more lines are already completed."
+        );
+        return;
+    }
+
+    if (
+        !confirm(
+            `Remove ${customerName} and all ` +
+            `${customerLines.length} associated line(s) ` +
+            `from this checklist?`
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/DeliveryChecklist/RemoveCustomerFromChecklist",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    checklist_id:
+                        window.currentChecklistId,
+                    customer_name:
+                        customerName
+                })
+            }
+        );
+
+        const resultText = await response.text();
+
+        let result;
+
+        try {
+            result = JSON.parse(resultText);
+        } catch {
+            result = {
+                message: resultText
+            };
+        }
+
+        if (!response.ok || result.success === false) {
+            throw new Error(
+                result.message ||
+                "Failed to remove customer."
+            );
+        }
+
+        alert(
+            result.message ||
+            "Customer removed successfully."
+        );
+
+        if (result.checklist_deleted === true) {
+            bootstrap.Modal.getInstance(
+                document.getElementById(
+                    "viewChecklistModal"
+                )
+            )?.hide();
+
+            window.currentChecklistId = null;
+
+            await loadChecklistList();
+            return;
+        }
+
+        await openViewChecklistModal(
+            window.currentChecklistId
+        );
+
+        await loadChecklistList();
+
+    } catch (error) {
+        console.error(
+            "Remove checklist customer:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to remove customer."
+        );
     }
 }
 async function completeCustomer(customerName, customerIndex) {

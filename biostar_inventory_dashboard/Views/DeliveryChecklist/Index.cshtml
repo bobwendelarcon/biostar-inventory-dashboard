@@ -148,6 +148,36 @@
                     </div>
                 </div>
 
+
+                <!-- CUSTOMER SEARCH -->
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Search Customer</label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="create_customer_search"
+                                   placeholder="Enter customer name...">
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    id="btnClearCustomerSearch">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7 d-flex align-items-end">
+                        <small class="text-muted" id="customerSearchResultText"></small>
+                    </div>
+                </div>
+
+
                 <!-- ORDER TABLE -->
                 <div class="table-responsive">
                     <table class="table table-sm align-middle">
@@ -220,17 +250,30 @@
                         <small class="text-muted">Checklist No</small>
                         <div class="fw-semibold" id="view_checklist_no"></div>
                     </div>
+
                     <div class="col-md-3">
                         <small class="text-muted">Route</small>
                         <div class="fw-semibold" id="view_route"></div>
                     </div>
-                    <div class="col-md-3">
+
+                    <div class="col-md-2">
                         <small class="text-muted">Truck</small>
                         <div class="fw-semibold" id="view_truck"></div>
                     </div>
-                    <div class="col-md-3">
+
+                    <div class="col-md-2">
                         <small class="text-muted">Driver</small>
                         <div class="fw-semibold" id="view_driver"></div>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm w-100"
+                                id="btnEditChecklistTrip"
+                                onclick="openEditChecklistTripModal()">
+                            <i class="bi bi-pencil-square"></i>
+                            Edit Trip Info
+                        </button>
                     </div>
                 </div>
 
@@ -238,7 +281,17 @@
                 <div class="card border-0 bg-light rounded-4">
                     <div class="card-body">
 
-                        <h6 class="fw-bold mb-3">Delivery Lines</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Delivery Lines</h6>
+
+                            <button type="button"
+                                    class="btn btn-primary btn-sm"
+                                    id="btnAddChecklistCustomer"
+                                    onclick="openAddChecklistCustomerModal()">
+                                <i class="bi bi-person-plus"></i>
+                                Add Customer
+                            </button>
+                        </div>
 
                         <div class="table-responsive">
                             <table class="table table-sm align-middle">
@@ -295,6 +348,201 @@
     </div>
   
    
+</div>
+<div class="modal fade"
+     id="editChecklistTripModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        Edit Checklist Trip Information
+                    </h5>
+
+                    <small class="text-muted">
+                        Update route, truck, and driver
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="edit_trip_checklist_id">
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            Route
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               id="edit_trip_route"
+                               placeholder="e.g. Laguna">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            Truck
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               id="edit_trip_truck">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            Driver
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               id="edit_trip_driver">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnSaveChecklistTrip"
+                        onclick="saveChecklistTripInfo()">
+                    Save Changes
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ============================= -->
+<!-- ADD CUSTOMER TO CHECKLIST -->
+<!-- ============================= -->
+
+<div class="modal fade"
+     id="addChecklistCustomerModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        Add Customer to Checklist
+                    </h5>
+
+                    <small class="text-muted">
+                        Select additional allocated order lines
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label">
+                            Search Customer
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="addChecklistCustomerSearch"
+                                   placeholder="Enter customer name...">
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    onclick="clearAddChecklistCustomerSearch()">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7 d-flex align-items-end">
+                        <small class="text-muted"
+                               id="addChecklistCustomerResultText">
+                        </small>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox"
+                                           id="selectAllAddChecklistLines">
+                                </th>
+                                <th>Order No</th>
+                                <th>Customer</th>
+                                <th>Route</th>
+                                <th>Product</th>
+                                <th>Remaining Order</th>
+                                <th>Allocated</th>
+                                <th>Delivery Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="addChecklistCustomerTableBody">
+                            <tr>
+                                <td colspan="9"
+                                    class="text-center text-muted py-3">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnConfirmAddChecklistCustomer"
+                        onclick="submitAddChecklistCustomers()">
+                    <i class="bi bi-plus-circle"></i>
+                    Add to Checklist
+                </button>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 

@@ -16,9 +16,10 @@
             Back to PO List
         </a>
 
-        <button id="btnCreateRr" class="btn btn-success btn-sm d-none">
-            Create Receiving Report
-        </button>
+        <a href="/purchasing/receiving-reports/calendar"
+           class="btn btn-success btn-sm">
+            View Receiving Calendar
+        </a>
     </div>
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
@@ -47,7 +48,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="text-muted small">Delivery Date</label>
+                    <label class="text-muted small">First Scheduled Delivery</label>
                     <div class="fw-semibold" id="deliveryDate">-</div>
                 </div>
 
@@ -139,7 +140,7 @@
             document.getElementById("poRemarks").innerText = data.remarks ?? "-";
 
             renderLines(data.lines ?? []);
-            setupCreateRrButton(data);
+            
 
         } catch (error) {
             document.getElementById("poLineBody").innerHTML = `
@@ -151,29 +152,7 @@
         }
     }
 
-        function setupCreateRrButton(po) {
-        const btn = document.getElementById("btnCreateRr");
-
-        if (!btn) return;
-
-        const canCreateRr =
-            po.status === "APPROVED" ||
-            po.status === "PARTIALLY_RECEIVED";
-
-        const hasBalance = (po.lines ?? []).some(line =>
-            Number(line.balanceQty ?? 0) > 0
-        );
-
-        if (canCreateRr && hasBalance) {
-            btn.classList.remove("d-none");
-
-            btn.onclick = function () {
-                window.location.href = `/purchasing/receiving-reports/create/${po.poId}`;
-            };
-        } else {
-            btn.classList.add("d-none");
-        }
-    }
+     
 
     function renderLines(lines) {
         const tbody = document.getElementById("poLineBody");
