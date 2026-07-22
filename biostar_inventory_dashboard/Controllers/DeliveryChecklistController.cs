@@ -163,11 +163,23 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetChecklistList(DateTime? date, string? status, string? truck, string? search)
+        public async Task<IActionResult> GetChecklistList(
+    DateTime? date,
+    string? status,
+    string? truck,
+    string? search,
+    bool activeOnly = false)
         {
             try
             {
-                var result = await _apiService.GetChecklistListAsync(date, status, truck, search);
+                var result = await _apiService.GetChecklistListAsync(
+                    date,
+                    status,
+                    truck,
+                    search,
+                    activeOnly
+                );
+
                 return Content(result, "application/json");
             }
             catch (Exception ex)
@@ -175,6 +187,9 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+
 
         [HttpPost]
         public async Task<IActionResult> UpdateChecklistLineLot([FromBody] JsonElement data)

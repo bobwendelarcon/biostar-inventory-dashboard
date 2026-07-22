@@ -797,7 +797,8 @@ namespace biostar_inventory_dashboard.Services
      DateTime? date,
      string? status,
      string? truck,
-     string? search)
+     string? search,
+     bool activeOnly = false)
         {
             var query = new List<string>();
 
@@ -813,13 +814,14 @@ namespace biostar_inventory_dashboard.Services
             if (!string.IsNullOrWhiteSpace(search))
                 query.Add($"search={Uri.EscapeDataString(search)}");
 
+            query.Add($"activeOnly={activeOnly.ToString().ToLowerInvariant()}");
+
             var url = "api/DeliveryChecklist/list";
 
             if (query.Any())
                 url += "?" + string.Join("&", query);
 
             var response = await _httpClient.GetAsync(url);
-
             var result = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -830,7 +832,13 @@ namespace biostar_inventory_dashboard.Services
 
         public async Task<string> GetChecklistListAsync()
         {
-            return await GetChecklistListAsync(null, null, null, null);
+            return await GetChecklistListAsync(
+                null,
+                null,
+                null,
+                null,
+                false
+            );
         }
 
         public async Task<string> GetReadyForChecklistAsync()

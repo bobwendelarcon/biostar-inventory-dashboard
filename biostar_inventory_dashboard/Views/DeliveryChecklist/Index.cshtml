@@ -30,39 +30,75 @@
         </div>
     </div>
 
-    <div class="row mb-3">
+    <div class="row mb-3 g-3">
 
         <div class="col-md-2">
-            <label>Date</label>
-            <input type="date" id="filterDate" class="form-control">
+            <label class="form-label">Date</label>
+            <input type="date"
+                   id="filterDate"
+                   class="form-control">
         </div>
 
         <div class="col-md-2">
-            <label>Status</label>
-            <select id="filterStatus" class="form-select">
+            <label class="form-label d-block">View</label>
+
+            <div class="form-check mt-2">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="filterActiveOnly"
+                       checked>
+
+                <label class="form-check-label"
+                       for="filterActiveOnly">
+                    Show Active
+                </label>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Status</label>
+
+            <select id="filterStatus"
+                    class="form-select">
                 <option value="">All</option>
                 <option value="READY">Ready</option>
                 <option value="LOADING">Loading</option>
                 <option value="PARTIAL">Partial</option>
+                <option value="PARTIALLY_COMPLETED">
+                    Partially Completed
+                </option>
                 <option value="COMPLETED">Completed</option>
             </select>
         </div>
 
         <div class="col-md-2">
-            <label>Truck</label>
-            <input type="text" id="filterTruck" class="form-control">
+            <label class="form-label">Truck</label>
+
+            <input type="text"
+                   id="filterTruck"
+                   class="form-control"
+                   placeholder="Truck">
         </div>
 
-        <div class="col-md-3">
-            <label>Search</label>
-            <input type="text" id="filterSearch" class="form-control" placeholder="DR No ">
+        <div class="col-md-2">
+            <label class="form-label">Search</label>
+
+            <input type="text"
+                   id="filterSearch"
+                   class="form-control"
+                   placeholder="Checklist, Customer, DR">
         </div>
 
-        <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-primary" onclick="applyFilters()">
+        <div class="col-md-2 d-flex align-items-end gap-2">
+            <button type="button"
+                    class="btn btn-primary"
+                    onclick="applyFilters()">
                 Apply
             </button>
-            <button class="btn btn-outline-secondary" onclick="resetFilters()">
+
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="resetFilters()">
                 Reset
             </button>
         </div>

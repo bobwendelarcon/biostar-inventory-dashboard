@@ -15,7 +15,6 @@ wwwroot\js\categories.js
 wwwroot\js\dailyorder.js
 wwwroot\js\dashboard.js
 wwwroot\js\delivery-checklist-print.js
-wwwroot\js\delivery-checklist.js
 wwwroot\js\inventory.js
 wwwroot\js\manual-stock-in.js
 wwwroot\js\manufacturing\materials\material-categories.js
@@ -31,6 +30,7 @@ wwwroot\js\purchasing\suppliers\suppliers.js
 wwwroot\js\report.js
 wwwroot\js\returns.js
 wwwroot\js\site.js
+wwwroot\js\stock-overview.js
 wwwroot\js\transaction.js
 wwwroot\js\user.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
@@ -91,4 +91,4 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
-wwwroot\js\stock-overview.js
+wwwroot\js\delivery-checklist.js

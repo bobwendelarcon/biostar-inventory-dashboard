@@ -35,14 +35,35 @@ document.addEventListener("DOMContentLoaded", function () {
     const today = getPHDateInputValue();
     const filterDate = document.getElementById("filterDate");
 
+    const filterActiveOnly =
+        document.getElementById("filterActiveOnly");
+
     if (filterDate && !filterDate.value) {
         filterDate.value = today;
     }
+
+    if (filterActiveOnly) {
+        filterActiveOnly.checked = true;
+    }
+
     loadChecklistList();
     initializeCreateChecklistModal();
     initializeSelectAllOrders();
     startChecklistAutoRefresh();
     initializeCustomerSearch();
+
+
+    const activeOnly =
+        document.getElementById("filterActiveOnly");
+
+    activeOnly?.addEventListener("change", function () {
+        updateActiveFilterState();
+        loadChecklistList();
+    });
+
+    updateActiveFilterState();
+
+
 
     document.getElementById("editChecklistTripModal")
         ?.addEventListener("hidden.bs.modal", function () {
@@ -318,7 +339,9 @@ function resetFilters() {
     document.getElementById("filterStatus").value = "";
     document.getElementById("filterTruck").value = "";
     document.getElementById("filterSearch").value = "";
+    document.getElementById("filterActiveOnly").checked = true;
 
+    updateActiveFilterState();
     loadChecklistList();
 }
 
@@ -461,13 +484,31 @@ async function loadChecklistList(options = {}) {
         const status = document.getElementById("filterStatus")?.value || "";
         const truck = document.getElementById("filterTruck")?.value || "";
         const search = document.getElementById("filterSearch")?.value || "";
+        const activeOnly =
+            document.getElementById("filterActiveOnly")?.checked === true;
 
         const query = new URLSearchParams();
 
-        if (date && !search) query.append("date", date);
-        if (status) query.append("status", status);
-        if (truck) query.append("truck", truck);
-        if (search) query.append("search", search);
+
+        if (!activeOnly && date && !search) {
+            query.append("date", date);
+        }
+
+        if (!activeOnly && status) {
+            query.append("status", status);
+        }
+
+        if (activeOnly) {
+            query.append("activeOnly", "true");
+        }
+
+        if (truck) {
+            query.append("truck", truck);
+        }
+
+        if (search) {
+            query.append("search", search);
+        }
 
         const response = await fetch(`/DeliveryChecklist/GetChecklistList?${query.toString()}`);
 
@@ -547,6 +588,27 @@ async function loadChecklistList(options = {}) {
                 </tr>
             `;
         }
+    }
+}
+
+function updateActiveFilterState() {
+    const activeOnly =
+        document.getElementById("filterActiveOnly");
+
+    const date =
+        document.getElementById("filterDate");
+
+    const status =
+        document.getElementById("filterStatus");
+
+    const isActive = activeOnly?.checked === true;
+
+    if (date) {
+        date.disabled = isActive;
+    }
+
+    if (status) {
+        status.disabled = isActive;
     }
 }
 
@@ -2532,6 +2594,7 @@ async function deleteChecklist(id) {
             result = { message: resultText };
         }
 
+     
         if (!response.ok) {
             throw new Error(result?.message || resultText || "Failed to delete checklist.");
         }
