@@ -43,6 +43,62 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetHistory(
+      string productId,
+      string branchId,
+      string lotNo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(productId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Product ID is required."
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(branchId))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Warehouse is required."
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(lotNo))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Lot number is required."
+                    });
+                }
+
+                var result = await _apiService.GetHistoryAsync(
+                    productId,
+                    lotNo,
+                    branchId
+                );
+
+                return Content(
+                    result,
+                    "application/json"
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetInventoryCategories()
         {
             try

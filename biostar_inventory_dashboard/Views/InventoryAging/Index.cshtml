@@ -232,6 +232,43 @@
         border-top: 1px solid #edf0f3;
     }
 
+    .verification-history-box {
+        max-height: 230px;
+        overflow-y: auto;
+        border: 1px solid #e5e9ed;
+        border-radius: 8px;
+    }
+
+        .verification-history-box thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #f8f9fa;
+            white-space: nowrap;
+            font-size: 0.75rem;
+        }
+
+        .verification-history-box td {
+            font-size: 0.78rem;
+            vertical-align: top;
+        }
+
+
+    .history-remarks-cell {
+        max-width: 260px;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.35;
+    }
+
+    .verification-history-box {
+        max-height: 260px;
+    }
+
+        .verification-history-box table {
+            min-width: 850px;
+        }
+
     @@media (max-width: 767.98px) {
         .aging-page-title {
             font-size: 1.25rem;
@@ -532,7 +569,7 @@
      aria-labelledby="verifyInventoryModalLabel"
      aria-hidden="true">
 
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header">
@@ -711,8 +748,46 @@
 
                 <div class="alert alert-warning mt-4 mb-0">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    Saving this verification will later create an inventory
-                    adjustment and insert an IN or OUT record into Transaction History.
+                    Saving this verification will immediately create an inventory
+                    adjustment and record an IN or OUT transaction in Inventory History.
+                </div>
+
+
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-semibold">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Recent Inventory History
+                        </h6>
+
+                        <span class="text-muted small">
+                            Latest 10 records
+                        </span>
+                    </div>
+
+                    <div class="table-responsive verification-history-box">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date &amp; Time</th>
+                                    <th>Type</th>
+                                    <th>Qty</th>
+                                    <th>Reference</th>
+                                    <th>Remarks</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="verificationHistoryBody">
+                                <tr>
+                                    <td colspan="6"
+                                        class="text-center text-muted py-3">
+                                        Select an inventory lot to load history.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>
@@ -845,6 +920,12 @@
                 </div>
             </div>
 
+
+         
+
+
+
+
             <div class="modal-footer">
                 <button type="button"
                         class="btn btn-secondary"
@@ -860,69 +941,122 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-         let inventoryRows = [];
-    let filteredRows = [];
+        let inventoryRows = [];
 
         let currentPage = 1;
-    let pageSize = 30;
-    let totalRecords = 0;
-    let totalPages = 1;
+        const pageSize = 30;
 
+        let totalRecords = 0;
+        let totalPages = 1;
 
+        const tableBody =
+            document.getElementById("inventoryAgingTableBody");
 
+        const emptyState =
+            document.getElementById("emptyState");
 
+        const searchInput =
+            document.getElementById("searchInput");
 
-
-
-        const tableBody = document.getElementById("inventoryAgingTableBody");
-        const emptyState = document.getElementById("emptyState");
-
-        const searchInput = document.getElementById("searchInput");
         const categoryFilter =
-    document.getElementById("categoryFilter");
-        const warehouseFilter = document.getElementById("warehouseFilter");
-        const statusFilter = document.getElementById("statusFilter");
-        const minimumDaysFilter = document.getElementById("minimumDaysFilter");
-        const maximumDaysFilter = document.getElementById("maximumDaysFilter");
-        const needsVerificationOnly = document.getElementById("needsVerificationOnly");
+            document.getElementById("categoryFilter");
 
-        const verifyModalElement = document.getElementById("verifyInventoryModal");
-        const verifyModal = new bootstrap.Modal(verifyModalElement);
+        const warehouseFilter =
+            document.getElementById("warehouseFilter");
 
-        const viewModalElement = document.getElementById("viewVerificationModal");
-        const viewModal = new bootstrap.Modal(viewModalElement);
+        const statusFilter =
+            document.getElementById("statusFilter");
 
-        function parseDate(dateValue) {
-            if (!dateValue) {
+        const minimumDaysFilter =
+            document.getElementById("minimumDaysFilter");
+
+        const maximumDaysFilter =
+            document.getElementById("maximumDaysFilter");
+
+        const needsVerificationOnly =
+            document.getElementById("needsVerificationOnly");
+
+        const previousPageButton =
+            document.getElementById("previousPageButton");
+
+        const nextPageButton =
+            document.getElementById("nextPageButton");
+
+        const verifyModalElement =
+            document.getElementById("verifyInventoryModal");
+
+        const verifyModal =
+            new bootstrap.Modal(verifyModalElement);
+
+        /*
+        |--------------------------------------------------------------------------
+        | General Helpers
+        |--------------------------------------------------------------------------
+        */
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function formatNumber(value) {
+            const number = Number(value || 0);
+
+            return number.toLocaleString("en-PH", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 4
+            });
+        }
+
+        function normalizeDate(value) {
+            if (!value) {
                 return null;
             }
 
-            return new Date(dateValue + "T00:00:00");
-        }
+            const date = new Date(value);
 
-        function calculateDays(dateValue) {
-            const date = parseDate(dateValue);
-
-            if (!date) {
-                return 0;
+            if (Number.isNaN(date.getTime())) {
+                return null;
             }
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const difference = today.getTime() - date.getTime();
-
-            return Math.max(
-                0,
-                Math.floor(difference / (1000 * 60 * 60 * 24))
-            );
+            return date.toISOString().slice(0, 10);
         }
 
-        function formatDate(dateValue) {
-            const date = parseDate(dateValue);
+        function parseDate(value) {
+            if (!value) {
+                return null;
+            }
+
+            /*
+             * Use local midnight for date-only values to prevent
+             * timezone conversion from changing the displayed date.
+             */
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                const parts = value.split("-");
+
+                return new Date(
+                    Number(parts[0]),
+                    Number(parts[1]) - 1,
+                    Number(parts[2])
+                );
+            }
+
+            const date = new Date(value);
+
+            return Number.isNaN(date.getTime())
+                ? null
+                : date;
+        }
+
+        function formatDate(value, emptyText = "Never") {
+            const date = parseDate(value);
 
             if (!date) {
-                return "Never";
+                return emptyText;
             }
 
             return date.toLocaleDateString("en-PH", {
@@ -932,165 +1066,47 @@
             });
         }
 
-        function formatNumber(value) {
-            return Number(value || 0).toLocaleString("en-PH", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 4
+        function formatHistoryDateTime(value) {
+            if (!value) {
+                return "-";
+            }
+
+            const date = new Date(value);
+
+            if (Number.isNaN(date.getTime())) {
+                return "-";
+            }
+
+            return date.toLocaleString("en-PH", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
             });
         }
 
-            async function loadInventory(page = 1) {
-        try {
-            currentPage = page;
+        function calculateExpiryDays(expirationDate) {
+            const expiry = parseDate(expirationDate);
 
-              const params = new URLSearchParams({
-        page: currentPage,
-        pageSize: pageSize,
+            if (!expiry) {
+                return Number.MAX_SAFE_INTEGER;
+            }
 
-        search:
-            searchInput.value.trim(),
+            const today = new Date();
 
-        lotNo: "",
-        category:
-    categoryFilter.value || "",
+            today.setHours(0, 0, 0, 0);
+            expiry.setHours(0, 0, 0, 0);
 
-        warehouse:
-            warehouseFilter.value || "",
+            const millisecondsPerDay =
+                1000 * 60 * 60 * 24;
 
-        status:
-            statusFilter.value || "",
-
-        minimumDays:
-            minimumDaysFilter.value || "",
-
-        maximumDays:
-            maximumDaysFilter.value || "",
-
-        order: "desc"
-    });
-            const response = await fetch(
-                `/InventoryAging/GetInventory?${params.toString()}`
+            return Math.ceil(
+                (expiry.getTime() - today.getTime()) /
+                millisecondsPerDay
             );
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText);
-            }
-
-            const result = await response.json();
-            const summary = result.summary || {};
-
-            totalRecords = Number(result.total || 0);
-
-                totalPages = Number(
-        result.totalPages ||
-        Math.ceil(totalRecords / pageSize) ||
-        1
-    );
-
-               inventoryRows = (result.data || []).map(item => ({
-        inventoryId:
-            `${item.product_id}|${item.branch_id}|${item.lot_no}`,
-
-        productId:
-            item.product_id,
-
-        branchId:
-            item.branch_id,
-
-        productName:
-            item.product_name || "",
-
-        description:
-            item.product_description || "",
-
-        lotNo:
-            item.lot_no || "",
-
-        warehouse:
-            item.warehouse || item.branch_id || "",
-
-        systemQty:
-            Number(item.qty || 0),
-
-        uom:
-            item.uom || "",
-
-        dateIn:
-            normalizeDate(item.date_in),
-
-        lastOutDate:
-            normalizeDate(item.last_out_date),
-
-        manufacturingDate:
-            normalizeDate(item.manufacturing_date),
-
-        expirationDate:
-            normalizeDate(item.expiration_date),
-
-        daysInInventory:
-            Number(item.days_in_inventory || 0),
-
-        daysSinceLastOut:
-            item.days_since_last_out === null
-                ? null
-                : Number(item.days_since_last_out),
-
-        daysToExpiry:
-            item.days_to_expiry === null
-                ? null
-                : Number(item.days_to_expiry),
-
-        status:
-            item.aging_status || "HEALTHY",
-
-           needsVerification:
-        Boolean(item.needs_verification),
-
-    lastVerifiedAt:
-        normalizeDate(item.last_verified_at),
-
-    lastVerifiedBy:
-        item.last_verified_by || "",
-
-    verified:
-        Boolean(item.last_verified_at),
-
-    verification:
-        item.last_verified_at
-            ? {
-                verifiedDate:
-                    normalizeDate(item.last_verified_at),
-
-                verifiedBy:
-                    item.last_verified_by || ""
-            }
-            : null
-    }));
-
-            filteredRows = [...inventoryRows];
-
-           
-           updateSummaryCards(summary);
-            renderGrid();
-            renderPagination();
         }
-        catch (error) {
-            console.error("Inventory Aging load error:", error);
-
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="11"
-                        class="text-center text-danger py-4">
-                        Failed to load inventory aging data.
-                        <div class="small mt-1">
-                            ${escapeHtml(error.message)}
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }
-    }
 
         function getStatusLabel(status) {
             const labels = {
@@ -1103,7 +1119,7 @@
                 GHOST_INVENTORY: "Ghost Inventory"
             };
 
-            return labels[status] || status;
+            return labels[status] || status || "-";
         }
 
         function getStatusClass(status) {
@@ -1135,11 +1151,13 @@
         }
 
         function getDaysClass(days) {
-            if (days > 14) {
+            const numberOfDays = Number(days || 0);
+
+            if (numberOfDays > 14) {
                 return "days-danger";
             }
 
-            if (days > 7) {
+            if (numberOfDays > 7) {
                 return "days-warning";
             }
 
@@ -1147,7 +1165,8 @@
         }
 
         function getExpiryClass(expirationDate) {
-            const daysRemaining = calculateExpiryDays(expirationDate);
+            const daysRemaining =
+                calculateExpiryDays(expirationDate);
 
             if (daysRemaining < 0) {
                 return "expiry-danger";
@@ -1160,140 +1179,533 @@
             return "";
         }
 
-        function calculateExpiryDays(expirationDate) {
-            const expiry = parseDate(expirationDate);
-
-            if (!expiry) {
-                return Number.MAX_SAFE_INTEGER;
+        function getProperty(object, ...propertyNames) {
+            for (const propertyName of propertyNames) {
+                if (
+                    object &&
+                    object[propertyName] !== undefined &&
+                    object[propertyName] !== null
+                ) {
+                    return object[propertyName];
+                }
             }
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            return Math.ceil(
-                (expiry.getTime() - today.getTime()) /
-                (1000 * 60 * 60 * 24)
-            );
+            return null;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Dropdown Options
+        |--------------------------------------------------------------------------
+        */
 
-             async function loadWarehouseOptions() {
-        try {
-            const selectedValue = warehouseFilter.value;
+        async function loadCategoryOptions() {
+            try {
+                const selectedValue =
+                    categoryFilter.value;
 
-            const response = await fetch("/Branch/GetBranches");
-
-            if (!response.ok) {
-                throw new Error(
-                    `Failed to load warehouses. Status: ${response.status}`
+                const response = await fetch(
+                    "/InventoryAging/GetCategories"
                 );
-            }
 
-            const branches = await response.json();
-
-            warehouseFilter.innerHTML =
-                '<option value="">All Warehouses</option>';
-
-            branches.forEach(branch => {
-                const branchId =
-                    branch.branch_id ||
-                    branch.branchId ||
-                    "";
-
-                const branchName =
-                    branch.branch_name ||
-                    branch.branchName ||
-                    branchId;
-
-                if (!branchId) {
-                    return;
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to load categories. Status: ${response.status}`
+                    );
                 }
 
-                const option = document.createElement("option");
+                const result = await response.json();
 
-                option.value = branchId;
-                option.textContent = branchName;
+                const categories = Array.isArray(result)
+                    ? result
+                    : result.data || result.items || [];
 
-                warehouseFilter.appendChild(option);
-            });
+                categoryFilter.innerHTML =
+                    '<option value="">All Categories</option>';
 
-            warehouseFilter.value = selectedValue;
+                categories.forEach(category => {
+                    const categoryId =
+                        getProperty(
+                            category,
+                            "catg_id",
+                            "catgId",
+                            "category_id",
+                            "categoryId"
+                        ) || "";
+
+                    const categoryName =
+                        getProperty(
+                            category,
+                            "catg_name",
+                            "catgName",
+                            "category_name",
+                            "categoryName"
+                        ) || categoryId;
+
+                    if (!categoryId) {
+                        return;
+                    }
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = categoryId;
+                    option.textContent = categoryName;
+
+                    categoryFilter.appendChild(option);
+                });
+
+                categoryFilter.value = selectedValue;
+            }
+            catch (error) {
+                console.error(
+                    "Category load error:",
+                    error
+                );
+            }
         }
-        catch (error) {
-            console.error("Warehouse load error:", error);
+
+        async function loadWarehouseOptions() {
+            try {
+                const selectedValue =
+                    warehouseFilter.value;
+
+                const response = await fetch(
+                    "/Branch/GetBranches"
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to load warehouses. Status: ${response.status}`
+                    );
+                }
+
+                const result = await response.json();
+
+                const branches = Array.isArray(result)
+                    ? result
+                    : result.data || result.items || [];
+
+                warehouseFilter.innerHTML =
+                    '<option value="">All Warehouses</option>';
+
+                branches.forEach(branch => {
+                    const branchId =
+                        getProperty(
+                            branch,
+                            "branch_id",
+                            "branchId"
+                        ) || "";
+
+                    const branchName =
+                        getProperty(
+                            branch,
+                            "branch_name",
+                            "branchName"
+                        ) || branchId;
+
+                    if (!branchId) {
+                        return;
+                    }
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = branchId;
+                    option.textContent = branchName;
+
+                    warehouseFilter.appendChild(option);
+                });
+
+                warehouseFilter.value = selectedValue;
+            }
+            catch (error) {
+                console.error(
+                    "Warehouse load error:",
+                    error
+                );
+            }
         }
-    }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Inventory Aging Grid
+        |--------------------------------------------------------------------------
+        */
 
+        async function loadInventory(page = 1) {
+            try {
+                currentPage = page;
 
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="11"
+                            class="text-center text-muted py-4">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Loading inventory aging data...
+                        </td>
+                    </tr>
+                `;
 
-      
+                emptyState.classList.add("d-none");
 
-           function updateSummaryCards(summary) {
-        const totalLots =
-            Number(summary.total_lots ?? totalRecords ?? 0);
+                const parameters = new URLSearchParams({
+                    page: String(currentPage),
+                    pageSize: String(pageSize),
+                    search: searchInput.value.trim(),
+                    lotNo: "",
+                    category: categoryFilter.value || "",
+                    warehouse: warehouseFilter.value || "",
+                    status: statusFilter.value || "",
+                    minimumDays: minimumDaysFilter.value || "",
+                    maximumDays: maximumDaysFilter.value || "",
+                    needsVerificationOnly:
+                        needsVerificationOnly.checked
+                            ? "true"
+                            : "false",
+                    order: "desc"
+                });
 
-        const verificationCount =
-            Number(summary.needs_verification ?? 0);
+                const response = await fetch(
+                    `/InventoryAging/GetInventory?${parameters.toString()}`
+                );
 
-        const nearExpiryCount =
-            Number(summary.near_expiry ?? 0);
+                if (!response.ok) {
+                    const errorText =
+                        await response.text();
 
-        const expiredCount =
-            Number(summary.expired ?? 0);
+                    throw new Error(
+                        errorText ||
+                        `Request failed with status ${response.status}.`
+                    );
+                }
 
-        const verifiedCount =
-            Number(summary.verified_today ?? 0);
+                const result =
+                    await response.json();
 
-        document.getElementById("totalLotsCount").textContent =
-            totalLots.toLocaleString();
+                const summary =
+                    result.summary || {};
 
-        document.getElementById("verificationCount").textContent =
-            verificationCount.toLocaleString();
+                totalRecords = Number(
+                    result.total ??
+                    result.totalRecords ??
+                    result.total_records ??
+                    0
+                );
 
-        document.getElementById("nearExpiryCount").textContent =
-            nearExpiryCount.toLocaleString();
+                totalPages = Number(
+                    result.totalPages ??
+                    result.total_pages ??
+                    Math.ceil(totalRecords / pageSize) ??
+                    1
+                );
 
-        document.getElementById("expiredCount").textContent =
-            expiredCount.toLocaleString();
+                if (
+                    !Number.isFinite(totalPages) ||
+                    totalPages < 1
+                ) {
+                    totalPages = 1;
+                }
 
-        document.getElementById("verifiedCount").textContent =
-            verifiedCount.toLocaleString();
-    }
+                const resultRows = Array.isArray(result)
+                    ? result
+                    : result.data ||
+                      result.items ||
+                      [];
+
+                inventoryRows = resultRows.map(item => {
+                    const productId =
+                        getProperty(
+                            item,
+                            "product_id",
+                            "productId"
+                        ) || "";
+
+                    const branchId =
+                        getProperty(
+                            item,
+                            "branch_id",
+                            "branchId"
+                        ) || "";
+
+                    const lotNo =
+                        getProperty(
+                            item,
+                            "lot_no",
+                            "lotNo"
+                        ) || "";
+
+                    const lastVerifiedAt =
+                        normalizeDate(
+                            getProperty(
+                                item,
+                                "last_verified_at",
+                                "lastVerifiedAt"
+                            )
+                        );
+
+                    return {
+                        inventoryId:
+                            `${productId}|${branchId}|${lotNo}`,
+
+                        productId: productId,
+                        branchId: branchId,
+
+                        productName:
+                            getProperty(
+                                item,
+                                "product_name",
+                                "productName"
+                            ) || "",
+
+                        description:
+                            getProperty(
+                                item,
+                                "product_description",
+                                "productDescription",
+                                "description"
+                            ) || "",
+
+                        lotNo: lotNo,
+
+                        warehouse:
+                            getProperty(
+                                item,
+                                "warehouse",
+                                "branch_name",
+                                "branchName"
+                            ) || branchId,
+
+                        systemQty: Number(
+                            getProperty(
+                                item,
+                                "qty",
+                                "quantity",
+                                "system_qty",
+                                "systemQty"
+                            ) || 0
+                        ),
+
+                        uom:
+                            getProperty(
+                                item,
+                                "uom"
+                            ) || "",
+
+                        dateIn:
+                            normalizeDate(
+                                getProperty(
+                                    item,
+                                    "date_in",
+                                    "dateIn"
+                                )
+                            ),
+
+                        lastOutDate:
+                            normalizeDate(
+                                getProperty(
+                                    item,
+                                    "last_out_date",
+                                    "lastOutDate"
+                                )
+                            ),
+
+                        manufacturingDate:
+                            normalizeDate(
+                                getProperty(
+                                    item,
+                                    "manufacturing_date",
+                                    "manufacturingDate"
+                                )
+                            ),
+
+                        expirationDate:
+                            normalizeDate(
+                                getProperty(
+                                    item,
+                                    "expiration_date",
+                                    "expirationDate"
+                                )
+                            ),
+
+                        daysInInventory: Number(
+                            getProperty(
+                                item,
+                                "days_in_inventory",
+                                "daysInInventory"
+                            ) || 0
+                        ),
+
+                        daysSinceLastOut:
+                            getProperty(
+                                item,
+                                "days_since_last_out",
+                                "daysSinceLastOut"
+                            ),
+
+                        daysToExpiry:
+                            getProperty(
+                                item,
+                                "days_to_expiry",
+                                "daysToExpiry"
+                            ),
+
+                        status:
+                            getProperty(
+                                item,
+                                "aging_status",
+                                "agingStatus",
+                                "status"
+                            ) || "HEALTHY",
+
+                        needsVerification: Boolean(
+                            getProperty(
+                                item,
+                                "needs_verification",
+                                "needsVerification"
+                            )
+                        ),
+
+                        lastVerifiedAt: lastVerifiedAt,
+
+                        lastVerifiedBy:
+                            getProperty(
+                                item,
+                                "last_verified_by",
+                                "lastVerifiedBy"
+                            ) || "",
+
+                        verified:
+                            Boolean(lastVerifiedAt)
+                    };
+                });
+
+                updateSummaryCards(summary);
+                renderGrid();
+                renderPagination();
+            }
+            catch (error) {
+                console.error(
+                    "Inventory Aging load error:",
+                    error
+                );
+
+                inventoryRows = [];
+                totalRecords = 0;
+                totalPages = 1;
+
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="11"
+                            class="text-center text-danger py-4">
+                            Failed to load inventory aging data.
+
+                            <div class="small mt-1">
+                                ${escapeHtml(error.message)}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                updateSummaryCards({});
+                renderPagination();
+            }
+        }
+
+        function updateSummaryCards(summary) {
+            const totalLots = Number(
+                summary.total_lots ??
+                summary.totalLots ??
+                totalRecords ??
+                0
+            );
+
+            const verificationCount = Number(
+                summary.needs_verification ??
+                summary.needsVerification ??
+                0
+            );
+
+            const nearExpiryCount = Number(
+                summary.near_expiry ??
+                summary.nearExpiry ??
+                0
+            );
+
+            const expiredCount = Number(
+                summary.expired ??
+                0
+            );
+
+            const verifiedCount = Number(
+                summary.verified_today ??
+                summary.verifiedToday ??
+                0
+            );
+
+            document.getElementById(
+                "totalLotsCount"
+            ).textContent =
+                totalLots.toLocaleString();
+
+            document.getElementById(
+                "verificationCount"
+            ).textContent =
+                verificationCount.toLocaleString();
+
+            document.getElementById(
+                "nearExpiryCount"
+            ).textContent =
+                nearExpiryCount.toLocaleString();
+
+            document.getElementById(
+                "expiredCount"
+            ).textContent =
+                expiredCount.toLocaleString();
+
+            document.getElementById(
+                "verifiedCount"
+            ).textContent =
+                verifiedCount.toLocaleString();
+        }
 
         function renderGrid() {
             tableBody.innerHTML = "";
 
-          document.getElementById("gridRecordText").textContent =
-    `Showing ${filteredRows.length.toLocaleString()} ` +
-    `of ${totalRecords.toLocaleString()} record(s)`;
+            document.getElementById(
+                "gridRecordText"
+            ).textContent =
+                `Showing ${inventoryRows.length.toLocaleString()} ` +
+                `of ${totalRecords.toLocaleString()} record(s)`;
 
-            if (filteredRows.length === 0) {
+            if (inventoryRows.length === 0) {
                 emptyState.classList.remove("d-none");
                 return;
             }
 
             emptyState.classList.add("d-none");
 
-            filteredRows.forEach(row => {
-               const days = row.daysInInventory;
-
-                   const encodedKey = encodeURIComponent(row.inventoryId);
-
-    const actionButton = `
-        <button type="button"
-                class="btn btn-primary btn-table"
-                data-inventory-key="${escapeHtml(encodedKey)}"
-                onclick="openVerificationFromButton(this)">
-            <i class="bi bi-clipboard-check me-1"></i>
-            Verify
-        </button>
-    `;
+            inventoryRows.forEach(row => {
+                const encodedKey =
+                    encodeURIComponent(row.inventoryId);
 
                 const lastVerifiedText =
-    row.lastVerifiedAt
-        ? formatDate(row.lastVerifiedAt)
-        : "-";
+                    row.lastVerifiedAt
+                        ? formatDate(
+                            row.lastVerifiedAt,
+                            "-"
+                        )
+                        : "-";
+
+                const lastVerifiedByHtml =
+                    row.lastVerifiedAt &&
+                    row.lastVerifiedBy
+                        ? `
+                            <div class="small text-muted mt-1">
+                                ${escapeHtml(row.lastVerifiedBy)}
+                            </div>
+                          `
+                        : "";
 
                 const rowHtml = `
                     <tr>
@@ -1303,7 +1715,7 @@
                             </div>
 
                             <div class="product-description">
-                                ${escapeHtml(row.description || "")}
+                                ${escapeHtml(row.description)}
                             </div>
                         </td>
 
@@ -1329,8 +1741,8 @@
                         </td>
 
                         <td class="text-center">
-                            <span class="${getDaysClass(days)}">
-                                ${days}
+                            <span class="${getDaysClass(row.daysInInventory)}">
+                                ${formatNumber(row.daysInInventory)}
                             </span>
                         </td>
 
@@ -1339,271 +1751,538 @@
                         </td>
 
                         <td class="${getExpiryClass(row.expirationDate)}">
-                            ${formatDate(row.expirationDate)}
+                            ${formatDate(row.expirationDate, "-")}
                         </td>
 
                         <td>
                             <span class="status-badge ${getStatusClass(row.status)}">
                                 <i class="bi ${getStatusIcon(row.status)}"></i>
-                                ${getStatusLabel(row.status)}
+                                ${escapeHtml(getStatusLabel(row.status))}
                             </span>
                         </td>
 
                         <td>
                             ${lastVerifiedText}
+                            ${lastVerifiedByHtml}
                         </td>
 
                         <td>
-                            ${actionButton}
+                            <button type="button"
+                                    class="btn btn-primary btn-table"
+                                    data-inventory-key="${escapeHtml(encodedKey)}"
+                                    onclick="openVerificationFromButton(this)">
+                                <i class="bi bi-clipboard-check me-1"></i>
+                                Verify
+                            </button>
                         </td>
                     </tr>
                 `;
 
-                tableBody.insertAdjacentHTML("beforeend", rowHtml);
+                tableBody.insertAdjacentHTML(
+                    "beforeend",
+                    rowHtml
+                );
             });
         }
 
-            function renderPagination() {
-        const paginationInfo =
-            document.getElementById("paginationInfo");
+        function renderPagination() {
+            const paginationInfo =
+                document.getElementById("paginationInfo");
 
-        const previousButton =
-            document.getElementById("previousPageButton");
+            const startRecord =
+                totalRecords === 0
+                    ? 0
+                    : ((currentPage - 1) * pageSize) + 1;
 
-        const nextButton =
-            document.getElementById("nextPageButton");
-
-        const startRecord =
-            totalRecords === 0
-                ? 0
-                : ((currentPage - 1) * pageSize) + 1;
-
-        const endRecord = Math.min(
-            currentPage * pageSize,
-            totalRecords
-        );
-
-        paginationInfo.textContent =
-            `Showing ${startRecord}-${endRecord} ` +
-            `of ${totalRecords.toLocaleString()} record(s) ` +
-            `| Page ${currentPage} of ${totalPages}`;
-
-        previousButton.disabled =
-            currentPage <= 1;
-
-        nextButton.disabled =
-            currentPage >= totalPages || totalRecords === 0;
-    }
-
-        function applyFilters() {
-            const searchText = searchInput.value.trim().toLowerCase();
-            const selectedWarehouse = warehouseFilter.value;
-            const selectedStatus = statusFilter.value;
-
-            const minimumDays = minimumDaysFilter.value === ""
-                ? null
-                : Number(minimumDaysFilter.value);
-
-            const maximumDays = maximumDaysFilter.value === ""
-                ? null
-                : Number(maximumDaysFilter.value);
-
-            filteredRows = inventoryRows.filter(row => {
-                const days = calculateDays(row.dateIn);
-
-                const matchesSearch =
-                    searchText === "" ||
-                    row.productName.toLowerCase().includes(searchText) ||
-                    row.lotNo.toLowerCase().includes(searchText) ||
-                    (row.description || "").toLowerCase().includes(searchText);
-
-                const matchesWarehouse =
-                    selectedWarehouse === "" ||
-                    row.warehouse === selectedWarehouse;
-
-                const matchesStatus =
-                    selectedStatus === "" ||
-                    row.status === selectedStatus;
-
-                const matchesMinimumDays =
-                    minimumDays === null ||
-                    days >= minimumDays;
-
-                const matchesMaximumDays =
-                    maximumDays === null ||
-                    days <= maximumDays;
-
-                const matchesVerification =
-                    !needsVerificationOnly.checked ||
-                    (
-                        !row.verified &&
-                        (
-                            row.status === "CLEANUP_NEEDED" ||
-                            row.status === "GHOST_INVENTORY" ||
-                            row.status === "EXPIRED" ||
-                            row.status === "NEAR_EXPIRY"
-                        )
+            const endRecord =
+                totalRecords === 0
+                    ? 0
+                    : Math.min(
+                        currentPage * pageSize,
+                        totalRecords
                     );
 
-                return matchesSearch &&
-                    matchesWarehouse &&
-                    matchesStatus &&
-                    matchesMinimumDays &&
-                    matchesMaximumDays &&
-                    matchesVerification;
-            });
+            paginationInfo.textContent =
+                `Showing ${startRecord}-${endRecord} ` +
+                `of ${totalRecords.toLocaleString()} record(s) ` +
+                `| Page ${currentPage} of ${totalPages}`;
 
-            renderGrid();
+            previousPageButton.disabled =
+                currentPage <= 1;
+
+            nextPageButton.disabled =
+                currentPage >= totalPages ||
+                totalRecords === 0;
         }
 
-             function resetFilters() {
-        searchInput.value = "";
-        categoryFilter.value = "";
-        warehouseFilter.value = "";
-        statusFilter.value = "";
-        minimumDaysFilter.value = "";
-        maximumDaysFilter.value = "";
-        needsVerificationOnly.checked = false;
+        function resetFilters() {
+            searchInput.value = "";
+            categoryFilter.value = "";
+            warehouseFilter.value = "";
+            statusFilter.value = "";
+            minimumDaysFilter.value = "";
+            maximumDaysFilter.value = "";
+            needsVerificationOnly.checked = false;
 
-        loadInventory(1);
-    }
-
-        function escapeHtml(value) {
-            return String(value ?? "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
+            loadInventory(1);
         }
 
-            window.openVerificationFromButton = function (button) {
-        const inventoryKey = decodeURIComponent(
-            button.dataset.inventoryKey
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | Inventory History
+        |--------------------------------------------------------------------------
+        */
 
-        openVerification(inventoryKey);
-    };
+        function buildHistoryReference(item) {
+            const references = [];
 
-          window.openVerification = function (inventoryId) {
-        const row = inventoryRows.find(
-            item => item.inventoryId === inventoryId
-        );
+            const drNo =
+                getProperty(item, "dr_no", "drNo");
 
-        if (!row) {
-            return;
-        }
-
-        document.getElementById("verifyInventoryId").value =
-            row.inventoryId;
-
-        document.getElementById("verifyProductName").textContent =
-            row.productName;
-
-        document.getElementById("verifyLotNo").textContent =
-            row.lotNo;
-
-        document.getElementById("verifyWarehouse").textContent =
-            row.warehouse;
-
-        document.getElementById("verifySystemQty").value =
-            row.systemQty;
-
-        document.getElementById("verifyPhysicalQty").value = "";
-        document.getElementById("verifyVariance").value = "0";
-        document.getElementById("verifyReason").value = "";
-        document.getElementById("verifyRemarks").value = "";
-
-        document.getElementById("verifySystemUom").textContent =
-            row.uom;
-
-        document.getElementById("verifyPhysicalUom").textContent =
-            row.uom;
-
-        document.getElementById("verifyVarianceUom").textContent =
-            row.uom;
-
-        document.getElementById("verifyPhysicalQty")
-            .classList.remove("is-invalid");
-
-        document.getElementById("verifyReason")
-            .classList.remove("is-invalid");
-
-        updateVarianceDisplay();
-
-        verifyModal.show();
-
-        setTimeout(() => {
-            document.getElementById("verifyPhysicalQty").focus();
-        }, 300);
-    };
-
-        window.viewVerification = function (inventoryId) {
-            const row = inventoryRows.find(
-                item => item.inventoryId === inventoryId
-            );
-
-            if (!row || !row.verification) {
-                return;
-            }
-
-            const verification = row.verification;
-
-            document.getElementById("viewProduct").textContent =
-                row.productName;
-
-            document.getElementById("viewLot").textContent =
-                row.lotNo;
-
-            document.getElementById("viewWarehouse").textContent =
-                row.warehouse;
-
-            document.getElementById("viewSystemQty").textContent =
-                `${formatNumber(verification.systemQty)} ${row.uom}`;
-
-            document.getElementById("viewPhysicalQty").textContent =
-                `${formatNumber(verification.physicalQty)} ${row.uom}`;
-
-            document.getElementById("viewVariance").textContent =
-                `${formatNumber(verification.variance)} ${row.uom}`;
-
-            document.getElementById("viewReason").textContent =
-                verification.reasonLabel;
-
-            document.getElementById("viewVerifiedBy").textContent =
-                verification.verifiedBy;
-
-            document.getElementById("viewVerifiedDate").textContent =
-                new Date(verification.verifiedDate).toLocaleString(
-                    "en-PH",
-                    {
-                        dateStyle: "medium",
-                        timeStyle: "short"
-                    }
+            const invoiceNo =
+                getProperty(
+                    item,
+                    "inv_no",
+                    "invNo",
+                    "invoice_no",
+                    "invoiceNo"
                 );
 
-            document.getElementById("viewRemarks").textContent =
-                verification.remarks || "-";
+            const poNo =
+                getProperty(item, "po_no", "poNo");
 
-            viewModal.show();
-        };
+            const orderNo =
+                getProperty(
+                    item,
+                    "order_no",
+                    "orderNo"
+                );
+
+            const checklistNo =
+                getProperty(
+                    item,
+                    "checklist_no",
+                    "checklistNo"
+                );
+
+            const referenceType =
+                getProperty(
+                    item,
+                    "reference_type",
+                    "referenceType"
+                );
+
+            const referenceNo =
+                getProperty(
+                    item,
+                    "reference_no",
+                    "referenceNo"
+                );
+
+            if (drNo) {
+                references.push(`DR: ${drNo}`);
+            }
+
+            if (invoiceNo) {
+                references.push(`INV: ${invoiceNo}`);
+            }
+
+            if (poNo) {
+                references.push(`PO: ${poNo}`);
+            }
+
+            if (orderNo) {
+                references.push(`DO: ${orderNo}`);
+            }
+
+            if (checklistNo) {
+                references.push(`DC: ${checklistNo}`);
+            }
+
+            if (referenceNo) {
+                references.push(String(referenceNo));
+            }
+
+            if (referenceType) {
+                references.push(String(referenceType));
+            }
+
+            const uniqueReferences =
+                [...new Set(references)];
+
+            return uniqueReferences.length > 0
+                ? uniqueReferences
+                    .map(reference => escapeHtml(reference))
+                    .join("<br>")
+                : "-";
+        }
+
+        function extractHistoryRows(result) {
+            if (Array.isArray(result)) {
+                return result;
+            }
+
+            if (Array.isArray(result?.data)) {
+                return result.data;
+            }
+
+            if (Array.isArray(result?.items)) {
+                return result.items;
+            }
+
+            if (Array.isArray(result?.history)) {
+                return result.history;
+            }
+
+            if (Array.isArray(result?.data?.items)) {
+                return result.data.items;
+            }
+
+            if (Array.isArray(result?.data?.data)) {
+                return result.data.data;
+            }
+
+            return [];
+        }
+
+        async function loadVerificationHistory(
+            productId,
+            branchId,
+            lotNo
+        ) {
+            const historyBody =
+                document.getElementById(
+                    "verificationHistoryBody"
+                );
+
+            historyBody.innerHTML = `
+                <tr>
+                    <td colspan="6"
+                        class="text-center text-muted py-3">
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Loading inventory history...
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const parameters =
+                    new URLSearchParams({
+                        productId: productId || "",
+                        branchId: branchId || "",
+                        lotNo: lotNo || ""
+                    });
+
+                const response = await fetch(
+                    `/InventoryAging/GetHistory?${parameters.toString()}`
+                );
+
+                if (!response.ok) {
+                    const errorText =
+                        await response.text();
+
+                    throw new Error(
+                        errorText ||
+                        `History request failed with status ${response.status}.`
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+                const historyRows = extractHistoryRows(result)
+    .sort((a, b) => {
+        const dateA = new Date(
+            a.created_at ||
+            a.createdAt ||
+            a.transaction_date ||
+            a.transactionDate ||
+            a.date ||
+            0
+        );
+
+        const dateB = new Date(
+            b.created_at ||
+            b.createdAt ||
+            b.transaction_date ||
+            b.transactionDate ||
+            b.date ||
+            0
+        );
+
+        // Latest first
+        return dateB - dateA;
+    })
+    .slice(0, 10);
+
+                if (historyRows.length === 0) {
+                    historyBody.innerHTML = `
+                        <tr>
+                            <td colspan="6"
+                                class="text-center text-muted py-3">
+                                No inventory history found for this lot.
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                historyBody.innerHTML =
+                    historyRows.map(item => {
+                        const transactionType =
+                            String(
+                                getProperty(
+                                    item,
+                                    "transaction_type",
+                                    "transactionType",
+                                    "type"
+                                ) || ""
+                            ).toUpperCase();
+
+                        const typeClass =
+                            transactionType === "IN"
+                                ? "bg-success"
+                                : transactionType === "OUT"
+                                    ? "bg-danger"
+                                    : "bg-primary";
+
+                        const quantity = Number(
+                            getProperty(
+                                item,
+                                "quantity",
+                                "qty"
+                            ) || 0
+                        );
+
+                        const uom =
+                            getProperty(
+                                item,
+                                "uom"
+                            ) || "";
+
+                        const createdAt =
+                            getProperty(
+                                item,
+                                "created_at",
+                                "createdAt",
+                                "transaction_date",
+                                "transactionDate",
+                                "date"
+                            );
+
+                        const user =
+                            getProperty(
+                                item,
+                                "full_name",
+                                "fullName",
+                                "scanned_by",
+                                "scannedBy",
+                                "created_by",
+                                "createdBy",
+                                "user_name",
+                                "userName"
+                            ) || "-";
+
+                        const remarks =
+                            getProperty(
+                                item,
+                                "remarks",
+                                "remark"
+                            ) || "-";
+
+                        return `
+                            <tr>
+                                <td class="text-nowrap">
+                                    ${formatHistoryDateTime(createdAt)}
+                                </td>
+
+                                <td>
+                                    <span class="badge ${typeClass}">
+                                        ${escapeHtml(transactionType || "-")}
+                                    </span>
+                                </td>
+
+                                <td class="text-nowrap fw-semibold">
+                                    ${formatNumber(quantity)}
+                                    ${escapeHtml(uom)}
+                                </td>
+
+                                <td>
+                                    ${buildHistoryReference(item)}
+                                </td>
+
+                                <td>
+                                    <div class="history-remarks-cell">
+                                        ${escapeHtml(remarks)}
+                                    </div>
+                                </td>
+
+                                <td class="text-nowrap">
+                                    ${escapeHtml(user)}
+                                </td>
+                            </tr>
+                        `;
+                    }).join("");
+            }
+            catch (error) {
+                console.error(
+                    "Inventory history load error:",
+                    error
+                );
+
+                historyBody.innerHTML = `
+                    <tr>
+                        <td colspan="6"
+                            class="text-center text-danger py-3">
+                            Failed to load inventory history.
+
+                            <div class="small mt-1">
+                                ${escapeHtml(error.message)}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verification Modal
+        |--------------------------------------------------------------------------
+        */
+
+        window.openVerificationFromButton =
+            function (button) {
+                const inventoryKey =
+                    decodeURIComponent(
+                        button.dataset.inventoryKey
+                    );
+
+                window.openVerification(
+                    inventoryKey
+                );
+            };
+
+        window.openVerification =
+            function (inventoryId) {
+                const row = inventoryRows.find(
+                    item =>
+                        item.inventoryId === inventoryId
+                );
+
+                if (!row) {
+                    alert(
+                        "Inventory lot was not found."
+                    );
+
+                    return;
+                }
+
+                document.getElementById(
+                    "verifyInventoryId"
+                ).value = row.inventoryId;
+
+                document.getElementById(
+                    "verifyProductName"
+                ).textContent = row.productName;
+
+                document.getElementById(
+                    "verifyLotNo"
+                ).textContent = row.lotNo;
+
+                document.getElementById(
+                    "verifyWarehouse"
+                ).textContent = row.warehouse;
+
+                document.getElementById(
+                    "verifySystemQty"
+                ).value = row.systemQty;
+
+                document.getElementById(
+                    "verifyPhysicalQty"
+                ).value = "";
+
+                document.getElementById(
+                    "verifyVariance"
+                ).value = "0";
+
+                document.getElementById(
+                    "verifyReason"
+                ).value = "";
+
+                document.getElementById(
+                    "verifyRemarks"
+                ).value = "";
+
+                document.getElementById(
+                    "verifySystemUom"
+                ).textContent = row.uom || "-";
+
+                document.getElementById(
+                    "verifyPhysicalUom"
+                ).textContent = row.uom || "-";
+
+                document.getElementById(
+                    "verifyVarianceUom"
+                ).textContent = row.uom || "-";
+
+                document.getElementById(
+                    "verifyPhysicalQty"
+                ).classList.remove("is-invalid");
+
+                document.getElementById(
+                    "verifyReason"
+                ).classList.remove("is-invalid");
+
+                updateVarianceDisplay();
+
+                /*
+                 * Do not await this call. The modal can open while
+                 * history is being retrieved.
+                 */
+                loadVerificationHistory(
+                    row.productId,
+                    row.branchId,
+                    row.lotNo
+                );
+
+                verifyModal.show();
+
+                setTimeout(function () {
+                    document.getElementById(
+                        "verifyPhysicalQty"
+                    ).focus();
+                }, 300);
+            };
 
         function updateVarianceDisplay() {
-            const systemQty =
-                Number(document.getElementById("verifySystemQty").value || 0);
+            const systemQty = Number(
+                document.getElementById(
+                    "verifySystemQty"
+                ).value || 0
+            );
 
             const physicalValue =
-                document.getElementById("verifyPhysicalQty").value;
+                document.getElementById(
+                    "verifyPhysicalQty"
+                ).value;
 
             const physicalQty =
-                physicalValue === "" ? systemQty : Number(physicalValue);
+                physicalValue === ""
+                    ? systemQty
+                    : Number(physicalValue);
 
-            const variance = physicalQty - systemQty;
+            const variance =
+                physicalQty - systemQty;
 
             const varianceInput =
-                document.getElementById("verifyVariance");
+                document.getElementById(
+                    "verifyVariance"
+                );
 
-            varianceInput.value = formatNumber(variance);
+            varianceInput.value =
+                formatNumber(variance);
 
             varianceInput.classList.remove(
                 "variance-negative",
@@ -1612,348 +2291,356 @@
             );
 
             if (variance < 0) {
-                varianceInput.classList.add("variance-negative");
-            } else if (variance > 0) {
-                varianceInput.classList.add("variance-positive");
-            } else {
-                varianceInput.classList.add("variance-zero");
-            }
-        }
-
-        document.getElementById("verifyPhysicalQty")
-            .addEventListener("input", updateVarianceDisplay);
-
-    document.getElementById("btnSaveVerification")
-     .addEventListener("click", async function () {
-
-         const saveButton = this;
-
-         const inventoryId =
-             document.getElementById("verifyInventoryId").value;
-
-         const physicalQtyInput =
-             document.getElementById("verifyPhysicalQty");
-
-         const reasonInput =
-             document.getElementById("verifyReason");
-
-         physicalQtyInput.classList.remove("is-invalid");
-         reasonInput.classList.remove("is-invalid");
-
-         let isValid = true;
-
-         if (
-             physicalQtyInput.value === "" ||
-             Number(physicalQtyInput.value) < 0
-         ) {
-             physicalQtyInput.classList.add("is-invalid");
-             isValid = false;
-         }
-
-         if (!reasonInput.value) {
-             reasonInput.classList.add("is-invalid");
-             isValid = false;
-         }
-
-         if (!isValid) {
-             return;
-         }
-
-         const row = inventoryRows.find(
-             item => item.inventoryId === inventoryId
-         );
-
-         if (!row) {
-             alert("Inventory lot was not found.");
-             return;
-         }
-
-         const systemQty = Number(row.systemQty);
-         const physicalQty = Number(physicalQtyInput.value);
-
-         if (systemQty === physicalQty) {
-             alert(
-                 "Physical quantity matches the system quantity. " +
-                 "No inventory adjustment is required."
-             );
-
-             return;
-         }
-
-         const confirmed = confirm(
-             `Confirm inventory cleanup?\n\n` +
-             `Product: ${row.productName}\n` +
-             `Lot: ${row.lotNo}\n` +
-             `System Qty: ${formatNumber(systemQty)} ${row.uom}\n` +
-             `Physical Qty: ${formatNumber(physicalQty)} ${row.uom}\n` +
-             `Variance: ${formatNumber(physicalQty - systemQty)} ${row.uom}`
-         );
-
-         if (!confirmed) {
-             return;
-         }
-
-         try {
-             saveButton.disabled = true;
-
-             saveButton.innerHTML = `
-                 <span class="spinner-border spinner-border-sm me-1"></span>
-                 Saving...
-             `;
-
-             const payload = {
-                 productId: row.productId,
-                 branchId: row.branchId,
-                 lotNo: row.lotNo,
-
-                 systemQty: systemQty,
-                 physicalQty: physicalQty,
-
-                 reason: reasonInput.options[
-                     reasonInput.selectedIndex
-                 ].text.trim(),
-
-                 remarks:
-                     document.getElementById("verifyRemarks")
-                         .value.trim()
-             };
-
-             const response = await fetch(
-                 "/InventoryAging/Verify",
-                 {
-                     method: "POST",
-                     headers: {
-                         "Content-Type": "application/json"
-                     },
-                     body: JSON.stringify(payload)
-                 }
-             );
-
-             const responseText = await response.text();
-
-             let result;
-
-             try {
-                 result = JSON.parse(responseText);
-             }
-             catch {
-                 result = {
-                     success: response.ok,
-                     message: responseText
-                 };
-             }
-
-             if (!response.ok || result.success === false) {
-                 throw new Error(
-                     result.message ||
-                     "Failed to save inventory verification."
-                 );
-             }
-
-             verifyModal.hide();
-
-             alert(
-                 result.message ||
-                 "Inventory cleanup saved successfully."
-             );
-
-             await loadInventory(currentPage);
-         }
-         catch (error) {
-             console.error(error);
-
-             alert(
-                 error.message ||
-                 "Failed to save inventory cleanup."
-             );
-         }
-         finally {
-             saveButton.disabled = false;
-
-             saveButton.innerHTML = `
-                 <i class="bi bi-check-lg me-1"></i>
-                 Save Verification
-             `;
-         }
-     });
-
-
-         document.getElementById("previousPageButton")
-        .addEventListener("click", function () {
-            if (currentPage > 1) {
-                loadInventory(currentPage - 1);
-            }
-        });
-
-    document.getElementById("nextPageButton")
-        .addEventListener("click", function () {
-            if (currentPage < totalPages) {
-                loadInventory(currentPage + 1);
-            }
-        });
-
-    document.getElementById("btnApplyFilters")
-    .addEventListener("click", function () {
-        loadInventory(1);
-    });
-
-        document.getElementById("btnResetFilters")
-            .addEventListener("click", resetFilters);
-
-        document.getElementById("needsVerificationOnly")
-            .addEventListener("change", applyFilters);
-
-       document.getElementById("btnRefreshGrid")
-    .addEventListener("click", function () {
-        loadInventory(currentPage);
-    });
-
-        searchInput.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-               loadInventory(1);
-            }
-        });
-
-            loadCategoryOptions();
-    loadWarehouseOptions();
-    loadInventory(1);
-    });
-        function normalizeDate(value) {
-        if (!value) {
-            return null;
-        }
-
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return null;
-        }
-
-        return date.toISOString().slice(0, 10);
-    }
-
-    function getApiExpiryFilter() {
-        const selectedStatus = statusFilter.value;
-
-        if (selectedStatus === "EXPIRED") {
-            return "expired";
-        }
-
-        if (selectedStatus === "NEAR_EXPIRY") {
-            return "near";
-        }
-
-        return "";
-    }
-
-        function calculateExpiryDays(expirationDate) {
-        if (!expirationDate) {
-            return Number.MAX_SAFE_INTEGER;
-        }
-
-        const expiry = new Date(expirationDate);
-
-        if (Number.isNaN(expiry.getTime())) {
-            return Number.MAX_SAFE_INTEGER;
-        }
-
-        const today = new Date();
-
-        today.setHours(0, 0, 0, 0);
-        expiry.setHours(0, 0, 0, 0);
-
-        const millisecondsPerDay =
-            1000 * 60 * 60 * 24;
-
-        return Math.ceil(
-            (expiry.getTime() - today.getTime()) /
-            millisecondsPerDay
-        );
-    }
-
-
-           async function loadCategoryOptions() {
-        try {
-            const selectedValue =
-                categoryFilter.value;
-
-            const response = await fetch(
-                "/InventoryAging/GetCategories"
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    `Failed to load categories. Status: ${response.status}`
+                varianceInput.classList.add(
+                    "variance-negative"
                 );
             }
+            else if (variance > 0) {
+                varianceInput.classList.add(
+                    "variance-positive"
+                );
+            }
+            else {
+                varianceInput.classList.add(
+                    "variance-zero"
+                );
+            }
+        }
 
-            const categories =
-                await response.json();
+        document.getElementById(
+            "verifyPhysicalQty"
+        ).addEventListener(
+            "input",
+            updateVarianceDisplay
+        );
 
-            categoryFilter.innerHTML =
-                '<option value="">All Categories</option>';
+        document.getElementById(
+            "btnSaveVerification"
+        ).addEventListener(
+            "click",
+            async function () {
+                const saveButton = this;
 
-            categories.forEach(category => {
-                const categoryId =
-                    category.catg_id ||
-                    category.catgId ||
-                    "";
+                const inventoryId =
+                    document.getElementById(
+                        "verifyInventoryId"
+                    ).value;
 
-                const categoryName =
-                    category.catg_name ||
-                    category.catgName ||
-                    category.category_name ||
-                    category.categoryName ||
-                    categoryId;
+                const physicalQtyInput =
+                    document.getElementById(
+                        "verifyPhysicalQty"
+                    );
 
-                if (!categoryId) {
+                const reasonInput =
+                    document.getElementById(
+                        "verifyReason"
+                    );
+
+                physicalQtyInput.classList.remove(
+                    "is-invalid"
+                );
+
+                reasonInput.classList.remove(
+                    "is-invalid"
+                );
+
+                let isValid = true;
+
+                const physicalValue =
+                    physicalQtyInput.value.trim();
+
+                const physicalQty =
+                    Number(physicalValue);
+
+                if (
+                    physicalValue === "" ||
+                    !Number.isFinite(physicalQty) ||
+                    physicalQty < 0
+                ) {
+                    physicalQtyInput.classList.add(
+                        "is-invalid"
+                    );
+
+                    isValid = false;
+                }
+
+                if (!reasonInput.value) {
+                    reasonInput.classList.add(
+                        "is-invalid"
+                    );
+
+                    isValid = false;
+                }
+
+                if (!isValid) {
                     return;
                 }
 
-                const option =
-                    document.createElement("option");
+                const row = inventoryRows.find(
+                    item =>
+                        item.inventoryId === inventoryId
+                );
 
-                option.value = categoryId;
-                option.textContent = categoryName;
+                if (!row) {
+                    alert(
+                        "Inventory lot was not found."
+                    );
 
-                categoryFilter.appendChild(option);
-            });
+                    return;
+                }
 
-            categoryFilter.value = selectedValue;
+                const systemQty =
+                    Number(row.systemQty || 0);
+
+                /*
+                 * Decimal-safe comparison.
+                 */
+                const normalizedSystemQty =
+                    Number(systemQty.toFixed(4));
+
+                const normalizedPhysicalQty =
+                    Number(physicalQty.toFixed(4));
+
+                if (
+                    normalizedSystemQty ===
+                    normalizedPhysicalQty
+                ) {
+                    alert(
+                        "Physical quantity matches the system quantity. " +
+                        "No inventory adjustment is required."
+                    );
+
+                    return;
+                }
+
+                const variance =
+                    normalizedPhysicalQty -
+                    normalizedSystemQty;
+
+                const confirmed = confirm(
+                    `Confirm inventory cleanup?\n\n` +
+                    `Product: ${row.productName}\n` +
+                    `Lot: ${row.lotNo}\n` +
+                    `Warehouse: ${row.warehouse}\n` +
+                    `System Qty: ${formatNumber(normalizedSystemQty)} ${row.uom}\n` +
+                    `Physical Qty: ${formatNumber(normalizedPhysicalQty)} ${row.uom}\n` +
+                    `Variance: ${formatNumber(variance)} ${row.uom}`
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    saveButton.disabled = true;
+
+                    saveButton.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Saving...
+                    `;
+
+                    const payload = {
+                        productId: row.productId,
+                        branchId: row.branchId,
+                        lotNo: row.lotNo,
+
+                        systemQty:
+                            normalizedSystemQty,
+
+                        physicalQty:
+                            normalizedPhysicalQty,
+
+                        reason:
+                            reasonInput.options[
+                                reasonInput.selectedIndex
+                            ].text.trim(),
+
+                        remarks:
+                            document.getElementById(
+                                "verifyRemarks"
+                            ).value.trim()
+                    };
+
+                    const response = await fetch(
+                        "/InventoryAging/Verify",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(payload)
+                        }
+                    );
+
+                    const responseText =
+                        await response.text();
+
+                    let result;
+
+                    try {
+                        result =
+                            responseText
+                                ? JSON.parse(responseText)
+                                : {};
+                    }
+                    catch {
+                        result = {
+                            success: response.ok,
+                            message: responseText
+                        };
+                    }
+
+                    if (
+                        !response.ok ||
+                        result.success === false
+                    ) {
+                        throw new Error(
+                            result.message ||
+                            "Failed to save inventory verification."
+                        );
+                    }
+
+                    verifyModal.hide();
+
+                    alert(
+                        result.message ||
+                        "Inventory cleanup saved successfully."
+                    );
+
+                    await loadInventory(currentPage);
+                }
+                catch (error) {
+                    console.error(
+                        "Inventory verification error:",
+                        error
+                    );
+
+                    alert(
+                        error.message ||
+                        "Failed to save inventory cleanup."
+                    );
+                }
+                finally {
+                    saveButton.disabled = false;
+
+                    saveButton.innerHTML = `
+                        <i class="bi bi-check-lg me-1"></i>
+                        Save Verification
+                    `;
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Events
+        |--------------------------------------------------------------------------
+        */
+
+        previousPageButton.addEventListener(
+            "click",
+            function () {
+                if (currentPage > 1) {
+                    loadInventory(
+                        currentPage - 1
+                    );
+                }
+            }
+        );
+
+        nextPageButton.addEventListener(
+            "click",
+            function () {
+                if (currentPage < totalPages) {
+                    loadInventory(
+                        currentPage + 1
+                    );
+                }
+            }
+        );
+
+        document.getElementById(
+            "btnApplyFilters"
+        ).addEventListener(
+            "click",
+            function () {
+                loadInventory(1);
+            }
+        );
+
+        document.getElementById(
+            "btnResetFilters"
+        ).addEventListener(
+            "click",
+            resetFilters
+        );
+
+        document.getElementById(
+            "btnRefreshGrid"
+        ).addEventListener(
+            "click",
+            function () {
+                loadInventory(currentPage);
+            }
+        );
+
+        needsVerificationOnly.addEventListener(
+            "change",
+            function () {
+                loadInventory(1);
+            }
+        );
+
+        searchInput.addEventListener(
+            "keydown",
+            function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    loadInventory(1);
+                }
+            }
+        );
+
+        categoryFilter.addEventListener(
+            "change",
+            function () {
+                loadInventory(1);
+            }
+        );
+
+        warehouseFilter.addEventListener(
+            "change",
+            function () {
+                loadInventory(1);
+            }
+        );
+
+        statusFilter.addEventListener(
+            "change",
+            function () {
+                loadInventory(1);
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Initial Loading
+        |--------------------------------------------------------------------------
+        */
+
+        async function initializePage() {
+            await Promise.allSettled([
+                loadCategoryOptions(),
+                loadWarehouseOptions()
+            ]);
+
+            await loadInventory(1);
         }
-        catch (error) {
-            console.error(
-                "Category load error:",
-                error
-            );
-        }
-    }
 
-
-
-      function determineAgingStatus(
-        daysInInventory,
-        expirationDate
-    ) {
-        const expiryDays =
-            calculateExpiryDays(expirationDate);
-
-        if (expiryDays < 0) {
-            return "EXPIRED";
-        }
-
-        if (expiryDays <= 60) {
-            return "NEAR_EXPIRY";
-        }
-
-        if (daysInInventory > 14) {
-            return "CLEANUP_NEEDED";
-        }
-
-        if (daysInInventory > 7) {
-            return "AGING";
-        }
-
-        return "HEALTHY";
-    }
+        initializePage();
+    });
 </script>
