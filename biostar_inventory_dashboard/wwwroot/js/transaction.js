@@ -262,7 +262,29 @@ async function loadTransactions(page = 1) {
 
 <td>${buildReferenceHtml(item)}</td>
 
-                    <td>${escapeHtml(item.remarks ?? "")}</td>
+
+<td>
+    ${
+                item.remarks
+                    ? `
+               <span class="remarks-badge">
+
+    <i class="bi bi-chat-left-text-fill me-1"></i>
+
+    ${escapeHtml(getRemarksTitle(item.remarks))}
+
+    <span class="remarks-popup">
+        ${formatRemarks(item.remarks)}
+    </span>
+
+</span>
+
+                </span>
+            `
+                    : `<span class="text-muted">—</span>`
+    }
+</td>
+
                    ${canShowTransactionAction() ? `
 <td class="text-center action-col">
     ${isOut
@@ -288,6 +310,10 @@ async function loadTransactions(page = 1) {
         });
 
         renderPagination(totalRecords);
+
+       
+
+
     } catch (error) {
         const colspan = canShowTransactionAction() ? 13 : 12;
         document.getElementById("transactionTable").innerHTML = `
@@ -300,7 +326,40 @@ async function loadTransactions(page = 1) {
         console.error(error);
     }
 }
+function getRemarksTitle(text) {
 
+    if (!text)
+        return "-";
+
+    const match = text.match(/Reason:\s*([^|]+)/i);
+
+    if (match)
+        return match[1].trim();
+
+    return truncate(text, 20);
+}
+
+function formatRemarks(text) {
+
+    if (!text)
+        return "-";
+
+    return escapeHtml(text)
+        .replace(/\s\|\s/g, "<br>");
+}
+function truncate(text, maxLength = 50) {
+
+    if (!text)
+        return "-";
+
+    return text.length > maxLength
+        ? text.substring(0, maxLength) + "..."
+        : text;
+}
+function showRemarks(text) {
+    document.getElementById("remarksModalBody").textContent = text;
+    new bootstrap.Modal(document.getElementById("remarksModal")).show();
+}
 function applyTransactionRoleUI() {
     const role = String(window.currentUserRole || "").trim().toUpperCase();
 
@@ -569,7 +628,13 @@ function initTransactionDragScroll() {
     let scrollLeft = 0;
 
     scrollArea.addEventListener("mousedown", function (e) {
-        if (e.target.closest("button, input, select, textarea, a")) return;
+        if (
+            e.target.closest(
+                "button, input, select, textarea, a, .remarks-badge"
+            )
+        ) {
+            return;
+        }
 
         isDown = true;
         scrollArea.classList.add("dragging");

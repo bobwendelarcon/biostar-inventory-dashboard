@@ -1044,11 +1044,28 @@
         status:
             item.aging_status || "HEALTHY",
 
-        needsVerification:
-            Boolean(item.needs_verification),
+           needsVerification:
+        Boolean(item.needs_verification),
 
-        verified: false,
-        verification: null
+    lastVerifiedAt:
+        normalizeDate(item.last_verified_at),
+
+    lastVerifiedBy:
+        item.last_verified_by || "",
+
+    verified:
+        Boolean(item.last_verified_at),
+
+    verification:
+        item.last_verified_at
+            ? {
+                verifiedDate:
+                    normalizeDate(item.last_verified_at),
+
+                verifiedBy:
+                    item.last_verified_by || ""
+            }
+            : null
     }));
 
             filteredRows = [...inventoryRows];
@@ -1273,9 +1290,10 @@
         </button>
     `;
 
-                const lastVerifiedText = row.verification
-                    ? formatDate(row.verification.verifiedDate)
-                    : "-";
+                const lastVerifiedText =
+    row.lastVerifiedAt
+        ? formatDate(row.lastVerifiedAt)
+        : "-";
 
                 const rowHtml = `
                     <tr>

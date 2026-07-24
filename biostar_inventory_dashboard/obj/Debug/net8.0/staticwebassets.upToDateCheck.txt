@@ -1,7 +1,6 @@
 wwwroot\css\dailyorder.css
 wwwroot\css\dashboard.css
 wwwroot\css\delivery-checklist-print.css
-wwwroot\css\inventory.css
 wwwroot\css\login.css
 wwwroot\css\producttoproduce.css
 wwwroot\css\purchasing\mprf.css
@@ -32,7 +31,6 @@ wwwroot\js\report.js
 wwwroot\js\returns.js
 wwwroot\js\site.js
 wwwroot\js\stock-overview.js
-wwwroot\js\transaction.js
 wwwroot\js\user.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -92,3 +90,5 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
+wwwroot\css\inventory.css
+wwwroot\js\transaction.js
