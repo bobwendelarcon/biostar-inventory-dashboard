@@ -28,7 +28,11 @@
         currentController == "ReceiveTransmittal";
 
     var isDispatchOpen = currentController == "DeliveryChecklist";
-    var isInventoryOpen = currentController == "Inventory" || currentController == "Transactions";
+    var isInventoryOpen =
+      currentController == "Inventory" ||
+      currentController == "Transactions" ||
+      currentController == "StockOverview" ||
+      currentController == "InventoryAging";
     var isLogisticsOpen = currentController == "Logistics";
     var isReturnOpen = currentController == "Returns";
     var isReportOpen = currentController == "Reports";
@@ -119,6 +123,14 @@
                                 <span>Inventory List</span>
                             </a>
                         </li>
+                        <li>
+                            <a class="nav-link @(currentController == "InventoryAging" ? "active fw-bold" : "")"
+                               asp-controller="InventoryAging"
+                               asp-action="Index">
+                                <span>Inventory Aging &amp; Cleanup</span>
+                            </a>
+                        </li>
+
                         <li>
                             <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions">
                                 <span>Transaction History</span>
@@ -502,6 +514,14 @@
                         <li>
                             <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
                                 <span>Inventory List</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentController == "InventoryAging" ? "active fw-bold" : "")"
+                               asp-controller="InventoryAging"
+                               asp-action="Index">
+                                <span>Inventory Aging &amp; Cleanup</span>
                             </a>
                         </li>
                         <li>

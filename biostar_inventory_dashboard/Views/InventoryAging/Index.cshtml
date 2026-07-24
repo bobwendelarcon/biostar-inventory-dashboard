@@ -1,0 +1,1865 @@
+﻿@{
+    ViewData["Title"] = "Inventory Aging & Cleanup";
+}
+
+<style>
+    .aging-page {
+        padding-bottom: 40px;
+    }
+
+    .aging-page-title {
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #26384a;
+    }
+
+    .aging-page-subtitle {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .summary-card {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        height: 100%;
+    }
+
+        .summary-card .card-body {
+            padding: 18px;
+        }
+
+    .summary-label {
+        color: #6c757d;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .summary-value {
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .summary-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .filter-card,
+    .grid-card {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .filter-label {
+        font-size: 0.78rem;
+        color: #5f6b76;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .aging-table {
+        min-width: 1250px;
+    }
+
+        .aging-table thead th {
+            background: #f7f9fb;
+            color: #4c5967;
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            border-bottom: 1px solid #e5e9ee;
+            padding: 13px 12px;
+        }
+
+        .aging-table tbody td {
+            vertical-align: middle;
+            padding: 13px 12px;
+            font-size: 0.86rem;
+            color: #344050;
+            border-color: #edf0f3;
+        }
+
+    .product-name {
+        font-weight: 600;
+        color: #26384a;
+    }
+
+    .product-description {
+        font-size: 0.76rem;
+        color: #7a8692;
+        margin-top: 2px;
+    }
+
+    .lot-number {
+        font-weight: 600;
+        color: #40566f;
+    }
+
+    .quantity-value {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 20px;
+        padding: 5px 9px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-healthy {
+        background: #dff5e7;
+        color: #18794e;
+    }
+
+    .status-aging {
+        background: #fff3cd;
+        color: #8a6500;
+    }
+
+    .status-cleanup {
+        background: #ffe5cc;
+        color: #a14e00;
+    }
+
+    .status-near-expiry {
+        background: #fff0d8;
+        color: #a35d00;
+    }
+
+    .status-expired {
+        background: #e6e8eb;
+        color: #343a40;
+    }
+
+    .status-verified {
+        background: #dceeff;
+        color: #14649b;
+    }
+
+    .status-ghost {
+        background: #f8d7da;
+        color: #a61e2b;
+    }
+
+    .days-warning {
+        color: #b26a00;
+        font-weight: 700;
+    }
+
+    .days-danger {
+        color: #bb2d3b;
+        font-weight: 700;
+    }
+
+    .expiry-danger {
+        color: #bb2d3b;
+        font-weight: 700;
+    }
+
+    .expiry-warning {
+        color: #b26a00;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #7d8994;
+    }
+
+    .verification-product-box {
+        background: #f7f9fb;
+        border: 1px solid #e6eaee;
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+    .verification-label {
+        color: #7a8692;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .verification-value {
+        color: #283747;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .variance-negative {
+        color: #bb2d3b;
+        font-weight: 700;
+    }
+
+    .variance-positive {
+        color: #157347;
+        font-weight: 700;
+    }
+
+    .variance-zero {
+        color: #6c757d;
+        font-weight: 700;
+    }
+
+    .btn-table {
+        padding: 5px 10px;
+        font-size: 0.76rem;
+        white-space: nowrap;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #edf0f3;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #edf0f3;
+    }
+
+    @@media (max-width: 767.98px) {
+        .aging-page-title {
+            font-size: 1.25rem;
+        }
+
+        .summary-value {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<div class="container-fluid aging-page">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <div class="aging-page-title">
+                <i class="bi bi-hourglass-split me-2"></i>
+                Inventory Aging &amp; Cleanup
+            </div>
+
+            <div class="aging-page-subtitle mt-1">
+                Monitor aging lots, verify physical inventory, and clean up ghost inventory.
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                id="btnRefreshGrid">
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+        </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card summary-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="summary-label">Lots in Inventory</div>
+                        <div class="summary-value text-primary" id="totalLotsCount">0</div>
+                    </div>
+
+                    <div class="summary-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card summary-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="summary-label">Needs Verification</div>
+                        <div class="summary-value text-warning" id="verificationCount">0</div>
+                    </div>
+
+                    <div class="summary-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card summary-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="summary-label">Near Expiry</div>
+                        <div class="summary-value text-warning" id="nearExpiryCount">0</div>
+                    </div>
+
+                    <div class="summary-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card summary-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="summary-label">Expired</div>
+                        <div class="summary-value text-danger" id="expiredCount">0</div>
+                    </div>
+
+                    <div class="summary-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-calendar-x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card summary-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="summary-label">Verified Today</div>
+                        <div class="summary-value text-success" id="verifiedCount">0</div>
+                    </div>
+
+                    <div class="summary-icon bg-success-subtle text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Filters -->
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="filter-label" for="searchInput">
+                        Search Product or Lot
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input type="text"
+                               class="form-control"
+                               id="searchInput"
+                               placeholder="Enter product or lot number">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="filter-label" for="warehouseFilter">
+                        Warehouse
+                    </label>
+
+                    <select class="form-select" id="warehouseFilter">
+                        <option value="">All Warehouses</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="filter-label" for="statusFilter">
+                        Status
+                    </label>
+
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="HEALTHY">Healthy</option>
+                        <option value="AGING">Aging</option>
+                        <option value="CLEANUP_NEEDED">Cleanup Needed</option>
+                        <option value="NEAR_EXPIRY">Near Expiry</option>
+                        <option value="EXPIRED">Expired</option>
+                        <option value="VERIFIED">Verified</option>
+                        <option value="GHOST_INVENTORY">Ghost Inventory</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-1">
+                    <label class="filter-label" for="minimumDaysFilter">
+                        Min Days
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           id="minimumDaysFilter"
+                           min="0"
+                           placeholder="0">
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-1">
+                    <label class="filter-label" for="maximumDaysFilter">
+                        Max Days
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           id="maximumDaysFilter"
+                           min="0"
+                           placeholder="Any">
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="d-flex gap-2">
+                        <button type="button"
+                                class="btn btn-primary flex-fill"
+                                id="btnApplyFilters">
+                            <i class="bi bi-funnel me-1"></i>
+                            Apply
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                id="btnResetFilters">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-check form-switch mt-3">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       id="needsVerificationOnly">
+
+                <label class="form-check-label"
+                       for="needsVerificationOnly">
+                    Show records needing verification only
+                </label>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="card grid-card">
+        <div class="card-header bg-white border-0 pt-3 pb-2">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h6 class="fw-bold mb-1">Inventory Lots</h6>
+                    <small class="text-muted" id="gridRecordText">
+                        Showing 0 records
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 aging-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Lot No.</th>
+                        <th>Warehouse</th>
+                        <th class="text-end">System Qty</th>
+                        <th>Date In</th>
+                        <th class="text-center">Days</th>
+                        <th>Last OUT</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                        <th>Last Verified</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="inventoryAgingTableBody">
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between align-items-center px-3 py-3">
+                <div id="paginationInfo" class="text-muted small"></div>
+
+                <div class="btn-group">
+                    <button id="previousPageButton"
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary">
+                        Previous
+                    </button>
+
+                    <button id="nextPageButton"
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty-state d-none" id="emptyState">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            No inventory lots matched the selected filters.
+        </div>
+    </div>
+
+</div>
+
+<!-- Verify Modal -->
+<div class="modal fade"
+     id="verifyInventoryModal"
+     tabindex="-1"
+     aria-labelledby="verifyInventoryModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold"
+                        id="verifyInventoryModalLabel">
+                        Inventory Verification
+                    </h5>
+
+                    <small class="text-muted">
+                        Enter the actual physical quantity found in the warehouse.
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="verifyInventoryId">
+
+                <div class="verification-product-box mb-4">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <div class="verification-label">Product</div>
+                            <div class="verification-value"
+                                 id="verifyProductName">
+                                -
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="verification-label">Lot Number</div>
+                            <div class="verification-value"
+                                 id="verifyLotNo">
+                                -
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="verification-label">Warehouse</div>
+                            <div class="verification-value"
+                                 id="verifyWarehouse">
+                                -
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            System Quantity
+                        </label>
+
+                        <div class="input-group">
+                            <input type="number"
+                                   class="form-control"
+                                   id="verifySystemQty"
+                                   readonly>
+
+                            <span class="input-group-text"
+                                  id="verifySystemUom">
+                                -
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold"
+                               for="verifyPhysicalQty">
+                            Physical Quantity
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="input-group">
+                            <input type="number"
+                                   class="form-control"
+                                   id="verifyPhysicalQty"
+                                   min="0"
+                                   step="0.0001"
+                                   placeholder="Enter physical quantity">
+
+                            <span class="input-group-text"
+                                  id="verifyPhysicalUom">
+                                -
+                            </span>
+                        </div>
+
+                        <div class="invalid-feedback">
+                            Physical quantity is required.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            Variance
+                        </label>
+
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control variance-zero"
+                                   id="verifyVariance"
+                                   value="0"
+                                   readonly>
+
+                            <span class="input-group-text"
+                                  id="verifyVarianceUom">
+                                -
+                            </span>
+                        </div>
+
+                        <small class="text-muted">
+                            Physical quantity minus system quantity.
+                        </small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                               for="verifyReason">
+                            Reason
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <select class="form-select" id="verifyReason">
+                            <option value="">Select reason</option>
+                            <option value="HISTORICAL_DELIVERY">
+                                Historical Delivery Before Checklist
+                            </option>
+                            <option value="EXPIRED">
+                                Expired Stock
+                            </option>
+                            <option value="DAMAGED">
+                                Damaged Stock
+                            </option>
+                            <option value="MISSING">
+                                Missing / Not Found
+                            </option>
+                            <option value="ENCODING_ERROR">
+                                Inventory Encoding Error
+                            </option>
+                            <option value="WAREHOUSE_ERROR">
+                                Warehouse Error
+                            </option>
+                            <option value="OTHER">
+                                Other
+                            </option>
+                        </select>
+
+                        <div class="invalid-feedback">
+                            Please select a reason.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold"
+                               for="verifyRemarks">
+                            Remarks
+                        </label>
+
+                        <textarea class="form-control"
+                                  id="verifyRemarks"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Optional remarks"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="alert alert-warning mt-4 mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    Saving this verification will later create an inventory
+                    adjustment and insert an IN or OUT record into Transaction History.
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnSaveVerification">
+                    <i class="bi bi-check-lg me-1"></i>
+                    Save Verification
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- View Verification Modal -->
+<div class="modal fade"
+     id="viewVerificationModal"
+     tabindex="-1"
+     aria-labelledby="viewVerificationModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"
+                    id="viewVerificationModalLabel">
+                    Verification Details
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3">
+
+                    <div class="col-12">
+                        <div class="verification-label">Product</div>
+                        <div class="verification-value"
+                             id="viewProduct">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="verification-label">Lot Number</div>
+                        <div class="verification-value"
+                             id="viewLot">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="verification-label">Warehouse</div>
+                        <div class="verification-value"
+                             id="viewWarehouse">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="verification-label">System Qty</div>
+                        <div class="verification-value"
+                             id="viewSystemQty">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="verification-label">Physical Qty</div>
+                        <div class="verification-value"
+                             id="viewPhysicalQty">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="verification-label">Variance</div>
+                        <div class="verification-value"
+                             id="viewVariance">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="verification-label">Reason</div>
+                        <div class="verification-value"
+                             id="viewReason">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="verification-label">Verified By</div>
+                        <div class="verification-value"
+                             id="viewVerifiedBy">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="verification-label">Verified Date</div>
+                        <div class="verification-value"
+                             id="viewVerifiedDate">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="verification-label">Remarks</div>
+                        <div class="verification-value"
+                             id="viewRemarks">
+                            -
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+         let inventoryRows = [];
+    let filteredRows = [];
+
+        let currentPage = 1;
+    let pageSize = 30;
+    let totalRecords = 0;
+    let totalPages = 1;
+
+
+
+
+
+
+
+        const tableBody = document.getElementById("inventoryAgingTableBody");
+        const emptyState = document.getElementById("emptyState");
+
+        const searchInput = document.getElementById("searchInput");
+        const warehouseFilter = document.getElementById("warehouseFilter");
+        const statusFilter = document.getElementById("statusFilter");
+        const minimumDaysFilter = document.getElementById("minimumDaysFilter");
+        const maximumDaysFilter = document.getElementById("maximumDaysFilter");
+        const needsVerificationOnly = document.getElementById("needsVerificationOnly");
+
+        const verifyModalElement = document.getElementById("verifyInventoryModal");
+        const verifyModal = new bootstrap.Modal(verifyModalElement);
+
+        const viewModalElement = document.getElementById("viewVerificationModal");
+        const viewModal = new bootstrap.Modal(viewModalElement);
+
+        function parseDate(dateValue) {
+            if (!dateValue) {
+                return null;
+            }
+
+            return new Date(dateValue + "T00:00:00");
+        }
+
+        function calculateDays(dateValue) {
+            const date = parseDate(dateValue);
+
+            if (!date) {
+                return 0;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const difference = today.getTime() - date.getTime();
+
+            return Math.max(
+                0,
+                Math.floor(difference / (1000 * 60 * 60 * 24))
+            );
+        }
+
+        function formatDate(dateValue) {
+            const date = parseDate(dateValue);
+
+            if (!date) {
+                return "Never";
+            }
+
+            return date.toLocaleDateString("en-PH", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            });
+        }
+
+        function formatNumber(value) {
+            return Number(value || 0).toLocaleString("en-PH", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 4
+            });
+        }
+
+            async function loadInventory(page = 1) {
+        try {
+            currentPage = page;
+
+              const params = new URLSearchParams({
+        page: currentPage,
+        pageSize: pageSize,
+
+        search:
+            searchInput.value.trim(),
+
+        lotNo: "",
+
+        warehouse:
+            warehouseFilter.value || "",
+
+        status:
+            statusFilter.value || "",
+
+        minimumDays:
+            minimumDaysFilter.value || "",
+
+        maximumDays:
+            maximumDaysFilter.value || "",
+
+        order: "desc"
+    });
+            const response = await fetch(
+                `/InventoryAging/GetInventory?${params.toString()}`
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            const result = await response.json();
+            const summary = result.summary || {};
+
+            totalRecords = Number(result.total || 0);
+
+                totalPages = Number(
+        result.totalPages ||
+        Math.ceil(totalRecords / pageSize) ||
+        1
+    );
+
+               inventoryRows = (result.data || []).map(item => ({
+        inventoryId:
+            `${item.product_id}|${item.branch_id}|${item.lot_no}`,
+
+        productId:
+            item.product_id,
+
+        branchId:
+            item.branch_id,
+
+        productName:
+            item.product_name || "",
+
+        description:
+            item.product_description || "",
+
+        lotNo:
+            item.lot_no || "",
+
+        warehouse:
+            item.warehouse || item.branch_id || "",
+
+        systemQty:
+            Number(item.qty || 0),
+
+        uom:
+            item.uom || "",
+
+        dateIn:
+            normalizeDate(item.date_in),
+
+        lastOutDate:
+            normalizeDate(item.last_out_date),
+
+        manufacturingDate:
+            normalizeDate(item.manufacturing_date),
+
+        expirationDate:
+            normalizeDate(item.expiration_date),
+
+        daysInInventory:
+            Number(item.days_in_inventory || 0),
+
+        daysSinceLastOut:
+            item.days_since_last_out === null
+                ? null
+                : Number(item.days_since_last_out),
+
+        daysToExpiry:
+            item.days_to_expiry === null
+                ? null
+                : Number(item.days_to_expiry),
+
+        status:
+            item.aging_status || "HEALTHY",
+
+        needsVerification:
+            Boolean(item.needs_verification),
+
+        verified: false,
+        verification: null
+    }));
+
+            filteredRows = [...inventoryRows];
+
+           
+           updateSummaryCards(summary);
+            renderGrid();
+            renderPagination();
+        }
+        catch (error) {
+            console.error("Inventory Aging load error:", error);
+
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="11"
+                        class="text-center text-danger py-4">
+                        Failed to load inventory aging data.
+                        <div class="small mt-1">
+                            ${escapeHtml(error.message)}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+        function getStatusLabel(status) {
+            const labels = {
+                HEALTHY: "Healthy",
+                AGING: "Aging",
+                CLEANUP_NEEDED: "Cleanup Needed",
+                NEAR_EXPIRY: "Near Expiry",
+                EXPIRED: "Expired",
+                VERIFIED: "Verified",
+                GHOST_INVENTORY: "Ghost Inventory"
+            };
+
+            return labels[status] || status;
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                HEALTHY: "status-healthy",
+                AGING: "status-aging",
+                CLEANUP_NEEDED: "status-cleanup",
+                NEAR_EXPIRY: "status-near-expiry",
+                EXPIRED: "status-expired",
+                VERIFIED: "status-verified",
+                GHOST_INVENTORY: "status-ghost"
+            };
+
+            return classes[status] || "status-healthy";
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                HEALTHY: "bi-check-circle",
+                AGING: "bi-hourglass-split",
+                CLEANUP_NEEDED: "bi-exclamation-circle",
+                NEAR_EXPIRY: "bi-clock-history",
+                EXPIRED: "bi-calendar-x",
+                VERIFIED: "bi-clipboard-check",
+                GHOST_INVENTORY: "bi-exclamation-octagon"
+            };
+
+            return icons[status] || "bi-circle";
+        }
+
+        function getDaysClass(days) {
+            if (days > 14) {
+                return "days-danger";
+            }
+
+            if (days > 7) {
+                return "days-warning";
+            }
+
+            return "";
+        }
+
+        function getExpiryClass(expirationDate) {
+            const daysRemaining = calculateExpiryDays(expirationDate);
+
+            if (daysRemaining < 0) {
+                return "expiry-danger";
+            }
+
+            if (daysRemaining <= 30) {
+                return "expiry-warning";
+            }
+
+            return "";
+        }
+
+        function calculateExpiryDays(expirationDate) {
+            const expiry = parseDate(expirationDate);
+
+            if (!expiry) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            return Math.ceil(
+                (expiry.getTime() - today.getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
+        }
+
+
+             async function loadWarehouseOptions() {
+        try {
+            const selectedValue = warehouseFilter.value;
+
+            const response = await fetch("/Branch/GetBranches");
+
+            if (!response.ok) {
+                throw new Error(
+                    `Failed to load warehouses. Status: ${response.status}`
+                );
+            }
+
+            const branches = await response.json();
+
+            warehouseFilter.innerHTML =
+                '<option value="">All Warehouses</option>';
+
+            branches.forEach(branch => {
+                const branchId =
+                    branch.branch_id ||
+                    branch.branchId ||
+                    "";
+
+                const branchName =
+                    branch.branch_name ||
+                    branch.branchName ||
+                    branchId;
+
+                if (!branchId) {
+                    return;
+                }
+
+                const option = document.createElement("option");
+
+                option.value = branchId;
+                option.textContent = branchName;
+
+                warehouseFilter.appendChild(option);
+            });
+
+            warehouseFilter.value = selectedValue;
+        }
+        catch (error) {
+            console.error("Warehouse load error:", error);
+        }
+    }
+
+
+
+
+      
+
+           function updateSummaryCards(summary) {
+        const totalLots =
+            Number(summary.total_lots ?? totalRecords ?? 0);
+
+        const verificationCount =
+            Number(summary.needs_verification ?? 0);
+
+        const nearExpiryCount =
+            Number(summary.near_expiry ?? 0);
+
+        const expiredCount =
+            Number(summary.expired ?? 0);
+
+        const verifiedCount =
+            Number(summary.verified_today ?? 0);
+
+        document.getElementById("totalLotsCount").textContent =
+            totalLots.toLocaleString();
+
+        document.getElementById("verificationCount").textContent =
+            verificationCount.toLocaleString();
+
+        document.getElementById("nearExpiryCount").textContent =
+            nearExpiryCount.toLocaleString();
+
+        document.getElementById("expiredCount").textContent =
+            expiredCount.toLocaleString();
+
+        document.getElementById("verifiedCount").textContent =
+            verifiedCount.toLocaleString();
+    }
+
+        function renderGrid() {
+            tableBody.innerHTML = "";
+
+          document.getElementById("gridRecordText").textContent =
+    `Showing ${filteredRows.length.toLocaleString()} ` +
+    `of ${totalRecords.toLocaleString()} record(s)`;
+
+            if (filteredRows.length === 0) {
+                emptyState.classList.remove("d-none");
+                return;
+            }
+
+            emptyState.classList.add("d-none");
+
+            filteredRows.forEach(row => {
+               const days = row.daysInInventory;
+
+                   const encodedKey = encodeURIComponent(row.inventoryId);
+
+    const actionButton = `
+        <button type="button"
+                class="btn btn-primary btn-table"
+                data-inventory-key="${escapeHtml(encodedKey)}"
+                onclick="openVerificationFromButton(this)">
+            <i class="bi bi-clipboard-check me-1"></i>
+            Verify
+        </button>
+    `;
+
+                const lastVerifiedText = row.verification
+                    ? formatDate(row.verification.verifiedDate)
+                    : "-";
+
+                const rowHtml = `
+                    <tr>
+                        <td>
+                            <div class="product-name">
+                                ${escapeHtml(row.productName)}
+                            </div>
+
+                            <div class="product-description">
+                                ${escapeHtml(row.description || "")}
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="lot-number">
+                                ${escapeHtml(row.lotNo)}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(row.warehouse)}
+                        </td>
+
+                        <td class="text-end">
+                            <span class="quantity-value">
+                                ${formatNumber(row.systemQty)}
+                                ${escapeHtml(row.uom)}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${formatDate(row.dateIn)}
+                        </td>
+
+                        <td class="text-center">
+                            <span class="${getDaysClass(days)}">
+                                ${days}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${formatDate(row.lastOutDate)}
+                        </td>
+
+                        <td class="${getExpiryClass(row.expirationDate)}">
+                            ${formatDate(row.expirationDate)}
+                        </td>
+
+                        <td>
+                            <span class="status-badge ${getStatusClass(row.status)}">
+                                <i class="bi ${getStatusIcon(row.status)}"></i>
+                                ${getStatusLabel(row.status)}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${lastVerifiedText}
+                        </td>
+
+                        <td>
+                            ${actionButton}
+                        </td>
+                    </tr>
+                `;
+
+                tableBody.insertAdjacentHTML("beforeend", rowHtml);
+            });
+        }
+
+            function renderPagination() {
+        const paginationInfo =
+            document.getElementById("paginationInfo");
+
+        const previousButton =
+            document.getElementById("previousPageButton");
+
+        const nextButton =
+            document.getElementById("nextPageButton");
+
+        const startRecord =
+            totalRecords === 0
+                ? 0
+                : ((currentPage - 1) * pageSize) + 1;
+
+        const endRecord = Math.min(
+            currentPage * pageSize,
+            totalRecords
+        );
+
+        paginationInfo.textContent =
+            `Showing ${startRecord}-${endRecord} ` +
+            `of ${totalRecords.toLocaleString()} record(s) ` +
+            `| Page ${currentPage} of ${totalPages}`;
+
+        previousButton.disabled =
+            currentPage <= 1;
+
+        nextButton.disabled =
+            currentPage >= totalPages || totalRecords === 0;
+    }
+
+        function applyFilters() {
+            const searchText = searchInput.value.trim().toLowerCase();
+            const selectedWarehouse = warehouseFilter.value;
+            const selectedStatus = statusFilter.value;
+
+            const minimumDays = minimumDaysFilter.value === ""
+                ? null
+                : Number(minimumDaysFilter.value);
+
+            const maximumDays = maximumDaysFilter.value === ""
+                ? null
+                : Number(maximumDaysFilter.value);
+
+            filteredRows = inventoryRows.filter(row => {
+                const days = calculateDays(row.dateIn);
+
+                const matchesSearch =
+                    searchText === "" ||
+                    row.productName.toLowerCase().includes(searchText) ||
+                    row.lotNo.toLowerCase().includes(searchText) ||
+                    (row.description || "").toLowerCase().includes(searchText);
+
+                const matchesWarehouse =
+                    selectedWarehouse === "" ||
+                    row.warehouse === selectedWarehouse;
+
+                const matchesStatus =
+                    selectedStatus === "" ||
+                    row.status === selectedStatus;
+
+                const matchesMinimumDays =
+                    minimumDays === null ||
+                    days >= minimumDays;
+
+                const matchesMaximumDays =
+                    maximumDays === null ||
+                    days <= maximumDays;
+
+                const matchesVerification =
+                    !needsVerificationOnly.checked ||
+                    (
+                        !row.verified &&
+                        (
+                            row.status === "CLEANUP_NEEDED" ||
+                            row.status === "GHOST_INVENTORY" ||
+                            row.status === "EXPIRED" ||
+                            row.status === "NEAR_EXPIRY"
+                        )
+                    );
+
+                return matchesSearch &&
+                    matchesWarehouse &&
+                    matchesStatus &&
+                    matchesMinimumDays &&
+                    matchesMaximumDays &&
+                    matchesVerification;
+            });
+
+            renderGrid();
+        }
+
+           function resetFilters() {
+        searchInput.value = "";
+        warehouseFilter.value = "";
+        statusFilter.value = "";
+        minimumDaysFilter.value = "";
+        maximumDaysFilter.value = "";
+        needsVerificationOnly.checked = false;
+
+        loadInventory(1);
+    }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+            window.openVerificationFromButton = function (button) {
+        const inventoryKey = decodeURIComponent(
+            button.dataset.inventoryKey
+        );
+
+        openVerification(inventoryKey);
+    };
+
+          window.openVerification = function (inventoryId) {
+        const row = inventoryRows.find(
+            item => item.inventoryId === inventoryId
+        );
+
+        if (!row) {
+            return;
+        }
+
+        document.getElementById("verifyInventoryId").value =
+            row.inventoryId;
+
+        document.getElementById("verifyProductName").textContent =
+            row.productName;
+
+        document.getElementById("verifyLotNo").textContent =
+            row.lotNo;
+
+        document.getElementById("verifyWarehouse").textContent =
+            row.warehouse;
+
+        document.getElementById("verifySystemQty").value =
+            row.systemQty;
+
+        document.getElementById("verifyPhysicalQty").value = "";
+        document.getElementById("verifyVariance").value = "0";
+        document.getElementById("verifyReason").value = "";
+        document.getElementById("verifyRemarks").value = "";
+
+        document.getElementById("verifySystemUom").textContent =
+            row.uom;
+
+        document.getElementById("verifyPhysicalUom").textContent =
+            row.uom;
+
+        document.getElementById("verifyVarianceUom").textContent =
+            row.uom;
+
+        document.getElementById("verifyPhysicalQty")
+            .classList.remove("is-invalid");
+
+        document.getElementById("verifyReason")
+            .classList.remove("is-invalid");
+
+        updateVarianceDisplay();
+
+        verifyModal.show();
+
+        setTimeout(() => {
+            document.getElementById("verifyPhysicalQty").focus();
+        }, 300);
+    };
+
+        window.viewVerification = function (inventoryId) {
+            const row = inventoryRows.find(
+                item => item.inventoryId === inventoryId
+            );
+
+            if (!row || !row.verification) {
+                return;
+            }
+
+            const verification = row.verification;
+
+            document.getElementById("viewProduct").textContent =
+                row.productName;
+
+            document.getElementById("viewLot").textContent =
+                row.lotNo;
+
+            document.getElementById("viewWarehouse").textContent =
+                row.warehouse;
+
+            document.getElementById("viewSystemQty").textContent =
+                `${formatNumber(verification.systemQty)} ${row.uom}`;
+
+            document.getElementById("viewPhysicalQty").textContent =
+                `${formatNumber(verification.physicalQty)} ${row.uom}`;
+
+            document.getElementById("viewVariance").textContent =
+                `${formatNumber(verification.variance)} ${row.uom}`;
+
+            document.getElementById("viewReason").textContent =
+                verification.reasonLabel;
+
+            document.getElementById("viewVerifiedBy").textContent =
+                verification.verifiedBy;
+
+            document.getElementById("viewVerifiedDate").textContent =
+                new Date(verification.verifiedDate).toLocaleString(
+                    "en-PH",
+                    {
+                        dateStyle: "medium",
+                        timeStyle: "short"
+                    }
+                );
+
+            document.getElementById("viewRemarks").textContent =
+                verification.remarks || "-";
+
+            viewModal.show();
+        };
+
+        function updateVarianceDisplay() {
+            const systemQty =
+                Number(document.getElementById("verifySystemQty").value || 0);
+
+            const physicalValue =
+                document.getElementById("verifyPhysicalQty").value;
+
+            const physicalQty =
+                physicalValue === "" ? systemQty : Number(physicalValue);
+
+            const variance = physicalQty - systemQty;
+
+            const varianceInput =
+                document.getElementById("verifyVariance");
+
+            varianceInput.value = formatNumber(variance);
+
+            varianceInput.classList.remove(
+                "variance-negative",
+                "variance-positive",
+                "variance-zero"
+            );
+
+            if (variance < 0) {
+                varianceInput.classList.add("variance-negative");
+            } else if (variance > 0) {
+                varianceInput.classList.add("variance-positive");
+            } else {
+                varianceInput.classList.add("variance-zero");
+            }
+        }
+
+        document.getElementById("verifyPhysicalQty")
+            .addEventListener("input", updateVarianceDisplay);
+
+    document.getElementById("btnSaveVerification")
+     .addEventListener("click", async function () {
+
+         const saveButton = this;
+
+         const inventoryId =
+             document.getElementById("verifyInventoryId").value;
+
+         const physicalQtyInput =
+             document.getElementById("verifyPhysicalQty");
+
+         const reasonInput =
+             document.getElementById("verifyReason");
+
+         physicalQtyInput.classList.remove("is-invalid");
+         reasonInput.classList.remove("is-invalid");
+
+         let isValid = true;
+
+         if (
+             physicalQtyInput.value === "" ||
+             Number(physicalQtyInput.value) < 0
+         ) {
+             physicalQtyInput.classList.add("is-invalid");
+             isValid = false;
+         }
+
+         if (!reasonInput.value) {
+             reasonInput.classList.add("is-invalid");
+             isValid = false;
+         }
+
+         if (!isValid) {
+             return;
+         }
+
+         const row = inventoryRows.find(
+             item => item.inventoryId === inventoryId
+         );
+
+         if (!row) {
+             alert("Inventory lot was not found.");
+             return;
+         }
+
+         const systemQty = Number(row.systemQty);
+         const physicalQty = Number(physicalQtyInput.value);
+
+         if (systemQty === physicalQty) {
+             alert(
+                 "Physical quantity matches the system quantity. " +
+                 "No inventory adjustment is required."
+             );
+
+             return;
+         }
+
+         const confirmed = confirm(
+             `Confirm inventory cleanup?\n\n` +
+             `Product: ${row.productName}\n` +
+             `Lot: ${row.lotNo}\n` +
+             `System Qty: ${formatNumber(systemQty)} ${row.uom}\n` +
+             `Physical Qty: ${formatNumber(physicalQty)} ${row.uom}\n` +
+             `Variance: ${formatNumber(physicalQty - systemQty)} ${row.uom}`
+         );
+
+         if (!confirmed) {
+             return;
+         }
+
+         try {
+             saveButton.disabled = true;
+
+             saveButton.innerHTML = `
+                 <span class="spinner-border spinner-border-sm me-1"></span>
+                 Saving...
+             `;
+
+             const payload = {
+                 productId: row.productId,
+                 branchId: row.branchId,
+                 lotNo: row.lotNo,
+
+                 systemQty: systemQty,
+                 physicalQty: physicalQty,
+
+                 reason: reasonInput.options[
+                     reasonInput.selectedIndex
+                 ].text.trim(),
+
+                 remarks:
+                     document.getElementById("verifyRemarks")
+                         .value.trim()
+             };
+
+             const response = await fetch(
+                 "/InventoryAging/Verify",
+                 {
+                     method: "POST",
+                     headers: {
+                         "Content-Type": "application/json"
+                     },
+                     body: JSON.stringify(payload)
+                 }
+             );
+
+             const responseText = await response.text();
+
+             let result;
+
+             try {
+                 result = JSON.parse(responseText);
+             }
+             catch {
+                 result = {
+                     success: response.ok,
+                     message: responseText
+                 };
+             }
+
+             if (!response.ok || result.success === false) {
+                 throw new Error(
+                     result.message ||
+                     "Failed to save inventory verification."
+                 );
+             }
+
+             verifyModal.hide();
+
+             alert(
+                 result.message ||
+                 "Inventory cleanup saved successfully."
+             );
+
+             await loadInventory(currentPage);
+         }
+         catch (error) {
+             console.error(error);
+
+             alert(
+                 error.message ||
+                 "Failed to save inventory cleanup."
+             );
+         }
+         finally {
+             saveButton.disabled = false;
+
+             saveButton.innerHTML = `
+                 <i class="bi bi-check-lg me-1"></i>
+                 Save Verification
+             `;
+         }
+     });
+
+
+         document.getElementById("previousPageButton")
+        .addEventListener("click", function () {
+            if (currentPage > 1) {
+                loadInventory(currentPage - 1);
+            }
+        });
+
+    document.getElementById("nextPageButton")
+        .addEventListener("click", function () {
+            if (currentPage < totalPages) {
+                loadInventory(currentPage + 1);
+            }
+        });
+
+    document.getElementById("btnApplyFilters")
+    .addEventListener("click", function () {
+        loadInventory(1);
+    });
+
+        document.getElementById("btnResetFilters")
+            .addEventListener("click", resetFilters);
+
+        document.getElementById("needsVerificationOnly")
+            .addEventListener("change", applyFilters);
+
+       document.getElementById("btnRefreshGrid")
+    .addEventListener("click", function () {
+        loadInventory(currentPage);
+    });
+
+        searchInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+               loadInventory(1);
+            }
+        });
+
+        loadWarehouseOptions();
+    loadInventory(1);
+    });
+        function normalizeDate(value) {
+        if (!value) {
+            return null;
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+
+        return date.toISOString().slice(0, 10);
+    }
+
+    function getApiExpiryFilter() {
+        const selectedStatus = statusFilter.value;
+
+        if (selectedStatus === "EXPIRED") {
+            return "expired";
+        }
+
+        if (selectedStatus === "NEAR_EXPIRY") {
+            return "near";
+        }
+
+        return "";
+    }
+
+        function calculateExpiryDays(expirationDate) {
+        if (!expirationDate) {
+            return Number.MAX_SAFE_INTEGER;
+        }
+
+        const expiry = new Date(expirationDate);
+
+        if (Number.isNaN(expiry.getTime())) {
+            return Number.MAX_SAFE_INTEGER;
+        }
+
+        const today = new Date();
+
+        today.setHours(0, 0, 0, 0);
+        expiry.setHours(0, 0, 0, 0);
+
+        const millisecondsPerDay =
+            1000 * 60 * 60 * 24;
+
+        return Math.ceil(
+            (expiry.getTime() - today.getTime()) /
+            millisecondsPerDay
+        );
+    }
+
+      function determineAgingStatus(
+        daysInInventory,
+        expirationDate
+    ) {
+        const expiryDays =
+            calculateExpiryDays(expirationDate);
+
+        if (expiryDays < 0) {
+            return "EXPIRED";
+        }
+
+        if (expiryDays <= 60) {
+            return "NEAR_EXPIRY";
+        }
+
+        if (daysInInventory > 14) {
+            return "CLEANUP_NEEDED";
+        }
+
+        if (daysInInventory > 7) {
+            return "AGING";
+        }
+
+        return "HEALTHY";
+    }
+</script>

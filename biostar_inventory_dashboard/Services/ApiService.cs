@@ -1558,5 +1558,87 @@ namespace biostar_inventory_dashboard.Services
                 ?? new StockOverviewPagedResult();
         }
 
+
+        public async Task<string> GetInventoryAgingAsync(
+    int page = 1,
+    int pageSize = 30,
+    string search = "",
+    string lotNo = "",
+    string warehouse = "",
+    string status = "",
+    int? minimumDays = null,
+    int? maximumDays = null,
+    string order = "desc")
+        {
+            var queryParams = new List<string>
+    {
+        $"page={page}",
+        $"pageSize={pageSize}"
+    };
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                queryParams.Add(
+                    $"search={Uri.EscapeDataString(search)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(lotNo))
+            {
+                queryParams.Add(
+                    $"lotNo={Uri.EscapeDataString(lotNo)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(warehouse))
+            {
+                queryParams.Add(
+                    $"warehouse={Uri.EscapeDataString(warehouse)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                queryParams.Add(
+                    $"status={Uri.EscapeDataString(status)}"
+                );
+            }
+
+            if (minimumDays.HasValue)
+            {
+                queryParams.Add(
+                    $"minimumDays={minimumDays.Value}"
+                );
+            }
+
+            if (maximumDays.HasValue)
+            {
+                queryParams.Add(
+                    $"maximumDays={maximumDays.Value}"
+                );
+            }
+
+            queryParams.Add(
+                $"order={Uri.EscapeDataString(order)}"
+            );
+
+            var url =
+                "api/inventoryDisplay/aging?" +
+                string.Join("&", queryParams);
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var content =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(content);
+            }
+
+            return content;
+        }
+
     }
 }
