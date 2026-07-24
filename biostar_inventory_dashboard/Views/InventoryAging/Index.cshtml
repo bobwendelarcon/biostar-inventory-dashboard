@@ -351,7 +351,7 @@
 
             <div class="row g-3 align-items-end">
 
-                <div class="col-12 col-md-6 col-xl-3">
+                <div class="col-12 col-md-6 col-xl-2">
                     <label class="filter-label" for="searchInput">
                         Search Product or Lot
                     </label>
@@ -375,6 +375,16 @@
 
                     <select class="form-select" id="warehouseFilter">
                         <option value="">All Warehouses</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="filter-label" for="categoryFilter">
+                        Category
+                    </label>
+
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
                     </select>
                 </div>
 
@@ -868,6 +878,8 @@
         const emptyState = document.getElementById("emptyState");
 
         const searchInput = document.getElementById("searchInput");
+        const categoryFilter =
+    document.getElementById("categoryFilter");
         const warehouseFilter = document.getElementById("warehouseFilter");
         const statusFilter = document.getElementById("statusFilter");
         const minimumDaysFilter = document.getElementById("minimumDaysFilter");
@@ -939,6 +951,8 @@
             searchInput.value.trim(),
 
         lotNo: "",
+        category:
+    categoryFilter.value || "",
 
         warehouse:
             warehouseFilter.value || "",
@@ -1424,8 +1438,9 @@
             renderGrid();
         }
 
-           function resetFilters() {
+             function resetFilters() {
         searchInput.value = "";
+        categoryFilter.value = "";
         warehouseFilter.value = "";
         statusFilter.value = "";
         minimumDaysFilter.value = "";
@@ -1781,7 +1796,8 @@
             }
         });
 
-        loadWarehouseOptions();
+            loadCategoryOptions();
+    loadWarehouseOptions();
     loadInventory(1);
     });
         function normalizeDate(value) {
@@ -1836,6 +1852,66 @@
             millisecondsPerDay
         );
     }
+
+
+           async function loadCategoryOptions() {
+        try {
+            const selectedValue =
+                categoryFilter.value;
+
+            const response = await fetch(
+                "/InventoryAging/GetCategories"
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Failed to load categories. Status: ${response.status}`
+                );
+            }
+
+            const categories =
+                await response.json();
+
+            categoryFilter.innerHTML =
+                '<option value="">All Categories</option>';
+
+            categories.forEach(category => {
+                const categoryId =
+                    category.catg_id ||
+                    category.catgId ||
+                    "";
+
+                const categoryName =
+                    category.catg_name ||
+                    category.catgName ||
+                    category.category_name ||
+                    category.categoryName ||
+                    categoryId;
+
+                if (!categoryId) {
+                    return;
+                }
+
+                const option =
+                    document.createElement("option");
+
+                option.value = categoryId;
+                option.textContent = categoryName;
+
+                categoryFilter.appendChild(option);
+            });
+
+            categoryFilter.value = selectedValue;
+        }
+        catch (error) {
+            console.error(
+                "Category load error:",
+                error
+            );
+        }
+    }
+
+
 
       function determineAgingStatus(
         daysInInventory,

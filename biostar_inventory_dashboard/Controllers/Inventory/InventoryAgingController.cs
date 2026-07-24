@@ -23,11 +23,52 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                var categories =
+                    await _apiService.GetCategoriesAsync();
+
+                return Json(categories);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetInventoryCategories()
+        {
+            try
+            {
+                var result =
+                    await _apiService.GetInventoryCategoriesAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetInventory(
       int page = 1,
       int pageSize = 30,
       string search = "",
       string lotNo = "",
+        string category = "",
       string warehouse = "",
       string status = "",
       int? minimumDays = null,
@@ -42,6 +83,7 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
                         pageSize,
                         search,
                         lotNo,
+                        category,
                         warehouse,
                         status,
                         minimumDays,

@@ -1564,6 +1564,7 @@ namespace biostar_inventory_dashboard.Services
     int pageSize = 30,
     string search = "",
     string lotNo = "",
+    string category="",
     string warehouse = "",
     string status = "",
     int? minimumDays = null,
@@ -1587,6 +1588,13 @@ namespace biostar_inventory_dashboard.Services
             {
                 queryParams.Add(
                     $"lotNo={Uri.EscapeDataString(lotNo)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                queryParams.Add(
+                    $"category={Uri.EscapeDataString(category)}"
                 );
             }
 
