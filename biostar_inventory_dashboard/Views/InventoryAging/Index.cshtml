@@ -521,6 +521,8 @@
                         <th>Lot No.</th>
                         <th>Warehouse</th>
                         <th class="text-end">System Qty</th>
+                        <th class="text-end">Reserved</th>
+                        <th class="text-end">Available</th>
                         <th>Date In</th>
                         <th class="text-center">Days</th>
                         <th>Last OUT</th>
@@ -627,7 +629,7 @@
 
                 <div class="row g-3">
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold">
                             System Quantity
                         </label>
@@ -645,7 +647,29 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">
+                            Reserved Quantity
+                        </label>
+
+                        <div class="input-group">
+                            <input type="number"
+                                   class="form-control"
+                                   id="verifyReservedQty"
+                                   readonly>
+
+                            <span class="input-group-text"
+                                  id="verifyReservedUom">
+                                -
+                            </span>
+                        </div>
+
+                        <small class="text-muted">
+                            Physical quantity cannot be lower than this value.
+                        </small>
+                    </div>
+
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold"
                                for="verifyPhysicalQty">
                             Physical Quantity
@@ -667,11 +691,11 @@
                         </div>
 
                         <div class="invalid-feedback">
-                            Physical quantity is required.
+                            Enter a valid physical quantity that is not below the reserved quantity.
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold">
                             Variance
                         </label>
@@ -693,6 +717,10 @@
                             Physical quantity minus system quantity.
                         </small>
                     </div>
+
+
+                   
+
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold"
@@ -745,6 +773,26 @@
                     </div>
 
                 </div>
+
+                <div class="alert alert-danger mt-4 mb-0 d-none"
+                     id="reservationWarningBox">
+
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-lock-fill me-2 mt-1"></i>
+
+                        <div>
+                            <div class="fw-bold">
+                                This lot has reserved inventory
+                            </div>
+
+                            <div class="small"
+                                 id="reservationWarningText">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
 
                 <div class="alert alert-warning mt-4 mb-0">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i>
@@ -1339,7 +1387,7 @@
 
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="11"
+                        <td colspan="13"
                             class="text-center text-muted py-4">
                             <span class="spinner-border spinner-border-sm me-2"></span>
                             Loading inventory aging data...
@@ -1486,6 +1534,38 @@
                             ) || 0
                         ),
 
+                            reservedQty: Number(
+        getProperty(
+            item,
+            "reserved_qty",
+            "reservedQty"
+        ) || 0
+    ),
+
+    availableQty: Number(
+        getProperty(
+            item,
+            "available_qty",
+            "availableQty"
+        ) || 0
+    ),
+
+    hasReservation: Boolean(
+        getProperty(
+            item,
+            "has_reservation",
+            "hasReservation"
+        )
+    ),
+
+    reservationCount: Number(
+        getProperty(
+            item,
+            "reservation_count",
+            "reservationCount"
+        ) || 0
+    ),
+
                         uom:
                             getProperty(
                                 item,
@@ -1596,7 +1676,7 @@
 
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="11"
+                        <td colspan="13"
                             class="text-center text-danger py-4">
                             Failed to load inventory aging data.
 
@@ -1735,6 +1815,43 @@
                                 ${escapeHtml(row.uom)}
                             </span>
                         </td>
+
+                            <td class="text-end">
+        <span class="${
+            row.reservedQty > 0
+                ? "text-danger fw-bold"
+                : "text-muted"
+        }">
+            ${formatNumber(row.reservedQty)}
+            ${escapeHtml(row.uom)}
+        </span>
+
+        ${
+            row.reservationCount > 0
+                ? `
+                    <div class="small text-muted">
+                        ${row.reservationCount}
+                        ${
+                            row.reservationCount === 1
+                                ? "reservation"
+                                : "reservations"
+                        }
+                    </div>
+                  `
+                : ""
+        }
+    </td>
+
+    <td class="text-end">
+        <span class="quantity-value ${
+            row.availableQty <= 0
+                ? "text-danger"
+                : "text-success"
+        }">
+            ${formatNumber(row.availableQty)}
+            ${escapeHtml(row.uom)}
+        </span>
+    </td>
 
                         <td>
                             ${formatDate(row.dateIn)}
@@ -2166,6 +2283,8 @@
 
         window.openVerification =
             function (inventoryId) {
+
+
                 const row = inventoryRows.find(
                     item =>
                         item.inventoryId === inventoryId
@@ -2198,6 +2317,61 @@
                 document.getElementById(
                     "verifySystemQty"
                 ).value = row.systemQty;
+
+
+                    document.getElementById(
+        "verifyReservedQty"
+    ).value = row.reservedQty;
+
+    document.getElementById(
+        "verifyReservedUom"
+    ).textContent = row.uom || "-";
+
+    const physicalQtyInput =
+        document.getElementById(
+            "verifyPhysicalQty"
+        );
+
+
+
+
+    physicalQtyInput.min =
+        String(row.reservedQty);
+
+    physicalQtyInput.placeholder =
+        row.hasReservation
+            ? `Minimum allowed: ${formatNumber(row.reservedQty)}`
+            : "Enter physical quantity";
+
+
+                const reservationWarningBox =
+        document.getElementById(
+            "reservationWarningBox"
+        );
+
+    const reservationWarningText =
+        document.getElementById(
+            "reservationWarningText"
+        );
+
+    if (row.hasReservation) {
+        reservationWarningBox.classList.remove(
+            "d-none"
+        );
+
+        reservationWarningText.textContent =
+            `${formatNumber(row.reservedQty)} ${row.uom} ` +
+            `is reserved by ${row.reservationCount} active ` +
+            `${row.reservationCount === 1 ? "order" : "orders"}. ` +
+            `Inventory cannot be reduced below this quantity.`;
+    }
+    else {
+        reservationWarningBox.classList.add(
+            "d-none"
+        );
+
+        reservationWarningText.textContent = "";
+    }
 
                 document.getElementById(
                     "verifyPhysicalQty"
@@ -2401,6 +2575,31 @@
                 const normalizedPhysicalQty =
                     Number(physicalQty.toFixed(4));
 
+                        const reservedQty =
+        Number(row.reservedQty || 0);
+
+    const normalizedReservedQty =
+        Number(reservedQty.toFixed(4));
+
+    if (
+        normalizedPhysicalQty <
+        normalizedReservedQty
+    ) {
+        physicalQtyInput.classList.add(
+            "is-invalid"
+        );
+
+        alert(
+            `Adjustment blocked.\n\n` +
+            `Reserved Qty: ${formatNumber(normalizedReservedQty)} ${row.uom}\n` +
+            `Entered Physical Qty: ${formatNumber(normalizedPhysicalQty)} ${row.uom}\n\n` +
+            `Physical quantity cannot be lower than reserved quantity.`
+        );
+
+        physicalQtyInput.focus();
+        return;
+    }
+
                 if (
                     normalizedSystemQty ===
                     normalizedPhysicalQty
@@ -2417,15 +2616,17 @@
                     normalizedPhysicalQty -
                     normalizedSystemQty;
 
-                const confirmed = confirm(
-                    `Confirm inventory cleanup?\n\n` +
-                    `Product: ${row.productName}\n` +
-                    `Lot: ${row.lotNo}\n` +
-                    `Warehouse: ${row.warehouse}\n` +
-                    `System Qty: ${formatNumber(normalizedSystemQty)} ${row.uom}\n` +
-                    `Physical Qty: ${formatNumber(normalizedPhysicalQty)} ${row.uom}\n` +
-                    `Variance: ${formatNumber(variance)} ${row.uom}`
-                );
+                   const confirmed = confirm(
+        `Confirm inventory verification?\n\n` +
+        `Product: ${row.productName}\n` +
+        `Lot: ${row.lotNo}\n` +
+        `Warehouse: ${row.warehouse}\n\n` +
+        `System Qty: ${formatNumber(normalizedSystemQty)} ${row.uom}\n` +
+        `Reserved Qty: ${formatNumber(normalizedReservedQty)} ${row.uom}\n` +
+        `Available Qty: ${formatNumber(row.availableQty)} ${row.uom}\n` +
+        `Physical Qty: ${formatNumber(normalizedPhysicalQty)} ${row.uom}\n` +
+        `Variance: ${formatNumber(variance)} ${row.uom}`
+    );
 
                 if (!confirmed) {
                     return;
@@ -2494,15 +2695,29 @@
                         };
                     }
 
-                    if (
-                        !response.ok ||
-                        result.success === false
-                    ) {
-                        throw new Error(
-                            result.message ||
-                            "Failed to save inventory verification."
-                        );
-                    }
+                       if (
+        !response.ok ||
+        result.success === false
+    ) {
+        let errorMessage =
+            result.message ||
+            "Failed to save inventory verification.";
+
+        try {
+            const nestedError =
+                JSON.parse(errorMessage);
+
+            errorMessage =
+                nestedError.message ||
+                nestedError.error ||
+                errorMessage;
+        }
+        catch {
+            // Error message is already plain text.
+        }
+
+        throw new Error(errorMessage);
+    }
 
                     verifyModal.hide();
 

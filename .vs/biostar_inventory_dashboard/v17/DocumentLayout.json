@@ -254,20 +254,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "inventory.css",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
-              "ViewState": "AgIAAOIBAAAAAAAAAAAAAAQCAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2026-07-10T01:13:07.52Z"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
@@ -276,7 +264,7 @@
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\InventoryAging\\Index.cshtml",
               "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\InventoryAging\\Index.cshtml",
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\InventoryAging\\Index.cshtml",
-              "ViewState": "AgIAALYHAAAAAAAAAAAnwNwHAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAO8KAAAAAAAAAAAswCwLAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-07-23T08:21:21.192Z",
               "EditorCaption": ""
@@ -291,8 +279,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\InventoryController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAIsBAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-03T00:12:04.98Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-03T00:12:04.98Z"
             },
             {
               "$type": "Document",
@@ -314,7 +301,7 @@
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Controllers\\Inventory\\InventoryAgingController.cs",
               "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Controllers\\Inventory\\InventoryAgingController.cs",
               "RelativeToolTip": "biostar_inventory_dashboard\\Controllers\\Inventory\\InventoryAgingController.cs",
-              "ViewState": "AgIAABkAAAAAAAAAAAAuwB4AAAA7AAAAAAAAAA==",
+              "ViewState": "AgIAAPUAAAAAAAAAAAAvwBkBAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-23T08:19:07.355Z",
               "EditorCaption": ""
@@ -340,10 +327,22 @@
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Services\\ApiService.cs",
               "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
               "RelativeToolTip": "biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "ViewState": "AgIAADgGAAAAAAAAAAAYwFgGAAA2AAAAAAAAAA==",
+              "ViewState": "AgIAADYGAAAAAAAAAAAswEwGAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-01T06:18:05.54Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "inventory.css",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\css\\inventory.css",
+              "ViewState": "AgIAAOIBAAAAAAAAAAAAAAQCAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-07-10T01:13:07.52Z"
             },
             {
               "$type": "Document",

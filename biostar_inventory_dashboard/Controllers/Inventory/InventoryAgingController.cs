@@ -274,11 +274,11 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                return BadRequest(new
                 {
                     success = false,
                     message = ex.Message
-                }.ToString());
+                });
             }
         }
 
