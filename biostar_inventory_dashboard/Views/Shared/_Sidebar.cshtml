@@ -32,7 +32,8 @@
       currentController == "Inventory" ||
       currentController == "Transactions" ||
       currentController == "StockOverview" ||
-      currentController == "InventoryAging";
+      currentController == "InventoryAging" ||
+      currentController == "RawMaterialInventory";
     var isLogisticsOpen = currentController == "Logistics";
     var isReturnOpen = currentController == "Returns";
     var isReportOpen = currentController == "Reports";
@@ -123,6 +124,15 @@
                                 <span>Inventory List</span>
                             </a>
                         </li>
+
+                        <li>
+                            <a class="nav-link @(currentController == "RawMaterialInventory" ? "active fw-bold" : "")"
+                               href="/inventory/raw-materials">
+                                <span>Raw Material Inventory</span>
+                            </a>
+                        </li>
+
+
                         <li>
                             <a class="nav-link @(currentController == "InventoryAging" ? "active fw-bold" : "")"
                                asp-controller="InventoryAging"
@@ -332,12 +342,47 @@
                         </li>
 
 
+                     
+
+
                         
 
                     </ul>
 
                 </div>
+
+
+                </li>
+
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#inventoryMenu">
+
+                    <div>
+                        <i class="bi bi-box-seam me-2"></i>
+                        <span>Inventory</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isInventoryOpen ? "show" : "")"
+                     id="inventoryMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentController == "RawMaterialInventory" ? "active fw-bold" : "")"
+                               href="/inventory/raw-materials">
+                                <span>Raw Material Inventory</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
             </li>
+          
 
            
 
@@ -514,6 +559,13 @@
                         <li>
                             <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
                                 <span>Inventory List</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentController == "RawMaterialInventory" ? "active fw-bold" : "")"
+                               href="/inventory/raw-materials">
+                                <span>Raw Material Inventory</span>
                             </a>
                         </li>
 

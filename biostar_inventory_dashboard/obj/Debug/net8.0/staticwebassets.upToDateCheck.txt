@@ -12,7 +12,6 @@ wwwroot\favicon.ico
 wwwroot\images\default-user.png
 wwwroot\js\branch.js
 wwwroot\js\categories.js
-wwwroot\js\dailyorder.js
 wwwroot\js\dashboard.js
 wwwroot\js\delivery-checklist-print.js
 wwwroot\js\delivery-checklist.js
@@ -92,3 +91,4 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
+wwwroot\js\dailyorder.js

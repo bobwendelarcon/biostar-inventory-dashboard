@@ -1579,6 +1579,26 @@ function renderDailyOrderTable(data, append = false) {
     <td>${formatQtyWithPack(order.requiredQty, order.uom, order.packQty, order.packUom)}</td>
     <td>${formatQtyWithPack(order.remainingQty, order.uom, order.packQty, order.packUom)}</td>
 
+
+
+    <td>
+    <div class="fw-bold">
+        ${formatNumber(order.totalAvailableStock || 0)}
+        ${safe(order.uom || "")}
+    </div>
+
+    <div class="small text-muted">
+        OH:${formatNumber(order.totalOnHandStock || 0)}
+        |
+        <span class="text-warning fw-semibold">
+            Res: ${formatNumber(order.totalReservedStock || 0)}
+        </span>
+    </div>
+</td>
+
+
+
+
     <td>${renderStatusText(order.status)}</td>
 
     <td class="special-instruction-cell">
@@ -1916,33 +1936,50 @@ function renderWarehouseAvailability(line) {
         line.WarehouseAvailableStocks ||
         [];
 
-    if (!stocks.length) {
-        return formatQtyWithPack(
-            line.availableBeforeAllocation || 0,
-            line.uom,
-            line.packQty,
-            line.packUom
+    const totalOnHand =
+        Number(line.totalOnHandStock || 0);
+
+    const totalReserved =
+        Number(line.totalReservedStock || 0);
+
+    const totalAvailable =
+        Number(
+            line.totalAvailableStock ||
+            line.availableBeforeAllocation ||
+            0
         );
-    }
 
     let html = `
-        <div class="fw-semibold">
-            ${formatQtyWithPack(
-        line.availableBeforeAllocation || line.totalAvailableStock || 0,
-        line.uom,
-        line.packQty,
-        line.packUom
-    )}
-            <small class="text-muted">Total</small>
+        <div class="fw-bold">
+            ${formatNumber(totalAvailable)}
+            ${safe(line.uom || "")}
+        </div>
+
+        <div class="small text-muted">
+            OH:${formatNumber(totalOnHand)}
+            |
+            <span class="text-warning fw-semibold">
+                Res: ${formatNumber(totalReserved)}
+            </span>
         </div>
     `;
 
     stocks.forEach(w => {
+
         html += `
-            <div class="small ${w.isPreferred ? "text-primary fw-semibold" : "text-muted"}">
-                ${formatNumber(w.availableQty)} ${safe(line.uom || "")}
-                - ${safe(w.warehouseName || w.branchId || "-")}
-                ${w.isPreferred ? "(Preferred)" : ""}
+            <div class="small mt-1
+                ${w.isPreferred
+                ? "text-primary fw-semibold"
+                : "text-muted"}">
+
+                ${formatNumber(w.availableQty)}
+                ${safe(line.uom || "")}
+                -
+                ${safe(w.warehouseName || w.branchId || "-")}
+
+                ${w.isPreferred
+                ? "(Preferred)"
+                : ""}
             </div>
         `;
     });

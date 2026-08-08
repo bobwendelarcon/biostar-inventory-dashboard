@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace biostar_inventory_dashboard.Controllers
 {
-    [Authorize(Roles = "ADMIN,STAFF")]
+    //[Authorize(Roles = "ADMIN,STAFF,PURCHASING,RMW,WAREHOUSE")]
     public class BranchController : Controller
     {
        
@@ -48,5 +48,8 @@ namespace biostar_inventory_dashboard.Controllers
 
             return Ok("Branch updated successfully.");
         }
+
+
+
     }
 }

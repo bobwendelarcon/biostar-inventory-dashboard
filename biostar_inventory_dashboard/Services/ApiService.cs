@@ -146,6 +146,103 @@ namespace biostar_inventory_dashboard.Services
         }
 
 
+        //Raw material inventory
+
+        public async Task<string> GetRawMaterialInventoryAsync(
+    string search = "",
+    string branchId = "",
+    int? categoryId = null,
+    string stockStatus = "",
+    string expiryStatus = "",
+    string fromDate = "",
+    string toDate = "")
+        {
+            var queryParams = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                queryParams.Add(
+                    $"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+            {
+                queryParams.Add(
+                    $"branchId={Uri.EscapeDataString(branchId)}");
+            }
+
+            if (categoryId.HasValue)
+            {
+                queryParams.Add(
+                    $"categoryId={categoryId.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(stockStatus))
+            {
+                queryParams.Add(
+                    $"stockStatus={Uri.EscapeDataString(stockStatus)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(expiryStatus))
+            {
+                queryParams.Add(
+                    $"expiryStatus={Uri.EscapeDataString(expiryStatus)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(fromDate))
+            {
+                queryParams.Add(
+                    $"fromDate={Uri.EscapeDataString(fromDate)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(toDate))
+            {
+                queryParams.Add(
+                    $"toDate={Uri.EscapeDataString(toDate)}");
+            }
+
+            var url = "api/inventory/raw-materials";
+
+            if (queryParams.Any())
+            {
+                url += "?" + string.Join("&", queryParams);
+            }
+
+            var response = await _httpClient.GetAsync(url);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+
+
+        public async Task<string>
+    GetRawMaterialInventoryTransactionsAsync(int materialLotId)
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/inventory/raw-materials/{materialLotId}/transactions");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+
+
+
+
 
         public async Task<string> TransferAsync(string jsonData)
         {

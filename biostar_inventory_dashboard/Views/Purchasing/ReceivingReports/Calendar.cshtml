@@ -222,7 +222,7 @@
                                            readonly>
                                 </div>
 
-                                <div class="col-lg-3 col-md-6">
+                                <div class="col-lg-2 col-md-6">
                                     <label class="form-label">
                                         Supplier
                                     </label>
@@ -233,6 +233,17 @@
                                 </div>
 
                                 <div class="col-lg-3 col-md-6">
+                                    <label class="form-label">
+                                        Receiving Branch
+                                    </label>
+
+                                    <select id="modalBranchId"
+                                            class="form-select">
+                                        <option value="">Select receiving branch</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-2 col-md-6">
                                     <label class="form-label">
                                         Actual Delivery Date
                                     </label>
@@ -1160,6 +1171,92 @@
     let selectedReceivingScheduleId = 0;
     let modalReceivingData = null;
 
+
+    async function loadReceivingBranches() {
+        const branchSelect =
+            document.getElementById("modalBranchId");
+
+        branchSelect.innerHTML =
+            `<option value="">Loading branches...</option>`;
+
+        branchSelect.disabled = true;
+
+        try {
+            const response = await fetch("/Branch/GetBranches");
+
+            const result = await readJsonResponse(
+                response,
+                "Unable to load branches."
+            );
+
+            const activeBranches = (result ?? [])
+                .filter(branch => !branch.is_deleted);
+
+            branchSelect.innerHTML =
+                `<option value="">Select receiving branch</option>`;
+
+            activeBranches.forEach(branch => {
+                const option = document.createElement("option");
+
+                option.value = branch.branch_id;
+
+                option.textContent = branch.branch_loc
+                    ? `${branch.branch_name} - ${branch.branch_loc}`
+                    : branch.branch_name;
+
+                branchSelect.appendChild(option);
+            });
+
+            if (activeBranches.length === 1) {
+                branchSelect.value =
+                    activeBranches[0].branch_id;
+            }
+        }
+        catch (error) {
+            console.error(error);
+
+            branchSelect.innerHTML =
+                `<option value="">Failed to load branches</option>`;
+
+            throw error;
+        }
+        finally {
+            branchSelect.disabled = false;
+        }
+    }
+
+        async function readJsonResponse(response, fallbackMessage) {
+        const responseText = await response.text();
+
+        let result = {};
+
+        try {
+            result = responseText
+                ? JSON.parse(responseText)
+                : {};
+        }
+        catch {
+            console.error(
+                "Non-JSON response:",
+                response.status,
+                response.url,
+                responseText
+            );
+
+            throw new Error(
+                "The server returned an invalid response."
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || fallbackMessage
+            );
+        }
+
+        return result;
+    }
+
     async function openReceivingModal(scheduleId) {
     selectedReceivingScheduleId = Number(scheduleId);
         modalReceivingData = null;
@@ -1185,73 +1282,68 @@
 
         createReceivingModal.show();
 
-        try {
-            const [numberResponse, optionsResponse] = await Promise.all([
-                fetch("/purchasing/receiving-reports/next-number"),
+         try {
+        const optionsResponse = await fetch(
+            `/purchasing/receiving-reports/create-options/${selectedReceivingScheduleId}`
+        );
 
-                   fetch(
-        `/purchasing/receiving-reports/create-options/${selectedReceivingScheduleId}`
-    )
-            ]);
+        const optionsData = await readJsonResponse(
+            optionsResponse,
+            "Unable to load Purchase Order data."
+        );
 
-            const numberData = await numberResponse.json();
-            const optionsData = await optionsResponse.json();
+        const numberResponse = await fetch(
+            "/purchasing/receiving-reports/next-number"
+        );
 
-            if (!numberResponse.ok) {
-                throw new Error(
-                    numberData.message ??
-                    "Unable to generate the next RR number."
-                );
-            }
+        const numberData = await readJsonResponse(
+            numberResponse,
+            "Unable to generate the next RR number."
+        );
 
-            if (!optionsResponse.ok) {
-                throw new Error(
-                    optionsData.message ??
-                    "Unable to load Purchase Order data."
-                );
-            }
+        await loadReceivingBranches();
 
-            modalReceivingData = optionsData;
+        modalReceivingData = optionsData;
 
-            document.getElementById("modalRrNo").value =
-                numberData.rr_no ??
-                numberData.rrNo ??
-                "";
+        document.getElementById("modalRrNo").value =
+            numberData.rr_no ??
+            numberData.rrNo ??
+            "";
 
-            document.getElementById("modalPoNo").value =
-                optionsData.poNo ?? "";
+        document.getElementById("modalPoNo").value =
+            optionsData.poNo ?? "";
 
-            document.getElementById("modalPrintedPoNo").value =
-                optionsData.printedPoNo ?? "";
+        document.getElementById("modalPrintedPoNo").value =
+            optionsData.printedPoNo ?? "";
 
-            document.getElementById("modalSupplierName").value =
-                optionsData.supplierName ?? "";
+        document.getElementById("modalSupplierName").value =
+            optionsData.supplierName ?? "";
 
-            document.getElementById("modalDeliveryDate").value =
-                getLocalToday();
+        document.getElementById("modalDeliveryDate").value =
+            getLocalToday();
 
-            renderModalReceivingLines(
-                optionsData.lines ?? []
-            );
+        renderModalReceivingLines(
+            optionsData.lines ?? []
+        );
 
-            loading.classList.add("d-none");
-            content.classList.remove("d-none");
+        loading.classList.add("d-none");
+        content.classList.remove("d-none");
 
-            saveButton.disabled =
-                !optionsData.lines ||
-                optionsData.lines.length === 0;
-        }
-        catch (error) {
-            console.error(error);
+        saveButton.disabled =
+            !optionsData.lines ||
+            optionsData.lines.length === 0;
+    }
+    catch (error) {
+        console.error(error);
 
-            loading.classList.add("d-none");
+        loading.classList.add("d-none");
 
-            errorBox.textContent =
-                error.message ??
-                "Failed to load receiving information.";
+        errorBox.textContent =
+            error.message ??
+            "Failed to load receiving information.";
 
-            errorBox.classList.remove("d-none");
-        }
+        errorBox.classList.remove("d-none");
+    }
     }
 
 
@@ -1831,6 +1923,8 @@
         document.getElementById("modalPoNo").value = "";
         document.getElementById("modalPrintedPoNo").value = "";
         document.getElementById("modalSupplierName").value = "";
+        document.getElementById("modalBranchId").innerHTML =
+    `<option value="">Select receiving branch</option>`;
         document.getElementById("modalDeliveryDate").value = "";
         document.getElementById("modalSiDrNo").value = "";
         document.getElementById("modalRemarks").value = "";
@@ -1921,6 +2015,15 @@
             return;
         }
 
+            const branchId =
+        document.getElementById("modalBranchId").value.trim();
+
+    if (!branchId) {
+        alert("Receiving Branch is required.");
+        document.getElementById("modalBranchId").focus();
+        return;
+    }
+
         const deliveryDate =
             document.getElementById("modalDeliveryDate").value;
 
@@ -1984,8 +2087,10 @@
                 return;
         }
 
-            const payload = {
+           const payload = {
         scheduleId: selectedReceivingScheduleId,
+
+        branchId: branchId,
 
         deliveryDate: deliveryDate,
 
