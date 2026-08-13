@@ -1,0 +1,384 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Transactions";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="text-muted small mb-1">
+                Inventory &gt; Raw Material Transactions
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Raw Material Transactions
+            </h2>
+
+            <div class="text-muted">
+                Track all raw material stock IN and OUT movements.
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-success">
+                + Manual Stock In
+            </button>
+
+            <button id="btnRefresh"
+                    class="btn btn-outline-primary">
+                Refresh
+            </button>
+        </div>
+    </div>
+
+
+    <!-- SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        TOTAL TRANSACTIONS
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="totalTransactions">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        IN TRANSACTIONS
+                    </div>
+
+                    <div class="fs-3 fw-bold text-success"
+                         id="totalIn">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        OUT TRANSACTIONS
+                    </div>
+
+                    <div class="fs-3 fw-bold text-danger"
+                         id="totalOut">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        TODAY'S TRANSACTIONS
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="todayTransactions">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- FILTERS -->
+    <div class="row g-3 align-items-end">
+
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label">Search</label>
+
+            <input id="transactionSearch"
+                   class="form-control"
+                   placeholder="Material, reference, user">
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+            <label class="form-label">Branch</label>
+
+            <select id="branchFilter"
+                    class="form-select">
+                <option value="">All Branches</option>
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+            <label class="form-label">Movement</label>
+
+            <select id="movementFilter"
+                    class="form-select">
+                <option value="">All</option>
+                <option value="IN">IN</option>
+                <option value="OUT">OUT</option>
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+            <label class="form-label">Transaction Type</label>
+
+            <select id="transactionTypeFilter"
+                    class="form-select">
+                <option value="">All Types</option>
+                <option value="OPENING_BALANCE">Opening Balance</option>
+                <option value="MANUAL_IN">Manual Stock In</option>
+                <option value="MATERIAL_PURCHASE_RECEIPT">Purchase Receipt</option>
+                <option value="MATERIAL_ISSUE">Material Issue</option>
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-12">
+            <label class="form-label">Date Range</label>
+
+            <div class="row g-2">
+                <div class="col-6">
+                    <input id="fromDate"
+                           type="date"
+                           class="form-control">
+                </div>
+
+                <div class="col-6">
+                    <input id="toDate"
+                           type="date"
+                           class="form-control">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-3 mb-4">
+        <button id="btnSearch"
+                class="btn btn-primary">
+            Search
+        </button>
+
+        <button id="btnClear"
+                class="btn btn-outline-secondary">
+            Clear
+        </button>
+    </div>
+
+
+    @* <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+                    <label class="form-label">
+                        Search
+                    </label>
+
+                    <input id="transactionSearch"
+                           class="form-control"
+                           placeholder="Material, reference, user">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">
+                        Branch
+                    </label>
+
+                    <select id="branchFilter"
+                            class="form-select">
+                        <option value="">
+                            All Branches
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">
+                        Movement
+                    </label>
+
+                    <select id="movementFilter"
+                            class="form-select">
+                        <option value="">All</option>
+                        <option value="IN">IN</option>
+                        <option value="OUT">OUT</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">
+                        Transaction Type
+                    </label>
+
+                    <select id="transactionTypeFilter"
+                            class="form-select">
+                        <option value="">All Types</option>
+                        <option value="OPENING_BALANCE">
+                            Opening Balance
+                        </option>
+                        <option value="MANUAL_IN">
+                            Manual Stock In
+                        </option>
+                        <option value="MATERIAL_PURCHASE_RECEIPT">
+                            Purchase Receipt
+                        </option>
+                        <option value="MATERIAL_ISSUE">
+                            Material Issue
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">
+                        Date Range
+                    </label>
+
+                    <div class="d-flex gap-2">
+                        <input id="fromDate"
+                               type="date"
+                               class="form-control">
+
+                        <input id="toDate"
+                               type="date"
+                               class="form-control">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+                <button id="btnSearch"
+                        class="btn btn-primary">
+                    Search
+                </button>
+
+                <button id="btnClear"
+                        class="btn btn-outline-secondary">
+                    Clear
+                </button>
+            </div>
+
+        </div>
+    </div> *@
+
+
+    <!-- TRANSACTION TABLE -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <strong>Inventory Transaction History</strong>
+        </div>
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive"
+                 style="overflow-x:auto;">
+
+                <table class="table table-hover align-middle mb-0"
+                       style="min-width:1450px;">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th style="min-width:230px;">
+                                Material / Description
+                            </th>
+
+                            <th style="min-width:130px;">
+                                Lot No.
+                            </th>
+
+                            <th style="min-width:120px;">
+                                Date
+                            </th>
+
+                            <th style="min-width:110px;">
+                                Time
+                            </th>
+
+                            <th style="min-width:130px;">
+                                Warehouse
+                            </th>
+
+                            <th style="min-width:80px;">
+                                Type
+                            </th>
+
+                            <th class="text-end"
+                                style="min-width:100px;">
+                                Qty
+                            </th>
+
+                            <th style="min-width:80px;">
+                                UOM
+                            </th>
+
+                            @* <th class="text-end"
+                                style="min-width:110px;">
+                                Balance
+                            </th> *@
+
+                            <th style="min-width:130px;">
+                                User
+                            </th>
+
+                            <th style="min-width:150px;">
+                                Reference
+                            </th>
+
+                            <th style="width:140px; min-width:140px; max-width:140px;">
+                                Remarks
+                            </th>
+
+                            <th style="min-width:90px;">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="transactionTableBody">
+                        <tr>
+                            <td colspan="12"
+                                class="text-center text-muted py-4">
+                                No inventory transactions loaded yet.
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .transaction-remarks {
+        width: 140px;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: help;
+    }
+
+    #transactionTableBody td {
+        vertical-align: middle;
+    }
+</style>
+
+@section Scripts
+{
+    <script src="~/js/manufacturing/materials/raw-material-transactions.js?v=1"></script>
+}

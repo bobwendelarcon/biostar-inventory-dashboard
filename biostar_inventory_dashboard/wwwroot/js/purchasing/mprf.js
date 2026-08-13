@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
             loadMprfForEdit(mprfId);
         } else {
             setDefaultDates();
+            loadNextMprfNo();
             addLine();
         }
     }
@@ -60,6 +61,47 @@ function startMprfAutoRefresh() {
     }, 5000);
 }
 
+
+async function loadNextMprfNo() {
+    const input = document.getElementById("mprfNo");
+
+    if (!input) return;
+
+    input.value = "";
+    input.placeholder = "Loading...";
+
+    try {
+        const response = await fetch(
+            "/purchasing/mprf/next-no",
+            {
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to load next MPRF No."
+            );
+        }
+
+        const data = await response.json();
+
+        input.value =
+            data.mprf_no ??
+            data.mprfNo ??
+            "";
+
+        input.placeholder = "Auto / Editable";
+    }
+    catch (error) {
+        console.error(
+            "MPRF number error:",
+            error
+        );
+
+        input.placeholder = "Auto / Editable";
+    }
+}
 
 
 async function loadMprfForEdit(id) {
@@ -773,6 +815,7 @@ function searchMaterial(input) {
     const row = input.closest("tr");
     row.querySelector(".material-id").value = "";
     row.querySelector(".classification").value = "";
+    row.querySelector(".qty-on-hand").value = "0";
     row.querySelector(".uom").value = "";
 
     const search = input.value.trim();
@@ -913,29 +956,126 @@ async function fetchMaterialResults(input, search) {
     
 }
 
-function selectMaterial(input, material) {
+async function selectMaterial(
+    input,
+    material
+) {
+    const row =
+        input.closest("tr");
 
-    const row = input.closest("tr");
-
-    row.querySelector(".material-id").value =
+    row.querySelector(
+        ".material-id"
+    ).value =
         material.material_id;
 
-    row.querySelector(".material-search").value =
+
+    row.querySelector(
+        ".material-search"
+    ).value =
         `${material.material_code} - ${material.material_name}`;
+
 
     const classification =
         material.subcategory_name
             ? `${material.category_name} (${material.subcategory_name})`
             : material.category_name;
 
-    row.querySelector(".classification").value =
-        classification;
 
-    row.querySelector(".uom").value =
+    row.querySelector(
+        ".classification"
+    ).value =
+        classification ?? "";
+
+
+    row.querySelector(
+        ".uom"
+    ).value =
         material.uom || "";
 
-    const portal = getMaterialPortal();
-    portal.style.display = "none";
+
+    const qtyInput =
+        row.querySelector(
+            ".qty-on-hand"
+        );
+
+    qtyInput.value = "0";
+
+
+    const portal =
+        getMaterialPortal();
+
+    portal.style.display =
+        "none";
+
+
+    await loadMaterialQtyOnHand(
+        row,
+        material.material_id
+    );
+}
+
+async function loadMaterialQtyOnHand(
+    row,
+    materialId
+) {
+    const qtyInput =
+        row.querySelector(
+            ".qty-on-hand"
+        );
+
+    if (!qtyInput)
+        return;
+
+
+    qtyInput.value = "0";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/purchasing/mprf/materials/${materialId}/qty-on-hand`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load material quantity."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const qty =
+            Number(
+                data.qty_on_hand ??
+                data.qtyOnHand ??
+                0
+            );
+
+
+        qtyInput.value =
+            Number.isFinite(qty)
+                ? qty
+                : 0;
+
+    }
+    catch (error) {
+
+        console.error(
+            "Qty On Hand error:",
+            error
+        );
+
+        qtyInput.value = "0";
+    }
 }
 
 document.addEventListener("click", function (event) {

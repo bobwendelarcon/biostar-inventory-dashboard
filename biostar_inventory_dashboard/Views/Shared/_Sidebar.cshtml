@@ -33,7 +33,8 @@
       currentController == "Transactions" ||
       currentController == "StockOverview" ||
       currentController == "InventoryAging" ||
-      currentController == "RawMaterialInventory";
+      currentController == "RawMaterialInventory" ||
+      currentController == "RawMaterialTransactions";
     var isLogisticsOpen = currentController == "Logistics";
     var isReturnOpen = currentController == "Returns";
     var isReportOpen = currentController == "Reports";
@@ -379,6 +380,13 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a class="nav-link @(currentController == "RawMaterialTransactions" ? "active fw-bold" : "")"
+                               href="/inventory/raw-material-transactions">
+                                <span>Inventory Transactions</span>
+                            </a>
+                        </li>
+
                     </ul>
                 </div>
             </li>
@@ -550,14 +558,16 @@
                 <div class="collapse @(isInventoryOpen ? "show" : "")" id="inventoryMenu">
                     <ul class="nav flex-column ms-3 mt-1">
 
-                        <a class="nav-link @(currentController == "StockOverview" ? "active fw-bold" : "")"
-                           href="/Inventory/StockOverview">
-                            <span>Stock Overview</span>
-                        </a>
-
+                        <li>
+                            <a class="nav-link @(currentController == "StockOverview" ? "active fw-bold" : "")"
+                               href="/Inventory/StockOverview">
+                                <span>Stock Overview</span>
+                            </a>
+                        </li>
 
                         <li>
-                            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory">
+                            <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")"
+                               href="/Inventory">
                                 <span>Inventory List</span>
                             </a>
                         </li>

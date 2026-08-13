@@ -175,12 +175,23 @@
             </small>
         </div>
 
-        <button type="button"
-                id="btnRefresh"
-                class="btn btn-outline-primary">
-            <i class="bi bi-arrow-clockwise me-1"></i>
-            Refresh
-        </button>
+        <div class="d-flex gap-2">
+
+            <button type="button"
+                    id="btnManualStockIn"
+                    class="btn btn-primary">
+                <i class="bi bi-box-arrow-in-down me-1"></i>
+                Manual Stock In
+            </button>
+
+            <button type="button"
+                    id="btnRefresh"
+                    class="btn btn-outline-primary">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Refresh
+            </button>
+
+        </div>
     </div>
 
     <!-- Summary cards -->
@@ -400,6 +411,252 @@
     </div>
 
 </div>
+
+<!-- Manual Stock In Modal -->
+<div class="modal fade"
+     id="manualStockInModal"
+     tabindex="-1"
+     aria-labelledby="manualStockInModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title"
+                        id="manualStockInModalLabel">
+                        Manual Stock In
+                    </h5>
+
+                    <small class="text-muted">
+                        Add raw material inventory manually.
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div id="manualStockInAlert"
+                     class="alert d-none">
+                </div>
+
+                <div class="row g-3">
+
+                    <!-- Category -->
+                    <div class="col-md-4">
+
+                        <label for="stockInCategory"
+                               class="form-label fw-semibold">
+                            Category
+                        </label>
+
+                        <select id="stockInCategory"
+                                class="form-select">
+                            <option value="">
+                                All Categories
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <!-- Material -->
+                    <div class="col-md-5">
+
+                        <label for="stockInMaterial"
+                               class="form-label fw-semibold">
+                            Material
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <select id="stockInMaterial"
+                                class="form-select">
+                            <option value="">
+                                Select Material
+                            </option>
+                        </select>
+
+                        <div id="stockInMaterialInfo"
+                             class="small text-muted mt-1">
+                        </div>
+
+                    </div>
+
+                    <!-- Branch -->
+                    <div class="col-md-3">
+
+                        <label for="stockInBranch"
+                               class="form-label fw-semibold">
+                            Branch
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <select id="stockInBranch"
+                                class="form-select">
+                            <option value="">
+                                Select Branch
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="col-md-6">
+
+                        <label for="stockInQuantity"
+                               class="form-label fw-semibold">
+                            Quantity
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="input-group">
+
+                            <input type="number"
+                                   id="stockInQuantity"
+                                   class="form-control"
+                                   min="0.0001"
+                                   step="0.0001"
+                                   placeholder="0">
+
+                            <span id="stockInUom"
+                                  class="input-group-text">
+                                UOM
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Supplier -->
+                    <div class="col-md-6">
+
+                        <label for="stockInSupplier"
+                               class="form-label fw-semibold">
+                            Supplier
+                        </label>
+
+                        <select id="stockInSupplier"
+                                class="form-select">
+                            <option value="">
+                                Not Specified
+                            </option>
+                        </select>
+
+                        <div class="form-text">
+                            Optional for manual stock in.
+                        </div>
+
+                    </div>
+
+                    <!-- Lot Number -->
+                    <div class="col-md-6"
+                         id="stockInLotContainer">
+
+                        <label for="stockInLotNo"
+                               class="form-label fw-semibold">
+                            Lot Number
+                            <span id="stockInLotRequired"
+                                  class="text-danger">
+                                *
+                            </span>
+                        </label>
+
+                        <input type="text"
+                               id="stockInLotNo"
+                               class="form-control"
+                               placeholder="Enter lot number">
+
+                    </div>
+
+                    <!-- Manufacturing Date -->
+                    <div class="col-md-6"
+                         id="stockInManufacturingDateContainer">
+
+                        <label for="stockInManufacturingDate"
+                               class="form-label fw-semibold">
+                            Manufacturing Date
+                        </label>
+
+                        <input type="date"
+                               id="stockInManufacturingDate"
+                               class="form-control">
+
+                    </div>
+
+                    <!-- Expiration Date -->
+                    <div class="col-md-6"
+                         id="stockInExpirationDateContainer">
+
+                        <label for="stockInExpirationDate"
+                               class="form-label fw-semibold">
+                            Expiration Date
+                        </label>
+
+                        <input type="date"
+                               id="stockInExpirationDate"
+                               class="form-control">
+
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="col-12">
+
+                        <label for="stockInRemarks"
+                               class="form-label fw-semibold">
+                            Remarks
+                        </label>
+
+                        <textarea id="stockInRemarks"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Reason or notes for manual stock in"></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        id="btnSaveManualStockIn"
+                        class="btn btn-primary">
+
+                    <span id="stockInSaveSpinner"
+                          class="spinner-border spinner-border-sm me-1 d-none">
+                    </span>
+
+                    <i id="stockInSaveIcon"
+                       class="bi bi-check-circle me-1"></i>
+
+                    Save Stock In
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
 
 <!-- Details modal -->
 <div class="modal fade"
@@ -732,12 +989,22 @@
 
 @section Scripts {
     <script>
-        let inventoryItems = [];
+                let inventoryItems = [];
         let filterOptionsInitialized = false;
 
-        document.addEventListener("DOMContentLoaded", function () {
+        let stockInMaterials = [];
+        let manualStockInModal = null;
+
+               document.addEventListener("DOMContentLoaded", async function () {
+
+            manualStockInModal =
+                bootstrap.Modal.getOrCreateInstance(
+                    document.getElementById("manualStockInModal")
+                );
+
             bindEvents();
-            loadInventory(true);
+
+            await loadInventory(true);
         });
 
         function bindEvents() {
@@ -761,7 +1028,27 @@
                         loadInventory(false);
                     }
                 });
+
+        document.getElementById("btnManualStockIn")
+            .addEventListener("click", openManualStockIn);
+
+                document.getElementById("stockInCategory")
+        .addEventListener(
+            "change",
+            filterStockInMaterials
+        );
+
+        document.getElementById("stockInMaterial")
+            .addEventListener("change", handleStockInMaterialChange);
+
+        document.getElementById("btnSaveManualStockIn")
+            .addEventListener("click", saveManualStockIn);
+
         }
+
+
+
+
 
         async function loadInventory(loadFilterOptions) {
             setLoading(true);
@@ -1406,6 +1693,862 @@
             return `${formatNumber(numberOfDays)} day${
                 numberOfDays === 1 ? "" : "s"
             } remaining`;
+        }
+
+
+                      async function openManualStockIn() {
+
+            resetManualStockInForm();
+
+            try {
+
+                await loadStockInMaterials();
+
+                await populateStockInBranches();
+
+               
+
+                manualStockInModal.show();
+            }
+            catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Unable to open Manual Stock In.\n\n" +
+                    getErrorMessage(error)
+                );
+            }
+        }
+
+
+
+
+                       async function loadStockInSuppliers(materialId) {
+
+            const select =
+                document.getElementById(
+                    "stockInSupplier"
+                );
+
+            select.innerHTML = `
+                <option value="">
+                    Loading suppliers...
+                </option>
+            `;
+
+            try {
+
+                const response = await fetch(
+                    `/inventory/raw-materials/suppliers/${materialId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await response.text() ||
+                        "Unable to load suppliers."
+                    );
+                }
+
+                const suppliers =
+                    await response.json();
+
+                select.innerHTML = `
+                    <option value="">
+                        Not Specified
+                    </option>
+                `;
+
+                if (!Array.isArray(suppliers)) {
+                    return;
+                }
+
+                suppliers.forEach(function (supplier) {
+
+                    const id =
+                        supplier.supplierId;
+
+                    const name =
+                        supplier.supplierName || "";
+
+                    if (!id) {
+                        return;
+                    }
+
+                    const preferredText =
+                        supplier.isPreferred
+                            ? " - Preferred"
+                            : "";
+
+                    select.insertAdjacentHTML(
+                        "beforeend",
+                        `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(name + preferredText)}
+                        </option>
+                        `
+                    );
+                });
+            }
+            catch (error) {
+
+                console.error(error);
+
+                select.innerHTML = `
+                    <option value="">
+                        Not Specified
+                    </option>
+                `;
+            }
+        }
+
+
+
+                      async function loadStockInMaterials() {
+
+            const response = await fetch(
+                "/manufacturing/materials/list",
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    await response.text() ||
+                    "Unable to load materials."
+                );
+            }
+
+            const result = await response.json();
+
+            stockInMaterials =
+                result.data ??
+                result.items ??
+                result.materials ??
+                result;
+
+            if (!Array.isArray(stockInMaterials)) {
+                stockInMaterials = [];
+            }
+
+            stockInMaterials =
+                stockInMaterials.filter(function (material) {
+                    return material.is_active !== false;
+                });
+
+            populateStockInCategories();
+            renderStockInMaterials();
+        }
+
+
+
+
+                function populateStockInCategories() {
+
+            const select =
+                document.getElementById(
+                    "stockInCategory"
+                );
+
+            const categories = new Map();
+
+            stockInMaterials.forEach(function (material) {
+
+                const categoryId =
+                    material.material_category_id ??
+                    material.materialCategoryId;
+
+                const categoryName =
+                    material.category_name ??
+                    material.categoryName;
+
+                if (categoryId === null ||
+                    categoryId === undefined ||
+                    !categoryName) {
+                    return;
+                }
+
+                categories.set(
+                    String(categoryId),
+                    categoryName
+                );
+            });
+
+            select.innerHTML = `
+                <option value="">
+                    All Categories
+                </option>
+            `;
+
+            [...categories.entries()]
+                .sort(function (a, b) {
+                    return String(a[1])
+                        .localeCompare(String(b[1]));
+                })
+                .forEach(function ([id, name]) {
+
+                    select.insertAdjacentHTML(
+                        "beforeend",
+                        `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(name)}
+                        </option>
+                        `
+                    );
+                });
+        }
+
+                function renderStockInMaterials() {
+
+            const select =
+                document.getElementById(
+                    "stockInMaterial"
+                );
+
+            const categoryId =
+                document.getElementById(
+                    "stockInCategory"
+                ).value;
+
+            let materials =
+                [...stockInMaterials];
+
+            if (categoryId) {
+
+                materials =
+                    materials.filter(function (material) {
+
+                        const materialCategoryId =
+                            material.material_category_id ??
+                            material.materialCategoryId;
+
+                        return String(materialCategoryId) ===
+                            String(categoryId);
+                    });
+            }
+
+            select.innerHTML = `
+                <option value="">
+                    Select Material
+                </option>
+            `;
+
+            materials
+                .sort(function (a, b) {
+
+                    const nameA =
+                        a.material_name ??
+                        a.materialName ??
+                        "";
+
+                    const nameB =
+                        b.material_name ??
+                        b.materialName ??
+                        "";
+
+                    return String(nameA)
+                        .localeCompare(String(nameB));
+                })
+                .forEach(function (material) {
+
+                    const id =
+                        material.material_id ??
+                        material.materialId;
+
+                    const code =
+                        material.material_code ??
+                        material.materialCode ??
+                        "";
+
+                    const name =
+                        material.material_name ??
+                        material.materialName ??
+                        "";
+
+                    select.insertAdjacentHTML(
+                        "beforeend",
+                        `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(code)} - ${escapeHtml(name)}
+                        </option>
+                        `
+                    );
+                });
+        }
+
+
+                     function filterStockInMaterials() {
+
+            document.getElementById(
+                "stockInMaterial"
+            ).value = "";
+
+            resetStockInSupplier();
+
+            renderStockInMaterials();
+
+            handleStockInMaterialChange();
+        }
+
+                    async function populateStockInBranches() {
+
+            const select =
+                document.getElementById(
+                    "stockInBranch"
+                );
+
+            select.innerHTML = `
+                <option value="">
+                    Loading branches...
+                </option>
+            `;
+
+            try {
+
+                const response = await fetch(
+                    "/inventory/raw-materials/branches",
+                    {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+                const branches =
+                    Array.isArray(result)
+                        ? result
+                        : [];
+
+                select.innerHTML = `
+                    <option value="">
+                        Select Branch
+                    </option>
+                `;
+
+                branches.forEach(function (branch) {
+
+                    const id =
+                        branch.branch_id ??
+                        branch.branchId ??
+                        "";
+
+                    const name =
+                        branch.branch_name ??
+                        branch.branchName ??
+                        id;
+
+                    if (!id) {
+                        return;
+                    }
+
+                    select.insertAdjacentHTML(
+                        "beforeend",
+                        `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(name)}
+                        </option>
+                        `
+                    );
+                });
+            }
+            catch (error) {
+
+                console.error(error);
+
+                select.innerHTML = `
+                    <option value="">
+                        Unable to load branches
+                    </option>
+                `;
+            }
+        }
+
+                async function handleStockInMaterialChange(){
+
+            const materialId =
+                Number(
+                    document.getElementById(
+                        "stockInMaterial"
+                    ).value
+                );
+
+            const material =
+                stockInMaterials.find(
+                    x =>
+                        Number(x.material_id) ===
+                        materialId
+                );
+
+            const info =
+                document.getElementById(
+                    "stockInMaterialInfo"
+                );
+
+            const uom =
+                document.getElementById(
+                    "stockInUom"
+                );
+
+            const lotContainer =
+                document.getElementById(
+                    "stockInLotContainer"
+                );
+
+            const manufacturingContainer =
+                document.getElementById(
+                    "stockInManufacturingDateContainer"
+                );
+
+            const expirationContainer =
+                document.getElementById(
+                    "stockInExpirationDateContainer"
+                );
+
+                    if (!material) {
+
+            info.textContent = "";
+
+            uom.textContent = "UOM";
+
+            lotContainer.classList.add(
+                "d-none"
+            );
+
+            manufacturingContainer.classList.add(
+                "d-none"
+            );
+
+            expirationContainer.classList.add(
+                "d-none"
+            );
+
+            resetStockInSupplier();
+
+            return;
+        }
+
+            await loadStockInSuppliers(materialId);
+
+
+            uom.textContent =
+                material.uom || "UOM";
+
+            if (material.is_lot_tracked) {
+
+                info.innerHTML = `
+                    <span class="badge bg-primary-subtle text-primary me-1">
+                        Lot Tracked
+                    </span>
+                    ${escapeHtml(material.uom || "")}
+                `;
+
+                lotContainer.classList.remove(
+                    "d-none"
+                );
+
+                manufacturingContainer.classList.remove(
+                    "d-none"
+                );
+
+                expirationContainer.classList.remove(
+                    "d-none"
+                );
+            }
+            else {
+
+                info.innerHTML = `
+                    <span class="badge bg-secondary-subtle text-secondary me-1">
+                        Not Lot Tracked
+                    </span>
+                    ${escapeHtml(material.uom || "")}
+                `;
+
+                lotContainer.classList.add(
+                    "d-none"
+                );
+
+                manufacturingContainer.classList.add(
+                    "d-none"
+                );
+
+                expirationContainer.classList.add(
+                    "d-none"
+                );
+
+                document.getElementById(
+                    "stockInLotNo"
+                ).value = "";
+
+                document.getElementById(
+                    "stockInManufacturingDate"
+                ).value = "";
+
+                document.getElementById(
+                    "stockInExpirationDate"
+                ).value = "";
+            }
+        }
+
+                function resetStockInSupplier() {
+
+            document.getElementById(
+                "stockInSupplier"
+            ).innerHTML = `
+                <option value="">
+                    Not Specified
+                </option>
+            `;
+        }
+
+                async function saveManualStockIn() {
+
+            hideManualStockInAlert();
+
+            const materialId =
+                Number(
+                    document.getElementById(
+                        "stockInMaterial"
+                    ).value
+                );
+
+            const branchId =
+                document.getElementById(
+                    "stockInBranch"
+                ).value.trim();
+
+            const quantity =
+                Number(
+                    document.getElementById(
+                        "stockInQuantity"
+                    ).value
+                );
+
+            const material =
+                stockInMaterials.find(
+                    x =>
+                        Number(x.material_id) ===
+                        materialId
+                );
+
+            if (!materialId) {
+
+                showManualStockInAlert(
+                    "Please select a material.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            if (!branchId) {
+
+                showManualStockInAlert(
+                    "Please select a branch.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            if (!quantity ||
+                quantity <= 0) {
+
+                showManualStockInAlert(
+                    "Quantity must be greater than zero.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            const lotNo =
+                document.getElementById(
+                    "stockInLotNo"
+                ).value.trim();
+
+            if (material?.is_lot_tracked &&
+                !lotNo) {
+
+                showManualStockInAlert(
+                    "Lot number is required for this material.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            const manufacturingDate =
+                document.getElementById(
+                    "stockInManufacturingDate"
+                ).value;
+
+            const expirationDate =
+                document.getElementById(
+                    "stockInExpirationDate"
+                ).value;
+
+            if (manufacturingDate &&
+                expirationDate &&
+                expirationDate <
+                manufacturingDate) {
+
+                showManualStockInAlert(
+                    "Expiration date cannot be earlier than manufacturing date.",
+                    "danger"
+                );
+
+                return;
+            }
+
+            const dto = {
+
+                materialId:
+                    materialId,
+
+                branchId:
+                    branchId,
+
+                quantity:
+                    quantity,
+
+                lotNo:
+                    material?.is_lot_tracked
+                        ? lotNo
+                        : null,
+
+                manufacturingDate:
+                    material?.is_lot_tracked &&
+                    manufacturingDate
+                        ? manufacturingDate
+                        : null,
+
+                expirationDate:
+                    material?.is_lot_tracked &&
+                    expirationDate
+                        ? expirationDate
+                        : null,
+
+                    supplierId:
+        document.getElementById(
+            "stockInSupplier"
+        ).value
+            ? Number(
+                document.getElementById(
+                    "stockInSupplier"
+                ).value
+            )
+            : null,
+
+                remarks:
+                    document.getElementById(
+                        "stockInRemarks"
+                    ).value.trim(),
+
+                encodedBy:
+                    ""
+            };
+
+            setManualStockInSaving(true);
+
+            try {
+
+                const response = await fetch(
+                    "/inventory/raw-materials/manual-stock-in",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "Accept":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(dto)
+                    }
+                );
+
+                if (!response.ok) {
+
+                    const error =
+                        await response.text();
+
+                    throw new Error(
+                        error ||
+                        "Unable to save manual stock in."
+                    );
+                }
+
+                manualStockInModal.hide();
+
+                await loadInventory(true);
+
+                alert(
+                    "Manual stock in saved successfully."
+                );
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showManualStockInAlert(
+                    getErrorMessage(error),
+                    "danger"
+                );
+            }
+            finally {
+
+                setManualStockInSaving(false);
+            }
+        }
+
+                function resetManualStockInForm() {
+
+
+                            document.getElementById(
+            "stockInCategory"
+        ).value = "";
+
+            document.getElementById(
+                "stockInMaterial"
+            ).value = "";
+
+            document.getElementById(
+                "stockInBranch"
+            ).value = "";
+
+                    document.getElementById(
+            "stockInSupplier"
+        ).value = "";
+
+            document.getElementById(
+                "stockInQuantity"
+            ).value = "";
+
+            document.getElementById(
+                "stockInLotNo"
+            ).value = "";
+
+            document.getElementById(
+                "stockInManufacturingDate"
+            ).value = "";
+
+            document.getElementById(
+                "stockInExpirationDate"
+            ).value = "";
+
+            document.getElementById(
+                "stockInRemarks"
+            ).value = "";
+
+            document.getElementById(
+                "stockInUom"
+            ).textContent = "UOM";
+
+            document.getElementById(
+                "stockInMaterialInfo"
+            ).textContent = "";
+
+            document.getElementById(
+                "stockInLotContainer"
+            ).classList.add("d-none");
+
+            document.getElementById(
+                "stockInManufacturingDateContainer"
+            ).classList.add("d-none");
+
+            document.getElementById(
+                "stockInExpirationDateContainer"
+            ).classList.add("d-none");
+
+            hideManualStockInAlert();
+        }
+
+                function showManualStockInAlert(
+            message,
+            type) {
+
+            const alertElement =
+                document.getElementById(
+                    "manualStockInAlert"
+                );
+
+            alertElement.className =
+                `alert alert-${type}`;
+
+            alertElement.textContent =
+                message;
+
+            alertElement.classList.remove(
+                "d-none"
+            );
+        }
+
+                function hideManualStockInAlert() {
+
+            const alertElement =
+                document.getElementById(
+                    "manualStockInAlert"
+                );
+
+            alertElement.classList.add(
+                "d-none"
+            );
+
+            alertElement.textContent = "";
+        }
+                function setManualStockInSaving(
+            isSaving) {
+
+            const button =
+                document.getElementById(
+                    "btnSaveManualStockIn"
+                );
+
+            const spinner =
+                document.getElementById(
+                    "stockInSaveSpinner"
+                );
+
+            const icon =
+                document.getElementById(
+                    "stockInSaveIcon"
+                );
+
+            button.disabled =
+                isSaving;
+
+            spinner.classList.toggle(
+                "d-none",
+                !isSaving
+            );
+
+            icon.classList.toggle(
+                "d-none",
+                isSaving
+            );
         }
 
         function clearFilters() {

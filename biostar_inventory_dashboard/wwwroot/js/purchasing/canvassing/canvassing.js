@@ -167,12 +167,143 @@ function renderMaterials(lines) {
                 </div>
 
                 <div class="card-body">
-                    ${renderQuotes(line)}
-                </div>
+
+    ${renderPreviousSupplier(line)}
+
+    ${renderQuotes(line)}
+
+</div>
             </div>
         `;
     }).join("");
 }
+
+
+function renderPreviousSupplier(line) {
+
+    const previous =
+        line.previousSupplier;
+
+    if (!previous)
+        return "";
+
+
+    const score =
+        previous.evaluationScore != null
+            ? `${formatMoney(
+                previous.evaluationScore
+            )}%`
+            : "No finalized evaluation";
+
+
+    const rating =
+        previous.evaluationRating
+            ? escapeHtml(
+                previous.evaluationRating
+                    .replaceAll("_", " ")
+            )
+            : "-";
+
+
+    return `
+        <div class="alert alert-success border mb-3">
+
+            <div class="d-flex flex-wrap
+                        justify-content-between
+                        align-items-center gap-3">
+
+                <div>
+
+                    <div class="fw-bold mb-1">
+
+                        <span class="badge bg-success me-2">
+                            Recommended Repeat Supplier
+                        </span>
+
+                        ${escapeHtml(
+        previous.supplierName
+    )}
+
+                    </div>
+
+
+                    <div class="small">
+
+                        Previous PO:
+                        <strong>
+                            ${escapeHtml(
+        previous.previousPoNo ?? "-"
+    )}
+                        </strong>
+
+                        &nbsp; | &nbsp;
+
+                        Previous Price:
+                        <strong>
+                            ₱${formatMoney(
+        previous.previousUnitPrice
+    )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="small mt-1">
+
+                        Last Evaluation:
+                        <strong>${score}</strong>
+
+                        &nbsp; | &nbsp;
+
+                        Rating:
+                        <strong>${rating}</strong>
+
+                    </div>
+
+
+                    <div class="small text-muted mt-1">
+
+                        ${escapeHtml(
+        previous.recommendationReason ??
+        "Previously used supplier."
+    )}
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <button type="button"
+                            class="btn btn-sm btn-success"
+                            onclick="usePreviousSupplier(
+                                ${line.canvassLineId},
+                                ${line.materialId},
+                                '${escapeJs(
+        `${line.materialCode ?? ""} - ${line.materialName ?? ""}`
+    )}',
+                                ${previous.supplierId},
+                                '${escapeJs(
+        previous.supplierName ?? ""
+    )}',
+                                ${Number(
+        previous.previousUnitPrice ?? 0
+    )}
+                            )">
+
+                        Use Supplier / New Quote
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+}
+
 
 function renderQuotes(line) {
     const quotes = line.quotes ?? [];
@@ -180,7 +311,8 @@ function renderQuotes(line) {
     if (!quotes.length) {
         return `
             <div class="alert alert-light border mb-0">
-                No supplier quotation yet. Click <strong>Add Supplier Quote</strong>.
+               No current quotation yet.
+Create a new quote if the supplier's current price or terms need to be confirmed.
             </div>`;
     }
 
@@ -229,6 +361,92 @@ function renderQuotes(line) {
             <tbody>${rows}</tbody>
         </table>`;
 }
+
+
+async function usePreviousSupplier(
+    canvassLineId,
+    materialId,
+    materialName,
+    supplierId,
+    supplierName,
+    previousPrice
+) {
+
+    /*
+     * Open normal Add Supplier Quote modal.
+     * We DO NOT create a quote automatically.
+     */
+    await openQuoteModal(
+        canvassLineId,
+        materialId,
+        materialName
+    );
+
+
+    const supplierSelect =
+        document.getElementById(
+            "quoteSupplierId"
+        );
+
+
+    /*
+     * Select the previous supplier if it
+     * exists in the supplier-material mapping.
+     */
+    supplierSelect.value =
+        String(supplierId);
+
+
+    if (supplierSelect.value !==
+        String(supplierId)) {
+
+        alert(
+            `${supplierName} is the previous supplier, ` +
+            `but it is no longer linked to this material.`
+        );
+
+        return;
+    }
+
+
+    /*
+     * Trigger existing supplier onchange so
+     * payment terms and delivery days load.
+     */
+    supplierSelect.dispatchEvent(
+        new Event("change")
+    );
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT automatically use the previous
+     * price as the current quotation.
+     *
+     * Show it only as reference.
+     */
+    const priceInput =
+        document.getElementById(
+            "quoteUnitPrice"
+        );
+
+    priceInput.value = "";
+
+    priceInput.placeholder =
+        previousPrice > 0
+            ? `Previous: ₱${formatMoney(previousPrice)}`
+            : "Enter current price";
+
+
+    document.getElementById(
+        "quoteRemarks"
+    ).value =
+        previousPrice > 0
+            ? `Repeat order. Previous purchase price: ₱${formatMoney(previousPrice)}`
+            : "Repeat order from previous supplier.";
+}
+
 
 async function openQuoteModal(canvassLineId, materialId, materialName) {
     currentCanvassId = document.getElementById("canvassId")?.value;

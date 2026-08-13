@@ -59,9 +59,11 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
             };
         }
 
-        private static JsonObject ConvertToJsonObject(object dto)
+        private static JsonObject ConvertToJsonObject(
+            object dto)
         {
-            var json = JsonSerializer.Serialize(dto);
+            var json =
+                JsonSerializer.Serialize(dto);
 
             return JsonNode.Parse(json)?.AsObject()
                 ?? new JsonObject();
@@ -73,66 +75,19 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
             return new StringContent(
                 payload.ToJsonString(),
                 Encoding.UTF8,
-                "application/json"
-            );
+                "application/json");
         }
 
 
-        [HttpGet("preview")]
-        public async Task<IActionResult> Preview(
-    int supplierId,
-    int year,
-    int month)
-        {
-            if (supplierId <= 0)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Invalid supplier ID."
-                });
-            }
-
-            if (year < 2000)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Invalid evaluation year."
-                });
-            }
-
-            if (month is < 1 or > 12)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Invalid evaluation month."
-                });
-            }
-
-            var client = CreateClient();
-
-            var response = await client.GetAsync(
-                "api/purchasing/supplier-evaluations/preview" +
-                $"?supplierId={supplierId}" +
-                $"&year={year}" +
-                $"&month={month}"
-            );
-
-            return await ForwardResponse(response);
-        }
-
-        // ------------------------------------------------------------
-        // Pages
-        // ------------------------------------------------------------
+        // ============================================================
+        // PAGES
+        // ============================================================
 
         [HttpGet("")]
         public IActionResult Index()
         {
             return View(
-                "~/Views/SupplierEvaluation/Index.cshtml"
-            );
+                "~/Views/SupplierEvaluation/Index.cshtml");
         }
 
         [HttpGet("details/{id:int}")]
@@ -141,13 +96,13 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
             ViewBag.EvaluationId = id;
 
             return View(
-                "~/Views/SupplierEvaluation/Details.cshtml"
-            );
+                "~/Views/SupplierEvaluation/Details.cshtml");
         }
 
-        // ------------------------------------------------------------
-        // Suppliers
-        // ------------------------------------------------------------
+
+        // ============================================================
+        // SUPPLIERS
+        // ============================================================
 
         [HttpGet("suppliers")]
         public async Task<IActionResult> GetSuppliers()
@@ -155,20 +110,90 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
             var client = CreateClient();
 
             var response = await client.GetAsync(
-                "api/purchasing/suppliers"
-            );
+                "api/purchasing/suppliers");
 
             return await ForwardResponse(response);
         }
 
-        // ------------------------------------------------------------
-        // Monthly summary/list
-        // ------------------------------------------------------------
+
+        // ============================================================
+        // EVALUATION LIST
+        // ============================================================
+
+        [HttpGet("list")]
+        public async Task<IActionResult> GetEvaluations(
+            int? supplierId,
+            int? year,
+            int? month,
+            string? status,
+            string? search)
+        {
+            var parameters =
+                new List<string>();
+
+            if (supplierId.HasValue &&
+                supplierId.Value > 0)
+            {
+                parameters.Add(
+                    $"supplierId={supplierId.Value}");
+            }
+
+            if (year.HasValue &&
+                year.Value >= 2000)
+            {
+                parameters.Add(
+                    $"evaluationYear={year.Value}");
+            }
+
+            if (month.HasValue &&
+                month.Value is >= 1 and <= 12)
+            {
+                parameters.Add(
+                    $"evaluationMonth={month.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                parameters.Add(
+                    "status=" +
+                    Uri.EscapeDataString(
+                        status.Trim()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                parameters.Add(
+                    "search=" +
+                    Uri.EscapeDataString(
+                        search.Trim()));
+            }
+
+            var url =
+                "api/purchasing/supplier-evaluations";
+
+            if (parameters.Count > 0)
+            {
+                url += "?" +
+                    string.Join("&", parameters);
+            }
+
+            var client = CreateClient();
+
+            var response =
+                await client.GetAsync(url);
+
+            return await ForwardResponse(response);
+        }
+
+
+        // ============================================================
+        // MONTHLY SUMMARY
+        // ============================================================
 
         [HttpGet("monthly-summary")]
         public async Task<IActionResult> GetMonthlySummary(
-     int year,
-     int month)
+            int year,
+            int month)
         {
             if (year < 2000)
             {
@@ -191,169 +216,147 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
             var client = CreateClient();
 
             var response = await client.GetAsync(
-                $"api/purchasing/supplier-evaluations/summary/{year}/{month}"
-            );
+                $"api/purchasing/supplier-evaluations/" +
+                $"summary/{year}/{month}");
 
             return await ForwardResponse(response);
         }
 
-        // ------------------------------------------------------------
-        // Generate
-        // ------------------------------------------------------------
 
-        [HttpPost("generate")]
-        public async Task<IActionResult> Generate(
-            [FromBody] object dto)
-        {
-            var userId = GetCurrentUserId();
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return UnauthorizedUser();
-            }
-
-            var payload = ConvertToJsonObject(dto);
-
-            payload["generatedBy"] = userId.Trim();
-
-            var client = CreateClient();
-
-            using var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                "api/purchasing/supplier-evaluations/generate"
-            );
-
-            request.Content = CreateJsonContent(payload);
-
-            request.Headers.TryAddWithoutValidation(
-                "X-User-Id",
-                userId.Trim()
-            );
-
-            var response = await client.SendAsync(request);
-
-            return await ForwardResponse(response);
-        }
-
-        // ------------------------------------------------------------
-        // Details
-        // ------------------------------------------------------------
+        // ============================================================
+        // DETAILS
+        // ============================================================
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(
+            int id)
         {
             if (id <= 0)
             {
                 return BadRequest(new
                 {
                     success = false,
-                    message = "Invalid evaluation ID."
+                    message =
+                        "Invalid evaluation ID."
                 });
             }
 
             var client = CreateClient();
 
             var response = await client.GetAsync(
-                $"api/purchasing/supplier-evaluations/{id}"
-            );
+                $"api/purchasing/supplier-evaluations/{id}");
 
             return await ForwardResponse(response);
         }
 
-        // ------------------------------------------------------------
-        // Regenerate
-        // ------------------------------------------------------------
 
-        [HttpPost("{id:int}/regenerate")]
-        public async Task<IActionResult> Regenerate(
+        // ============================================================
+        // RELIABILITY / PURCHASING INPUT
+        // ============================================================
+
+        [HttpPut("{id:int}/reliability")]
+        public async Task<IActionResult> SaveReliability(
             int id,
             [FromBody] object dto)
         {
-            return await SendWorkflowRequest(
-                id,
-                "regenerate",
-                dto
-            );
-        }
-
-        // ------------------------------------------------------------
-        // Workflow
-        // ------------------------------------------------------------
-
-   
-
-
-
-
-        [HttpPost("{id:int}/finalize")]
-        public async Task<IActionResult> Finalize(
-            int id,
-            [FromBody] object dto)
-        {
-            return await SendWorkflowRequest(
-                id,
-                "finalize",
-                dto
-            );
-        }
-
-        // ------------------------------------------------------------
-        // Shared request methods
-        // ------------------------------------------------------------
-
-        private async Task<IActionResult> SendWorkflowRequest(
-            int evaluationId,
-            string actionRoute,
-            object dto)
-        {
-            if (evaluationId <= 0)
+            if (id <= 0)
             {
                 return BadRequest(new
                 {
                     success = false,
-                    message = "Invalid evaluation ID."
+                    message =
+                        "Invalid evaluation ID."
                 });
             }
 
-            var userId = GetCurrentUserId();
+            var userId =
+                GetCurrentUserId();
 
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return UnauthorizedUser();
             }
 
-            var payload = ConvertToJsonObject(dto);
+            var payload =
+                ConvertToJsonObject(dto);
 
-            payload["actionBy"] = userId.Trim();
+            payload["updatedBy"] =
+                userId.Trim();
 
-            return await SendPostRequest(
-                "api/purchasing/supplier-evaluations/" +
-                $"{evaluationId}/{actionRoute}",
-                payload,
-                userId
-            );
-        }
+            var client =
+                CreateClient();
 
-        private async Task<IActionResult> SendPostRequest(
-            string apiUrl,
-            JsonObject payload,
-            string userId)
-        {
-            var client = CreateClient();
+            using var request =
+                new HttpRequestMessage(
+                    HttpMethod.Put,
+                    $"api/purchasing/supplier-evaluations/" +
+                    $"{id}/reliability");
 
-            using var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                apiUrl
-            );
-
-            request.Content = CreateJsonContent(payload);
+            request.Content =
+                CreateJsonContent(payload);
 
             request.Headers.TryAddWithoutValidation(
                 "X-User-Id",
-                userId.Trim()
-            );
+                userId.Trim());
 
-            var response = await client.SendAsync(request);
+            var response =
+                await client.SendAsync(request);
+
+            return await ForwardResponse(response);
+        }
+
+
+        // ============================================================
+        // FINALIZE
+        // ============================================================
+
+        [HttpPost("{id:int}/finalize")]
+        public async Task<IActionResult> Finalize(
+            int id,
+            [FromBody] object dto)
+        {
+            if (id <= 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        "Invalid evaluation ID."
+                });
+            }
+
+            var userId =
+                GetCurrentUserId();
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return UnauthorizedUser();
+            }
+
+            var payload =
+                ConvertToJsonObject(dto);
+
+            payload["actionBy"] =
+                userId.Trim();
+
+            var client =
+                CreateClient();
+
+            using var request =
+                new HttpRequestMessage(
+                    HttpMethod.Post,
+                    $"api/purchasing/supplier-evaluations/" +
+                    $"{id}/finalize");
+
+            request.Content =
+                CreateJsonContent(payload);
+
+            request.Headers.TryAddWithoutValidation(
+                "X-User-Id",
+                userId.Trim());
+
+            var response =
+                await client.SendAsync(request);
 
             return await ForwardResponse(response);
         }

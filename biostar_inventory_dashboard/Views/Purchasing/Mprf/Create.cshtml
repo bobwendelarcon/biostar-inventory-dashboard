@@ -35,7 +35,7 @@
                     <input type="text"
                            id="mprfNo"
                            class="form-control"
-                           placeholder="Auto / Editable">
+                           placeholder="Loading...">
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -88,7 +88,6 @@
                             <th style="width:600px;">Material</th>
                             <th style="width:600px;">Classification</th>
                             <th style="width:200px;">Qty On Hand</th>
-                            <th style="width:100px;">UOM</th>
                             <th>Remarks</th>
                             <th style="width:100px;">Action</th>
                         </tr>
@@ -114,5 +113,5 @@
 <input type="hidden" id="mprfId" value="@ViewBag.MprfId" />
 <input type="hidden" id="pageMode" value="@ViewBag.Mode" />
 @section Scripts {
-    <script src="~/js/purchasing/mprf.js?v=11"></script>
+    <script src="~/js/purchasing/mprf.js?v=12"></script>
 }

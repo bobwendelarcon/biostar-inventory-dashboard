@@ -582,7 +582,11 @@
                         </td>
 
                         <td>
-                            ${escapeHtml(qc.inspectorId ?? "-")}
+                               ${escapeHtml(
+        qc.inspectorName ??
+        qc.inspectorId ??
+        "-"
+    )}
                         </td>
 
                         <td>

@@ -12,7 +12,7 @@
     .spe-card {
         border: 0;
         border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
 
     .spe-label {
@@ -55,103 +55,65 @@
         font-weight: 700;
     }
 
-    .score-subtitle {
-        color: #6c757d;
-        font-size: .68rem;
-    }
-
     .score-value {
         margin-top: 8px;
         font-size: 1.35rem;
         font-weight: 700;
     }
 
-    .breakdown-card {
-        border: 1px solid #e8eaed;
-        border-radius: 9px;
-        height: 100%;
-    }
-
-    .breakdown-title {
-        font-size: .9rem;
-        font-weight: 700;
-    }
-
-    .breakdown-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 8px 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-        .breakdown-row:last-child {
-            border-bottom: 0;
-        }
-
-        .breakdown-row span:first-child {
-            color: #6c757d;
-            font-size: .8rem;
-        }
-
-        .breakdown-row span:last-child {
-            font-size: .82rem;
-            font-weight: 700;
-        }
-
-    .workflow-item {
-        position: relative;
-        padding-left: 24px;
-    }
-
-        .workflow-item::before {
-            position: absolute;
-            top: 5px;
-            left: 4px;
-            width: 10px;
-            height: 10px;
-            content: "";
-            background: #0d6efd;
-            border-radius: 50%;
-        }
-
-        .workflow-item::after {
-            position: absolute;
-            top: 16px;
-            bottom: -18px;
-            left: 8px;
-            width: 2px;
-            content: "";
-            background: #dee2e6;
-        }
-
-        .workflow-item:last-child::after {
-            display: none;
-        }
-
-    .table-evaluation {
-        white-space: nowrap;
-        font-size: .78rem;
-    }
-
-        .table-evaluation thead th {
-            font-size: .68rem;
-            text-transform: uppercase;
-            vertical-align: middle;
-        }
-
     .overall-score {
         font-size: 1.7rem;
         font-weight: 700;
         color: #0d6efd;
     }
+
+    .evaluation-line-table {
+        font-size: .78rem;
+        white-space: nowrap;
+    }
+
+        .evaluation-line-table thead th {
+            background: #f8f9fa;
+            font-size: .68rem;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+
+    .reliability-input {
+        min-width: 80px;
+    }
+
+    .price-down {
+        color: #198754;
+        font-weight: 700;
+    }
+
+    .price-up {
+        color: #dc3545;
+        font-weight: 700;
+    }
+
+    .price-same {
+        color: #6c757d;
+        font-weight: 700;
+    }
+
+    .workflow-item {
+        border-left: 2px solid #dee2e6;
+        padding-left: 15px;
+        margin-left: 5px;
+        padding-bottom: 15px;
+    }
 </style>
+
 
 <div class="container-fluid px-4 py-4">
 
+    <!-- HEADER -->
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
 
         <div class="spe-page-header">
+
             <div class="text-muted small">
                 Purchasing &gt; Supplier Evaluation &gt; Details
             </div>
@@ -161,481 +123,478 @@
             </h4>
 
             <div class="text-muted small">
-                Detailed evaluation of supplier quality, delivery, cost and reliability.
+                Delivery-based supplier performance evaluation.
             </div>
+
         </div>
 
-        <div class="d-flex flex-wrap gap-2">
+
+        <div class="d-flex gap-2">
 
             <a href="/purchasing/supplier-evaluation"
                class="btn btn-outline-secondary btn-sm">
+
                 <i class="bi bi-arrow-left"></i>
                 Back
+
             </a>
 
-            <button id="btnRegenerate"
-                    type="button"
-                    class="btn btn-outline-primary btn-sm d-none">
-                <i class="bi bi-arrow-repeat"></i>
-                Regenerate
-            </button>
-
-          
 
             <button id="btnFinalize"
                     type="button"
                     class="btn btn-dark btn-sm d-none">
+
+                <i class="bi bi-check-circle me-1"></i>
                 Finalize
+
             </button>
 
         </div>
+
     </div>
 
-    <div id="pageAlert" class="alert alert-danger d-none"></div>
 
+    <div id="pageAlert"
+         class="alert alert-danger d-none">
+    </div>
+
+
+    <div id="pageSuccess"
+         class="alert alert-success d-none">
+    </div>
+
+
+    <!-- LOADING -->
     <div id="loadingPanel"
          class="card spe-card">
+
         <div class="card-body text-center text-muted py-5">
+
             <div class="spinner-border spinner-border-sm me-2"></div>
             Loading supplier evaluation...
+
         </div>
+
     </div>
 
-    <div id="detailsContent" class="d-none">
 
-        <!-- Evaluation Header -->
+    <div id="detailsContent"
+         class="d-none">
+
+
+        <!-- EVALUATION HEADER -->
         <div class="card spe-card mb-3">
+
             <div class="card-body">
 
-                <div class="row g-3 align-items-center">
+                <div class="row g-3">
 
                     <div class="col-xl-2 col-md-4">
-                        <div class="spe-label">Evaluation No.</div>
-                        <div id="evaluationNo" class="spe-value">-</div>
+
+                        <div class="spe-label">
+                            Evaluation No.
+                        </div>
+
+                        <div id="evaluationNo"
+                             class="spe-value">
+                            -
+                        </div>
+
                     </div>
+
 
                     <div class="col-xl-3 col-md-4">
-                        <div class="spe-label">Supplier</div>
-                        <div id="supplierName" class="spe-value">-</div>
-                        <div id="supplierCode" class="small text-muted">-</div>
+
+                        <div class="spe-label">
+                            Supplier
+                        </div>
+
+                        <div id="supplierName"
+                             class="spe-value">
+                            -
+                        </div>
+
+                        <div id="supplierCode"
+                             class="small text-muted">
+                            -
+                        </div>
+
                     </div>
 
-                    <div class="col-xl-2 col-md-4">
-                        <div class="spe-label">Evaluation Period</div>
-                        <div id="evaluationPeriod" class="spe-value">-</div>
-                    </div>
 
                     <div class="col-xl-2 col-md-4">
-                        <div class="spe-label">Status</div>
-                        <div id="evaluationStatus" class="spe-value">-</div>
+
+                        <div class="spe-label">
+                            Evaluation Date
+                        </div>
+
+                        <div id="evaluationDate"
+                             class="spe-value">
+                            -
+                        </div>
+
                     </div>
+
+
+                    <div class="col-xl-2 col-md-4">
+
+                        <div class="spe-label">
+                            Delivery Date
+                        </div>
+
+                        <div id="deliveryDate"
+                             class="spe-value">
+                            -
+                        </div>
+
+                    </div>
+
 
                     <div class="col-xl-1 col-md-4">
-                        <div class="spe-label">Rating</div>
-                        <div id="rating" class="spe-value">-</div>
+
+                        <div class="spe-label">
+                            Status
+                        </div>
+
+                        <div id="evaluationStatus"
+                             class="spe-value">
+                            -
+                        </div>
+
                     </div>
 
+
                     <div class="col-xl-2 col-md-4">
-                        <div class="spe-label">Overall Score</div>
-                        <div id="overallScore" class="overall-score">0.00%</div>
+
+                        <div class="spe-label">
+                            Overall Score
+                        </div>
+
+                        <div id="overallScore"
+                             class="overall-score">
+                            0.00%
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <hr>
+
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <div class="spe-label">PO No.</div>
+                        <div id="poNo" class="spe-value">-</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="spe-label">RR No.</div>
+                        <div id="rrNo" class="spe-value">-</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="spe-label">QC No.</div>
+                        <div id="qcNo" class="spe-value">-</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="spe-label">Rating</div>
+                        <div id="rating" class="spe-value">-</div>
                     </div>
 
                 </div>
 
             </div>
+
         </div>
 
-        <!-- Weighted Scores -->
+
+        <!-- SCORES -->
         <div class="card spe-card mb-3">
+
             <div class="card-body">
 
-                <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
                     <div>
-                        <h6 class="mb-0">Evaluation Scores</h6>
+                        <h6 class="mb-0">
+                            Evaluation Scores
+                        </h6>
+
                         <small class="text-muted">
-                            Weighted supplier performance scores
+                            Weighted score contribution
                         </small>
                     </div>
 
-                    <span class="badge bg-dark align-self-start">
+                    <span class="badge bg-dark">
                         Total Weight: 100%
                     </span>
+
                 </div>
+
 
                 <div class="row g-3">
 
                     <div class="col-xl-3 col-md-6">
+
                         <div class="card score-card score-quality">
+
                             <div class="card-body">
-                                <div class="score-title">Quality</div>
-                                <div class="score-subtitle">Maximum Weight</div>
-                                <div class="fw-semibold">40%</div>
+
+                                <div class="score-title">
+                                    Quality
+                                </div>
+
+                                <small class="text-muted">
+                                    Maximum 40
+                                </small>
 
                                 <div id="qualityScore"
                                      class="score-value">
                                     0.00 / 40
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
 
+
                     <div class="col-xl-3 col-md-6">
+
                         <div class="card score-card score-delivery">
+
                             <div class="card-body">
-                                <div class="score-title">On-Time Delivery</div>
-                                <div class="score-subtitle">Maximum Weight</div>
-                                <div class="fw-semibold">30%</div>
+
+                                <div class="score-title">
+                                    Delivery
+                                </div>
+
+                                <small class="text-muted">
+                                    On-Time + In-Full / 30
+                                </small>
 
                                 <div id="deliveryScore"
                                      class="score-value">
                                     0.00 / 30
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
 
+
                     <div class="col-xl-3 col-md-6">
+
                         <div class="card score-card score-cost">
+
                             <div class="card-body">
+
                                 <div class="score-title">
                                     Cost Competitiveness
                                 </div>
 
-                                <div class="score-subtitle">Maximum Weight</div>
-                                <div class="fw-semibold">20%</div>
+                                <small class="text-muted">
+                                    New vs Previous Price / 20
+                                </small>
 
                                 <div id="costScore"
                                      class="score-value">
                                     0.00 / 20
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
 
+
                     <div class="col-xl-3 col-md-6">
+
                         <div class="card score-card score-reliability">
+
                             <div class="card-body">
+
                                 <div class="score-title">
                                     Reliability / After Sales
                                 </div>
 
-                                <div class="score-subtitle">Maximum Weight</div>
-                                <div class="fw-semibold">10%</div>
+                                <small class="text-muted">
+                                    Purchasing / 10
+                                </small>
 
                                 <div id="reliabilityScore"
                                      class="score-value">
                                     0.00 / 10
                                 </div>
+
                             </div>
+
                         </div>
+
                     </div>
 
                 </div>
 
             </div>
+
         </div>
 
-        <!-- Score Breakdown -->
-        <div class="card spe-card mb-3">
-            <div class="card-body">
 
-                <h6 class="mb-1">Score Breakdown</h6>
-
-                <div class="small text-muted mb-3">
-                    Supporting values used to calculate each score.
-                </div>
-
-                <div class="row g-3">
-
-                    <!-- Quality Breakdown -->
-                    <div class="col-xl-4 col-md-6">
-                        <div class="breakdown-card p-3">
-
-                            <div class="breakdown-title mb-2">
-                                Quality Performance
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Receiving Reports</span>
-                                <span id="qualityReceivingCount">0</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Received Quantity</span>
-                                <span id="totalReceivedQty">0.00</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Accepted Quantity</span>
-                                <span id="totalAcceptedQty">0.00</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Rejected Quantity</span>
-                                <span id="totalRejectedQty">0.00</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Quality Rate</span>
-                                <span id="qualityRate">0.00%</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Weighted Score</span>
-                                <span id="qualityWeightedScore">0.00 / 40</span>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Delivery Breakdown -->
-                    <div class="col-xl-4 col-md-6">
-                        <div class="breakdown-card p-3">
-
-                            <div class="breakdown-title mb-2">
-                                Delivery Performance
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Scheduled Deliveries</span>
-                                <span id="scheduledDeliveries">0</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>On-Time Deliveries</span>
-                                <span id="onTimeDeliveries">0</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Delayed Deliveries</span>
-                                <span id="delayedDeliveries">0</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Delivery Rate</span>
-                                <span id="deliveryRate">0.00%</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Weighted Score</span>
-                                <span id="deliveryWeightedScore">0.00 / 30</span>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Cost Breakdown -->
-                    <div class="col-xl-4 col-md-6">
-                        <div class="breakdown-card p-3">
-
-                            <div class="breakdown-title mb-2">
-                                Cost Performance
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Items Compared</span>
-                                <span id="itemsCompared">0</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Competitive Price Count</span>
-                                <span id="competitivePriceCount">0</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Average Price Difference</span>
-                                <span id="averagePriceDifference">0.00%</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Cost Rate</span>
-                                <span id="costRate">0.00%</span>
-                            </div>
-
-                            <div class="breakdown-row">
-                                <span>Weighted Score</span>
-                                <span id="costWeightedScore">0.00 / 20</span>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Reliability -->
-        <div class="card spe-card mb-3">
-            <div class="card-body">
-
-                <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
-
-                    <div>
-                        <h6 class="mb-0">
-                            Reliability / After-Sales Assessment
-                        </h6>
-
-                        <small class="text-muted">
-                            Manual assessment completed by Purchasing.
-                        </small>
-                    </div>
-
-                    <div class="badge bg-light text-dark border align-self-start">
-                        Total:
-                        <span id="reliabilityTotal">0.00</span>
-                        / 10
-                    </div>
-
-                </div>
-
-                <div class="row g-3">
-
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold">
-                            Documentation / COA
-                        </label>
-
-                        <div class="input-group input-group-sm">
-                            <input id="documentationScore"
-                                   type="number"
-                                   class="form-control"
-                                   min="0"
-                                   max="5"
-                                   step="0.5">
-
-                            <span class="input-group-text">/ 5</span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold">
-                            Terms Compliance
-                        </label>
-
-                        <div class="input-group input-group-sm">
-                            <input id="termsScore"
-                                   type="number"
-                                   class="form-control"
-                                   min="0"
-                                   max="3"
-                                   step="0.5">
-
-                            <span class="input-group-text">/ 3</span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold">
-                            After-Sales Support
-                        </label>
-
-                        <div class="input-group input-group-sm">
-                            <input id="afterSalesScore"
-                                   type="number"
-                                   class="form-control"
-                                   min="0"
-                                   max="2"
-                                   step="0.5">
-
-                            <span class="input-group-text">/ 2</span>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label small fw-semibold">
-                            Reliability Remarks
-                        </label>
-
-                        <textarea id="reliabilityRemarks"
-                                  class="form-control"
-                                  rows="3"
-                                  placeholder="Enter assessment remarks"></textarea>
-                    </div>
-
-                    <div class="col-12 text-end">
-                        <button id="btnSaveReliability"
-                                type="button"
-                                class="btn btn-success btn-sm d-none">
-                            <i class="bi bi-save"></i>
-                            Save Reliability
-                        </button>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Evaluated Transactions -->
+        <!-- PER MATERIAL DETAILS -->
         <div class="card spe-card mb-3">
 
             <div class="card-header bg-white border-0 pt-3">
 
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex flex-wrap justify-content-between gap-2">
 
                     <div>
+
                         <h6 class="mb-0">
-                            Evaluated Transactions
+                            Material Evaluation
                         </h6>
 
                         <small class="text-muted">
-                            Purchase, receiving and QC records included in the evaluation.
+                            Automatic scores plus Purchasing reliability assessment.
                         </small>
+
                     </div>
 
-                    <span id="transactionCount"
+                    <span id="lineCount"
                           class="badge bg-light text-dark border">
-                        0 records
+                        0 lines
                     </span>
 
                 </div>
 
             </div>
 
+
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle mb-0 table-evaluation">
+                <table class="table table-hover align-middle mb-0 evaluation-line-table">
 
-                    <thead class="table-light">
+                    <thead>
+
                         <tr>
-                            <th>PO No.</th>
-                            <th>RR No.</th>
-                            <th>QC No.</th>
-                            <th>Material</th>
-                            <th class="text-end">Received</th>
+
+                            <th rowspan="2">
+                                Material
+                            </th>
+
+                            <th colspan="4"
+                                class="text-center">
+                                Quality
+                            </th>
+
+                            <th colspan="5"
+                                class="text-center">
+                                Delivery
+                            </th>
+
+                            <th colspan="5"
+                                class="text-center">
+                                Cost Competitiveness
+                            </th>
+
+                            <th colspan="4"
+                                class="text-center">
+                                Purchasing Reliability
+                            </th>
+
+                            <th rowspan="2"
+                                class="text-center">
+                                Total
+                            </th>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <th class="text-end">Inspected</th>
                             <th class="text-end">Accepted</th>
                             <th class="text-end">Rejected</th>
-                            <th>Scheduled Date</th>
-                            <th>Delivered Date</th>
-                            <th>Delivery</th>
-                            <th class="text-end">Unit Price</th>
+                            <th class="text-center">Grade / 40</th>
+
+                            <th>Scheduled</th>
+                            <th>Delivered</th>
+                            <th class="text-end">Sched Qty</th>
+                            <th class="text-end">Delivered Qty</th>
+                            <th class="text-center">Grade / 30</th>
+
+                            <th class="text-end">Previous Price</th>
+                            <th class="text-end">New Price</th>
+                            <th class="text-center">Change</th>
+                            <th>Result</th>
+                            <th class="text-center">Grade / 20</th>
+
+                            <th class="text-center">COA / 5</th>
+                            <th class="text-center">Terms / 10</th>
+                            <th class="text-center">Others / 5</th>
+                            <th class="text-center">Grade / 10</th>
+
                         </tr>
+
                     </thead>
 
-                    <tbody id="transactionBody">
+
+                    <tbody id="evaluationLineBody">
+
                         <tr>
-                            <td colspan="11"
+
+                            <td colspan="19"
                                 class="text-center text-muted py-4">
-                                Loading transactions...
+
+                                Loading evaluation lines...
+
                             </td>
+
                         </tr>
+
                     </tbody>
 
                 </table>
 
             </div>
 
+
+            <div id="reliabilityActionPanel"
+                 class="card-footer bg-white text-end d-none">
+
+                <button id="btnSaveReliability"
+                        type="button"
+                        class="btn btn-success">
+
+                    <i class="bi bi-save me-1"></i>
+                    Save Purchasing Assessment
+
+                </button>
+
+            </div>
+
         </div>
 
-        <!-- Remarks and Workflow -->
+
+        <!-- REMARKS / WORKFLOW -->
         <div class="row g-3">
 
             <div class="col-xl-5">
+
                 <div class="card spe-card h-100">
+
                     <div class="card-body">
 
-                        <h6>Evaluation Remarks</h6>
+                        <h6>
+                            Evaluation Remarks
+                        </h6>
 
                         <div id="evaluationRemarks"
                              class="small text-muted">
@@ -643,23 +602,34 @@
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
 
+
             <div class="col-xl-7">
+
                 <div class="card spe-card h-100">
+
                     <div class="card-body">
 
-                        <h6 class="mb-3">Evaluation Workflow</h6>
+                        <h6 class="mb-3">
+                            Workflow History
+                        </h6>
 
                         <div id="workflowContainer">
+
                             <div class="text-muted small">
-                                No workflow history available.
+                                No workflow history.
                             </div>
+
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
 
         </div>
@@ -668,1046 +638,1298 @@
 
 </div>
 
-<script>
-    const evaluationId = Number('@evaluationId');
 
-    let evaluationData = null;
+@section Scripts {
 
-    document.addEventListener("DOMContentLoaded", function () {
+    <script>
 
-        document
-            .querySelectorAll(".reliability-field")
-            .forEach(field => {
-                field.addEventListener(
-                    "input",
-                    updateReliabilityTotal
+        const evaluationId =
+            Number('@evaluationId');
+
+        let evaluationData = null;
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                document
+                    .getElementById(
+                        "btnSaveReliability"
+                    )
+                    .addEventListener(
+                        "click",
+                        saveReliability
+                    );
+
+
+                document
+                    .getElementById(
+                        "btnFinalize"
+                    )
+                    .addEventListener(
+                        "click",
+                        finalizeEvaluation
+                    );
+
+
+                loadEvaluation();
+            }
+        );
+
+
+        async function loadEvaluation() {
+
+            hideAlert();
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/purchasing/supplier-evaluation/${evaluationId}`
+                    );
+
+
+                const result =
+                    await readResponse(response);
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ??
+                        "Supplier evaluation was not found."
+                    );
+                }
+
+
+                evaluationData =
+                    result.data ?? result;
+
+
+                renderEvaluation(
+                    evaluationData
                 );
-            });
 
-       
 
-        document
-            .getElementById("btnRegenerate")
-            .addEventListener("click", regenerateEvaluation);
+                document
+                    .getElementById(
+                        "loadingPanel"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
 
-      
 
-       
+                document
+                    .getElementById(
+                        "detailsContent"
+                    )
+                    .classList.remove(
+                        "d-none"
+                    );
 
-      
+            }
+            catch (error) {
 
-        document
-            .getElementById("btnFinalize")
-            .addEventListener("click", finalizeEvaluation);
+                document
+                    .getElementById(
+                        "loadingPanel"
+                    )
+                    .classList.add(
+                        "d-none"
+                    );
 
-        loadEvaluation();
-    });
 
-    async function loadEvaluation() {
-
-        hidePageAlert();
-
-        try {
-
-            const response = await fetch(
-                `/purchasing/supplier-evaluation/${evaluationId}`
-            );
-
-            const result = await readResponse(response);
-
-            if (!response.ok) {
-                throw new Error(
-                    result.message ??
-                    "Supplier evaluation was not found."
+                showAlert(
+                    error.message ??
+                    "Unable to load supplier evaluation."
                 );
             }
-
-            evaluationData = result.data ?? result;
-
-            renderEvaluation(evaluationData);
-
-            document
-                .getElementById("loadingPanel")
-                .classList.add("d-none");
-
-            document
-                .getElementById("detailsContent")
-                .classList.remove("d-none");
-        }
-        catch (error) {
-
-            document
-                .getElementById("loadingPanel")
-                .classList.add("d-none");
-
-            showPageAlert(
-                error.message ??
-                "Failed to load supplier evaluation."
-            );
-        }
-    }
-        function updateWorkflowButtons(status) {
-
-        const normalized =
-            String(status ?? "")
-                .trim()
-                .toUpperCase();
-
-        const btnRegenerate =
-            document.getElementById("btnRegenerate");
-
-        const btnFinalize =
-            document.getElementById("btnFinalize");
-
-        if (btnRegenerate)
-            btnRegenerate.classList.add("d-none");
-
-        if (btnFinalize)
-            btnFinalize.classList.add("d-none");
-
-        if (normalized === "GENERATED") {
-
-            btnRegenerate?.classList.remove("d-none");
-            btnFinalize?.classList.remove("d-none");
         }
 
-        // Reliability is read-only now
-        [
-            "documentationScore",
-            "termsScore",
-            "afterSalesScore",
-            "reliabilityRemarks"
-        ].forEach(id => {
 
-            const control =
-                document.getElementById(id);
+        function renderEvaluation(data) {
 
-            if (control)
-                control.disabled = true;
-        });
-    }
-        
-
-    function renderEvaluation(data) {
-
-        const status = normalizeStatus(
-            valueOf(data, "status")
-        );
-
-        const evaluationNo =
-            valueOf(
-                data,
-                "evaluationNo",
-                "supplierEvaluationNo",
-                "evaluation_no"
-            ) ?? `Evaluation #${evaluationId}`;
-
-        setText("evaluationNo", evaluationNo);
-        setText("pageTitle", evaluationNo);
-
-        setText(
-            "supplierName",
-            valueOf(data, "supplierName", "supplier_name") ?? "-"
-        );
-
-        const supplierCode =
-            valueOf(data, "supplierCode", "supplier_code");
-
-        setText(
-            "supplierCode",
-            supplierCode
-                ? `Supplier Code: ${supplierCode}`
-                : "-"
-        );
-
-        setText(
-            "evaluationPeriod",
-            getEvaluationPeriod(data)
-        );
-
-        document.getElementById(
-            "evaluationStatus"
-        ).innerHTML = statusBadge(status);
-
-        document.getElementById(
-            "rating"
-        ).innerHTML = ratingBadge(
-            valueOf(data, "rating") ?? "-"
-        );
-
-            const qualityScore = numberOf(
-        data,
-        "qualityWeightedScore",
-        "qualityScore"
-    );
-
-    const deliveryScore = numberOf(
-        data,
-        "deliveryWeightedScore",
-        "onTimeDeliveryScore",
-        "deliveryScore"
-    );
-
-    const costScore = numberOf(
-        data,
-        "costWeightedScore",
-        "costCompetitivenessScore",
-        "costScore"
-    );
-
-    const reliabilityScore = numberOf(
-        data,
-        "reliabilityWeightedScore",
-        "reliabilityScore"
-    );
-
-        const overallScore =
-            valueOf(
-                data,
-                "overallScore",
-                "totalScore"
-            ) ??
-            qualityScore +
-            deliveryScore +
-            costScore +
-            reliabilityScore;
-
-        setText(
-            "qualityScore",
-            `${formatScore(qualityScore)} / 40`
-        );
-
-        setText(
-            "deliveryScore",
-            `${formatScore(deliveryScore)} / 30`
-        );
-
-        setText(
-            "costScore",
-            `${formatScore(costScore)} / 20`
-        );
-
-        setText(
-            "reliabilityScore",
-            `${formatScore(reliabilityScore)} / 10`
-        );
-
-        setText(
-            "overallScore",
-            `${formatScore(overallScore)}%`
-        );
-
-        renderQualityBreakdown(data, qualityScore);
-        renderDeliveryBreakdown(data, deliveryScore);
-        renderCostBreakdown(data, costScore);
-        renderReliability(data);
-        renderTransactions(data);
-        renderWorkflow(data);
-
-        setText(
-            "evaluationRemarks",
-            valueOf(
-                data,
-                "remarks",
-                "evaluationRemarks"
-            ) ?? "No remarks."
-        );
-
-        updateWorkflowButtons(status);
-    }
-
-    function renderQualityBreakdown(data, score) {
-
-        setText(
-            "qualityReceivingCount",
-            numberOf(
-                data,
-                "receivingReportCount",
-                "qualityTransactionCount",
-                "rrCount"
-            )
-        );
-
-        setText(
-            "totalReceivedQty",
-            formatQty(numberOf(data, "totalReceivedQty"))
-        );
-
-        setText(
-            "totalAcceptedQty",
-            formatQty(numberOf(data, "totalAcceptedQty"))
-        );
-
-        setText(
-            "totalRejectedQty",
-            formatQty(numberOf(data, "totalRejectedQty"))
-        );
-
-        setText(
-            "qualityRate",
-            `${formatScore(numberOf(
-                data,
-                "qualityRate",
-                "qualityPercentage"
-            ))}%`
-        );
-
-        setText(
-            "qualityWeightedScore",
-            `${formatScore(score)} / 40`
-        );
-    }
-
-    function renderDeliveryBreakdown(data, score) {
-
-        setText(
-            "scheduledDeliveries",
-            numberOf(
-                data,
-                "scheduledDeliveryCount",
-                "totalScheduledDeliveries"
-            )
-        );
-
-        setText(
-            "onTimeDeliveries",
-            numberOf(
-                data,
-                "onTimeDeliveryCount",
-                "onTimeDeliveries"
-            )
-        );
-
-        setText(
-            "delayedDeliveries",
-            numberOf(
-                data,
-                "delayedDeliveryCount",
-                "delayedDeliveries"
-            )
-        );
-
-        setText(
-            "deliveryRate",
-            `${formatScore(numberOf(
-                data,
-                "deliveryRate",
-                "onTimeDeliveryRate"
-            ))}%`
-        );
-
-        setText(
-            "deliveryWeightedScore",
-            `${formatScore(score)} / 30`
-        );
-    }
-
-    function renderCostBreakdown(data, score) {
-
-        setText(
-            "itemsCompared",
-            numberOf(
-                data,
-                "itemsCompared",
-                "costComparisonCount"
-            )
-        );
-
-        setText(
-            "competitivePriceCount",
-            numberOf(
-                data,
-                "competitivePriceCount",
-                "lowestPriceCount"
-            )
-        );
-
-        setText(
-            "averagePriceDifference",
-            `${formatScore(numberOf(
-                data,
-                "averagePriceDifference",
-                "averagePriceDifferencePercent"
-            ))}%`
-        );
-
-        setText(
-            "costRate",
-            `${formatScore(numberOf(
-                data,
-                "costRate",
-                "costCompetitivenessRate"
-            ))}%`
-        );
-
-        setText(
-            "costWeightedScore",
-            `${formatScore(score)} / 20`
-        );
-    }
-
-    function renderReliability(data) {
-
-        document.getElementById(
-            "documentationScore"
-        ).value = numberOf(
-            data,
-            "documentationScore",
-            "coaScore"
-        );
-
-        document.getElementById(
-            "termsScore"
-        ).value = numberOf(
-            data,
-            "termsScore",
-            "termsComplianceScore"
-        );
-
-        document.getElementById(
-            "afterSalesScore"
-        ).value = numberOf(
-            data,
-            "afterSalesScore",
-            "afterSalesSupportScore"
-        );
-
-        document.getElementById(
-            "reliabilityRemarks"
-        ).value =
-            valueOf(
-                data,
-                "reliabilityRemarks"
-            ) ?? "";
-
-        updateReliabilityTotal();
-    }
-
-    function renderTransactions(data) {
-
-        const rows =
-            valueOf(
-                data,
-                "transactions",
-                "lines",
-                "evaluationLines",
-                "details"
-            ) ?? [];
-
-        const transactions =
-            Array.isArray(rows)
-                ? rows
-                : [];
-
-        const body =
-            document.getElementById("transactionBody");
-
-        document.getElementById(
-            "transactionCount"
-        ).textContent =
-            `${transactions.length} record${transactions.length === 1 ? "" : "s"}`;
-
-        if (transactions.length === 0) {
-
-            body.innerHTML = `
-                <tr>
-                    <td colspan="11"
-                        class="text-center text-muted py-4">
-                        No evaluated transactions found.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-        body.innerHTML = transactions.map(row => {
-
-            const deliveryStatus =
+            const status =
                 normalizeStatus(
-                    valueOf(
-                        row,
-                        "deliveryStatus",
-                        "status"
+                    data.status
+                );
+
+
+            setText(
+                "evaluationNo",
+                data.evaluationNo ?? "-"
+            );
+
+
+            setText(
+                "pageTitle",
+                data.evaluationNo ??
+                "Supplier Performance Evaluation"
+            );
+
+
+            setText(
+                "supplierName",
+                data.supplierName ?? "-"
+            );
+
+
+            setText(
+                "supplierCode",
+                data.supplierCode
+                    ? `Supplier Code: ${data.supplierCode}`
+                    : "-"
+            );
+
+
+            setText(
+                "evaluationDate",
+                formatDate(
+                    data.evaluationDate
+                )
+            );
+
+
+            setText(
+                "deliveryDate",
+                formatDate(
+                    data.deliveryDate
+                )
+            );
+
+
+            setText(
+                "poNo",
+                data.poNo ?? "-"
+            );
+
+
+            setText(
+                "rrNo",
+                data.rrNo ?? "-"
+            );
+
+
+            setText(
+                "qcNo",
+                data.qcNo ?? "-"
+            );
+
+
+            document
+                .getElementById(
+                    "evaluationStatus"
+                )
+                .innerHTML =
+                    statusBadge(status);
+
+
+            document
+                .getElementById(
+                    "rating"
+                )
+                .innerHTML =
+                    ratingBadge(
+                        data.performanceRating,
+                        status
+                    );
+
+
+            setText(
+                "qualityScore",
+                `${formatScore(
+                    data.qualityWeightedScore
+                )} / 40`
+            );
+
+
+            setText(
+                "deliveryScore",
+                `${formatScore(
+                    data.deliveryWeightedScore
+                )} / 30`
+            );
+
+
+            setText(
+                "costScore",
+                `${formatScore(
+                    data.costWeightedScore
+                )} / 20`
+            );
+
+
+            setText(
+                "reliabilityScore",
+                `${formatScore(
+                    data.reliabilityWeightedScore
+                )} / 10`
+            );
+
+
+            setText(
+                "overallScore",
+                `${formatScore(
+                    data.totalScore
+                )}%`
+            );
+
+
+            setText(
+                "evaluationRemarks",
+                data.remarks ??
+                "No remarks."
+            );
+
+
+            renderLines(
+                data.lines ?? [],
+                status
+            );
+
+
+            renderWorkflow(
+                data.workflowHistory ?? []
+            );
+
+
+            updateActions(status);
+        }
+
+
+        function renderLines(
+            lines,
+            status
+        ) {
+
+            const body =
+                document.getElementById(
+                    "evaluationLineBody"
+                );
+
+
+            const editable =
+                status ===
+                "PENDING_PURCHASING";
+
+
+            setText(
+                "lineCount",
+                `${lines.length} line${lines.length === 1 ? "" : "s"}`
+            );
+
+
+            if (!Array.isArray(lines) ||
+                lines.length === 0) {
+
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="19"
+                            class="text-center text-muted py-4">
+                            No evaluation lines found.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            body.innerHTML =
+                lines.map(line => {
+
+                    const priceClass =
+                        getPriceClass(
+                            line.priceChangePercent
+                        );
+
+
+                    return `
+                        <tr data-line-id="${Number(
+                            line.evaluationLineId
+                        )}">
+
+                            <td>
+                                <div class="fw-semibold">
+                                    ${escapeHtml(
+                                        line.materialName ?? "-"
+                                    )}
+                                </div>
+
+                                <small class="text-muted">
+                                    ${escapeHtml(
+                                        line.materialCode ?? ""
+                                    )}
+                                </small>
+                            </td>
+
+
+                            <td class="text-end">
+                                ${formatQty(
+                                    line.totalInspectedQty
+                                )}
+                            </td>
+
+                            <td class="text-end">
+                                ${formatQty(
+                                    line.approvedQty
+                                )}
+                            </td>
+
+                            <td class="text-end">
+                                ${formatQty(
+                                    line.rejectedQty
+                                )}
+                            </td>
+
+                            <td class="text-center fw-bold">
+                                ${formatScore(
+                                    line.qualityGrade
+                                )}
+                            </td>
+
+
+                            <td>
+                                ${formatDate(
+                                    line.scheduledDate
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatDate(
+                                    line.actualDeliveryDate
+                                )}
+                            </td>
+
+                            <td class="text-end">
+                                ${formatQty(
+                                    line.scheduledQty
+                                )}
+                            </td>
+
+                            <td class="text-end">
+                                ${formatQty(
+                                    line.deliveredQty
+                                )}
+                            </td>
+
+                            <td class="text-center fw-bold">
+                                ${formatScore(
+                                    line.deliveryGrade
+                                )}
+                            </td>
+
+
+                            <td class="text-end">
+                                ${
+                                    line.previousUnitPrice == null
+                                        ? '<span class="text-muted">No history</span>'
+                                        : formatMoney(
+                                            line.previousUnitPrice
+                                          )
+                                }
+                            </td>
+
+                            <td class="text-end fw-semibold">
+                                ${formatMoney(
+                                    line.newUnitPrice
+                                )}
+                            </td>
+
+                            <td class="text-center ${priceClass}">
+                                ${formatPriceChange(
+                                    line.priceChangePercent
+                                )}
+                            </td>
+
+                            <td>
+                                ${costStatusBadge(
+                                    line.costStatus
+                                )}
+                            </td>
+
+                            <td class="text-center fw-bold">
+                                ${formatScore(
+                                    line.costGrade
+                                )}
+                            </td>
+
+
+                            <td>
+                                ${reliabilityInput(
+                                    "coa",
+                                    line.evaluationLineId,
+                                    line.coaPoints,
+                                    5,
+                                    editable
+                                )}
+                            </td>
+
+                            <td>
+                                ${reliabilityInput(
+                                    "terms",
+                                    line.evaluationLineId,
+                                    line.termsPoints,
+                                    10,
+                                    editable
+                                )}
+                            </td>
+
+                            <td>
+                                ${reliabilityInput(
+                                    "other",
+                                    line.evaluationLineId,
+                                    line.otherPoints,
+                                    5,
+                                    editable
+                                )}
+                            </td>
+
+                            <td class="text-center fw-bold">
+                                ${formatScore(
+                                    line.reliabilityGrade
+                                )}
+                            </td>
+
+
+                            <td class="text-center fw-bold">
+                                ${formatScore(
+                                    line.totalGrade
+                                )}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }).join("");
+        }
+
+
+        function reliabilityInput(
+            type,
+            lineId,
+            value,
+            max,
+            editable
+        ) {
+
+            return `
+                <input type="number"
+                       class="form-control form-control-sm reliability-input"
+                       data-type="${type}"
+                       data-line-id="${lineId}"
+                       value="${Number(value ?? 0)}"
+                       min="0"
+                       max="${max}"
+                       step="0.5"
+                       ${editable ? "" : "disabled"}>
+            `;
+        }
+
+
+        function updateActions(status) {
+
+            const editable =
+                status ===
+                "PENDING_PURCHASING";
+
+
+            document
+                .getElementById(
+                    "reliabilityActionPanel"
+                )
+                .classList.toggle(
+                    "d-none",
+                    !editable
+                );
+
+
+            document
+                .getElementById(
+                    "btnFinalize"
+                )
+                .classList.toggle(
+                    "d-none",
+                    !editable
+                );
+        }
+
+
+        async function saveReliability() {
+
+            hideAlert();
+            hideSuccess();
+
+
+            const rows =
+                Array.from(
+                    document.querySelectorAll(
+                        "#evaluationLineBody tr[data-line-id]"
                     )
                 );
 
-            const materialName =
-                valueOf(
-                    row,
-                    "materialName",
-                    "itemName"
-                ) ?? "-";
 
-            const materialCode =
-                valueOf(
-                    row,
-                    "materialCode",
-                    "itemCode"
+            if (rows.length === 0) {
+
+                showAlert(
+                    "No evaluation lines are available."
                 );
 
-            return `
-                <tr>
-                    <td>${html(valueOf(row, "poNo") ?? "-")}</td>
-                    <td>${html(valueOf(row, "rrNo") ?? "-")}</td>
-                    <td>${html(valueOf(row, "qcNo") ?? "-")}</td>
+                return;
+            }
 
-                    <td>
-                        <div class="fw-semibold">
-                            ${html(materialName)}
+
+            const lines =
+                rows.map(row => {
+
+                    const lineId =
+                        Number(
+                            row.dataset.lineId
+                        );
+
+
+                    return {
+
+                        evaluationLineId:
+                            lineId,
+
+                        coaPoints:
+                            getInputValue(
+                                row,
+                                "coa"
+                            ),
+
+                        termsPoints:
+                            getInputValue(
+                                row,
+                                "terms"
+                            ),
+
+                        otherPoints:
+                            getInputValue(
+                                row,
+                                "other"
+                            )
+                    };
+                });
+
+
+            for (const line of lines) {
+
+                if (line.coaPoints < 0 ||
+                    line.coaPoints > 5) {
+
+                    showAlert(
+                        "COA points must be between 0 and 5."
+                    );
+
+                    return;
+                }
+
+
+                if (line.termsPoints < 0 ||
+                    line.termsPoints > 10) {
+
+                    showAlert(
+                        "Terms points must be between 0 and 10."
+                    );
+
+                    return;
+                }
+
+
+                if (line.otherPoints < 0 ||
+                    line.otherPoints > 5) {
+
+                    showAlert(
+                        "Other points must be between 0 and 5."
+                    );
+
+                    return;
+                }
+            }
+
+
+            const button =
+                document.getElementById(
+                    "btnSaveReliability"
+                );
+
+
+            button.disabled = true;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/purchasing/supplier-evaluation/${evaluationId}/reliability`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                lines
+                            })
+                        }
+                    );
+
+
+                const result =
+                    await readResponse(
+                        response
+                    );
+
+
+                if (!response.ok ||
+                    result.success === false) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to save Purchasing assessment."
+                    );
+                }
+
+
+                showSuccess(
+                    result.message ??
+                    "Purchasing assessment saved successfully."
+                );
+
+
+                await loadEvaluation();
+
+            }
+            catch (error) {
+
+                showAlert(
+                    error.message ??
+                    "Unable to save Purchasing assessment."
+                );
+            }
+            finally {
+
+                button.disabled = false;
+            }
+        }
+
+
+        function getInputValue(
+            row,
+            type
+        ) {
+
+            const input =
+                row.querySelector(
+                    `[data-type="${type}"]`
+                );
+
+
+            return Number(
+                input?.value ?? 0
+            );
+        }
+
+
+        async function finalizeEvaluation() {
+
+            hideAlert();
+
+
+            if (!confirm(
+                "Finalize this supplier evaluation? After finalization, Purchasing scores can no longer be changed."
+            )) {
+                return;
+            }
+
+
+            const remarks =
+                window.prompt(
+                    "Finalization remarks:",
+                    ""
+                );
+
+
+            if (remarks === null)
+                return;
+
+
+            const button =
+                document.getElementById(
+                    "btnFinalize"
+                );
+
+
+            button.disabled = true;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/purchasing/supplier-evaluation/${evaluationId}/finalize`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                remarks
+                            })
+                        }
+                    );
+
+
+                const result =
+                    await readResponse(
+                        response
+                    );
+
+
+                if (!response.ok ||
+                    result.success === false) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to finalize evaluation."
+                    );
+                }
+
+
+                showSuccess(
+                    result.message ??
+                    "Supplier evaluation finalized successfully."
+                );
+
+
+                await loadEvaluation();
+
+            }
+            catch (error) {
+
+                showAlert(
+                    error.message ??
+                    "Unable to finalize evaluation."
+                );
+            }
+            finally {
+
+                button.disabled = false;
+            }
+        }
+
+
+        function renderWorkflow(history) {
+
+            const container =
+                document.getElementById(
+                    "workflowContainer"
+                );
+
+
+            if (!Array.isArray(history) ||
+                history.length === 0) {
+
+                container.innerHTML = `
+                    <div class="text-muted small">
+                        No workflow history.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            container.innerHTML =
+                history.map(item => `
+
+                    <div class="workflow-item">
+
+                        <div class="fw-semibold small">
+                            ${escapeHtml(
+                                formatStatus(
+                                    item.action
+                                )
+                            )}
+                        </div>
+
+                        <div class="small">
+                            ${escapeHtml(
+                                item.actionBy ?? "-"
+                            )}
+                        </div>
+
+                        <div class="small text-muted">
+                            ${formatDateTime(
+                                item.actionAt
+                            )}
                         </div>
 
                         ${
-                            materialCode
-                                ? `<small class="text-muted">${html(materialCode)}</small>`
+                            item.remarks
+                                ? `
+                                    <div class="small mt-1">
+                                        ${escapeHtml(
+                                            item.remarks
+                                        )}
+                                    </div>
+                                  `
                                 : ""
                         }
-                    </td>
 
-                    <td class="text-end">
-                        ${formatQty(numberOf(row, "receivedQty"))}
-                    </td>
+                    </div>
 
-                    <td class="text-end">
-                        ${formatQty(numberOf(row, "acceptedQty"))}
-                    </td>
-
-                    <td class="text-end">
-                        ${formatQty(numberOf(row, "rejectedQty"))}
-                    </td>
-
-                    <td>
-                        ${formatDate(valueOf(row, "scheduledDate"))}
-                    </td>
-
-                    <td>
-                        ${formatDate(valueOf(
-                            row,
-                            "deliveredDate",
-                            "deliveryDate"
-                        ))}
-                    </td>
-
-                    <td>
-                        ${deliveryBadge(deliveryStatus)}
-                    </td>
-
-                    <td class="text-end">
-                        ${formatMoney(numberOf(
-                            row,
-                            "unitPrice",
-                            "poUnitPrice"
-                        ))}
-                    </td>
-                </tr>
-            `;
-        }).join("");
-    }
-
-    function renderWorkflow(data) {
-
-            const workflow = [
-        {
-            label: "Generated",
-            user: valueOf(data, "generatedBy", "createdBy"),
-            date: valueOf(data, "generatedAt", "createdAt")
-        },
-        {
-            label: "Finalized",
-            user: valueOf(data, "finalizedBy"),
-            date: valueOf(data, "finalizedAt")
-        }
-    ].filter(item => item.user || item.date);
-
-        const container =
-            document.getElementById("workflowContainer");
-
-        if (workflow.length === 0) {
-
-            container.innerHTML = `
-                <div class="text-muted small">
-                    No workflow history available.
-                </div>
-            `;
-
-            return;
+                `).join("");
         }
 
-        container.innerHTML = workflow.map(item => `
-            <div class="workflow-item pb-3">
-                <div class="small fw-semibold">
-                    ${html(item.label)}
-                </div>
 
-                <div class="small">
-                    ${html(item.user ?? "-")}
-                </div>
+        function costStatusBadge(status) {
 
-                <div class="small text-muted">
-                    ${formatDateTime(item.date)}
-                </div>
-            </div>
-        `).join("");
-    }
+            const value =
+                normalizeStatus(
+                    status
+                );
 
- 
 
-    function updateReliabilityTotal() {
+            switch (value) {
 
-        const documentation =
-            Number(
-                document.getElementById(
-                    "documentationScore"
-                ).value || 0
-            );
+                case "PRICE_DECREASED":
 
-        const terms =
-            Number(
-                document.getElementById(
-                    "termsScore"
-                ).value || 0
-            );
+                    return `
+                        <span class="badge bg-success">
+                            Price Decreased
+                        </span>
+                    `;
 
-        const afterSales =
-            Number(
-                document.getElementById(
-                    "afterSalesScore"
-                ).value || 0
-            );
 
-        setText(
-            "reliabilityTotal",
-            formatScore(
-                documentation +
-                terms +
-                afterSales
+                case "PRICE_UNCHANGED":
+
+                    return `
+                        <span class="badge bg-secondary">
+                            No Change
+                        </span>
+                    `;
+
+
+                case "PRICE_INCREASED":
+
+                    return `
+                        <span class="badge bg-danger">
+                            Price Increased
+                        </span>
+                    `;
+
+
+                case "NO_PREVIOUS_PRICE":
+
+                    return `
+                        <span class="badge bg-light text-dark border">
+                            No Previous Price
+                        </span>
+                    `;
+
+
+                default:
+
+                    return `
+                        <span class="badge bg-light text-dark border">
+                            ${escapeHtml(
+                                formatStatus(value)
+                            )}
+                        </span>
+                    `;
+            }
+        }
+
+
+        function formatPriceChange(value) {
+
+            if (value == null)
+                return "-";
+
+
+            const number =
+                Number(value);
+
+
+            return `${
+                number > 0 ? "+" : ""
+            }${formatScore(number)}%`;
+        }
+
+
+        function getPriceClass(value) {
+
+            if (value == null)
+                return "price-same";
+
+
+            const number =
+                Number(value);
+
+
+            if (number < 0)
+                return "price-down";
+
+
+            if (number > 0)
+                return "price-up";
+
+
+            return "price-same";
+        }
+
+
+        function statusBadge(status) {
+
+            if (status ===
+                "PENDING_PURCHASING") {
+
+                return `
+                    <span class="badge bg-warning text-dark">
+                        Pending Purchasing
+                    </span>
+                `;
+            }
+
+
+            if (status ===
+                "FINALIZED") {
+
+                return `
+                    <span class="badge bg-success">
+                        Finalized
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="badge bg-secondary">
+                    ${escapeHtml(
+                        formatStatus(status)
+                    )}
+                </span>
+            `;
+        }
+
+
+        function ratingBadge(
+            rating,
+            status
+        ) {
+
+            /*
+             * Do not present a partial rating as final
+             * while Purchasing assessment is incomplete.
+             */
+            if (status !== "FINALIZED") {
+
+                return `
+                    <span class="badge bg-light text-dark border">
+                        Pending
+                    </span>
+                `;
+            }
+
+
+            const value =
+                normalizeRating(
+                    rating
+                );
+
+
+            switch (value) {
+
+                case "EXCELLENT":
+                    return '<span class="badge bg-success">Excellent</span>';
+
+                case "VERY GOOD":
+                    return '<span class="badge bg-info text-dark">Very Good</span>';
+
+                case "GOOD":
+                    return '<span class="badge bg-warning text-dark">Good</span>';
+
+                case "NEEDS IMPROVEMENT":
+                    return '<span class="badge bg-danger">Needs Improvement</span>';
+
+                default:
+                    return '<span class="badge bg-danger">Poor</span>';
+            }
+        }
+
+
+        function normalizeStatus(value) {
+
+            return String(
+                value ?? ""
             )
-        );
-    }
-
- 
-
-    async function regenerateEvaluation() {
-
-        await executeAction(
-            "regenerate",
-            {},
-            "Regenerate this evaluation using the latest available records?"
-        );
-    }
+            .trim()
+            .replaceAll(" ", "_")
+            .toUpperCase();
+        }
 
 
+        function normalizeRating(value) {
+
+            return String(
+                value ?? ""
+            )
+            .trim()
+            .replaceAll("_", " ")
+            .toUpperCase();
+        }
 
 
- 
+        function formatStatus(value) {
 
-    async function finalizeEvaluation() {
+            if (!value)
+                return "-";
 
-        const remarks =
-            window.prompt("Finalization remarks:", "");
 
-        if (remarks === null) return;
+            return String(value)
+                .replaceAll("_", " ")
+                .toLowerCase()
+                .replace(
+                    /\b\w/g,
+                    x => x.toUpperCase()
+                );
+        }
 
-        await executeAction(
-            "finalize",
-            { remarks },
-            "Finalize this supplier evaluation?"
-        );
-    }
 
-    async function executeAction(
-        action,
-        payload,
-        confirmation
-    ) {
+        function formatScore(value) {
 
-        const confirmed =
-            await confirmAction(confirmation);
-
-        if (!confirmed) return;
-
-        try {
-
-            const response = await fetch(
-                `/purchasing/supplier-evaluation/${evaluationId}/${action}`,
+            return Number(
+                value ?? 0
+            )
+            .toLocaleString(
+                "en-PH",
                 {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload ?? {})
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
                 }
             );
+        }
 
-            const result =
-                await readResponse(response);
 
-            if (!response.ok) {
-                throw new Error(
-                    result.message ??
-                    "Unable to update supplier evaluation."
+        function formatQty(value) {
+
+            return Number(
+                value ?? 0
+            )
+            .toLocaleString(
+                "en-PH",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        function formatMoney(value) {
+
+            return Number(
+                value ?? 0
+            )
+            .toLocaleString(
+                "en-PH",
+                {
+                    style: "currency",
+                    currency: "PHP",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        function formatDate(value) {
+
+            if (!value)
+                return "-";
+
+
+            const date =
+                new Date(value);
+
+
+            if (Number.isNaN(
+                date.getTime()
+            )) {
+                return "-";
+            }
+
+
+            return date.toLocaleDateString(
+                "en-PH",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit"
+                }
+            );
+        }
+
+
+        function formatDateTime(value) {
+
+            if (!value)
+                return "-";
+
+
+            const date =
+                new Date(value);
+
+
+            if (Number.isNaN(
+                date.getTime()
+            )) {
+                return "-";
+            }
+
+
+            return date.toLocaleString(
+                "en-PH",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        function setText(
+            id,
+            value
+        ) {
+
+            const element =
+                document.getElementById(id);
+
+
+            if (element)
+                element.textContent =
+                    value ?? "-";
+        }
+
+
+        async function readResponse(
+            response
+        ) {
+
+            const text =
+                await response.text();
+
+
+            if (!text)
+                return {};
+
+
+            try {
+
+                return JSON.parse(text);
+
+            }
+            catch {
+
+                return {
+                    message: text
+                };
+            }
+        }
+
+
+        function showAlert(message) {
+
+            hideSuccess();
+
+            const alert =
+                document.getElementById(
+                    "pageAlert"
                 );
-            }
 
-            await showMessage(
-                result.message ??
-                "Supplier evaluation updated successfully.",
-                "success"
-            );
+            alert.textContent =
+                message;
 
-            await loadEvaluation();
-        }
-        catch (error) {
-
-            showMessage(
-                error.message ??
-                "Supplier evaluation action failed.",
-                "error"
+            alert.classList.remove(
+                "d-none"
             );
         }
-    }
 
-    async function confirmAction(message) {
 
-        if (window.Swal) {
+        function hideAlert() {
 
-            const result = await Swal.fire({
-                icon: "question",
-                title: "Please Confirm",
-                text: message,
-                showCancelButton: true,
-                confirmButtonText: "Continue",
-                cancelButtonText: "Cancel"
-            });
+            const alert =
+                document.getElementById(
+                    "pageAlert"
+                );
 
-            return result.isConfirmed;
-        }
+            alert.textContent = "";
 
-        return confirm(message);
-    }
-
-    async function showMessage(message, icon) {
-
-        if (window.Swal) {
-
-            await Swal.fire({
-                icon: icon,
-                title:
-                    icon === "success"
-                        ? "Success"
-                        : icon === "warning"
-                            ? "Validation"
-                            : "Error",
-                text: message
-            });
-
-            return;
-        }
-
-        alert(message);
-    }
-
-    function statusBadge(status) {
-
-        let cssClass = "bg-secondary";
-
-          if (status === "GENERATED") {
-        cssClass = "bg-primary";
-    }
-    else if (status === "FINALIZED") {
-        cssClass = "bg-success";
-    }
-
-        return `
-            <span class="badge ${cssClass}">
-                ${html(formatStatus(status))}
-            </span>
-        `;
-    }
-
-    function ratingBadge(rating) {
-
-        const normalized =
-            String(rating ?? "")
-                .trim()
-                .toUpperCase();
-
-        let cssClass = "bg-secondary";
-
-        if (normalized === "EXCELLENT") {
-            cssClass = "bg-success";
-        }
-        else if (normalized === "VERY GOOD") {
-            cssClass = "bg-info text-dark";
-        }
-        else if (
-            normalized === "SATISFACTORY" ||
-            normalized === "GOOD"
-        ) {
-            cssClass = "bg-warning text-dark";
-        }
-        else if (
-            normalized === "POOR" ||
-            normalized === "UNSATISFACTORY"
-        ) {
-            cssClass = "bg-danger";
-        }
-
-        return `
-            <span class="badge ${cssClass}">
-                ${html(rating)}
-            </span>
-        `;
-    }
-
-    function deliveryBadge(status) {
-
-        if (!status) {
-            return `<span class="text-muted">-</span>`;
-        }
-
-        let cssClass = "bg-secondary";
-
-        if (
-            status === "ON_TIME" ||
-            status === "ONTIME"
-        ) {
-            cssClass = "bg-success";
-        }
-        else if (
-            status === "DELAYED" ||
-            status === "LATE"
-        ) {
-            cssClass = "bg-danger";
-        }
-
-        return `
-            <span class="badge ${cssClass}">
-                ${html(formatStatus(status))}
-            </span>
-        `;
-    }
-
-    function getEvaluationPeriod(data) {
-
-        const period =
-            valueOf(
-                data,
-                "evaluationPeriod",
-                "period"
+            alert.classList.add(
+                "d-none"
             );
+        }
 
-        if (period) return period;
 
-        const year =
-            numberOf(
-                data,
-                "evaluationYear",
-                "year"
+        function showSuccess(message) {
+
+            hideAlert();
+
+            const alert =
+                document.getElementById(
+                    "pageSuccess"
+                );
+
+            alert.textContent =
+                message;
+
+            alert.classList.remove(
+                "d-none"
             );
+        }
 
-        const month =
-            numberOf(
-                data,
-                "evaluationMonth",
-                "month"
+
+        function hideSuccess() {
+
+            const alert =
+                document.getElementById(
+                    "pageSuccess"
+                );
+
+            alert.textContent = "";
+
+            alert.classList.add(
+                "d-none"
             );
-
-        if (!year || month < 1 || month > 12) {
-            return "-";
         }
 
-        return new Date(
-            year,
-            month - 1,
-            1
-        ).toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric"
-        });
-    }
 
-    function valueOf(object, ...keys) {
+        function escapeHtml(value) {
 
-        if (!object) return null;
-
-        for (const key of keys) {
-
-            if (
-                Object.prototype.hasOwnProperty.call(
-                    object,
-                    key
-                ) &&
-                object[key] !== null &&
-                object[key] !== undefined
-            ) {
-                return object[key];
-            }
-        }
-
-        return null;
-    }
-
-    function numberOf(object, ...keys) {
-
-        const result =
-            Number(valueOf(object, ...keys) ?? 0);
-
-        return Number.isFinite(result)
-            ? result
-            : 0;
-    }
-
-    function setText(id, value) {
-
-        document.getElementById(id).textContent =
-            value === null ||
-            value === undefined ||
-            value === ""
-                ? "-"
-                : value;
-    }
-
-    function showButton(id) {
-        document
-            .getElementById(id)
-            .classList.remove("d-none");
-    }
-
-    function normalizeStatus(value) {
-
-        return String(value ?? "")
-            .trim()
-            .toUpperCase()
-            .replaceAll(" ", "_");
-    }
-
-    function formatStatus(value) {
-
-        if (!value) return "-";
-
-        return String(value)
-            .replaceAll("_", " ")
-            .toLowerCase()
-            .replace(/\b\w/g, letter =>
-                letter.toUpperCase()
-            );
-    }
-
-    function formatScore(value) {
-
-        return Number(value ?? 0).toLocaleString(
-            "en-US",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        );
-    }
-
-    function formatQty(value) {
-
-        return Number(value ?? 0).toLocaleString(
-            "en-US",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 4
-            }
-        );
-    }
-
-    function formatMoney(value) {
-
-        return Number(value ?? 0).toLocaleString(
-            "en-US",
-            {
-                style: "currency",
-                currency: "PHP"
-            }
-        );
-    }
-
-    function formatDate(value) {
-
-        if (!value) return "-";
-
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return html(value);
-        }
-
-        return date.toLocaleDateString(
-            "en-US",
-            {
-                month: "short",
-                day: "2-digit",
-                year: "numeric"
-            }
-        );
-    }
-
-    function formatDateTime(value) {
-
-        if (!value) return "-";
-
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return html(value);
-        }
-
-        return date.toLocaleString(
-            "en-US",
-            {
-                month: "short",
-                day: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
-    }
-
-    async function readResponse(response) {
-
-        const text = await response.text();
-
-        if (!text) return {};
-
-        try {
-            return JSON.parse(text);
-        }
-        catch {
-            return { message: text };
-        }
-    }
-
-    function showPageAlert(message) {
-
-        const alert =
-            document.getElementById("pageAlert");
-
-        alert.textContent = message;
-        alert.classList.remove("d-none");
-    }
-
-    function hidePageAlert() {
-
-        const alert =
-            document.getElementById("pageAlert");
-
-        alert.textContent = "";
-        alert.classList.add("d-none");
-    }
-
-    function html(value) {
-
-        return String(value ?? "")
+            return String(
+                value ?? ""
+            )
             .replaceAll("&", "&amp;")
             .replaceAll("<", "&lt;")
             .replaceAll(">", "&gt;")
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#039;");
-    }
-</script>
+        }
+
+    </script>
+
+}

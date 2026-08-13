@@ -289,5 +289,44 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
         {
             return View("~/Views/Purchasing/SupplierEvaluation/Index.cshtml");
         }
+
+
+        //MPRF NO
+
+        [HttpGet("next-no")]
+        public async Task<IActionResult> GetNextMprfNo()
+        {
+            var client = CreateClient();
+
+            var response =
+                await client.GetAsync(
+                    "api/purchasing/mprf/next-no");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result);
+        }
+
+        [HttpGet("materials/{materialId:int}/qty-on-hand")]
+        public async Task<IActionResult> GetMaterialQtyOnHand(
+            int materialId)
+        {
+            var client = CreateClient();
+
+            var response =
+                await client.GetAsync(
+                    $"api/purchasing/mprf/materials/" +
+                    $"{materialId}/qty-on-hand");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result);
+        }
     }
 }

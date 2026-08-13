@@ -146,7 +146,51 @@ namespace biostar_inventory_dashboard.Services
         }
 
 
+
+
+
         //Raw material inventory
+
+
+        public async Task<string> GetPurchasingSuppliersAsync()
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    "api/purchasing/suppliers");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+        public async Task<string>
+    GetPurchasingSuppliersByMaterialAsync(
+        int materialId)
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    $"api/purchasing/suppliers/by-material/{materialId}");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+
+
+
 
         public async Task<string> GetRawMaterialInventoryAsync(
     string search = "",
@@ -220,7 +264,73 @@ namespace biostar_inventory_dashboard.Services
             return result;
         }
 
+        public async Task<string> GetRawMaterialTransactionsAsync(
+      string search = "",
+      string branchId = "",
+      string movement = "",
+      string transactionType = "",
+      string fromDate = "",
+      string toDate = "")
+        {
+            var query = new List<string>();
 
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.Add(
+                    $"Search={Uri.EscapeDataString(search)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+            {
+                query.Add(
+                    $"BranchId={Uri.EscapeDataString(branchId)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(movement))
+            {
+                query.Add(
+                    $"Movement={Uri.EscapeDataString(movement)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(transactionType))
+            {
+                query.Add(
+                    $"TransactionType={Uri.EscapeDataString(transactionType)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(fromDate))
+            {
+                query.Add(
+                    $"FromDate={Uri.EscapeDataString(fromDate)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(toDate))
+            {
+                query.Add(
+                    $"ToDate={Uri.EscapeDataString(toDate)}");
+            }
+
+            var url =
+                "api/inventory/raw-materials/transactions";
+
+            if (query.Count > 0)
+            {
+                url += "?" + string.Join("&", query);
+            }
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
 
         public async Task<string>
     GetRawMaterialInventoryTransactionsAsync(int materialLotId)
@@ -1743,6 +1853,31 @@ namespace biostar_inventory_dashboard.Services
             }
 
             return content;
+        }
+
+
+
+        public async Task<string> ManualRawMaterialStockInAsync(
+    string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                "api/inventory/raw-materials/manual-stock-in",
+                content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
         }
 
     }
