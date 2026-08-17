@@ -1880,5 +1880,280 @@ namespace biostar_inventory_dashboard.Services
             return result;
         }
 
+
+
+        // =====================================================
+        // MATERIAL REQUISITION SLIP (RAW MATERIAL OUT)
+        // =====================================================
+
+        public async Task<string> GetMaterialRequisitionsAsync()
+        {
+            var response = await _httpClient.GetAsync(
+                "api/inventory/material-requisitions");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> GetMaterialRequisitionAsync(int id)
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/inventory/material-requisitions/{id}");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> CreateMaterialRequisitionAsync(
+            string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                "api/inventory/material-requisitions",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> UpdateMaterialRequisitionAsync(
+            int id,
+            string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PutAsync(
+                $"api/inventory/material-requisitions/{id}",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> SubmitMaterialRequisitionAsync(
+      int id,
+      string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"api/inventory/material-requisitions/{id}/submit",
+                content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> ApproveMaterialRequisitionAsync(
+            int id,
+            string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"api/inventory/material-requisitions/{id}/approve",
+                content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> RejectMaterialRequisitionAsync(
+            int id,
+            string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"api/inventory/material-requisitions/{id}/reject",
+                content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> ReleaseMaterialRequisitionAsync(
+            int id,
+            string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"api/inventory/material-requisitions/{id}/release",
+                content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        public async Task<string> GetAvailableRawMaterialLotsAsync(
+            int materialId,
+            string branchId)
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/inventory/material-requisitions/available-lots" +
+                $"?materialId={materialId}" +
+                $"&branchId={Uri.EscapeDataString(branchId)}");
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string>
+    AdjustRawMaterialStockAsync(
+        string jsonData)
+        {
+            var content =
+                new StringContent(
+                    jsonData,
+                    Encoding.UTF8,
+                    "application/json");
+
+            var response =
+                await _httpClient.PostAsync(
+                    "api/inventory/raw-materials/adjust-stock",
+                    content);
+
+            var result =
+                await response.Content
+                    .ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+
+        public async Task<string>
+    GetConsolidatedRawMaterialInventoryAsync(
+        string search = "",
+        string branchId = "",
+        int? categoryId = null,
+        int? subCategoryId = null,
+        string stockStatus = "")
+        {
+            var query =
+                new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.Add(
+                    $"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+            {
+                query.Add(
+                    $"branchId={Uri.EscapeDataString(branchId)}");
+            }
+
+            if (categoryId.HasValue)
+            {
+                query.Add(
+                    $"categoryId={categoryId.Value}");
+            }
+
+            if (subCategoryId.HasValue)
+            {
+                query.Add(
+                    $"subCategoryId={subCategoryId.Value}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(stockStatus))
+            {
+                query.Add(
+                    $"stockStatus={Uri.EscapeDataString(stockStatus)}");
+            }
+
+            var url =
+                "api/inventory/raw-materials/consolidated";
+
+            if (query.Count > 0)
+            {
+                url +=
+                    "?" +
+                    string.Join("&", query);
+            }
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
     }
 }

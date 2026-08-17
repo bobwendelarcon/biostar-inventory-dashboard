@@ -1,7 +1,7 @@
 ﻿@model biostar_inventory_dashboard.Models.Inventory.RawMaterialInventoryViewModel
 
 @{
-    ViewData["Title"] = "Raw Material Inventory";
+    ViewData["Title"] = "Raw Material Inventory Lot";
 }
 
 <style>
@@ -157,6 +157,36 @@
         min-height: 24px;
     }
 
+    .inventory-floating-menu {
+        position: fixed;
+        z-index: 99999;
+        min-width: 160px;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+        padding: 6px 0;
+    }
+
+        .inventory-floating-menu button {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            padding: 8px 14px;
+            text-align: left;
+            font-size: .875rem;
+        }
+
+            .inventory-floating-menu button:hover {
+                background: #f8f9fa;
+            }
+
+        .inventory-floating-menu .menu-divider {
+            height: 1px;
+            background: #dee2e6;
+            margin: 5px 0;
+        }
+
     @@media (max-width: 991.98px) {
         .summary-value {
             font-size: 1.55rem;
@@ -193,6 +223,8 @@
 
         </div>
     </div>
+
+
 
     <!-- Summary cards -->
     <div class="row g-3 mb-4">
@@ -287,10 +319,13 @@
                     </label>
 
                     <select id="filterStockStatus" class="form-select">
-                        <option value="">All Stock Statuses</option>
+                        <option value="AVAILABLE" selected>
+                            All Stock (Except Out of Stock)
+                        </option>
                         <option value="IN_STOCK">In Stock</option>
                         <option value="LOW_STOCK">Low Stock</option>
                         <option value="OUT_OF_STOCK">Out of Stock</option>
+                        <option value="">All Stock</option>
                     </select>
                 </div>
 
@@ -987,6 +1022,315 @@
     </div>
 </div>
 
+<!-- Stock Adjustment Modal -->
+<div class="modal fade"
+     id="stockAdjustmentModal"
+     tabindex="-1"
+     aria-labelledby="stockAdjustmentModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title"
+                        id="stockAdjustmentModalLabel">
+                        Stock Adjustment
+                    </h5>
+
+                    <small class="text-muted">
+                        Increase or decrease the selected inventory balance.
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div id="stockAdjustmentAlert"
+                     class="alert d-none">
+                </div>
+
+                <input type="hidden"
+                       id="adjustMaterialLotId">
+
+                <input type="hidden"
+                       id="adjustCurrentQuantity">
+
+
+                <!-- Selected inventory -->
+                <div class="card border-0 bg-light mb-4">
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+
+                                <div class="detail-label">
+                                    Material
+                                </div>
+
+                                <div id="adjustMaterialName"
+                                     class="fw-semibold">
+                                    -
+                                </div>
+
+                                <div id="adjustMaterialCode"
+                                     class="material-code">
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <div class="detail-label">
+                                    Branch
+                                </div>
+
+                                <div id="adjustBranch"
+                                     class="fw-semibold">
+                                    -
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <div class="detail-label">
+                                    Lot Number
+                                </div>
+
+                                <div id="adjustLotNo"
+                                     class="fw-semibold">
+                                    -
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-12">
+                                <hr class="my-1">
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <div class="detail-label">
+                                    Current Stock
+                                </div>
+
+                                <div class="fs-4 fw-bold">
+
+                                    <span id="adjustCurrentStock">
+                                        0
+                                    </span>
+
+                                    <span id="adjustCurrentUom"
+                                          class="fs-6 text-muted">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <div class="detail-label">
+                                    Stock After Adjustment
+                                </div>
+
+                                <div id="adjustNewStock"
+                                     class="fs-4 fw-bold">
+                                    0
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-3">
+
+                    <!-- Adjustment Type -->
+                    <div class="col-md-6">
+
+                        <label for="adjustmentType"
+                               class="form-label fw-semibold">
+
+                            Adjustment Type
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <select id="adjustmentType"
+                                class="form-select">
+
+                            <option value="INCREASE">
+                                Increase Stock (+)
+                            </option>
+
+                            <option value="DECREASE">
+                                Decrease Stock (-)
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Quantity -->
+                    <div class="col-md-6">
+
+                        <label for="adjustmentQuantity"
+                               class="form-label fw-semibold">
+
+                            Quantity
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <div class="input-group">
+
+                            <input type="number"
+                                   id="adjustmentQuantity"
+                                   class="form-control"
+                                   min="0.0001"
+                                   step="0.0001"
+                                   placeholder="0">
+
+                            <span id="adjustmentUom"
+                                  class="input-group-text">
+                                UOM
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Reason -->
+                    <div class="col-12">
+
+                        <label for="adjustmentReason"
+                               class="form-label fw-semibold">
+
+                            Reason
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <select id="adjustmentReason"
+                                class="form-select">
+
+                            <option value="">
+                                Select adjustment reason
+                            </option>
+
+                            <option value="Physical Count Correction">
+                                Physical Count Correction
+                            </option>
+
+                            <option value="Damaged Stock">
+                                Damaged Stock
+                            </option>
+
+                            <option value="Expired Stock">
+                                Expired Stock
+                            </option>
+
+                            <option value="Encoding Correction">
+                                Encoding Correction
+                            </option>
+
+                            <option value="Opening Balance Correction">
+                                Opening Balance Correction
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Remarks -->
+                    <div class="col-12">
+
+                        <label for="adjustmentRemarks"
+                               class="form-label fw-semibold">
+                            Remarks
+                        </label>
+
+                        <textarea id="adjustmentRemarks"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="500"
+                                  placeholder="Additional notes about this adjustment"></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        id="btnSaveStockAdjustment"
+                        class="btn btn-primary">
+
+                    <span id="stockAdjustmentSaveSpinner"
+                          class="spinner-border spinner-border-sm me-1 d-none">
+                    </span>
+
+                    <i id="stockAdjustmentSaveIcon"
+                       class="bi bi-check-circle me-1">
+                    </i>
+
+                    Save Adjustment
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="inventoryFloatingMenu"
+     class="inventory-floating-menu d-none">
+</div>
+
 @section Scripts {
     <script>
                 let inventoryItems = [];
@@ -994,12 +1338,22 @@
 
         let stockInMaterials = [];
         let manualStockInModal = null;
+        let stockAdjustmentModal = null;
 
-               document.addEventListener("DOMContentLoaded", async function () {
+                   document.addEventListener("DOMContentLoaded", async function () {
 
             manualStockInModal =
                 bootstrap.Modal.getOrCreateInstance(
-                    document.getElementById("manualStockInModal")
+                    document.getElementById(
+                        "manualStockInModal"
+                    )
+                );
+
+            stockAdjustmentModal =
+                bootstrap.Modal.getOrCreateInstance(
+                    document.getElementById(
+                        "stockAdjustmentModal"
+                    )
                 );
 
             bindEvents();
@@ -1007,7 +1361,47 @@
             await loadInventory(true);
         });
 
-        function bindEvents() {
+               function bindEvents() {
+
+                           document.getElementById(
+            "adjustmentType"
+        ).addEventListener(
+            "change",
+            updateAdjustmentPreview
+        );
+
+        document.getElementById(
+            "adjustmentQuantity"
+        ).addEventListener(
+            "input",
+            updateAdjustmentPreview
+        );
+
+
+                document.getElementById(
+            "btnSaveStockAdjustment"
+        ).addEventListener(
+            "click",
+            saveStockAdjustment
+        );
+
+        document.getElementById(
+            "adjustmentType"
+        ).addEventListener(
+            "change",
+            updateAdjustmentPreview
+        );
+
+        document.getElementById(
+            "adjustmentQuantity"
+        ).addEventListener(
+            "input",
+            updateAdjustmentPreview
+        );
+
+
+
+
             document.getElementById("btnSearch")
                 .addEventListener("click", function () {
                     loadInventory(false);
@@ -1029,21 +1423,44 @@
                     }
                 });
 
-        document.getElementById("btnManualStockIn")
-            .addEventListener("click", openManualStockIn);
+            document.getElementById("btnManualStockIn")
+                .addEventListener("click", openManualStockIn);
 
-                document.getElementById("stockInCategory")
-        .addEventListener(
-            "change",
-            filterStockInMaterials
-        );
+            document.getElementById("stockInCategory")
+                .addEventListener(
+                    "change",
+                    filterStockInMaterials
+                );
 
-        document.getElementById("stockInMaterial")
-            .addEventListener("change", handleStockInMaterialChange);
+            document.getElementById("stockInMaterial")
+                .addEventListener(
+                    "change",
+                    handleStockInMaterialChange
+                );
 
-        document.getElementById("btnSaveManualStockIn")
-            .addEventListener("click", saveManualStockIn);
+            document.getElementById("btnSaveManualStockIn")
+                .addEventListener(
+                    "click",
+                    saveManualStockIn
+                );
 
+
+            // ================================
+            // FLOATING ACTION MENU
+            // ================================
+
+            document.addEventListener(
+                "click",
+                function () {
+                    closeInventoryMenu();
+                }
+            );
+
+            window.addEventListener(
+                "scroll",
+                closeInventoryMenu,
+                true
+            );
         }
 
 
@@ -1178,89 +1595,147 @@
                 formatNumber(summary?.expired ?? 0);
         }
 
-        function renderInventoryTable(items) {
+                function renderInventoryTable(items) {
+
             const tableBody =
-                document.getElementById("inventoryTableBody");
+                document.getElementById(
+                    "inventoryTableBody"
+                );
 
             const tableContainer =
-                document.getElementById("tableContainer");
+                document.getElementById(
+                    "tableContainer"
+                );
 
             const emptyContainer =
-                document.getElementById("emptyContainer");
+                document.getElementById(
+                    "emptyContainer"
+                );
 
             tableBody.innerHTML = "";
 
-            document.getElementById("tableCount").textContent =
+            document.getElementById(
+                "tableCount"
+            ).textContent =
                 `${formatNumber(items.length)} inventory record${items.length === 1 ? "" : "s"}`;
 
             if (items.length === 0) {
-                tableContainer.classList.add("d-none");
-                emptyContainer.classList.remove("d-none");
+
+                tableContainer.classList.add(
+                    "d-none"
+                );
+
+                emptyContainer.classList.remove(
+                    "d-none"
+                );
+
                 return;
             }
 
-            tableContainer.classList.remove("d-none");
-            emptyContainer.classList.add("d-none");
+            tableContainer.classList.remove(
+                "d-none"
+            );
+
+            emptyContainer.classList.add(
+                "d-none"
+            );
 
             items.forEach(function (item, index) {
-                const row = document.createElement("tr");
+
+                const row =
+                    document.createElement("tr");
 
                 row.innerHTML = `
+
                     <td>
                         <div class="material-name">
-                            ${escapeHtml(item.materialName)}
+                            ${escapeHtml(
+                                item.materialName
+                            )}
                         </div>
 
                         <div class="material-code">
-                            ${escapeHtml(item.materialCode)}
+                            ${escapeHtml(
+                                item.materialCode
+                            )}
                         </div>
                     </td>
 
                     <td>
-                        ${escapeHtml(item.categoryName || "Uncategorized")}
+                        ${escapeHtml(
+                            item.categoryName ||
+                            "Uncategorized"
+                        )}
                     </td>
 
                     <td>
-                        <div>${escapeHtml(item.branchName || item.branchId)}</div>
+                        <div>
+                            ${escapeHtml(
+                                item.branchName ||
+                                item.branchId
+                            )}
+                        </div>
+
                         <div class="material-code">
-                            ${escapeHtml(item.branchId)}
+                            ${escapeHtml(
+                                item.branchId
+                            )}
                         </div>
                     </td>
 
                     <td>
-                        ${escapeHtml(item.lotDisplay || item.lotNo)}
+                        ${escapeHtml(
+                            item.lotDisplay ||
+                            item.lotNo
+                        )}
                     </td>
 
                     <td class="quantity-value">
-                        ${formatQuantity(item.quantity)}
+                        ${formatQuantity(
+                            item.quantity
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(item.uom)}
+                        ${escapeHtml(
+                            item.uom
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(item.supplierName || "Not Specified")}
+                        ${escapeHtml(
+                            item.supplierName ||
+                            "Not Specified"
+                        )}
                     </td>
 
                     <td>
-                        ${formatDate(item.expirationDate)}
+                        ${formatDate(
+                            item.expirationDate
+                        )}
                     </td>
 
                     <td>
-                        ${getStockBadge(item.stockStatus)}
+                        ${getStockBadge(
+                            item.stockStatus
+                        )}
                     </td>
 
                     <td>
-                        ${getExpiryBadge(item.expiryStatus)}
+                        ${getExpiryBadge(
+                            item.expiryStatus
+                        )}
                     </td>
 
                     <td class="text-center">
+
                         <button type="button"
-                                class="btn btn-sm btn-outline-primary"
-                                onclick="showInventoryDetails(${index})">
-                            View
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="toggleInventoryMenu(event, ${index})">
+                            Actions
+                            <i class="bi bi-caret-down-fill ms-1"></i>
                         </button>
+
                     </td>
                 `;
 
@@ -1418,6 +1893,440 @@
             await loadInventoryTransactions(
                 item.materialLotId
             );
+        }
+
+                function openStockAdjustment(index) {
+
+            const item =
+                inventoryItems[index];
+
+            if (!item) {
+                return;
+            }
+
+            document.getElementById(
+                "adjustMaterialLotId"
+            ).value =
+                item.materialLotId;
+
+            document.getElementById(
+                "adjustCurrentQuantity"
+            ).value =
+                item.quantity ?? 0;
+
+            document.getElementById(
+                "adjustMaterialName"
+            ).textContent =
+                item.materialName || "-";
+
+            document.getElementById(
+                "adjustMaterialCode"
+            ).textContent =
+                item.materialCode || "";
+
+            document.getElementById(
+                "adjustBranch"
+            ).textContent =
+                item.branchName ||
+                item.branchId ||
+                "-";
+
+            document.getElementById(
+                "adjustLotNo"
+            ).textContent =
+                item.lotDisplay ||
+                item.lotNo ||
+                "Not Lot Tracked";
+
+            document.getElementById(
+                "adjustCurrentStock"
+            ).textContent =
+                formatQuantity(
+                    item.quantity
+                );
+
+            document.getElementById(
+                "adjustCurrentUom"
+            ).textContent =
+                item.uom || "";
+
+            document.getElementById(
+                "adjustmentUom"
+            ).textContent =
+                item.uom || "UOM";
+
+            document.getElementById(
+                "adjustmentType"
+            ).value =
+                "INCREASE";
+
+            document.getElementById(
+                "adjustmentQuantity"
+            ).value =
+                "";
+
+            document.getElementById(
+                "adjustmentReason"
+            ).value =
+                "";
+
+            document.getElementById(
+                "adjustmentRemarks"
+            ).value =
+                "";
+
+            const alertBox =
+                document.getElementById(
+                    "stockAdjustmentAlert"
+                );
+
+            if (alertBox) {
+                alertBox.className =
+                    "alert d-none";
+
+                alertBox.textContent =
+                    "";
+            }
+
+            updateAdjustmentPreview();
+
+            stockAdjustmentModal.show();
+        }
+
+
+                function updateAdjustmentPreview() {
+
+            const currentQuantity =
+                Number(
+                    document.getElementById(
+                        "adjustCurrentQuantity"
+                    ).value
+                ) || 0;
+
+            const quantity =
+                Number(
+                    document.getElementById(
+                        "adjustmentQuantity"
+                    ).value
+                ) || 0;
+
+            const adjustmentType =
+                document.getElementById(
+                    "adjustmentType"
+                ).value;
+
+            let newQuantity =
+                currentQuantity;
+
+            if (adjustmentType === "INCREASE") {
+
+                newQuantity =
+                    currentQuantity +
+                    quantity;
+            }
+            else if (
+                adjustmentType === "DECREASE"
+            ) {
+
+                newQuantity =
+                    currentQuantity -
+                    quantity;
+            }
+
+            const uom =
+                document.getElementById(
+                    "adjustmentUom"
+                ).textContent;
+
+            const preview =
+                document.getElementById(
+                    "adjustNewStock"
+                );
+
+            preview.textContent =
+                `${formatQuantity(newQuantity)} ${uom}`;
+
+            if (newQuantity < 0) {
+                preview.classList.add(
+                    "text-danger"
+                );
+            }
+            else {
+                preview.classList.remove(
+                    "text-danger"
+                );
+            }
+            }
+
+
+                    async function saveStockAdjustment() {
+
+            const materialLotId =
+                Number(
+                    document.getElementById(
+                        "adjustMaterialLotId"
+                    ).value
+                );
+
+            const adjustmentType =
+                document.getElementById(
+                    "adjustmentType"
+                ).value;
+
+            const quantity =
+                Number(
+                    document.getElementById(
+                        "adjustmentQuantity"
+                    ).value
+                );
+
+            const reason =
+                document.getElementById(
+                    "adjustmentReason"
+                ).value;
+
+            const remarks =
+                document.getElementById(
+                    "adjustmentRemarks"
+                ).value.trim();
+
+            const currentQuantity =
+                Number(
+                    document.getElementById(
+                        "adjustCurrentQuantity"
+                    ).value
+                ) || 0;
+
+
+            // ==========================================
+            // VALIDATION
+            // ==========================================
+
+            if (!materialLotId) {
+                showStockAdjustmentAlert(
+                    "danger",
+                    "Invalid inventory record."
+                );
+
+                return;
+            }
+
+            if (!adjustmentType) {
+                showStockAdjustmentAlert(
+                    "danger",
+                    "Please select an adjustment type."
+                );
+
+                return;
+            }
+
+            if (!quantity || quantity <= 0) {
+                showStockAdjustmentAlert(
+                    "danger",
+                    "Adjustment quantity must be greater than zero."
+                );
+
+                return;
+            }
+
+            if (!reason) {
+                showStockAdjustmentAlert(
+                    "danger",
+                    "Please select an adjustment reason."
+                );
+
+                return;
+            }
+
+
+            // Client-side protection.
+            // API also validates this.
+            if (
+                adjustmentType === "DECREASE" &&
+                quantity > currentQuantity
+            ) {
+                showStockAdjustmentAlert(
+                    "danger",
+                    `Cannot decrease by ${formatQuantity(quantity)}. ` +
+                    `Current stock is only ${formatQuantity(currentQuantity)}.`
+                );
+
+                return;
+            }
+
+
+            const payload = {
+                materialLotId: materialLotId,
+                adjustmentType: adjustmentType,
+                quantity: quantity,
+                reason: reason,
+                remarks: remarks || null
+            };
+
+
+            setStockAdjustmentSaving(true);
+
+            hideStockAdjustmentAlert();
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/inventory/raw-materials/adjust-stock",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(payload)
+                        }
+                    );
+
+
+                const responseText =
+                    await response.text();
+
+                let result = null;
+
+                try {
+
+                    result =
+                        responseText
+                            ? JSON.parse(responseText)
+                            : null;
+
+                }
+                catch {
+
+                    result = null;
+                }
+
+
+                if (!response.ok) {
+
+                    const message =
+                        result?.message ||
+                        responseText ||
+                        "Unable to save stock adjustment.";
+
+                    throw new Error(message);
+                }
+
+
+                stockAdjustmentModal.hide();
+
+
+                // Reload inventory so new stock
+                // immediately appears on screen.
+                await loadInventory(false);
+
+
+                alert(
+                    result?.message ||
+                    "Stock adjustment saved successfully."
+                );
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showStockAdjustmentAlert(
+                    "danger",
+                    getErrorMessage(error)
+                );
+            }
+            finally {
+
+                setStockAdjustmentSaving(false);
+            }
+        }
+
+                function showStockAdjustmentAlert(
+            type,
+            message
+        ) {
+
+            const alertBox =
+                document.getElementById(
+                    "stockAdjustmentAlert"
+                );
+
+            alertBox.className =
+                `alert alert-${type}`;
+
+            alertBox.textContent =
+                message;
+
+            alertBox.classList.remove(
+                "d-none"
+            );
+        }
+
+
+        function hideStockAdjustmentAlert() {
+
+            const alertBox =
+                document.getElementById(
+                    "stockAdjustmentAlert"
+                );
+
+            alertBox.classList.add(
+                "d-none"
+            );
+
+            alertBox.textContent =
+                "";
+        }
+
+                function setStockAdjustmentSaving(
+            isSaving
+        ) {
+
+            const button =
+                document.getElementById(
+                    "btnSaveStockAdjustment"
+                );
+
+            const spinner =
+                document.getElementById(
+                    "stockAdjustmentSaveSpinner"
+                );
+
+            const icon =
+                document.getElementById(
+                    "stockAdjustmentSaveIcon"
+                );
+
+            button.disabled =
+                isSaving;
+
+            if (isSaving) {
+
+                spinner.classList.remove(
+                    "d-none"
+                );
+
+                icon.classList.add(
+                    "d-none"
+                );
+            }
+            else {
+
+                spinner.classList.add(
+                    "d-none"
+                );
+
+                icon.classList.remove(
+                    "d-none"
+                );
+            }
         }
 
 
@@ -2663,6 +3572,94 @@
                         </span>`;
             }
         }
+
+                function toggleInventoryMenu(event, index) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const item =
+                inventoryItems[index];
+
+            if (!item) {
+                return;
+            }
+
+            const menu =
+                document.getElementById(
+                    "inventoryFloatingMenu"
+                );
+
+            const button =
+                event.currentTarget;
+
+            const rect =
+                button.getBoundingClientRect();
+
+            menu.innerHTML = `
+                <button type="button"
+                        onclick="showInventoryDetails(${index}); closeInventoryMenu();">
+                    <i class="bi bi-eye me-2"></i>
+                    View
+                </button>
+
+                <div class="menu-divider"></div>
+
+                <button type="button"
+                        onclick="openStockAdjustment(${index}); closeInventoryMenu();">
+                    <i class="bi bi-sliders me-2"></i>
+                    Adjust Stock
+                </button>
+            `;
+
+            menu.classList.remove("d-none");
+
+            const menuWidth =
+                menu.offsetWidth;
+
+            const menuHeight =
+                menu.offsetHeight;
+
+            let left =
+                rect.right - menuWidth;
+
+            let top =
+                rect.bottom + 4;
+
+            if (left < 8) {
+                left = 8;
+            }
+
+            if (
+                top + menuHeight >
+                window.innerHeight - 8
+            ) {
+                top =
+                    rect.top -
+                    menuHeight -
+                    4;
+            }
+
+            menu.style.left =
+                `${left}px`;
+
+            menu.style.top =
+                `${top}px`;
+        }
+
+        function closeInventoryMenu() {
+
+            const menu =
+                document.getElementById(
+                    "inventoryFloatingMenu"
+                );
+
+            if (menu) {
+                menu.classList.add("d-none");
+            }
+        }
+
+
 
         function formatDate(value) {
             if (!value) {

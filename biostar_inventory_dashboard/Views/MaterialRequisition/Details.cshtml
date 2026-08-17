@@ -1,0 +1,1319 @@
+﻿@{
+    ViewData["Title"] = "Material Requisition Details";
+
+    var requisitionId =
+        ViewBag.RequisitionId;
+}
+
+<div class="container-fluid pb-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+            <h3 class="mb-0">
+                Material Requisition Slip
+            </h3>
+
+            <small class="text-muted">
+                Review and release raw materials.
+            </small>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a href="/inventory/material-requisitions"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Back
+            </a>
+
+            <a id="btnPrint"
+               href="#"
+               class="btn btn-outline-primary">
+
+                <i class="bi bi-printer me-1"></i>
+                Print
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div id="pageAlert"
+         class="alert d-none">
+    </div>
+
+
+    <div id="loadingContainer"
+         class="text-center py-5">
+
+        <div class="spinner-border text-primary mb-2"></div>
+
+        <div class="text-muted">
+            Loading requisition...
+        </div>
+
+    </div>
+
+
+    <div id="detailsContainer"
+         class="d-none">
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-semibold">
+                            Requisition No.
+                        </label>
+
+                        <input id="requisitionNo"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-semibold">
+                            Date
+                        </label>
+
+                        <input id="requisitionDate"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-semibold">
+                            Branch
+                        </label>
+
+                        <input id="branchName"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
+
+                        <input id="status"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Requested By
+                        </label>
+
+                        <input id="requestedBy"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Time Requested
+                        </label>
+
+                        <input id="timeRequested"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Remarks
+                        </label>
+
+                        <input id="remarks"
+                               class="form-control"
+                               disabled>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header bg-white border-0 py-3">
+
+                <h5 class="mb-0">
+                    Materials
+                </h5>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>
+                                Material
+                            </th>
+
+                            <th>
+                                Requested Qty
+                            </th>
+
+                            <th>
+                                Lot / Batch
+                            </th>
+
+                            <th>
+                                Expiration
+                            </th>
+
+                            <th>
+                                Available
+                            </th>
+
+                            <th style="min-width:170px;">
+                                Actual Weight / Qty
+                            </th>
+
+                            <th>
+                                Remarks
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="linesBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Released By
+                        </label>
+
+                        <input type="text"
+                               id="releasedBy"
+                               class="form-control">
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Received By
+                        </label>
+
+                        <input type="text"
+                               id="receivedBy"
+                               class="form-control">
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Verified By
+                        </label>
+
+                        <input type="text"
+                               id="verifiedBy"
+                               class="form-control">
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Time Served
+                        </label>
+
+                        <input type="time"
+                               id="timeServed"
+                               class="form-control">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            
+            <div class="card-footer bg-white">
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <!-- DRAFT -->
+                    <button type="button"
+                            id="btnSubmit"
+                            class="btn btn-primary d-none">
+
+                        <span id="submitSpinner"
+                              class="spinner-border spinner-border-sm me-1 d-none">
+                        </span>
+
+                        <i class="bi bi-send me-1"></i>
+                        Submit for Approval
+                    </button>
+
+
+                    <!-- FOR APPROVAL -->
+                    <button type="button"
+                            id="btnReject"
+                            class="btn btn-danger d-none">
+
+                        <i class="bi bi-x-circle me-1"></i>
+                        Reject
+                    </button>
+
+                    <button type="button"
+                            id="btnApprove"
+                            class="btn btn-success d-none">
+
+                        <i class="bi bi-check-circle me-1"></i>
+                        Approve
+                    </button>
+
+
+                    <!-- APPROVED -->
+                    <button type="button"
+                            id="btnRelease"
+                            class="btn btn-success d-none">
+
+                        <span id="releaseSpinner"
+                              class="spinner-border spinner-border-sm me-1 d-none">
+                        </span>
+
+                        <i class="bi bi-box-arrow-up-right me-1"></i>
+                        Release Materials
+                    </button>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        const requisitionId =
+            @requisitionId;
+
+        let requisition = null;
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            async function () {
+
+                document.getElementById(
+                    "btnPrint"
+                ).href =
+                    `/inventory/material-requisitions/${requisitionId}/print`;
+
+                       document.getElementById(
+            "btnSubmit"
+        ).addEventListener(
+            "click",
+            submitForApproval
+        );
+
+        document.getElementById(
+            "btnApprove"
+        ).addEventListener(
+            "click",
+            approveRequisition
+        );
+
+        document.getElementById(
+            "btnReject"
+        ).addEventListener(
+            "click",
+            rejectRequisition
+        );
+
+        document.getElementById(
+            "btnRelease"
+        ).addEventListener(
+            "click",
+            releaseRequisition
+        );
+
+                setDefaultTimeServed();
+
+                await loadDetails();
+            }
+        );
+
+
+        async function loadDetails() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/inventory/material-requisitions/${requisitionId}/details`
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+                requisition =
+                    await response.json();
+
+                renderDetails();
+
+                document.getElementById(
+                    "loadingContainer"
+                ).classList.add("d-none");
+
+                document.getElementById(
+                    "detailsContainer"
+                ).classList.remove("d-none");
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showAlert(
+                    "danger",
+                    "Unable to load material requisition."
+                );
+            }
+        }
+
+
+        function renderDetails() {
+
+            document.getElementById(
+                "requisitionNo"
+            ).value =
+                requisition.requisitionNo ?? "";
+
+            document.getElementById(
+                "requisitionDate"
+            ).value =
+                formatDate(
+                    requisition.requisitionDate
+                );
+
+            document.getElementById(
+                "branchName"
+            ).value =
+                requisition.branchName ??
+                requisition.branchId ??
+                "";
+
+            document.getElementById(
+                "status"
+            ).value =
+                requisition.status ?? "";
+
+            document.getElementById(
+                "requestedBy"
+            ).value =
+                requisition.requestedBy ?? "";
+
+            document.getElementById(
+                "timeRequested"
+            ).value =
+                formatTime(
+                    requisition.timeRequested
+                );
+
+            document.getElementById(
+                "remarks"
+            ).value =
+                requisition.remarks ?? "";
+
+            document.getElementById(
+                "releasedBy"
+            ).value =
+                requisition.releasedBy ?? "";
+
+            document.getElementById(
+                "receivedBy"
+            ).value =
+                requisition.receivedBy ?? "";
+
+            document.getElementById(
+                "verifiedBy"
+            ).value =
+                requisition.verifiedBy ?? "";
+
+            if (requisition.timeServed) {
+
+                document.getElementById(
+                    "timeServed"
+                ).value =
+                    toTimeInput(
+                        requisition.timeServed
+                    );
+            }
+
+
+            renderLines(
+                requisition.lines ?? []
+            );
+
+
+                 const status =
+            String(
+                requisition.status ?? ""
+            ).toUpperCase();
+
+
+        document.getElementById(
+            "btnSubmit"
+        ).classList.toggle(
+            "d-none",
+            status !== "DRAFT"
+        );
+
+        document.getElementById(
+            "btnApprove"
+        ).classList.toggle(
+            "d-none",
+            status !== "FOR_APPROVAL"
+        );
+
+        document.getElementById(
+            "btnReject"
+        ).classList.toggle(
+            "d-none",
+            status !== "FOR_APPROVAL"
+        );
+
+        document.getElementById(
+            "btnRelease"
+        ).classList.toggle(
+            "d-none",
+            status !== "APPROVED"
+        );
+
+
+        // Warehouse release fields are editable ONLY after approval.
+        const canRelease =
+            status === "APPROVED";
+
+        document.getElementById(
+            "releasedBy"
+        ).disabled =
+            !canRelease;
+
+        document.getElementById(
+            "receivedBy"
+        ).disabled =
+            !canRelease;
+
+        document.getElementById(
+            "verifiedBy"
+        ).disabled =
+            !canRelease;
+
+        document.getElementById(
+            "timeServed"
+        ).disabled =
+            !canRelease;
+
+
+           
+        }
+
+
+        function renderLines(lines) {
+
+            const tbody =
+                document.getElementById(
+                    "linesBody"
+                );
+
+            tbody.innerHTML = "";
+
+
+            lines.forEach(
+                function (line) {
+
+                    const tr =
+                        document.createElement(
+                            "tr"
+                        );
+
+                       const canRelease =
+        String(
+            requisition.status ?? ""
+        ).toUpperCase() ===
+        "APPROVED";
+
+
+                    tr.innerHTML = `
+
+                        <td>
+
+                            <div class="fw-semibold">
+                                ${escapeHtml(
+                                    line.materialName ??
+                                    ""
+                                )}
+                            </div>
+
+                            <div class="small text-muted">
+                                ${escapeHtml(
+                                    line.materialCode ??
+                                    ""
+                                )}
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            ${formatQuantity(
+                                line.requestedQuantity
+                            )}
+
+                            ${escapeHtml(
+                                line.uom ?? ""
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            ${escapeHtml(
+                                line.lotDisplay ??
+                                line.lotNo ??
+                                "Not Lot Tracked"
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            ${formatDate(
+                                line.expirationDate
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            ${formatQuantity(
+                                line.availableQuantity ??
+                                0
+                            )}
+
+                            ${escapeHtml(
+                                line.uom ?? ""
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="input-group input-group-sm">
+
+                                <input type="number"
+                                       class="form-control actual-qty"
+                                       data-line-id="${line.requisitionLineId}"
+                                       data-available="${line.availableQuantity ?? 0}"
+                                       min="0"
+                                       step="0.0001"
+                                       value="${line.actualQuantity ?? ""}"
+                                       ${canRelease ? "" : "disabled"}>
+
+                                <span class="input-group-text">
+
+                                    ${escapeHtml(
+                                        line.uom ?? ""
+                                    )}
+
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            ${escapeHtml(
+                                line.remarks ??
+                                "—"
+                            )}
+
+                        </td>
+
+                    `;
+
+
+                    tbody.appendChild(tr);
+
+                }
+            );
+        }
+
+
+                async function submitForApproval() {
+
+            hideAlert();
+
+            if (!confirm(
+                "Submit this Material Requisition for approval?"
+            )) {
+                return;
+            }
+
+            setSubmitLoading(true);
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/inventory/material-requisitions/${requisitionId}/submit`,
+                        {
+                            method: "POST"
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to submit requisition."
+                    );
+                }
+
+                showAlert(
+                    "success",
+                    "Material requisition submitted for approval."
+                );
+
+                await loadDetails();
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showAlert(
+                    "danger",
+                    error.message
+                );
+            }
+            finally {
+
+                setSubmitLoading(false);
+            }
+        }
+
+                function setSubmitLoading(value) {
+
+            document.getElementById(
+                "btnSubmit"
+            ).disabled =
+                value;
+
+            document.getElementById(
+                "submitSpinner"
+            ).classList.toggle(
+                "d-none",
+                !value
+            );
+        }
+
+                async function approveRequisition() {
+
+            const remarks =
+                prompt(
+                    "Approval remarks (optional):"
+                );
+
+            if (remarks === null) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/inventory/material-requisitions/${requisitionId}/approve`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    remarks: remarks
+                                })
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to approve requisition."
+                    );
+                }
+
+                showAlert(
+                    "success",
+                    "Material requisition approved."
+                );
+
+                await loadDetails();
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showAlert(
+                    "danger",
+                    error.message
+                );
+            }
+        }
+
+                async function rejectRequisition() {
+
+            const reason =
+                prompt(
+                    "Enter rejection reason:"
+                );
+
+            if (reason === null) {
+                return;
+            }
+
+            if (!reason.trim()) {
+
+                showAlert(
+                    "danger",
+                    "Rejection reason is required."
+                );
+
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/inventory/material-requisitions/${requisitionId}/reject`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    reason: reason.trim()
+                                })
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to reject requisition."
+                    );
+                }
+
+                showAlert(
+                    "success",
+                    "Material requisition rejected."
+                );
+
+                await loadDetails();
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showAlert(
+                    "danger",
+                    error.message
+                );
+            }
+        }
+
+
+        async function releaseRequisition() {
+
+            hideAlert();
+
+
+            const releasedBy =
+                document.getElementById(
+                    "releasedBy"
+                ).value.trim();
+
+            const receivedBy =
+                document.getElementById(
+                    "receivedBy"
+                ).value.trim();
+
+            const verifiedBy =
+                document.getElementById(
+                    "verifiedBy"
+                ).value.trim();
+
+            const timeServed =
+                document.getElementById(
+                    "timeServed"
+                ).value;
+
+
+            if (!releasedBy) {
+
+                showAlert(
+                    "danger",
+                    "Released By is required."
+                );
+
+                return;
+            }
+
+
+            if (!receivedBy) {
+
+                showAlert(
+                    "danger",
+                    "Received By is required."
+                );
+
+                return;
+            }
+
+
+            if (!verifiedBy) {
+
+                showAlert(
+                    "danger",
+                    "Verified By is required."
+                );
+
+                return;
+            }
+
+
+            if (!timeServed) {
+
+                showAlert(
+                    "danger",
+                    "Time Served is required."
+                );
+
+                return;
+            }
+
+
+            const lineInputs =
+                document.querySelectorAll(
+                    ".actual-qty"
+                );
+
+
+            const lines = [];
+
+
+            for (const input of lineInputs) {
+
+                const actualQty =
+                    Number(
+                        input.value
+                    );
+
+                const available =
+                    Number(
+                        input.dataset.available ??
+                        0
+                    );
+
+
+                if (!actualQty ||
+                    actualQty <= 0) {
+
+                    showAlert(
+                        "danger",
+                        "Actual Weight / Quantity must be greater than zero for every line."
+                    );
+
+                    input.focus();
+
+                    return;
+                }
+
+
+                if (actualQty > available) {
+
+                    showAlert(
+                        "danger",
+                        `Actual quantity cannot exceed available stock of ${formatQuantity(available)}.`
+                    );
+
+                    input.focus();
+
+                    return;
+                }
+
+
+                lines.push({
+
+                    requisitionLineId:
+                        Number(
+                            input.dataset.lineId
+                        ),
+
+                    actualQuantity:
+                        actualQty
+
+                });
+            }
+
+
+            const date =
+                String(
+                    requisition.requisitionDate
+                ).substring(
+                    0,
+                    10
+                );
+
+
+            const dto = {
+
+                releasedBy:
+                    releasedBy,
+
+                receivedBy:
+                    receivedBy,
+
+                verifiedBy:
+                    verifiedBy,
+
+                timeServed:
+                    `${date}T${timeServed}:00`,
+
+                lines:
+                    lines
+
+            };
+
+
+           setReleaseLoading(true);
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/inventory/material-requisitions/${requisitionId}/release`,
+                        {
+                            method:
+                                "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    dto
+                                )
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to release materials."
+                    );
+                }
+
+
+                showAlert(
+                    "success",
+                    "Materials released successfully."
+                );
+
+
+                await loadDetails();
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showAlert(
+                    "danger",
+                    error.message
+                );
+
+            }
+            finally {
+
+               setReleaseLoading(false);
+            }
+
+        }
+
+
+        function setDefaultTimeServed() {
+
+            document.getElementById(
+                "timeServed"
+            ).value =
+                new Date()
+                    .toTimeString()
+                    .substring(
+                        0,
+                        5
+                    );
+        }
+
+
+              function setReleaseLoading(value) {
+
+            document.getElementById(
+                "btnRelease"
+            ).disabled =
+                value;
+
+            document.getElementById(
+                "releaseSpinner"
+            ).classList.toggle(
+                "d-none",
+                !value
+            );
+        }
+
+
+        function showAlert(
+            type,
+            message) {
+
+            const alert =
+                document.getElementById(
+                    "pageAlert"
+                );
+
+            alert.className =
+                `alert alert-${type}`;
+
+            alert.textContent =
+                message;
+
+            alert.classList.remove(
+                "d-none"
+            );
+        }
+
+
+        function hideAlert() {
+
+            document.getElementById(
+                "pageAlert"
+            ).classList.add(
+                "d-none"
+            );
+        }
+
+
+        function formatQuantity(value) {
+
+            return Number(
+                value ?? 0
+            ).toLocaleString(
+                "en-PH",
+                {
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        function formatDate(value) {
+
+            if (!value) {
+                return "—";
+            }
+
+            const date =
+                new Date(value);
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "—";
+            }
+
+            return date.toLocaleDateString(
+                "en-PH"
+            );
+        }
+
+
+        function formatTime(value) {
+
+            if (!value) {
+                return "—";
+            }
+
+            const date =
+                new Date(value);
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "—";
+            }
+
+            return date.toLocaleTimeString(
+                "en-PH",
+                {
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit"
+                }
+            );
+        }
+
+
+        function toTimeInput(value) {
+
+            const date =
+                new Date(value);
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "";
+            }
+
+            return date
+                .toTimeString()
+                .substring(
+                    0,
+                    5
+                );
+        }
+
+
+        function escapeHtml(value) {
+
+            return String(
+                value ?? ""
+            )
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
+        }
+
+    </script>
+
+}

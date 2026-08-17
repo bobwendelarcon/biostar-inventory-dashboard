@@ -179,5 +179,60 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
                 });
             }
         }
+
+
+        [HttpPost("adjust-stock")]
+        public async Task<IActionResult> AdjustStock(
+    [FromBody] JsonElement request)
+        {
+            try
+            {
+                var userId =
+                    User.Claims
+                        .FirstOrDefault(
+                            c => c.Type == "user_id")
+                        ?.Value
+                    ??
+                    User.Claims
+                        .FirstOrDefault(
+                            c => c.Type == "UserId")
+                        ?.Value
+                    ??
+                    User.Identity?.Name
+                    ??
+                    "";
+
+                var data =
+                    JsonSerializer.Deserialize<
+                        Dictionary<string, object?>>(
+                            request.GetRawText())
+                    ??
+                    new Dictionary<string, object?>();
+
+                // Never trust the browser for the account
+                data["encodedBy"] =
+                    userId;
+
+                var json =
+                    JsonSerializer.Serialize(data);
+
+                var result =
+                    await _apiService
+                        .AdjustRawMaterialStockAsync(
+                            json);
+
+                return Content(
+                    result,
+                    "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

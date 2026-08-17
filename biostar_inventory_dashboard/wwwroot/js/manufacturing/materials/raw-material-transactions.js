@@ -373,14 +373,20 @@ function splitDateTime(value) {
         };
     }
 
-    const date =
-        new Date(value);
+    // If API sends UTC without Z, treat it as UTC.
+    let normalizedValue = value;
 
     if (
-        Number.isNaN(
-            date.getTime()
-        )
+        typeof normalizedValue === "string" &&
+        !normalizedValue.endsWith("Z") &&
+        !/[+-]\d{2}:\d{2}$/.test(normalizedValue)
     ) {
+        normalizedValue += "Z";
+    }
+
+    const date = new Date(normalizedValue);
+
+    if (Number.isNaN(date.getTime())) {
         return {
             date: "-",
             time: "-"
@@ -388,25 +394,26 @@ function splitDateTime(value) {
     }
 
     return {
-        date:
-            date.toLocaleDateString(
-                undefined,
-                {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                }
-            ),
+        date: date.toLocaleDateString(
+            "en-PH",
+            {
+                timeZone: "Asia/Manila",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            }
+        ),
 
-        time:
-            date.toLocaleTimeString(
-                undefined,
-                {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    second: "2-digit"
-                }
-            )
+        time: date.toLocaleTimeString(
+            "en-PH",
+            {
+                timeZone: "Asia/Manila",
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            }
+        )
     };
 }
 
@@ -566,17 +573,35 @@ function formatDateTime(value) {
     if (!value)
         return "-";
 
-    const date =
-        new Date(value);
+    let utcValue = value;
 
     if (
-        Number.isNaN(
-            date.getTime()
-        )
-    )
+        typeof utcValue === "string" &&
+        !utcValue.endsWith("Z") &&
+        !/[+-]\d{2}:\d{2}$/.test(utcValue)
+    ) {
+        utcValue += "Z";
+    }
+
+    const date =
+        new Date(utcValue);
+
+    if (Number.isNaN(date.getTime()))
         return "-";
 
-    return date.toLocaleString();
+    return date.toLocaleString(
+        "en-PH",
+        {
+            timeZone: "Asia/Manila",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        }
+    );
 }
 
 

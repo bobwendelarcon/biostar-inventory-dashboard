@@ -1,0 +1,1213 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Inventory";
+}
+
+<style>
+    .raw-material-summary-page {
+        padding-bottom: 40px;
+    }
+
+    .summary-card {
+        border: 0;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+    .summary-label {
+        color: #6c757d;
+        font-size: .82rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .summary-value {
+        margin-top: 6px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .filter-card,
+    .inventory-card {
+        border: 0;
+        border-radius: 12px;
+    }
+
+    .filter-label {
+        font-size: .8rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+    .material-name {
+        font-weight: 600;
+    }
+
+    .material-code {
+        font-size: .78rem;
+        color: #6c757d;
+    }
+
+    .quantity-value {
+        text-align: right;
+        font-weight: 700;
+    }
+
+    .status-badge {
+        display: inline-block;
+        min-width: 90px;
+        padding: 6px 9px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .badge-in-stock {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .badge-low-stock {
+        background: #fff3cd;
+        color: #664d03;
+    }
+
+    .badge-out-of-stock {
+        background: #f8d7da;
+        color: #842029;
+    }
+
+    .loading-container,
+    .empty-container {
+        padding: 55px 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+</style>
+
+
+<div class="container-fluid raw-material-summary-page">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+
+        <div>
+            <h3 class="mb-0">
+                Raw Material Inventory
+            </h3>
+
+            <small class="text-muted">
+                Consolidated stock balance per material.
+            </small>
+        </div>
+
+        <button type="button"
+                id="btnRefresh"
+                class="btn btn-outline-primary">
+
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+
+        </button>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Total Materials
+                    </div>
+
+                    <div id="totalMaterials"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        In Stock
+                    </div>
+
+                    <div id="inStock"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Low Stock
+                    </div>
+
+                    <div id="lowStock"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Out of Stock
+                    </div>
+
+                    <div id="outOfStock"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl col-lg-4 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Available Lots
+                    </div>
+
+                    <div id="availableLots"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- FILTERS -->
+    <div class="card filter-card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- Search -->
+                <div class="col-xl-3 col-lg-4 col-md-6">
+
+                    <label class="filter-label">
+                        Search
+                    </label>
+
+                    <input type="text"
+                           id="filterSearch"
+                           class="form-control"
+                           placeholder="Material code or name">
+
+                </div>
+
+
+                <!-- Branch -->
+                <div class="col-xl-2 col-lg-4 col-md-6">
+
+                    <label class="filter-label">
+                        Branch
+                    </label>
+
+                    <select id="filterBranch"
+                            class="form-select">
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Category -->
+                <div class="col-xl-2 col-lg-4 col-md-6">
+
+                    <label class="filter-label">
+                        Category
+                    </label>
+
+                    <select id="filterCategory"
+                            class="form-select">
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Sub Category -->
+                <div class="col-xl-2 col-lg-4 col-md-6">
+
+                    <label class="filter-label">
+                        Sub Category
+                    </label>
+
+                    <select id="filterSubCategory"
+                            class="form-select">
+
+                        <option value="">
+                            All Sub Categories
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Stock -->
+                <div class="col-xl-2 col-lg-4 col-md-6">
+
+                    <label class="filter-label">
+                        Stock Status
+                    </label>
+
+                    <select id="filterStockStatus"
+                            class="form-select">
+
+                        <option value="">
+                            All Stock
+                        </option>
+
+                        <option value="IN_STOCK">
+                            In Stock
+                        </option>
+
+                        <option value="LOW_STOCK">
+                            Low Stock
+                        </option>
+
+                        <option value="OUT_OF_STOCK">
+                            Out of Stock
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-auto col-lg-4 col-md-6">
+
+                    <button type="button"
+                            id="btnSearch"
+                            class="btn btn-primary w-100">
+
+                        <i class="bi bi-search me-1"></i>
+                        Search
+
+                    </button>
+
+                </div>
+
+
+                <div class="col-xl-auto col-lg-4 col-md-6">
+
+                    <button type="button"
+                            id="btnClear"
+                            class="btn btn-outline-secondary w-100">
+
+                        Clear
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="card inventory-card shadow-sm">
+
+        <div class="card-header bg-white border-0 py-3">
+
+            <div>
+                <h5 class="mb-0">
+                    Consolidated Inventory
+                </h5>
+
+                <div id="tableCount"
+                     class="small text-muted">
+
+                    0 materials
+
+                </div>
+            </div>
+
+        </div>
+
+
+        <div id="loadingContainer"
+             class="loading-container d-none">
+
+            <div class="spinner-border text-primary mb-3">
+            </div>
+
+            <div>
+                Loading inventory...
+            </div>
+
+        </div>
+
+
+        <div id="emptyContainer"
+             class="empty-container d-none">
+
+            <i class="bi bi-inboxes fs-1"></i>
+
+            <h6 class="mt-2">
+                No materials found
+            </h6>
+
+        </div>
+
+
+        <div id="tableContainer"
+             class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>Material</th>
+
+                        <th>Category</th>
+
+                        <th>Sub Category</th>
+
+                        <th class="text-end">
+                            Total Stock
+                        </th>
+
+                        <th>UOM</th>
+
+                        <th class="text-center">
+                            Available Lots
+                        </th>
+
+                        <th class="text-center">
+                            Lot Tracked
+                        </th>
+
+                        <th>
+                            Stock Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="inventoryTableBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        let inventoryItems = [];
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            async function () {
+
+                bindEvents();
+
+                await Promise.all([
+                    loadBranches(),
+                    loadCategories()
+                ]);
+
+                await loadInventory();
+            }
+        );
+
+
+        function bindEvents() {
+
+            document.getElementById(
+                "btnSearch"
+            ).addEventListener(
+                "click",
+                loadInventory
+            );
+
+
+            document.getElementById(
+                "btnRefresh"
+            ).addEventListener(
+                "click",
+                loadInventory
+            );
+
+
+            document.getElementById(
+                "btnClear"
+            ).addEventListener(
+                "click",
+                clearFilters
+            );
+
+
+            document.getElementById(
+                "filterCategory"
+            ).addEventListener(
+                "change",
+                async function () {
+
+                    await loadSubCategories(
+                        this.value
+                    );
+                }
+            );
+
+
+            document.getElementById(
+                "filterSearch"
+            ).addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (event.key === "Enter") {
+
+                        event.preventDefault();
+
+                        loadInventory();
+                    }
+                }
+            );
+        }
+
+
+        async function loadInventory() {
+
+            setLoading(true);
+
+            try {
+
+                let url =
+                    "/inventory/raw-material-summary/data";
+
+                const query =
+                    new URLSearchParams();
+
+
+                const search =
+                    document.getElementById(
+                        "filterSearch"
+                    ).value.trim();
+
+                const branchId =
+                    document.getElementById(
+                        "filterBranch"
+                    ).value;
+
+                const categoryId =
+                    document.getElementById(
+                        "filterCategory"
+                    ).value;
+
+                const subCategoryId =
+                    document.getElementById(
+                        "filterSubCategory"
+                    ).value;
+
+                const stockStatus =
+                    document.getElementById(
+                        "filterStockStatus"
+                    ).value;
+
+
+                if (search) {
+                    query.append(
+                        "search",
+                        search
+                    );
+                }
+
+                if (branchId) {
+                    query.append(
+                        "branchId",
+                        branchId
+                    );
+                }
+
+                if (categoryId) {
+                    query.append(
+                        "categoryId",
+                        categoryId
+                    );
+                }
+
+                if (subCategoryId) {
+                    query.append(
+                        "subCategoryId",
+                        subCategoryId
+                    );
+                }
+
+                if (stockStatus) {
+                    query.append(
+                        "stockStatus",
+                        stockStatus
+                    );
+                }
+
+
+                if (query.toString()) {
+
+                    url +=
+                        "?" +
+                        query.toString();
+                }
+
+
+                const response =
+                    await fetch(url);
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                inventoryItems =
+                    Array.isArray(data.items)
+                        ? data.items
+                        : [];
+
+
+                updateSummary(
+                    data.summary
+                );
+
+
+                renderTable(
+                    inventoryItems
+                );
+            }
+            catch (error) {
+
+                console.error(error);
+
+                inventoryItems = [];
+
+                updateSummary(null);
+
+                renderTable([]);
+
+                alert(
+                    "Unable to load consolidated inventory."
+                );
+            }
+            finally {
+
+                setLoading(false);
+            }
+        }
+
+
+        async function loadBranches() {
+
+            const select =
+                document.getElementById(
+                    "filterBranch"
+                );
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/inventory/raw-materials/branches"
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                const branches =
+                    Array.isArray(result)
+                        ? result
+                        : [];
+
+
+                select.innerHTML =
+                    `<option value="">
+                        All Branches
+                    </option>`;
+
+
+                branches.forEach(
+                    function (branch) {
+
+                        const id =
+                            branch.branch_id ??
+                            branch.branchId ??
+                            "";
+
+                        const name =
+                            branch.branch_name ??
+                            branch.branchName ??
+                            id;
+
+
+                        if (!id) {
+                            return;
+                        }
+
+
+                        select.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <option value="${escapeAttribute(id)}">
+                                ${escapeHtml(name)}
+                            </option>
+                            `
+                        );
+                    }
+                );
+            }
+            catch (error) {
+
+                console.error(error);
+            }
+        }
+
+
+        async function loadCategories() {
+
+            const select =
+                document.getElementById(
+                    "filterCategory"
+                );
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/manufacturing/materials/categories/list"
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                const categories =
+                    Array.isArray(result)
+                        ? result
+                        : result.items ??
+                          result.data ??
+                          [];
+
+
+                select.innerHTML =
+                    `<option value="">
+                        All Categories
+                    </option>`;
+
+
+                categories.forEach(
+                    function (item) {
+
+                        const id =
+                            item.material_category_id ??
+                            item.materialCategoryId ??
+                            item.categoryId ??
+                            "";
+
+                        const name =
+                            item.category_name ??
+                            item.categoryName ??
+                            "";
+
+
+                        if (!id) {
+                            return;
+                        }
+
+
+                        select.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <option value="${id}">
+                                ${escapeHtml(name)}
+                            </option>
+                            `
+                        );
+                    }
+                );
+            }
+            catch (error) {
+
+                console.error(error);
+            }
+        }
+
+
+        async function loadSubCategories(
+            categoryId
+        ) {
+
+            const select =
+                document.getElementById(
+                    "filterSubCategory"
+                );
+
+
+            select.innerHTML =
+                `<option value="">
+                    All Sub Categories
+                </option>`;
+
+
+            if (!categoryId) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/manufacturing/materials/subcategories/by-category/${categoryId}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                const items =
+                    Array.isArray(result)
+                        ? result
+                        : result.items ??
+                          result.data ??
+                          [];
+
+
+                items.forEach(
+                    function (item) {
+
+                        const id =
+                            item.material_subcategory_id ??
+                            item.materialSubCategoryId ??
+                            item.subCategoryId ??
+                            "";
+
+                        const name =
+                            item.subcategory_name ??
+                            item.subCategoryName ??
+                            "";
+
+
+                        if (!id) {
+                            return;
+                        }
+
+
+                        select.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <option value="${id}">
+                                ${escapeHtml(name)}
+                            </option>
+                            `
+                        );
+                    }
+                );
+            }
+            catch (error) {
+
+                console.error(error);
+            }
+        }
+
+
+        function updateSummary(summary) {
+
+            document.getElementById(
+                "totalMaterials"
+            ).textContent =
+                formatNumber(
+                    summary?.totalMaterials ?? 0
+                );
+
+
+            document.getElementById(
+                "inStock"
+            ).textContent =
+                formatNumber(
+                    summary?.inStock ?? 0
+                );
+
+
+            document.getElementById(
+                "lowStock"
+            ).textContent =
+                formatNumber(
+                    summary?.lowStock ?? 0
+                );
+
+
+            document.getElementById(
+                "outOfStock"
+            ).textContent =
+                formatNumber(
+                    summary?.outOfStock ?? 0
+                );
+
+
+            document.getElementById(
+                "availableLots"
+            ).textContent =
+                formatNumber(
+                    summary?.availableLots ?? 0
+                );
+        }
+
+
+        function renderTable(items) {
+
+            const body =
+                document.getElementById(
+                    "inventoryTableBody"
+                );
+
+            const table =
+                document.getElementById(
+                    "tableContainer"
+                );
+
+            const empty =
+                document.getElementById(
+                    "emptyContainer"
+                );
+
+
+            body.innerHTML = "";
+
+
+            document.getElementById(
+                "tableCount"
+            ).textContent =
+                `${formatNumber(items.length)} material${items.length === 1 ? "" : "s"}`;
+
+
+            if (items.length === 0) {
+
+                table.classList.add(
+                    "d-none"
+                );
+
+                empty.classList.remove(
+                    "d-none"
+                );
+
+                return;
+            }
+
+
+            table.classList.remove(
+                "d-none"
+            );
+
+            empty.classList.add(
+                "d-none"
+            );
+
+
+            items.forEach(
+                function (item) {
+
+                    const row =
+                        document.createElement(
+                            "tr"
+                        );
+
+
+                    const availableLots =
+                        item.isLotTracked
+                            ? formatNumber(
+                                item.availableLots ?? 0
+                              )
+                            : "—";
+
+
+                    row.innerHTML = `
+
+                        <td>
+                            <div class="material-name">
+                                ${escapeHtml(
+                                    item.materialName
+                                )}
+                            </div>
+
+                            <div class="material-code">
+                                ${escapeHtml(
+                                    item.materialCode
+                                )}
+                            </div>
+                        </td>
+
+
+                        <td>
+                            ${escapeHtml(
+                                item.categoryName ||
+                                "Uncategorized"
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${escapeHtml(
+                                item.subCategoryName ||
+                                "No Sub Category"
+                            )}
+                        </td>
+
+
+                        <td class="quantity-value">
+                            ${formatQuantity(
+                                item.quantity
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${escapeHtml(
+                                item.uom
+                            )}
+                        </td>
+
+
+                        <td class="text-center">
+                            ${availableLots}
+                        </td>
+
+
+                        <td class="text-center">
+
+                            ${
+                                item.isLotTracked
+                                    ? `<span class="badge bg-primary">
+                                           Yes
+                                       </span>`
+                                    : `<span class="badge bg-secondary">
+                                           No
+                                       </span>`
+                            }
+
+                        </td>
+
+
+                        <td>
+                            ${getStockBadge(
+                                item.stockStatus
+                            )}
+                        </td>
+                    `;
+
+
+                    body.appendChild(
+                        row
+                    );
+                }
+            );
+        }
+
+
+        async function clearFilters() {
+
+            document.getElementById(
+                "filterSearch"
+            ).value = "";
+
+            document.getElementById(
+                "filterBranch"
+            ).value = "";
+
+            document.getElementById(
+                "filterCategory"
+            ).value = "";
+
+            document.getElementById(
+                "filterSubCategory"
+            ).innerHTML =
+                `<option value="">
+                    All Sub Categories
+                </option>`;
+
+            document.getElementById(
+                "filterStockStatus"
+            ).value = "";
+
+
+            await loadInventory();
+        }
+
+
+        function getStockBadge(status) {
+
+            const value =
+                String(status || "")
+                    .toUpperCase();
+
+
+            if (value === "IN_STOCK") {
+
+                return `
+                    <span class="status-badge badge-in-stock">
+                        In Stock
+                    </span>
+                `;
+            }
+
+
+            if (value === "LOW_STOCK") {
+
+                return `
+                    <span class="status-badge badge-low-stock">
+                        Low Stock
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="status-badge badge-out-of-stock">
+                    Out of Stock
+                </span>
+            `;
+        }
+
+
+        function setLoading(isLoading) {
+
+            document.getElementById(
+                "loadingContainer"
+            ).classList.toggle(
+                "d-none",
+                !isLoading
+            );
+        }
+
+
+        function formatQuantity(value) {
+
+            const number =
+                Number(value ?? 0);
+
+            return number.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        function formatNumber(value) {
+
+            return Number(
+                value ?? 0
+            ).toLocaleString();
+        }
+
+
+        function escapeHtml(value) {
+
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+
+        function escapeAttribute(value) {
+            return escapeHtml(value);
+        }
+
+    </script>
+
+}

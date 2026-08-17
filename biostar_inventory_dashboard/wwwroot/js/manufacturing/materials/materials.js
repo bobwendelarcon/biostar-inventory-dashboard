@@ -13,6 +13,71 @@ document.addEventListener("DOMContentLoaded", function () {
     loadAllSubCategories();
     loadMaterials();
 
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            materialModal =
+                new bootstrap.Modal(
+                    document.getElementById(
+                        "materialModal"
+                    )
+                );
+
+            loadCategories();
+            loadAllSubCategories();
+            loadMaterials();
+
+            document.getElementById(
+                "btnAddMaterial"
+            ).addEventListener(
+                "click",
+                openAddModal
+            );
+
+            document.getElementById(
+                "btnSaveMaterial"
+            ).addEventListener(
+                "click",
+                saveMaterial
+            );
+
+            document.getElementById(
+                "btnResetFilters"
+            ).addEventListener(
+                "click",
+                resetFilters
+            );
+
+
+            document.addEventListener(
+                "click",
+                function () {
+                    closeMaterialMenu();
+                }
+            );
+
+            window.addEventListener(
+                "scroll",
+                closeMaterialMenu,
+                true
+            );
+
+
+            document.getElementById(
+                "materialCategoryId"
+            ).addEventListener(
+                "change",
+                async function () {
+
+                    await loadSubCategoriesForModal(
+                        this.value
+                    );
+                }
+            );
+        }
+    );
+
     document.getElementById("btnAddMaterial").addEventListener("click", openAddModal);
     document.getElementById("btnSaveMaterial").addEventListener("click", saveMaterial);
     document.getElementById("btnResetFilters").addEventListener("click", resetFilters);
@@ -218,21 +283,123 @@ function renderMaterials() {
                 </span>
             </td>
 
-            <td>
-                <button class="btn btn-sm btn-outline-primary me-1"
-                        onclick="editMaterial(${id})">
-                    Edit
-                </button>
+           <td class="text-center">
 
-                <button class="btn btn-sm btn-outline-danger"
-                        onclick="deleteMaterial(${id})">
-                    Delete
-                </button>
-            </td>
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary"
+            onclick="toggleMaterialMenu(event, ${id})">
+
+        Actions
+        <i class="bi bi-caret-down-fill ms-1"></i>
+
+    </button>
+
+</td>
         </tr>`;
     }).join("");
 }
+function toggleMaterialMenu(
+    event,
+    materialId
+) {
 
+    event.preventDefault();
+    event.stopPropagation();
+
+    const menu =
+        document.getElementById(
+            "materialFloatingMenu"
+        );
+
+    const button =
+        event.currentTarget;
+
+    const rect =
+        button.getBoundingClientRect();
+
+
+    menu.innerHTML = `
+
+        <button type="button"
+                onclick="editMaterial(${materialId}); closeMaterialMenu();">
+
+            <i class="bi bi-pencil-square me-2"></i>
+            Edit
+
+        </button>
+
+        <div class="menu-divider"></div>
+
+        <button type="button"
+                class="delete-action"
+                onclick="deleteMaterial(${materialId}); closeMaterialMenu();">
+
+            <i class="bi bi-trash me-2"></i>
+            Delete
+
+        </button>
+    `;
+
+
+    menu.classList.remove(
+        "d-none"
+    );
+
+
+    const menuWidth =
+        menu.offsetWidth;
+
+    const menuHeight =
+        menu.offsetHeight;
+
+
+    let left =
+        rect.right -
+        menuWidth;
+
+    let top =
+        rect.bottom + 4;
+
+
+    if (left < 8) {
+        left = 8;
+    }
+
+
+    // Open upward when near bottom
+    if (
+        top + menuHeight >
+        window.innerHeight - 8
+    ) {
+
+        top =
+            rect.top -
+            menuHeight -
+            4;
+    }
+
+
+    menu.style.left =
+        `${left}px`;
+
+    menu.style.top =
+        `${top}px`;
+}
+
+
+function closeMaterialMenu() {
+
+    const menu =
+        document.getElementById(
+            "materialFloatingMenu"
+        );
+
+    if (menu) {
+        menu.classList.add(
+            "d-none"
+        );
+    }
+}
 function updateRecordInfo(totalRecords) {
 
     const info =
@@ -354,7 +521,6 @@ async function saveMaterial() {
     const subCategoryId = document.getElementById("materialSubCategoryId").value;
 
     const dto = {
-        material_code: document.getElementById("materialCode").value.trim(),
         material_name: document.getElementById("materialName").value.trim(),
         material_category_id: categoryId ? parseInt(categoryId) : null,
         material_subcategory_id: subCategoryId ? parseInt(subCategoryId) : null,
@@ -363,12 +529,22 @@ async function saveMaterial() {
         pack_qty: parseFloat(document.getElementById("packQty").value || 0),
         minimum_stock: parseFloat(document.getElementById("minimumStock").value || 0),
         description: document.getElementById("description").value.trim(),
-
         is_lot_tracked: document.getElementById("isLotTracked").checked
     };
 
-    if (!dto.material_code || !dto.material_name || !dto.material_category_id || !dto.uom) {
-        alert("Please fill in Material Code, Material Name, Category, and UOM.");
+    if (id) {
+        dto.material_code =
+            document.getElementById("materialCode").value.trim();
+    }
+
+    if (!dto.material_name ||
+        !dto.material_category_id ||
+        !dto.uom) {
+
+        alert(
+            "Please fill in Material Name, Category, and UOM."
+        );
+
         return;
     }
 
@@ -430,7 +606,7 @@ function resetFilters() {
 
 function clearForm() {
     document.getElementById("materialId").value = "";
-    document.getElementById("materialCode").value = "";
+    document.getElementById("materialCode").value = "Auto-generated";
     document.getElementById("materialName").value = "";
     document.getElementById("materialCategoryId").value = "";
     document.getElementById("materialSubCategoryId").innerHTML = `<option value="">No Sub Category</option>`;

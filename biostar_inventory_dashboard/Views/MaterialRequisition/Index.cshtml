@@ -1,0 +1,891 @@
+﻿@{
+    ViewData["Title"] = "Material Requisition";
+}
+
+<style>
+    .mrs-page {
+        padding-bottom: 40px;
+    }
+
+    .summary-card {
+        border: 0;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+    .summary-label {
+        color: #6c757d;
+        font-size: .8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .summary-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: 6px;
+    }
+
+    .mrs-card {
+        border: 0;
+        border-radius: 12px;
+    }
+
+    .mrs-table th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        white-space: nowrap;
+        background: #f8f9fa;
+    }
+
+    .mrs-table td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .status-badge {
+        display: inline-block;
+        min-width: 80px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .status-draft {
+        background: #fff3cd;
+        color: #664d03;
+    }
+
+    .status-posted {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #842029;
+    }
+</style>
+
+<div class="container-fluid mrs-page">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+
+        <div>
+            <h3 class="mb-0">
+                Material Requisition
+            </h3>
+
+            <small class="text-muted">
+                Create and monitor raw material requisition slips.
+            </small>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <button type="button"
+                    id="btnNewMrs"
+                    class="btn btn-primary">
+
+                <i class="bi bi-plus-circle me-1"></i>
+                New Requisition
+            </button>
+
+            <button type="button"
+                    id="btnRefresh"
+                    class="btn btn-outline-primary">
+
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Refresh
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- Summary -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="summary-label">
+                        Total Requisitions
+                    </div>
+
+                    <div id="totalRequisitions"
+                         class="summary-value">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Draft
+                    </div>
+
+                    <div id="draftRequisitions"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Posted
+                    </div>
+
+                    <div id="postedRequisitions"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Today's Requisitions
+                    </div>
+
+                    <div id="todayRequisitions"
+                         class="summary-value">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="card mrs-card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-lg-3 col-md-6">
+
+                    <label class="form-label">
+                        Search
+                    </label>
+
+                    <input type="text"
+                           id="filterSearch"
+                           class="form-control"
+                           placeholder="MRS no., requested by, material">
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label">
+                        Branch
+                    </label>
+
+                    <select id="filterBranch"
+                            class="form-select">
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select id="filterStatus"
+                            class="form-select">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option value="DRAFT">
+                            Draft
+                        </option>
+
+                        <option value="POSTED">
+                            Posted
+                        </option>
+
+                        <option value="CANCELLED">
+                            Cancelled
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label">
+                        From Date
+                    </label>
+
+                    <input type="date"
+                           id="filterFromDate"
+                           class="form-control">
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label">
+                        To Date
+                    </label>
+
+                    <input type="date"
+                           id="filterToDate"
+                           class="form-control">
+
+                </div>
+
+                <div class="col-lg-auto col-md-6">
+
+                    <button type="button"
+                            id="btnSearch"
+                            class="btn btn-primary w-100">
+
+                        <i class="bi bi-search me-1"></i>
+                        Search
+                    </button>
+
+                </div>
+
+                <div class="col-lg-auto col-md-6">
+
+                    <button type="button"
+                            id="btnClear"
+                            class="btn btn-outline-secondary w-100">
+
+                        Clear
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Table -->
+    <div class="card mrs-card shadow-sm">
+
+        <div class="card-header bg-white border-0 py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="mb-0">
+                        Material Requisition Slips
+                    </h5>
+
+                    <small id="tableCount"
+                           class="text-muted">
+
+                        0 records
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div id="loadingContainer"
+             class="text-center py-5 d-none">
+
+            <div class="spinner-border text-primary mb-2"></div>
+
+            <div class="text-muted">
+                Loading material requisitions...
+            </div>
+
+        </div>
+
+
+        <div id="emptyContainer"
+             class="text-center py-5 text-muted d-none">
+
+            <i class="bi bi-file-earmark-text fs-1"></i>
+
+            <div class="mt-2">
+                No material requisitions found.
+            </div>
+
+        </div>
+
+
+        <div id="tableContainer"
+             class="table-responsive">
+
+            <table class="table table-hover mrs-table mb-0">
+
+                <thead>
+                    <tr>
+
+                        <th>
+                            Requisition No.
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Branch
+                        </th>
+
+                        <th>
+                            Requested By
+                        </th>
+
+                        <th>
+                            Time Requested
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Created By
+                        </th>
+
+                        <th class="text-center">
+                            Action
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody id="mrsTableBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        let requisitions = [];
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            async function () {
+
+                bindEvents();
+
+                await loadBranches();
+
+                await loadRequisitions();
+
+            });
+
+
+        function bindEvents() {
+
+            document.getElementById(
+                "btnRefresh"
+            ).addEventListener(
+                "click",
+                loadRequisitions
+            );
+
+            document.getElementById(
+                "btnSearch"
+            ).addEventListener(
+                "click",
+                loadRequisitions
+            );
+
+            document.getElementById(
+                "btnClear"
+            ).addEventListener(
+                "click",
+                clearFilters
+            );
+
+            document.getElementById(
+                "btnNewMrs"
+            ).addEventListener(
+                "click",
+                function () {
+
+                    window.location.href =
+                        "/inventory/material-requisitions/create";
+
+                }
+            );
+        }
+
+
+        async function loadRequisitions() {
+
+            setLoading(true);
+
+            try {
+
+                const response = await fetch(
+                    "/inventory/material-requisitions/data"
+                );
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+                requisitions =
+                    result.data ??
+                    result.items ??
+                    result.requisitions ??
+                    result;
+
+                if (!Array.isArray(requisitions)) {
+                    requisitions = [];
+                }
+
+                renderTable();
+
+                updateSummary();
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                requisitions = [];
+
+                renderTable();
+
+                updateSummary();
+
+            }
+            finally {
+
+                setLoading(false);
+            }
+        }
+
+
+        function renderTable() {
+
+            const tbody =
+                document.getElementById(
+                    "mrsTableBody"
+                );
+
+            const tableContainer =
+                document.getElementById(
+                    "tableContainer"
+                );
+
+            const emptyContainer =
+                document.getElementById(
+                    "emptyContainer"
+                );
+
+            tbody.innerHTML = "";
+
+            document.getElementById(
+                "tableCount"
+            ).textContent =
+                `${requisitions.length} record${requisitions.length === 1 ? "" : "s"}`;
+
+            if (requisitions.length === 0) {
+
+                tableContainer.classList.add(
+                    "d-none"
+                );
+
+                emptyContainer.classList.remove(
+                    "d-none"
+                );
+
+                return;
+            }
+
+            tableContainer.classList.remove(
+                "d-none"
+            );
+
+            emptyContainer.classList.add(
+                "d-none"
+            );
+
+
+            requisitions.forEach(
+                function (item) {
+
+                    const row =
+                        document.createElement(
+                            "tr"
+                        );
+
+                    row.innerHTML = `
+
+                        <td class="fw-semibold">
+                            ${escapeHtml(
+                                item.requisitionNo ?? ""
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDate(
+                                item.requisitionDate
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                item.branchName ??
+                                item.branchId ??
+                                ""
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                item.requestedBy ??
+                                "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatTime(
+                                item.timeRequested
+                            )}
+                        </td>
+
+                        <td>
+                            ${getStatusBadge(
+                                item.status
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                item.createdByName ??
+                                item.createdBy ??
+                                "—"
+                            )}
+                        </td>
+
+                        <td class="text-center">
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    onclick="openDetails(${item.requisitionId})">
+
+                                View
+                            </button>
+
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+                }
+            );
+        }
+
+
+        function updateSummary() {
+
+            document.getElementById(
+                "totalRequisitions"
+            ).textContent =
+                requisitions.length;
+
+            document.getElementById(
+                "draftRequisitions"
+            ).textContent =
+                requisitions.filter(
+                    x =>
+                        String(x.status)
+                            .toUpperCase() ===
+                        "DRAFT"
+                ).length;
+
+            document.getElementById(
+                "postedRequisitions"
+            ).textContent =
+                requisitions.filter(
+                    x =>
+                        String(x.status)
+                            .toUpperCase() ===
+                        "POSTED"
+                ).length;
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .substring(0, 10);
+
+            document.getElementById(
+                "todayRequisitions"
+            ).textContent =
+                requisitions.filter(
+                    x =>
+                        String(
+                            x.requisitionDate ?? ""
+                        ).substring(0, 10) ===
+                        today
+                ).length;
+        }
+
+
+        async function loadBranches() {
+
+            try {
+
+                const response = await fetch(
+                    "/inventory/raw-materials/branches"
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const branches =
+                    await response.json();
+
+                const select =
+                    document.getElementById(
+                        "filterBranch"
+                    );
+
+                if (!Array.isArray(branches)) {
+                    return;
+                }
+
+                branches.forEach(
+                    function (branch) {
+
+                        const id =
+                            branch.branch_id ??
+                            branch.branchId;
+
+                        const name =
+                            branch.branch_name ??
+                            branch.branchName ??
+                            id;
+
+                        select.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <option value="${escapeAttribute(id)}">
+                                ${escapeHtml(name)}
+                            </option>
+                            `
+                        );
+                    }
+                );
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }
+
+
+        function openDetails(id) {
+
+            window.location.href =
+                `/inventory/material-requisitions/${id}`;
+        }
+
+
+        function clearFilters() {
+
+            document.getElementById(
+                "filterSearch"
+            ).value = "";
+
+            document.getElementById(
+                "filterBranch"
+            ).value = "";
+
+            document.getElementById(
+                "filterStatus"
+            ).value = "";
+
+            document.getElementById(
+                "filterFromDate"
+            ).value = "";
+
+            document.getElementById(
+                "filterToDate"
+            ).value = "";
+
+            loadRequisitions();
+        }
+
+
+        function setLoading(value) {
+
+            document.getElementById(
+                "loadingContainer"
+            ).classList.toggle(
+                "d-none",
+                !value
+            );
+
+            if (value) {
+
+                document.getElementById(
+                    "tableContainer"
+                ).classList.add(
+                    "d-none"
+                );
+
+                document.getElementById(
+                    "emptyContainer"
+                ).classList.add(
+                    "d-none"
+                );
+            }
+        }
+
+
+        function getStatusBadge(status) {
+
+            const value =
+                String(status || "")
+                    .toUpperCase();
+
+            let css =
+                "status-draft";
+
+            if (value === "POSTED") {
+                css = "status-posted";
+            }
+            else if (
+                value === "CANCELLED"
+            ) {
+                css = "status-cancelled";
+            }
+
+            return `
+                <span class="status-badge ${css}">
+                    ${escapeHtml(value || "DRAFT")}
+                </span>
+            `;
+        }
+
+
+        function formatDate(value) {
+
+            if (!value) {
+                return "—";
+            }
+
+            const date =
+                new Date(value);
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "—";
+            }
+
+            return date.toLocaleDateString(
+                "en-PH",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit"
+                }
+            );
+        }
+
+
+        function formatTime(value) {
+
+            if (!value) {
+                return "—";
+            }
+
+            const date =
+                new Date(value);
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "—";
+            }
+
+            return date.toLocaleTimeString(
+                "en-PH",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        function escapeHtml(value) {
+
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+
+        function escapeAttribute(value) {
+            return escapeHtml(value);
+        }
+
+    </script>
+
+}

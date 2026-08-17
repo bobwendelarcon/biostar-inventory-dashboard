@@ -136,11 +136,12 @@
 
                     <!-- Code -->
                     <div class="col-md-4">
-                        <label class="form-label">Material Code *</label>
+                        <label class="form-label">Material Code</label>
                         <input type="text"
                                id="materialCode"
                                class="form-control"
-                               placeholder="RM-0001">
+                               value="Auto-generated"
+                               disabled>
                     </div>
 
                     <!-- Name -->
@@ -281,6 +282,49 @@
 
 </div>
 
+<div id="materialFloatingMenu"
+     class="material-floating-menu d-none">
+</div>
+
 @section Scripts {
-    <script src="~/js/manufacturing/materials/materials.js?v=6"></script>
+
+    <style>
+        .material-floating-menu {
+            position: fixed;
+            z-index: 9999;
+            min-width: 170px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+            padding: 5px 0;
+        }
+
+            .material-floating-menu button {
+                display: block;
+                width: 100%;
+                border: 0;
+                background: transparent;
+                text-align: left;
+                padding: 8px 14px;
+                color: #212529;
+            }
+
+                .material-floating-menu button:hover {
+                    background: #f8f9fa;
+                }
+
+            .material-floating-menu .menu-divider {
+                border-top: 1px solid #dee2e6;
+                margin: 4px 0;
+            }
+
+            .material-floating-menu .delete-action {
+                color: #dc3545;
+            }
+    </style>
+
+
+
+    <script src="~/js/manufacturing/materials/materials.js?v=7"></script>
 }

@@ -19,7 +19,6 @@ wwwroot\js\delivery-checklist.js
 wwwroot\js\inventory.js
 wwwroot\js\manual-stock-in.js
 wwwroot\js\manufacturing\materials\material-categories.js
-wwwroot\js\manufacturing\materials\materials.js
 wwwroot\js\manufacturing\materials\raw-material-transactions.js
 wwwroot\js\partner.js
 wwwroot\js\products.js
@@ -93,3 +92,4 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
+wwwroot\js\manufacturing\materials\materials.js

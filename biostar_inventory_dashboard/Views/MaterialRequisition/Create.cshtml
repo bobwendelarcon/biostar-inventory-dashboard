@@ -1,0 +1,1459 @@
+﻿@{
+    ViewData["Title"] = "New Material Requisition";
+
+    var currentUserId =
+        ViewBag.CurrentUserId?.ToString() ?? "";
+
+    var currentUserName =
+        ViewBag.CurrentUserName?.ToString() ?? "";
+}
+
+<style>
+    .mrs-form-page {
+        padding-bottom: 40px;
+    }
+
+    .mrs-form-card {
+        border: 0;
+        border-radius: 12px;
+    }
+
+    .mrs-title {
+        font-weight: 700;
+        letter-spacing: .02em;
+    }
+
+    .mrs-table th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        vertical-align: middle;
+        white-space: nowrap;
+        background: #f8f9fa;
+    }
+
+    .mrs-table td {
+        vertical-align: middle;
+    }
+
+    .material-info {
+        font-size: .75rem;
+        color: #6c757d;
+        margin-top: 3px;
+    }
+
+    .available-stock {
+        font-size: .75rem;
+        color: #198754;
+        margin-top: 3px;
+    }
+</style>
+
+<div class="container-fluid mrs-form-page">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+            <h3 class="mb-0">
+                Material Requisition Slip
+            </h3>
+
+            <small class="text-muted">
+                Raw material requisition and warehouse release.
+            </small>
+        </div>
+
+        <a href="/inventory/material-requisitions"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+        </a>
+
+    </div>
+
+
+    <div class="card mrs-form-card shadow-sm">
+
+        <div class="card-body">
+
+            <div id="mrsAlert"
+                 class="alert d-none">
+            </div>
+
+
+            <!-- Header -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Date
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="date"
+                           id="requisitionDate"
+                           class="form-control">
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Branch
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <select id="branchId"
+                            class="form-select">
+
+                        <option value="">
+                            Select Branch
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Requisition No.
+                    </label>
+
+                    <input type="text"
+                           id="requisitionNo"
+                           class="form-control"
+                           value="Auto-generated"
+                           disabled>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Status
+                    </label>
+
+                    <input type="text"
+                           class="form-control"
+                           value="DRAFT"
+                           disabled>
+
+                </div>
+
+            </div>
+
+
+            <!-- Material table -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+                <h5 class="mb-0 mrs-title">
+                    Materials
+                </h5>
+
+                <button type="button"
+                        id="btnAddLine"
+                        class="btn btn-sm btn-outline-primary">
+
+                    <i class="bi bi-plus-circle me-1"></i>
+                    Add Material
+                </button>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered mrs-table">
+
+                    <thead>
+                        <tr>
+                            <th style="min-width:180px;">
+                                Material
+                            </th>
+
+                            <th style="min-width:130px;">
+                                Quantity
+                            </th>
+
+                            <th style="min-width:170px;">
+                                Lot / Batch No.
+                            </th>
+
+                            <th style="min-width:135px;">
+                                Expiration
+                            </th>
+
+                            <th style="min-width:140px;">
+                                Actual Weight
+                            </th>
+
+                            <th style="min-width:180px;">
+                                Remarks
+                            </th>
+
+                            <th style="width:60px;">
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="mrsLinesBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <hr class="my-4">
+
+
+            <!-- Footer fields from paper MRS -->
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-semibold">
+                        Requested By
+                    </label>
+
+                    <input type="text"
+                           id="requestedBy"
+                           class="form-control"
+                           value="@currentUserName"
+                           disabled>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-semibold">
+                        Released By
+                    </label>
+
+                    <input type="text"
+                           id="releasedBy"
+                           class="form-control"
+                           disabled
+                           placeholder="Set during posting">
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-semibold">
+                        Verified By
+                    </label>
+
+                    <input type="text"
+                           id="verifiedBy"
+                           class="form-control"
+                           disabled
+                           placeholder="Set during posting">
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-semibold">
+                        Time Requested
+                    </label>
+
+                    <input type="time"
+                           id="timeRequested"
+                           class="form-control">
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-semibold">
+                        Time Served
+                    </label>
+
+                    <input type="time"
+                           id="timeServed"
+                           class="form-control"
+                           disabled>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label fw-semibold">
+                        Received By
+                    </label>
+
+                    <input type="text"
+                           id="receivedBy"
+                           class="form-control"
+                           disabled
+                           placeholder="Set during posting">
+
+                </div>
+
+                <div class="col-12">
+
+                    <label class="form-label fw-semibold">
+                        Remarks
+                    </label>
+
+                    <textarea id="mrsRemarks"
+                              class="form-control"
+                              rows="3"
+                              maxlength="500"></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-footer bg-white d-flex justify-content-end gap-2">
+
+            <a href="/inventory/material-requisitions"
+               class="btn btn-secondary">
+
+                Cancel
+            </a>
+
+            <button type="button"
+                    id="btnSaveDraft"
+                    class="btn btn-primary">
+
+                <span id="saveSpinner"
+                      class="spinner-border spinner-border-sm me-1 d-none">
+                </span>
+
+                <i class="bi bi-save me-1"></i>
+
+                Save Draft
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        let materials = [];
+        let lineCounter = 0;
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            async function () {
+
+                setDefaultDateTime();
+
+                bindEvents();
+
+                await loadBranches();
+
+                await loadMaterials();
+
+                addMaterialLine();
+
+            }
+        );
+
+
+                function bindEvents() {
+
+            document.getElementById(
+                "btnAddLine"
+            ).addEventListener(
+                "click",
+                addMaterialLine
+            );
+
+            document.getElementById(
+                "btnSaveDraft"
+            ).addEventListener(
+                "click",
+                saveDraft
+            );
+
+            document.getElementById(
+                "branchId"
+            ).addEventListener(
+                "change",
+                handleBranchChange
+            );
+        }
+
+
+        function setDefaultDateTime() {
+
+            const now = new Date();
+
+            document.getElementById(
+                "requisitionDate"
+            ).value =
+                now.toISOString()
+                   .substring(0, 10);
+
+            document.getElementById(
+                "timeRequested"
+            ).value =
+                now.toTimeString()
+                   .substring(0, 5);
+
+        }
+
+
+
+                async function handleBranchChange() {
+
+            const rows =
+                document.querySelectorAll(
+                    "#mrsLinesBody tr"
+                );
+
+            for (const row of rows) {
+
+                const lineId =
+                    row.id.replace(
+                        "mrsLine_",
+                        ""
+                    );
+
+                const materialValue =
+                    document.getElementById(
+                        `material_${lineId}`
+                    ).value;
+
+                if (!materialValue) {
+
+                    document.getElementById(
+                        `lot_${lineId}`
+                    ).innerHTML = `
+                        <option value="">
+                            Select Material First
+                        </option>
+                    `;
+
+                    document.getElementById(
+                        `lot_${lineId}`
+                    ).disabled = true;
+
+                    document.getElementById(
+                        `expiration_${lineId}`
+                    ).value = "—";
+
+                    document.getElementById(
+                        `availableStock_${lineId}`
+                    ).textContent = "";
+
+                    continue;
+                }
+
+                await handleMaterialChange(
+                    lineId
+                );
+            }
+        }
+
+
+        async function loadBranches() {
+
+            try {
+
+                const response = await fetch(
+                    "/inventory/raw-materials/branches"
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const branches =
+                    await response.json();
+
+                const select =
+                    document.getElementById(
+                        "branchId"
+                    );
+
+                if (!Array.isArray(branches)) {
+                    return;
+                }
+
+                branches.forEach(
+                    function (branch) {
+
+                        const id =
+                            branch.branch_id ??
+                            branch.branchId;
+
+                        const name =
+                            branch.branch_name ??
+                            branch.branchName ??
+                            id;
+
+                        if (!id) {
+                            return;
+                        }
+
+                        select.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <option value="${escapeAttribute(id)}">
+                                ${escapeHtml(name)}
+                            </option>
+                            `
+                        );
+                    }
+                );
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }
+
+
+        async function loadMaterials() {
+
+            try {
+
+                const response = await fetch(
+                    "/manufacturing/materials/list"
+                );
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+                materials =
+                    result.data ??
+                    result.items ??
+                    result.materials ??
+                    result;
+
+                if (!Array.isArray(materials)) {
+                    materials = [];
+                }
+
+                materials =
+                    materials.filter(
+                        x =>
+                            x.is_active !== false
+                    );
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                materials = [];
+            }
+
+        }
+
+
+        function addMaterialLine() {
+
+            lineCounter++;
+
+            const id =
+                lineCounter;
+
+            const tbody =
+                document.getElementById(
+                    "mrsLinesBody"
+                );
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.id =
+                `mrsLine_${id}`;
+
+            row.innerHTML = `
+
+                <td>
+
+                    <select class="form-select form-select-sm"
+                            id="material_${id}"
+                            onchange="handleMaterialChange(${id})">
+
+                        ${getMaterialOptions()}
+
+                    </select>
+
+                    <div id="materialInfo_${id}"
+                         class="material-info">
+                    </div>
+
+                    <div id="availableStock_${id}"
+                         class="available-stock">
+                    </div>
+
+                </td>
+
+
+                <td>
+
+                    <div class="input-group input-group-sm">
+
+                        <input type="number"
+                               id="requestedQty_${id}"
+                               class="form-control"
+                               min="0.0001"
+                               step="0.0001"
+                               placeholder="0">
+
+                        <span id="uom_${id}"
+                              class="input-group-text">
+                            UOM
+                        </span>
+
+                    </div>
+
+                </td>
+
+
+                <td>
+
+                    <select id="lot_${id}"
+                            class="form-select form-select-sm"
+                            disabled
+                            onchange="handleLotChange(${id})">
+
+                        <option value="">
+                            Select Material First
+                        </option>
+
+                    </select>
+
+                </td>
+
+
+                <td>
+
+                    <input type="text"
+                           id="expiration_${id}"
+                           class="form-control form-control-sm"
+                           value="—"
+                           disabled>
+
+                </td>
+
+
+                <td>
+
+                    <input type="number"
+                           id="actualQty_${id}"
+                           class="form-control form-control-sm"
+                           placeholder="Posted later"
+                           disabled>
+
+                </td>
+
+
+                <td>
+
+                    <input type="text"
+                           id="lineRemarks_${id}"
+                           class="form-control form-control-sm"
+                           maxlength="500">
+
+                </td>
+
+
+                <td class="text-center">
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="removeMaterialLine(${id})">
+
+                        <i class="bi bi-trash"></i>
+
+                    </button>
+
+                </td>
+            `;
+
+            tbody.appendChild(row);
+
+        }
+
+
+        function getMaterialOptions() {
+
+            let html = `
+                <option value="">
+                    Select Material
+                </option>
+            `;
+
+            materials
+                .sort(function (a, b) {
+
+                    const nameA =
+                        a.material_name ??
+                        a.materialName ??
+                        "";
+
+                    const nameB =
+                        b.material_name ??
+                        b.materialName ??
+                        "";
+
+                    return String(nameA)
+                        .localeCompare(
+                            String(nameB)
+                        );
+
+                })
+                .forEach(
+                    function (material) {
+
+                        const id =
+                            material.material_id ??
+                            material.materialId;
+
+                        const code =
+                            material.material_code ??
+                            material.materialCode ??
+                            "";
+
+                        const name =
+                            material.material_name ??
+                            material.materialName ??
+                            "";
+
+                        html += `
+                            <option value="${escapeAttribute(id)}">
+                                ${escapeHtml(code)} - ${escapeHtml(name)}
+                            </option>
+                        `;
+                    }
+                );
+
+            return html;
+
+        }
+
+
+        async function handleMaterialChange(lineId) {
+
+            const materialId =
+                Number(
+                    document.getElementById(
+                        `material_${lineId}`
+                    ).value
+                );
+
+            const material =
+                materials.find(
+                    x =>
+                        Number(
+                            x.material_id ??
+                            x.materialId
+                        ) === materialId
+                );
+
+            const lotSelect =
+                document.getElementById(
+                    `lot_${lineId}`
+                );
+
+            const info =
+                document.getElementById(
+                    `materialInfo_${lineId}`
+                );
+
+            const uom =
+                document.getElementById(
+                    `uom_${lineId}`
+                );
+
+
+            document.getElementById(
+                `expiration_${lineId}`
+            ).value = "—";
+
+            document.getElementById(
+                `availableStock_${lineId}`
+            ).textContent = "";
+
+
+            if (!material) {
+
+                info.textContent = "";
+
+                uom.textContent = "UOM";
+
+                lotSelect.disabled = true;
+
+                lotSelect.innerHTML = `
+                    <option value="">
+                        Select Material First
+                    </option>
+                `;
+
+                return;
+            }
+
+
+            uom.textContent =
+                material.uom || "UOM";
+
+
+            const isLotTracked =
+                material.is_lot_tracked === true;
+
+
+            info.textContent =
+                isLotTracked
+                    ? "Lot Tracked"
+                    : "Not Lot Tracked";
+
+
+            const branchId =
+                document.getElementById(
+                    "branchId"
+                ).value;
+
+
+            if (!branchId) {
+
+                lotSelect.disabled = true;
+
+                lotSelect.innerHTML = `
+                    <option value="">
+                        Select Branch First
+                    </option>
+                `;
+
+                return;
+            }
+
+
+            await loadAvailableLots(
+                lineId,
+                materialId,
+                branchId,
+                isLotTracked
+            );
+
+        }
+
+
+        async function loadAvailableLots(
+            lineId,
+            materialId,
+            branchId,
+            isLotTracked) {
+
+            const select =
+                document.getElementById(
+                    `lot_${lineId}`
+                );
+
+            select.disabled = true;
+
+            select.innerHTML = `
+                <option value="">
+                    Loading...
+                </option>
+            `;
+
+
+            try {
+
+                const response = await fetch(
+                    `/inventory/material-requisitions/available-lots` +
+                    `?materialId=${materialId}` +
+                    `&branchId=${encodeURIComponent(branchId)}`
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+
+                const lots =
+                    await response.json();
+
+
+                if (!Array.isArray(lots) ||
+                    lots.length === 0) {
+
+                    select.innerHTML = `
+                        <option value="">
+                            No Available Stock
+                        </option>
+                    `;
+
+                    return;
+                }
+
+
+                if (!isLotTracked) {
+
+                    const lot =
+                        lots[0];
+
+                    select.innerHTML = `
+                        <option value="${escapeAttribute(
+                            lot.materialLotId
+                        )}">
+                            Not Lot Tracked
+                        </option>
+                    `;
+
+                    select.value =
+                        String(
+                            lot.materialLotId
+                        );
+
+                                document.getElementById(
+            `requestedQty_${lineId}`
+        ).dataset.available =
+            String(lot.quantity ?? 0);
+
+                    document.getElementById(
+                        `availableStock_${lineId}`
+                    ).textContent =
+                        `Available: ${formatQuantity(
+                            lot.quantity
+                        )} ${escapeHtml(
+                            lot.uom || ""
+                        )}`;
+
+                    return;
+                }
+
+
+                select.innerHTML = `
+                    <option value="">
+                        Select Lot / Batch
+                    </option>
+                `;
+
+
+                lots.forEach(
+                    function (lot) {
+
+                        select.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <option
+                                value="${escapeAttribute(lot.materialLotId)}"
+                                data-expiration="${escapeAttribute(lot.expirationDate || "")}"
+                                data-quantity="${escapeAttribute(lot.quantity || 0)}"
+                                data-uom="${escapeAttribute(lot.uom || "")}">
+
+                                ${escapeHtml(lot.lotNo)}
+                                - ${formatQuantity(lot.quantity)}
+                                ${escapeHtml(lot.uom || "")}
+
+                            </option>
+                            `
+                        );
+
+                    }
+                );
+
+
+                select.disabled = false;
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                select.innerHTML = `
+                    <option value="">
+                        Unable to Load Lots
+                    </option>
+                `;
+
+            }
+
+        }
+
+
+            function handleLotChange(lineId) {
+
+            const select =
+                document.getElementById(
+                    `lot_${lineId}`
+                );
+
+            const option =
+                select.options[
+                    select.selectedIndex
+                ];
+
+            const requestedQtyInput =
+                document.getElementById(
+                    `requestedQty_${lineId}`
+                );
+
+            if (!option ||
+                !option.value) {
+
+                document.getElementById(
+                    `expiration_${lineId}`
+                ).value = "—";
+
+                document.getElementById(
+                    `availableStock_${lineId}`
+                ).textContent = "";
+
+                requestedQtyInput.dataset.available = "";
+
+                return;
+            }
+
+            const expiration =
+                option.dataset.expiration;
+
+            const quantity =
+                Number(
+                    option.dataset.quantity ??
+                    0
+                );
+
+            const uom =
+                option.dataset.uom ??
+                "";
+
+            requestedQtyInput.dataset.available =
+                String(quantity);
+
+            document.getElementById(
+                `expiration_${lineId}`
+            ).value =
+                formatDate(expiration);
+
+            document.getElementById(
+                `availableStock_${lineId}`
+            ).textContent =
+                `Available: ${formatQuantity(quantity)} ${uom}`;
+        }
+
+
+        function removeMaterialLine(lineId) {
+
+            const rows =
+                document.querySelectorAll(
+                    "#mrsLinesBody tr"
+                );
+
+            if (rows.length <= 1) {
+
+                alert(
+                    "At least one material line is required."
+                );
+
+                return;
+            }
+
+            document.getElementById(
+                `mrsLine_${lineId}`
+            )?.remove();
+
+        }
+
+
+        async function saveDraft() {
+
+            hideAlert();
+
+            const branchId =
+                document.getElementById(
+                    "branchId"
+                ).value;
+
+            const requisitionDate =
+                document.getElementById(
+                    "requisitionDate"
+                ).value;
+
+            if (!branchId) {
+
+                showAlert(
+                    "danger",
+                    "Please select a branch."
+                );
+
+                return;
+            }
+
+
+            if (!requisitionDate) {
+
+                showAlert(
+                    "danger",
+                    "Requisition date is required."
+                );
+
+                return;
+            }
+
+
+            const lines = [];
+
+            const rows =
+                document.querySelectorAll(
+                    "#mrsLinesBody tr"
+                );
+
+
+            for (const row of rows) {
+
+                const lineId =
+                    row.id.replace(
+                        "mrsLine_",
+                        ""
+                    );
+
+                const materialId =
+                    Number(
+                        document.getElementById(
+                            `material_${lineId}`
+                        ).value
+                    );
+
+                const requestedQty =
+                    Number(
+                        document.getElementById(
+                            `requestedQty_${lineId}`
+                        ).value
+                    );
+
+
+                if (!materialId) {
+
+                    showAlert(
+                        "danger",
+                        "Please select a material for every line."
+                    );
+
+                    return;
+                }
+
+
+                if (!requestedQty ||
+                    requestedQty <= 0) {
+
+                    showAlert(
+                        "danger",
+                        "Requested quantity must be greater than zero."
+                    );
+
+                    return;
+                }
+
+                        const requestedQtyInput =
+            document.getElementById(
+                `requestedQty_${lineId}`
+            );
+
+        const availableQty =
+            Number(
+                requestedQtyInput.dataset.available ??
+                0
+            );
+
+        if (availableQty <= 0) {
+
+            showAlert(
+                "danger",
+                "The selected material has no available stock."
+            );
+
+            return;
+        }
+
+        if (requestedQty > availableQty) {
+
+            showAlert(
+                "danger",
+                `Requested quantity cannot exceed available stock of ${formatQuantity(availableQty)}.`
+            );
+
+            requestedQtyInput.focus();
+
+            return;
+        }
+
+
+
+
+                const material =
+                    materials.find(
+                        x =>
+                            Number(
+                                x.material_id ??
+                                x.materialId
+                            ) === materialId
+                    );
+
+
+                const materialLotIdValue =
+                    document.getElementById(
+                        `lot_${lineId}`
+                    ).value;
+
+
+                if (material?.is_lot_tracked &&
+                    !materialLotIdValue) {
+
+                    showAlert(
+                        "danger",
+                        "Please select a lot/batch for lot-tracked materials."
+                    );
+
+                    return;
+                }
+
+
+                lines.push({
+
+                    materialId:
+                        materialId,
+
+                    materialLotId:
+                        materialLotIdValue
+                            ? Number(
+                                materialLotIdValue
+                            )
+                            : null,
+
+                    lotNo:
+                        null,
+
+                    requestedQuantity:
+                        requestedQty,
+
+                    remarks:
+                        document.getElementById(
+                            `lineRemarks_${lineId}`
+                        ).value.trim()
+
+                });
+
+            }
+
+
+            const date =
+                requisitionDate;
+
+
+            const timeRequested =
+                document.getElementById(
+                    "timeRequested"
+                ).value;
+
+
+                   const dto = {
+
+            branchId:
+                branchId,
+
+            requisitionDate:
+                `${date}T00:00:00`,
+
+            timeRequested:
+                timeRequested
+                    ? `${date}T${timeRequested}:00`
+                    : null,
+
+            remarks:
+                document.getElementById(
+                    "mrsRemarks"
+                ).value.trim() || null,
+
+            lines:
+                lines
+        };
+
+
+            setSaving(true);
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/inventory/material-requisitions/create",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(dto)
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.message ??
+                        "Unable to save material requisition."
+                    );
+                }
+
+
+                window.location.href =
+                    `/inventory/material-requisitions/${result.requisitionId}`;
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showAlert(
+                    "danger",
+                    error.message
+                );
+
+            }
+            finally {
+
+                setSaving(false);
+            }
+
+        }
+
+
+        function setSaving(value) {
+
+            document.getElementById(
+                "btnSaveDraft"
+            ).disabled =
+                value;
+
+            document.getElementById(
+                "saveSpinner"
+            ).classList.toggle(
+                "d-none",
+                !value
+            );
+
+        }
+
+
+        function showAlert(type, message) {
+
+            const alert =
+                document.getElementById(
+                    "mrsAlert"
+                );
+
+            alert.className =
+                `alert alert-${type}`;
+
+            alert.textContent =
+                message;
+
+            alert.classList.remove(
+                "d-none"
+            );
+
+        }
+
+
+        function hideAlert() {
+
+            document.getElementById(
+                "mrsAlert"
+            ).classList.add(
+                "d-none"
+            );
+
+        }
+
+
+        function formatQuantity(value) {
+
+            return Number(
+                value ?? 0
+            ).toLocaleString(
+                "en-PH",
+                {
+                    maximumFractionDigits: 4
+                }
+            );
+
+        }
+
+
+        function formatDate(value) {
+
+            if (!value) {
+                return "—";
+            }
+
+            const date =
+                new Date(value);
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "—";
+            }
+
+            return date.toLocaleDateString(
+                "en-PH"
+            );
+
+        }
+
+
+        function escapeHtml(value) {
+
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+
+        }
+
+
+        function escapeAttribute(value) {
+
+            return escapeHtml(value);
+
+        }
+
+    </script>
+
+}

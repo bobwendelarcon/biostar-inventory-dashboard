@@ -29,12 +29,14 @@
 
     var isDispatchOpen = currentController == "DeliveryChecklist";
     var isInventoryOpen =
-      currentController == "Inventory" ||
-      currentController == "Transactions" ||
-      currentController == "StockOverview" ||
-      currentController == "InventoryAging" ||
-      currentController == "RawMaterialInventory" ||
-      currentController == "RawMaterialTransactions";
+     currentController == "Inventory" ||
+     currentController == "Transactions" ||
+     currentController == "StockOverview" ||
+     currentController == "InventoryAging" ||
+     currentController == "RawMaterialSummary" ||
+     currentController == "RawMaterialInventory" ||
+     currentController == "RawMaterialTransactions" ||
+     currentController == "MaterialRequisition";
     var isLogisticsOpen = currentController == "Logistics";
     var isReturnOpen = currentController == "Returns";
     var isReportOpen = currentController == "Reports";
@@ -303,6 +305,13 @@
 
         else if (userRole == "RM_WAREHOUSE")
         {
+
+
+
+
+
+
+
            
 
                <li class="nav-item mb-2">
@@ -355,6 +364,50 @@
 
                 </li>
 
+
+            <!-- Manufacturing -->
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#manufacturingMenu">
+                    <div>
+                        <i class="bi bi-buildings me-2"></i>
+                        <span>Manufacturing</span>
+                    </div>
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isManufacturingOpen ? "show" : "")" id="manufacturingMenu">
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/manufacturing/materials/categories" ? "active fw-bold" : "")"
+                               href="/manufacturing/materials/categories">
+                                <span>Material Categories</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentPath == "/manufacturing/materials" ? "active fw-bold" : "")"
+                               href="/manufacturing/materials">
+                                <span>Materials</span>
+                            </a>
+                        </li>
+
+                        @* <li>
+                            <a class="nav-link @(currentPath == "/purchasing/suppliers" ? "active fw-bold" : "")"
+                               href="/purchasing/suppliers">
+                                <span>Suppliers</span>
+                            </a>
+                        </li> *@
+
+
+
+                    </ul>
+                </div>
+            </li>
+
+
             <li class="nav-item mb-2">
                 <a class="nav-link d-flex justify-content-between align-items-center"
                    data-bs-toggle="collapse"
@@ -374,9 +427,23 @@
                     <ul class="nav flex-column ms-3 mt-1">
 
                         <li>
+                            <a class="nav-link @(currentController == "RawMaterialSummary" ? "active fw-bold" : "")"
+                               href="/inventory/raw-material-summary">
+                                <span>Raw Material Inventory</span>
+                            </a>
+                        </li>
+
+                        <li>
                             <a class="nav-link @(currentController == "RawMaterialInventory" ? "active fw-bold" : "")"
                                href="/inventory/raw-materials">
-                                <span>Raw Material Inventory</span>
+                                <span>Raw Material Inventory Lot</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link @(currentController == "MaterialRequisition" ? "active fw-bold" : "")"
+                               href="/inventory/material-requisitions">
+                                <span>Material Requisition (Stock Out)</span>
                             </a>
                         </li>
 
@@ -386,6 +453,8 @@
                                 <span>Inventory Transactions</span>
                             </a>
                         </li>
+
+                     
 
                     </ul>
                 </div>
@@ -576,6 +645,12 @@
                             <a class="nav-link @(currentController == "RawMaterialInventory" ? "active fw-bold" : "")"
                                href="/inventory/raw-materials">
                                 <span>Raw Material Inventory</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link @(currentController == "MaterialRequisition" ? "active fw-bold" : "")"
+                               href="/inventory/material-requisitions">
+                                <span>Material Requisition (Stock Out)</span>
                             </a>
                         </li>
 
