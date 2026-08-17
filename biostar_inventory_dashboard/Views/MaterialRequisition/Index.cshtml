@@ -590,7 +590,7 @@
 
                         <td>
                             ${escapeHtml(
-                                item.requestedBy ??
+                               item.requestedByName || item.requestedBy || "-" ??
                                 "—"
                             )}
                         </td>
@@ -609,9 +609,8 @@
 
                         <td>
                             ${escapeHtml(
-                                item.createdByName ??
-                                item.createdBy ??
-                                "—"
+                                item.createdByName || item.createdBy || "-" ??
+                               
                             )}
                         </td>
 
