@@ -400,7 +400,7 @@
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\MaterialRequisition\\Index.cshtml",
               "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\MaterialRequisition\\Index.cshtml",
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\MaterialRequisition\\Index.cshtml",
-              "ViewState": "AgIAADICAAAAAAAAAAAmwEoCAAAiAAAAAAAAAA==",
+              "ViewState": "AgIAADsCAAAAAAAAAAAowFYCAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-08-14T00:09:53.248Z",
               "EditorCaption": ""
@@ -427,8 +427,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\MaterialRequisition\\Create.cshtml",
               "ViewState": "AgIAAHcFAAAAAAAAAAAUwIcFAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-08-14T00:11:27.104Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-14T00:11:27.104Z"
             },
             {
               "$type": "Document",

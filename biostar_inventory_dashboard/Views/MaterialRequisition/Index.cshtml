@@ -588,12 +588,13 @@
                             )}
                         </td>
 
-                        <td>
-                            ${escapeHtml(
-                               item.requestedByName || item.requestedBy || "-" ??
-                                "—"
-                            )}
-                        </td>
+                              <td>
+            ${escapeHtml(
+                item.requestedByName ||
+                item.requestedBy ||
+                "—"
+            )}
+        </td>
 
                         <td>
                             ${formatTime(
@@ -606,13 +607,13 @@
                                 item.status
                             )}
                         </td>
-
-                        <td>
-                            ${escapeHtml(
-                                item.createdByName || item.createdBy || "-" ??
-                               
-                            )}
-                        </td>
+        <td>
+            ${escapeHtml(
+                item.createdByName ||
+                item.createdBy ||
+                "—"
+            )}
+        </td>
 
                         <td class="text-center">
 
