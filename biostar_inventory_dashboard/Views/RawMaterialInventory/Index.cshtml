@@ -2553,23 +2553,38 @@
                 });
         }
 
-        function formatDateTime(value) {
+              function formatDateTime(value) {
             if (!value) {
                 return "—";
             }
 
-            const date = new Date(value);
+            // API/database stores UTC.
+            // If the API returns a datetime without Z or timezone offset,
+            // explicitly tell JavaScript that it is UTC.
+            let utcValue = String(value);
+
+            if (
+                !utcValue.endsWith("Z") &&
+                !/[+-]\d{2}:\d{2}$/.test(utcValue)
+            ) {
+                utcValue += "Z";
+            }
+
+            const date = new Date(utcValue);
 
             if (Number.isNaN(date.getTime())) {
                 return "—";
             }
 
+            // Display as Philippine time
             return date.toLocaleString("en-PH", {
+                timeZone: "Asia/Manila",
                 year: "numeric",
                 month: "short",
                 day: "2-digit",
                 hour: "2-digit",
-                minute: "2-digit"
+                minute: "2-digit",
+                hour12: true
             });
         }
 
