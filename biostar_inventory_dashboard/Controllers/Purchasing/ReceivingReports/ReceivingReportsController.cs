@@ -290,6 +290,133 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.ReceivingReports
 
 
 
+        [HttpGet("final-rr/pending")]
+        public async Task<IActionResult> GetPendingFinalRr()
+        {
+            try
+            {
+                var client = CreateClient();
+
+                var response = await client.GetAsync(
+                    "api/purchasing/receiving-reports/final-rr/pending"
+                );
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = result,
+                    ContentType = "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+
+        [HttpGet("final-rr/{processingId:int}/details")]
+        public async Task<IActionResult> GetFinalRrDetails(
+            int processingId)
+        {
+            try
+            {
+                var client = CreateClient();
+
+                var response = await client.GetAsync(
+                    $"api/purchasing/receiving-reports/final-rr/{processingId}/details"
+                );
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = result,
+                    ContentType = "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+
+        [HttpPost("final-rr/{processingId:int}/complete")]
+        public async Task<IActionResult> CompleteFinalRr(
+    int processingId,
+    [FromBody] object dto)
+        {
+            try
+            {
+                var userId =
+                    User.FindFirst("user_id")?.Value
+                    ?? User.FindFirst("UserId")?.Value
+                    ?? User.Identity?.Name
+                    ?? "";
+
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "User ID is required."
+                    });
+                }
+
+                var client = CreateClient();
+
+                using var request =
+                    new HttpRequestMessage(
+                        HttpMethod.Post,
+                        $"api/purchasing/receiving-reports/final-rr/{processingId}/complete"
+                    );
+
+                request.Headers.TryAddWithoutValidation(
+                    "X-User-Id",
+                    userId.Trim()
+                );
+
+                request.Content =
+                    new StringContent(
+                        JsonSerializer.Serialize(dto),
+                        Encoding.UTF8,
+                        "application/json"
+                    );
+
+                var response =
+                    await client.SendAsync(request);
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = result,
+                    ContentType = "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+
 
 
 

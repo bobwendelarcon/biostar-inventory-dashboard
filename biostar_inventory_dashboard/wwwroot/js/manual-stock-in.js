@@ -45,7 +45,9 @@ function showConfirmStockInModal(e) {
         const uom = row.querySelector(".input-group-text")?.innerText || "";
         const pack = row.querySelector(".pack-display-input")?.value || "";
         const productLine = row.querySelector(".productline-input")?.value || "";
-        const lotNo = row.querySelector(".lot-input")?.value || "";
+        const lotNo = (
+            row.querySelector(".lot-input")?.value || ""
+        ).trim().toUpperCase();
         const expDate = row.querySelector(".exp-input")?.value || "";
 
         if (!qty || Number(qty) <= 0) return alert("Please enter valid quantity.");
@@ -274,6 +276,13 @@ function addSelectedProductToTable() {
 
     const qtyInput = row.querySelector(".qty-input");
     const packDisplayInput = row.querySelector(".pack-display-input");
+
+
+    const lotInput = row.querySelector(".lot-input");
+
+    lotInput.addEventListener("input", function () {
+        lotInput.value = lotInput.value.toUpperCase();
+    });
 
     qtyInput.addEventListener("input", function () {
         const qty = Number(qtyInput.value || 0);
@@ -635,7 +644,10 @@ async function saveManualStockIn(e) {
             const qty = Number(row.querySelector(".qty-input").value || 0);
             //const qtyPerPack = Number(row.querySelector(".packqty-input").value || 1);
             const productLine = row.querySelector(".productline-input").value.trim();
-            const lotNo = row.querySelector(".lot-input").value.trim();
+            const lotNo = row.querySelector(".lot-input")
+                .value
+                .trim()
+                .toUpperCase();
             const expMonth = row.querySelector(".exp-input").value;
 
             if (!productId) throw new Error("Please select product for all rows.");

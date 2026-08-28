@@ -143,22 +143,59 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.PurchaseOrders
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> Approve(int id)
         {
-            var client = CreateClient();
+            try
+            {
+                var client = CreateClient();
 
-            var content = new StringContent(
-                JsonSerializer.Serialize(new { }),
-                Encoding.UTF8,
-                "application/json"
-            );
+                var userId =
+                    User.FindFirst("user_id")?.Value
+                    ?? User.FindFirst("UserId")?.Value
+                    ?? User.Identity?.Name
+                    ?? "";
 
-            var response = await client.PostAsync(
-                $"api/purchasing/purchase-orders/{id}/approve",
-                content
-            );
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return BadRequest(new
+                    {
+                        message = "Logged-in user ID is missing."
+                    });
+                }
 
-            var result = await response.Content.ReadAsStringAsync();
+                client.DefaultRequestHeaders.Remove("X-User-Id");
 
-            return StatusCode((int)response.StatusCode, result);
+                client.DefaultRequestHeaders.Add(
+                    "X-User-Id",
+                    userId.Trim()
+                );
+
+                var content = new StringContent(
+                    JsonSerializer.Serialize(new { }),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await client.PostAsync(
+                    $"api/purchasing/purchase-orders/{id}/approve",
+                    content
+                );
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = result,
+                    ContentType = "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
         }
 
         [HttpPost("{id}/cancel")]

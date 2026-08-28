@@ -20,6 +20,11 @@
             Save Inspection
         </button>
 
+        <button id="btnReleaseMaterial"
+                class="btn btn-primary btn-sm d-none">
+            Release to RMW
+        </button>
+
      
     </div>
 
@@ -33,8 +38,14 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="text-muted small">RR No</label>
-                    <div class="fw-semibold" id="rrNo">-</div>
+                    <label class="text-muted small">
+                        Incoming No
+                    </label>
+
+                    <div class="fw-semibold"
+                         id="incomingNo">
+                        -
+                    </div>
                 </div>
 
                 <div class="col-md-3">
@@ -104,12 +115,27 @@
     const qcId = '@qcId';
     let qcData = null;
 
-    document.addEventListener("DOMContentLoaded", function () {
-        loadQcDetails();
+        document.addEventListener(
+        "DOMContentLoaded",
+        function () {
 
-        document.getElementById("btnSaveInspection").addEventListener("click", saveInspection);
-      
-    });
+            loadQcDetails();
+
+            document
+                .getElementById("btnSaveInspection")
+                .addEventListener(
+                    "click",
+                    saveInspection
+                );
+
+            document
+                .getElementById("btnReleaseMaterial")
+                .addEventListener(
+                    "click",
+                    releaseMaterial
+                );
+        }
+    );
 
     async function loadQcDetails() {
         try {
@@ -126,7 +152,8 @@
 
             document.getElementById("qcTitle").innerText = data.qcNo;
             document.getElementById("qcNo").innerText = data.qcNo ?? "-";
-            document.getElementById("rrNo").innerText = data.rrNo ?? "-";
+            document.getElementById("incomingNo").innerText =
+    data.incomingNo ?? "-";
             document.getElementById("poNo").innerText = data.poNo ?? "-";
             document.getElementById("supplierName").innerText = data.supplierName ?? "-";
             document.getElementById("qcStatus").innerHTML = renderStatus(data.status);
@@ -211,16 +238,77 @@
         });
     }
 
-        function setupButtons(qc) {
+            function setupButtons(qc) {
 
-        const btn =
-            document.getElementById("btnSaveInspection");
+        const btnSave =
+            document.getElementById(
+                "btnSaveInspection"
+            );
 
-        btn.classList.add("d-none");
+        const btnRelease =
+            document.getElementById(
+                "btnReleaseMaterial"
+            );
+
+        btnSave.classList.add("d-none");
+        btnRelease.classList.add("d-none");
+            btnRelease.disabled = false;
+    btnRelease.innerText = "Release to RMW";
+
+
+
+        // --------------------------------------------
+        // QC still needs inspection
+        // --------------------------------------------
 
         if (qc.status === "FOR_INSPECTION") {
-            btn.classList.remove("d-none");
+
+            btnSave.classList.remove("d-none");
+
+            return;
         }
+
+
+        // --------------------------------------------
+        // QC completed and material can be released
+        // --------------------------------------------
+
+        if (
+            qc.status === "INSPECTED" &&
+            (
+                qc.decision === "ACCEPTED" ||
+                qc.decision === "PARTIALLY_ACCEPTED"
+            ) &&
+            qc.quarantineId &&
+            qc.quarantineStatus ===
+                "WAITING_FOR_QA_RELEASE"
+        ) {
+
+            btnRelease.classList.remove("d-none");
+
+            return;
+        }
+
+
+        // --------------------------------------------
+        // Already released
+        // --------------------------------------------
+
+        if (
+            qc.quarantineStatus === "RELEASED"
+        ) {
+
+            btnRelease.classList.remove("d-none");
+
+
+
+            btnRelease.disabled = true;
+
+            btnRelease.innerText =
+                "Released to RMW";
+        }
+
+
     }
 
     async function saveInspection() {
@@ -318,6 +406,84 @@
 
         } catch (error) {
             alert(error.message ?? "Failed to save QC inspection.");
+        }
+    }
+
+        async function releaseMaterial() {
+
+        if (!qcData) {
+            alert("QC inspection data is not loaded.");
+            return;
+        }
+
+        if (!qcData.quarantineId) {
+            alert(
+                "No quarantine record was found for this QC inspection."
+            );
+            return;
+        }
+
+        const quarantineNo =
+            qcData.quarantineNo ??
+            "this material";
+
+        const confirmed =
+            confirm(
+                `Release ${quarantineNo} to Raw Material Warehouse?\n\n` +
+                `The accepted material will become available ` +
+                `for warehouse weighing/counting.`
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const btn =
+            document.getElementById(
+                "btnReleaseMaterial"
+            );
+
+        btn.disabled = true;
+        btn.innerText = "Releasing...";
+
+        try {
+
+            const response =
+                await fetch(
+                    `/quality/qc-inspections/quarantine/${qcData.quarantineId}/release`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Unable to release material."
+                );
+            }
+
+            alert(
+                result.message ??
+                "Material released to Raw Material Warehouse."
+            );
+
+            await loadQcDetails();
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.message ??
+                "Unable to release material."
+            );
+
+            btn.disabled = false;
+            btn.innerText = "Release to RMW";
         }
     }
 

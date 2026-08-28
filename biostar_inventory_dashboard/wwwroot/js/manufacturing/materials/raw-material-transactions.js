@@ -29,7 +29,7 @@ async function loadTransactions() {
 
     tbody.innerHTML = `
         <tr>
-            <td colspan="12"
+            <td colspan="11"
                 class="text-center text-muted py-4">
                 Loading inventory transactions...
             </td>
@@ -339,14 +339,7 @@ function renderTransactions(items) {
                     </td>
 
 
-                    <!-- ACTION -->
-                    <td>
-                        <button type="button"
-                                class="btn btn-sm btn-outline-primary"
-                                onclick="viewTransaction(${x.transactionId})">
-                            View
-                        </button>
-                    </td>
+                   
 
                 </tr>
             `;
@@ -355,13 +348,6 @@ function renderTransactions(items) {
 }
 
 
-function viewTransaction(transactionId) {
-
-    console.log(
-        "Transaction ID:",
-        transactionId
-    );
-}
 
 
 function splitDateTime(value) {

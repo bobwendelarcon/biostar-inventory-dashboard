@@ -57,5 +57,32 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
                 });
             }
         }
+
+
+        [HttpGet("details/{transactionId:int}")]
+        public async Task<IActionResult> GetDetails(
+    int transactionId)
+        {
+            try
+            {
+                var result =
+                    await _apiService
+                        .GetRawMaterialTransactionDetailsAsync(
+                            transactionId);
+
+                return Content(
+                    result,
+                    "application/json"
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

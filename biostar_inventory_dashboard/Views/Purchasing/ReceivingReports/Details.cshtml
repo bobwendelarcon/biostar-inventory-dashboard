@@ -163,13 +163,13 @@
             document.getElementById("deliveryDate").innerText = formatDate(data.deliveryDate);
             document.getElementById("rrStatus").innerHTML = renderStatus(data.status);
 
-            document.getElementById("createdBy").innerText = data.createdBy ?? "-";
+            document.getElementById("createdBy").innerText = data.createdByName || data.createdBy || "-";
             document.getElementById("createdAt").innerText = formatDateTime(data.createdAt);
 
-            document.getElementById("qcBy").innerText = data.qcBy ?? "-";
+            document.getElementById("qcBy").innerText =data.qcByName || data.qcBy || "-";
             document.getElementById("qcAt").innerText = formatDateTime(data.qcAt);
 
-            document.getElementById("committedBy").innerText = data.committedBy ?? "-";
+            document.getElementById("committedBy").innerText =data.committedByName || data.committedBy || "-"
             document.getElementById("committedAt").innerText = formatDateTime(data.committedAt);
 
             document.getElementById("remarks").innerText = data.remarks ?? "-";

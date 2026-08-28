@@ -58,7 +58,7 @@
                 <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Month</label>
                     <select class="form-select" id="monthFilter">
-                        <option value="" selected>All Month</option>
+                        <option value="">All Month</option>
                         <option>January</option>
                         <option>February</option>
                         <option >March</option>
@@ -92,28 +92,30 @@
 
             <div class="col-lg-2 col-md-6">
                 <label class="form-label fw-semibold">Status</label>
-                <select class="form-select" id="statusFilter">
-                    <option value="ALL_EXCL_COMPLETED" selected>All Status (Excl. Completed)</option>
-                    <option value="ALL">All Status</option>
+                    <select class="form-select" id="statusFilter">
+                        <option value="ALL" selected>All Status</option>
 
-                    <option value="FOR ALLOCATION">For Allocation</option>
-                    <option value="ALLOCATED">Allocated</option>
-                    <option value="PARTIALLY ALLOCATED">Partially Allocated</option>
-                    <option value="READY FOR DISPATCH">Ready for Dispatch</option>
-                   
+                        <option value="ALL_EXCL_COMPLETED">
+                            All Status (Excl. Completed)
+                        </option>
+
+                        <option value="FOR ALLOCATION">For Allocation</option>
+                        <option value="ALLOCATED">Allocated</option>
+                        <option value="PARTIALLY ALLOCATED">Partially Allocated</option>
+                        <option value="READY FOR DISPATCH">Ready for Dispatch</option>
                         <option value="PARTIALLY DELIVERED">Partially Delivered</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="OVERDUE">Overdue</option>
-                    <option value="CANCELLED">Cancelled</option>
-                </select>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="OVERDUE">Overdue</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
             </div>
 
 
                 <div class="col-lg-2 col-md-6">
                     <label class="form-label fw-semibold">Sort By</label>
                     <select class="form-select" id="sortByFilter">
-                        <option value="deliveryDate" selected>Delivery Date</option>
-                        <option value="dateOrdered">Date Ordered</option>
+                        <option value="deliveryDate">Delivery Date</option>
+                        <option value="dateOrdered" selected>Order Date</option>
                         <option value="customer">Customer</option>
                         <option value="product">Product</option>
                         <option value="remainingQty">Remaining Qty</option>

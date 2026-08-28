@@ -161,6 +161,16 @@ body {
     border-radius: 10px;
 }
 
+/* COMPLETED DAILY ORDER */
+.dailyorder-table tbody tr.dailyorder-completed-row > td {
+    background-color: #fff3a3 !important;
+}
+
+.dailyorder-table tbody tr.dailyorder-completed-row:hover > td {
+    background-color: #ffe978 !important;
+}
+
+
 /* TABLE WRAPPER */
 .dailyorder-table-wrapper {
     flex: 1 1 auto;

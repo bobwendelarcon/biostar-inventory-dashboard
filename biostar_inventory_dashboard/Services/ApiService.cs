@@ -333,6 +333,26 @@ namespace biostar_inventory_dashboard.Services
         }
 
         public async Task<string>
+    GetRawMaterialTransactionDetailsAsync(
+        int transactionId)
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    $"api/inventory/raw-materials/transactions/{transactionId}");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+
+        public async Task<string>
     GetRawMaterialInventoryTransactionsAsync(int materialLotId)
         {
             var response = await _httpClient.GetAsync(
@@ -347,6 +367,49 @@ namespace biostar_inventory_dashboard.Services
             }
 
             return result;
+        }
+
+
+        public async Task<string> GetTimeInMotionReportAsync()
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    "api/reports/time-in-motion"
+                );
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(result);
+            }
+
+            return result;
+        }
+
+        public async Task<string>
+    GetPurchasingLeadTimeReportAsync()
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    "api/reports/purchasing-lead-time"
+                );
+
+            var content =
+                await response.Content
+                    .ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    string.IsNullOrWhiteSpace(content)
+                        ? "Failed to load Purchasing Lead Time report."
+                        : content
+                );
+            }
+
+            return content;
         }
 
 

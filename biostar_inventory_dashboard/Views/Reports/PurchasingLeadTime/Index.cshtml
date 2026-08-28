@@ -1,0 +1,1476 @@
+﻿@{
+    ViewData["Title"] = "Purchasing Lead Time Report";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+
+        <div class="text-muted small mb-1">
+            Reports &gt; Purchasing Lead Time
+        </div>
+
+        <h2 class="fw-bold mb-1">
+            Purchasing Lead Time Report
+        </h2>
+
+        <div class="text-muted">
+            Monitor purchasing turnaround from MPRF submission
+            through PO approval and supplier delivery.
+        </div>
+
+    </div>
+
+
+    <!-- SUMMARY CARDS -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Total POs
+                    </div>
+
+                    <div id="summaryTotal"
+                         class="fs-3 fw-bold">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Avg. Purchasing Lead Time
+                    </div>
+
+                    <div id="summaryPurchasing"
+                         class="fs-5 fw-bold text-primary">
+                        -
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Avg. Delivery Lead Time
+                    </div>
+
+                    <div id="summaryDelivery"
+                         class="fs-5 fw-bold">
+                        -
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Avg. Overall Lead Time
+                    </div>
+
+                    <div id="summaryOverall"
+                         class="fs-5 fw-bold">
+                        -
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Waiting for PO Approval
+                    </div>
+
+                    <div id="summaryWaitingApproval"
+                         class="fs-3 fw-bold text-warning">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Waiting for Delivery
+                    </div>
+
+                    <div id="summaryWaitingDelivery"
+                         class="fs-3 fw-bold text-warning">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- REPORT -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <h5 class="fw-bold mb-1">
+                Purchasing Lead Time Records
+            </h5>
+
+            <div class="text-muted small">
+                One record per Purchase Order.
+            </div>
+
+        </div>
+
+
+        <div class="card-body px-4">
+
+            <!-- FILTERS -->
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-xl-4 col-md-6">
+
+                    <label class="form-label small fw-semibold">
+                        Search
+                    </label>
+
+                    <input id="reportSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="MPRF, PO, Supplier, Incoming">
+
+                </div>
+
+
+                <div class="col-xl-3 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Current Stage
+                    </label>
+
+                    <select id="stageFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Stages
+                        </option>
+
+                        <option value="Purchasing Processing">
+                            Purchasing Processing
+                        </option>
+
+                        <option value="Waiting for Delivery">
+                            Waiting for Delivery
+                        </option>
+
+                        <option value="Received">
+                            Received
+                        </option>
+
+                        <option value="Submission Timestamp Missing">
+                            Submission Timestamp Missing
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        From Date
+                    </label>
+
+                    <input id="fromDate"
+                           type="date"
+                           class="form-control">
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        To Date
+                    </label>
+
+                    <input id="toDate"
+                           type="date"
+                           class="form-control">
+
+                </div>
+
+            </div>
+
+
+            <div class="mb-3">
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        onclick="resetFilters()">
+
+                    Reset Filters
+
+                </button>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="text-nowrap">
+                                MPRF
+                            </th>
+
+                            <th class="text-nowrap">
+                                PO No
+                            </th>
+
+                            <th>
+                                Supplier
+                            </th>
+
+                            <th class="text-nowrap">
+                                MPRF Submitted
+                            </th>
+
+                            <th class="text-nowrap">
+                                PO Approved
+                            </th>
+
+                            <th class="text-nowrap">
+                                Purchasing Lead Time
+                            </th>
+
+                            <th class="text-nowrap">
+                                Incoming No
+                            </th>
+
+                            <th class="text-nowrap">
+                                Received
+                            </th>
+
+                            <th class="text-nowrap">
+                                Delivery Lead Time
+                            </th>
+
+                            <th class="text-nowrap">
+                                Overall Lead Time
+                            </th>
+
+                            <th class="text-nowrap">
+                                Current Stage
+                            </th>
+
+                            <th class="text-nowrap">
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="reportTableBody">
+
+                        <tr>
+                            <td colspan="12"
+                                class="text-center text-muted py-5">
+
+                                Loading Purchasing Lead Time report...
+
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div id="recordCount"
+                 class="text-muted small mt-3">
+
+                0 records
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade"
+     id="purchasingTimelineModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title fw-bold">
+                        Purchasing Timeline
+                    </h5>
+
+                    <div id="timelineSubtitle"
+                         class="text-muted small mt-1">
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- SUMMARY -->
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                MPRF No
+                            </div>
+
+                            <div id="timelineMprf"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                PO No
+                            </div>
+
+                            <div id="timelinePo"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                Incoming No
+                            </div>
+
+                            <div id="timelineIncoming"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                Overall Lead Time
+                            </div>
+
+                            <div id="timelineOverall"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- TIMELINE -->
+
+                <div id="purchasingTimelineStages"
+                     class="border rounded p-3">
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        let leadTimeList = [];
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                document
+                    .getElementById("reportSearch")
+                    .addEventListener(
+                        "input",
+                        renderReport
+                    );
+
+                document
+                    .getElementById("stageFilter")
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+                document
+                    .getElementById("fromDate")
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+                document
+                    .getElementById("toDate")
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+                loadReport();
+            }
+        );
+
+
+        async function loadReport() {
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/reports/purchasing-lead-time/data"
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data?.message ??
+                        "Failed to load Purchasing Lead Time report."
+                    );
+                }
+
+                leadTimeList =
+                    Array.isArray(data)
+                        ? data
+                        : [];
+
+                renderReport();
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="12"
+                            class="text-center text-danger py-5">
+                            ${escapeHtml(error.message)}
+                        </td>
+                    </tr>
+                `;
+
+                updateSummary([]);
+            }
+        }
+
+
+        function getFilteredRows() {
+
+            const search =
+                document
+                    .getElementById(
+                        "reportSearch"
+                    )
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+            const stage =
+                document
+                    .getElementById(
+                        "stageFilter"
+                    )
+                    .value;
+
+            const fromDate =
+                document
+                    .getElementById(
+                        "fromDate"
+                    )
+                    .value;
+
+            const toDate =
+                document
+                    .getElementById(
+                        "toDate"
+                    )
+                    .value;
+
+
+            return leadTimeList.filter(
+                item => {
+
+                    if (
+                        stage &&
+                        String(
+                            item.currentStage ?? ""
+                        ) !== stage
+                    ) {
+                        return false;
+                    }
+
+
+                    if (search) {
+
+                        const text = [
+                            item.mprfNo,
+                            item.category,
+                            item.poNo,
+                            item.supplierName,
+                            item.incomingNo,
+                            item.requestedByName,
+                            item.submittedByName,
+                            item.approvedByName,
+                            item.currentStage
+                        ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase();
+
+
+                        if (!text.includes(search)) {
+                            return false;
+                        }
+                    }
+
+
+                    if (fromDate) {
+
+                        const date =
+                            parseDate(
+                                item.mprfSubmittedAt ??
+                                item.poApprovedAt
+                            );
+
+                        const from =
+                            new Date(
+                                `${fromDate}T00:00:00`
+                            );
+
+                        if (
+                            !date ||
+                            date < from
+                        ) {
+                            return false;
+                        }
+                    }
+
+
+                    if (toDate) {
+
+                        const date =
+                            parseDate(
+                                item.mprfSubmittedAt ??
+                                item.poApprovedAt
+                            );
+
+                        const to =
+                            new Date(
+                                `${toDate}T23:59:59.999`
+                            );
+
+                        if (
+                            !date ||
+                            date > to
+                        ) {
+                            return false;
+                        }
+                    }
+
+
+                    return true;
+                }
+            );
+        }
+
+                function openPurchasingTimeline(poId) {
+
+            const item =
+                leadTimeList.find(
+                    x =>
+                        Number(x.poId) ===
+                        Number(poId)
+                );
+
+            if (!item) {
+                return;
+            }
+
+
+            document.getElementById(
+                "timelineSubtitle"
+            ).innerText =
+                `${item.mprfNo ?? "-"} • ` +
+                `${item.supplierName ?? "-"}`;
+
+
+            document.getElementById(
+                "timelineMprf"
+            ).innerText =
+                item.mprfNo ?? "-";
+
+
+            document.getElementById(
+                "timelinePo"
+            ).innerText =
+                item.poNo ?? "-";
+
+
+            document.getElementById(
+                "timelineIncoming"
+            ).innerText =
+                item.incomingNo ?? "-";
+
+
+            document.getElementById(
+                "timelineOverall"
+            ).innerText =
+                formatDuration(
+                    item.overallLeadTimeMinutes
+                );
+
+
+                             const stages = [
+
+            {
+                name: "MPRF Submitted",
+
+                start: item.mprfSubmittedAt,
+
+                end: item.mprfReviewedAt,
+
+                duration: item.mprfReviewMinutes,
+
+                responsible:
+                    item.submittedByName ??
+                    item.requestedByName ??
+                    item.submittedBy ??
+                    item.requestedBy ??
+                    "-",
+
+                status:
+                    item.mprfSubmittedAt
+                        ? "SUBMITTED"
+                        : "NO TIMESTAMP"
+            },
+
+            {
+                name: "MPRF Review",
+
+                start: item.mprfReviewedAt,
+
+                end: item.poApprovedAt,
+
+                duration: item.poProcessingMinutes,
+
+                responsible:
+                    item.reviewedByName ??
+                    item.reviewedBy ??
+                    "-",
+
+                status:
+                    item.mprfReviewedAt
+                        ? "REVIEWED"
+                        : "PENDING"
+            },
+
+            {
+                name: "PO Approval",
+
+                start: item.poApprovedAt,
+
+                end: null,
+
+                duration: null,
+
+                responsible:
+                    item.approvedByName ??
+                    item.approvedBy ??
+                    "-",
+
+                status:
+                    item.poApprovedAt
+                        ? "APPROVED"
+                        : "PENDING"
+            },
+
+            {
+                name: "Supplier Delivery",
+
+                start: item.poApprovedAt,
+
+                end: item.incomingReceivedAt,
+
+                duration: item.deliveryLeadTimeMinutes,
+
+                responsible:
+                    item.supplierName ?? "-",
+
+                status:
+                    item.incomingReceivedAt
+                        ? "DELIVERED"
+                        : (
+                            item.poApprovedAt
+                                ? "WAITING"
+                                : "PENDING"
+                        )
+            },
+
+            {
+                name: "Incoming Receiving",
+
+                start: item.incomingReceivedAt,
+
+                end: null,
+
+                duration: null,
+
+                   responsible:
+        item.incomingReceivedByName ??
+        item.incomingReceivedBy ??
+        "-",
+
+                status:
+                    item.incomingReceivedAt
+                        ? "RECEIVED"
+                        : "PENDING"
+            }
+
+        ];
+
+            document.getElementById(
+                "purchasingTimelineStages"
+            ).innerHTML =
+                stages
+                    .map(
+                        (stage, index) =>
+                            renderPurchasingTimelineStage(
+                                stage,
+                                index ===
+                                    stages.length - 1
+                            )
+                    )
+                    .join("");
+
+
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    document.getElementById(
+                        "purchasingTimelineModal"
+                    )
+                );
+
+            modal.show();
+        }
+
+                function renderPurchasingTimelineStage(
+            stage,
+            isLast
+        ) {
+
+            const hasStarted =
+                !!stage.start;
+
+            const dotClass =
+                hasStarted
+                    ? "bg-success"
+                    : "bg-secondary";
+
+
+            return `
+                <div class="
+                    d-flex
+                    position-relative
+                    ${isLast ? "" : "pb-4"}
+                ">
+
+                    <div style="
+                        width: 30px;
+                        position: relative;
+                        flex-shrink: 0;
+                    ">
+
+                        <div class="
+                            ${dotClass}
+                            rounded-circle
+                        "
+                        style="
+                            width: 13px;
+                            height: 13px;
+                            margin-top: 5px;
+                        ">
+                        </div>
+
+
+                        ${
+                            !isLast
+                                ? `
+                                    <div style="
+                                        position: absolute;
+                                        left: 6px;
+                                        top: 20px;
+                                        bottom: -15px;
+                                        width: 2px;
+                                        background: #dee2e6;
+                                    ">
+                                    </div>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+
+                    <div class="flex-grow-1">
+
+                        <div class="
+                            d-flex
+                            justify-content-between
+                            align-items-start
+                            gap-3
+                        ">
+
+                            <div>
+
+                                <div class="fw-bold">
+                                    ${escapeHtml(
+                                        stage.name
+                                    )}
+                                </div>
+
+
+                                <div class="
+                                    text-muted
+                                    small
+                                    mt-1
+                                ">
+
+                                    ${formatDateTime(
+                                        stage.start
+                                    )}
+
+                                    ${
+                                        stage.end &&
+                                        stage.end !==
+                                            stage.start
+                                            ? `
+                                                &nbsp; → &nbsp;
+                                                ${formatDateTime(
+                                                    stage.end
+                                                )}
+                                            `
+                                            : ""
+                                    }
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="text-end">
+
+                                <div class="fw-bold">
+                                    ${formatDuration(
+                                        stage.duration
+                                    )}
+                                </div>
+
+                                <span class="
+                                    badge
+                                    bg-light
+                                    text-dark
+                                    border
+                                    mt-1
+                                ">
+                                    ${escapeHtml(
+                                        stage.status
+                                    )}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="
+                            text-muted
+                            small
+                            mt-2
+                        ">
+
+                            Responsible:
+                            <span class="text-dark">
+                                ${escapeHtml(
+                                    stage.responsible
+                                )}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+        }
+
+
+        function renderReport() {
+
+            const rows =
+                getFilteredRows();
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+            updateSummary(rows);
+
+            document
+                .getElementById(
+                    "recordCount"
+                )
+                .innerText =
+                    `${rows.length} record${
+                        rows.length === 1
+                            ? ""
+                            : "s"
+                    }`;
+
+
+            if (rows.length === 0) {
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="12"
+                            class="text-center text-muted py-5">
+                            No Purchasing Lead Time records found.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                rows
+                    .map(
+                        item => `
+                            <tr>
+
+                                <td class="fw-semibold text-nowrap">
+                                    ${escapeHtml(
+                                        item.mprfNo ?? "-"
+                                    )}
+                                </td>
+
+                                <td class="fw-semibold text-nowrap">
+                                    ${escapeHtml(
+                                        item.poNo ?? "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.supplierName ?? "-"
+                                    )}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    ${formatDateTime(
+                                        item.mprfSubmittedAt
+                                    )}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    ${formatDateTime(
+                                        item.poApprovedAt
+                                    )}
+                                </td>
+
+                                <td class="fw-semibold text-nowrap">
+                                    ${formatDuration(
+                                        item.purchasingLeadTimeMinutes
+                                    )}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    ${escapeHtml(
+                                        item.incomingNo ?? "-"
+                                    )}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    ${formatDateTime(
+                                        item.incomingReceivedAt
+                                    )}
+                                </td>
+
+                                <td class="fw-semibold text-nowrap">
+                                    ${formatDuration(
+                                        item.deliveryLeadTimeMinutes
+                                    )}
+                                </td>
+
+                                <td class="fw-semibold text-nowrap">
+                                    ${formatDuration(
+                                        item.overallLeadTimeMinutes
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${renderStage(
+                                        item.currentStage
+                                    )}
+                                </td>
+
+                                        <td class="text-nowrap">
+
+            <button type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    onclick="openPurchasingTimeline(${item.poId})">
+
+                View Timeline
+
+            </button>
+
+        </td>
+
+                            </tr>
+                        `
+                    )
+                    .join("");
+        }
+
+
+        function updateSummary(rows) {
+
+            const list =
+                Array.isArray(rows)
+                    ? rows
+                    : [];
+
+
+            document
+                .getElementById(
+                    "summaryTotal"
+                )
+                .innerText =
+                    list.length;
+
+
+                  const purchasing =
+            list
+                .map(x =>
+                    x.purchasingLeadTimeMinutes
+                )
+                .filter(x =>
+                    x !== null &&
+                    x !== undefined &&
+                    x !== ""
+                )
+                .map(Number)
+                .filter(Number.isFinite);
+
+
+        const delivery =
+            list
+                .map(x =>
+                    x.deliveryLeadTimeMinutes
+                )
+                .filter(x =>
+                    x !== null &&
+                    x !== undefined &&
+                    x !== ""
+                )
+                .map(Number)
+                .filter(Number.isFinite);
+
+
+        const overall =
+            list
+                .map(x =>
+                    x.overallLeadTimeMinutes
+                )
+                .filter(x =>
+                    x !== null &&
+                    x !== undefined &&
+                    x !== ""
+                )
+                .map(Number)
+                .filter(Number.isFinite);
+
+            document
+                .getElementById(
+                    "summaryPurchasing"
+                )
+                .innerText =
+                    averageDuration(
+                        purchasing
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryDelivery"
+                )
+                .innerText =
+                    averageDuration(
+                        delivery
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryOverall"
+                )
+                .innerText =
+                    averageDuration(
+                        overall
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryWaitingApproval"
+                )
+                .innerText =
+                    list.filter(
+                        x =>
+                            x.mprfSubmittedAt &&
+                            !x.poApprovedAt
+                    ).length;
+
+
+            document
+                .getElementById(
+                    "summaryWaitingDelivery"
+                )
+                .innerText =
+                    list.filter(
+                        x =>
+                            x.poApprovedAt &&
+                            !x.incomingReceivedAt
+                    ).length;
+        }
+
+
+        function averageDuration(values) {
+
+            if (
+                !values.length
+            ) {
+                return "-";
+            }
+
+            const total =
+                values.reduce(
+                    (sum, value) =>
+                        sum + value,
+                    0
+                );
+
+            return formatDuration(
+                total / values.length
+            );
+        }
+
+
+        function formatDuration(minutes) {
+
+            if (
+                minutes === null ||
+                minutes === undefined ||
+                minutes === "" ||
+                !Number.isFinite(
+                    Number(minutes)
+                )
+            ) {
+                return "-";
+            }
+
+            let totalMinutes =
+                Math.max(
+                    0,
+                    Math.round(
+                        Number(minutes)
+                    )
+                );
+
+
+            if (totalMinutes < 1) {
+                return "< 1m";
+            }
+
+
+            const days =
+                Math.floor(
+                    totalMinutes / 1440
+                );
+
+            totalMinutes %= 1440;
+
+            const hours =
+                Math.floor(
+                    totalMinutes / 60
+                );
+
+            const mins =
+                totalMinutes % 60;
+
+            const parts = [];
+
+            if (days > 0)
+                parts.push(`${days}d`);
+
+            if (hours > 0)
+                parts.push(`${hours}h`);
+
+            if (
+                mins > 0 ||
+                parts.length === 0
+            )
+                parts.push(`${mins}m`);
+
+            return parts.join(" ");
+        }
+
+
+        function formatDateTime(value) {
+
+            if (!value)
+                return "-";
+
+            const date =
+                parseDate(value);
+
+            if (!date)
+                return "-";
+
+            return date.toLocaleString(
+                undefined,
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        function parseDate(value) {
+
+            if (!value)
+                return null;
+
+            const date =
+                new Date(value);
+
+            return Number.isNaN(
+                date.getTime()
+            )
+                ? null
+                : date;
+        }
+
+
+        function renderStage(stage) {
+
+            const value =
+                String(
+                    stage ?? ""
+                );
+
+            if (
+                value === "Received"
+            ) {
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-success-subtle
+                        text-success
+                        border
+                        border-success-subtle
+                    ">
+                        Received
+                    </span>
+                `;
+            }
+
+
+            if (
+                value ===
+                "Waiting for Delivery"
+            ) {
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-warning-subtle
+                        text-warning-emphasis
+                        border
+                        border-warning-subtle
+                    ">
+                        Waiting for Delivery
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="
+                    badge
+                    rounded-pill
+                    bg-primary-subtle
+                    text-primary
+                    border
+                    border-primary-subtle
+                ">
+                    ${escapeHtml(
+                        value || "-"
+                    )}
+                </span>
+            `;
+        }
+
+
+        function resetFilters() {
+
+            document.getElementById(
+                "reportSearch"
+            ).value = "";
+
+            document.getElementById(
+                "stageFilter"
+            ).value = "";
+
+            document.getElementById(
+                "fromDate"
+            ).value = "";
+
+            document.getElementById(
+                "toDate"
+            ).value = "";
+
+            renderReport();
+        }
+
+
+        function escapeHtml(value) {
+
+            return String(
+                value ?? ""
+            )
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+
+    </script>
+}

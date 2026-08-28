@@ -82,31 +82,35 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card qc-summary-card">
+            <div class="card summary-card">
                 <div class="card-body">
+
                     <div class="text-muted small">
-                        Accepted
+                        On Hold (Quarantine)
                     </div>
 
-                    <div id="acceptedCount"
-                         class="count text-success">
+                    <div id="onHoldCount"
+                         class="count text-warning">
                         0
                     </div>
+
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card qc-summary-card">
+            <div class="card summary-card">
                 <div class="card-body">
+
                     <div class="text-muted small">
-                        Partially Accepted
+                        Released to RMW
                     </div>
 
-                    <div id="partiallyAcceptedCount"
-                         class="count text-primary">
+                    <div id="releasedCount"
+                         class="count text-success">
                         0
                     </div>
+
                 </div>
             </div>
         </div>
@@ -138,7 +142,7 @@
                     <input id="qcSearch"
                            type="text"
                            class="form-control"
-                           placeholder="Search QC No, RR No, PO No, Supplier">
+                           placeholder="Search QC No, Incoming No, PO No, Supplier">
                 </div>
 
                 <div class="col-md-3">
@@ -153,8 +157,8 @@
                             For Inspection
                         </option>
 
-                        <option value="COMMITTED">
-                            Committed
+                        <option value="INSPECTED">
+                            Inspected
                         </option>
 
                     </select>
@@ -169,13 +173,14 @@
                     <thead class="table-light">
                         <tr>
                             <th>QC No</th>
-                            <th>RR No</th>
+                            <th>Incoming No</th>
                             <th>PO No</th>
                             <th>Supplier</th>
                             <th>Inspection Date</th>
                             <th>Inspector</th>
-                            <th>Status</th>
+                            <th>QC Status</th>
                             <th>Decision</th>
+                            <th>Material Status</th>
                             <th class="text-end"
                                 style="width:120px;">
                                 Action
@@ -185,7 +190,7 @@
 
                     <tbody id="qcTableBody">
                         <tr>
-                            <td colspan="9"
+                            <td colspan="10"
                                 class="text-center text-muted py-4">
                                 Loading QC inspections...
                             </td>
@@ -252,10 +257,10 @@
 
                         <div class="col-md-2">
                             <label class="form-label fw-semibold">
-                                RR No
+                                Incoming No
                             </label>
 
-                            <input id="modalRrNo"
+                            <input id="modalIncomingNo"
                                    class="form-control"
                                    readonly>
                         </div>
@@ -353,7 +358,13 @@
                 <button type="button"
                         class="btn btn-outline-secondary"
                         data-bs-dismiss="modal">
-                    Cancel
+                    Close
+                </button>
+
+                <button type="button"
+                        id="btnReleaseToRmw"
+                        class="btn btn-primary d-none">
+                    Release to RMW
                 </button>
 
                 <button type="button"
@@ -394,6 +405,13 @@
             .addEventListener("click", completeQcInspection);
 
             document
+    .getElementById("btnReleaseToRmw")
+    .addEventListener(
+        "click",
+        releaseToRmw
+    );
+
+            document
     .getElementById("modalQcLineBody")
     .addEventListener("input", function (event) {
         const lotRow =
@@ -414,7 +432,7 @@
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="9"
+                <td colspan="10"
                     class="text-center text-muted py-4">
                     Loading QC inspections...
                 </td>
@@ -445,7 +463,7 @@
         } catch (error) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9"
+                    <td colspan="10"
                         class="text-center text-danger py-4">
                         ${escapeHtml(
                             error.message ??
@@ -457,43 +475,63 @@
         }
     }
 
-    function updateSummaryCards() {
+        function updateSummaryCards() {
+
         const forInspection =
             qcList.filter(x =>
-                normalizeStatus(x.status) === "FOR_INSPECTION"
+                normalizeStatus(x.status) ===
+                "FOR_INSPECTION"
             ).length;
 
-        const accepted =
+
+        const onHold =
             qcList.filter(x =>
-                normalizeStatus(x.decision) === "ACCEPTED"
+                normalizeStatus(
+                    x.quarantineStatus
+                ) ===
+                "WAITING_FOR_QA_RELEASE"
             ).length;
 
-        const partiallyAccepted =
+
+        const released =
             qcList.filter(x =>
-                normalizeStatus(x.decision) ===
-                "PARTIALLY_ACCEPTED"
+                normalizeStatus(
+                    x.quarantineStatus
+                ) ===
+                "RELEASED"
             ).length;
+
 
         const rejected =
             qcList.filter(x =>
-                normalizeStatus(x.decision) === "REJECTED"
+                normalizeStatus(
+                    x.decision
+                ) === "REJECTED"
             ).length;
+
 
         document.getElementById(
             "forInspectionCount"
-        ).innerText = forInspection;
+        ).innerText =
+            forInspection;
+
 
         document.getElementById(
-            "acceptedCount"
-        ).innerText = accepted;
+            "onHoldCount"
+        ).innerText =
+            onHold;
+
 
         document.getElementById(
-            "partiallyAcceptedCount"
-        ).innerText = partiallyAccepted;
+            "releasedCount"
+        ).innerText =
+            released;
+
 
         document.getElementById(
             "rejectedCount"
-        ).innerText = rejected;
+        ).innerText =
+            rejected;
     }
 
     function renderTable() {
@@ -515,12 +553,12 @@
 
         const filtered = qcList.filter(qc => {
 
-            const searchText = [
-                qc.qcNo,
-                qc.rrNo,
-                qc.poNo,
-                qc.supplierName
-            ]
+               const searchText = [
+        qc.qcNo,
+        qc.incomingNo,
+        qc.poNo,
+        qc.supplierName
+    ]
             .filter(Boolean)
             .join(" ")
             .toLowerCase();
@@ -542,7 +580,7 @@
         if (filtered.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9"
+                    <td colspan="10"
                         class="text-center text-muted py-4">
                         No QC inspections found.
                     </td>
@@ -565,9 +603,9 @@
                             ${escapeHtml(qc.qcNo ?? "")}
                         </td>
 
-                        <td>
-                            ${escapeHtml(qc.rrNo ?? "")}
-                        </td>
+                           <td>
+        ${escapeHtml(qc.incomingNo ?? "-")}
+    </td>
 
                         <td>
                             ${escapeHtml(qc.poNo ?? "")}
@@ -589,15 +627,19 @@
     )}
                         </td>
 
-                        <td>
-                            ${renderStatus(qc.status)}
-                        </td>
+                           <td>
+        ${renderStatus(qc.status)}
+    </td>
 
-                        <td>
-                            ${renderDecision(qc.decision)}
-                        </td>
+    <td>
+        ${renderDecision(qc.decision)}
+    </td>
 
-                        <td class="text-end">
+    <td>
+        ${renderMaterialStatus(qc)}
+    </td>
+
+    <td class="text-end">
                             <button type="button"
                                     class="btn btn-sm btn-outline-primary"
                                     onclick="openQcInspection(${Number(qc.qcId)})">
@@ -641,9 +683,9 @@
                 "modalQcNo"
             ).value = data.qcNo ?? "";
 
-            document.getElementById(
-                "modalRrNo"
-            ).value = data.rrNo ?? "";
+              document.getElementById(
+        "modalIncomingNo"
+    ).value = data.incomingNo ?? "";
 
             document.getElementById(
                 "modalPoNo"
@@ -689,6 +731,40 @@
                 !editable
             );
 
+                const qcStatus =
+        normalizeStatus(data.status);
+
+    const qcDecision =
+        normalizeStatus(data.decision);
+
+    const quarantineStatus =
+        normalizeStatus(data.quarantineStatus);
+
+    const canRelease =
+        qcStatus === "INSPECTED" &&
+        (
+            qcDecision === "ACCEPTED" ||
+            qcDecision === "PARTIALLY_ACCEPTED"
+        ) &&
+        Number(data.quarantineId) > 0 &&
+        quarantineStatus ===
+            "WAITING_FOR_QA_RELEASE";
+
+    const btnRelease =
+        document.getElementById(
+            "btnReleaseToRmw"
+        );
+
+    btnRelease.classList.toggle(
+        "d-none",
+        !canRelease
+    );
+
+    btnRelease.disabled = false;
+    btnRelease.innerText =
+        "Release to RMW";
+
+
         } catch (error) {
             document.getElementById(
                 "modalQcLineBody"
@@ -717,9 +793,9 @@
             "modalQcNo"
         ).value = "";
 
-        document.getElementById(
-            "modalRrNo"
-        ).value = "";
+          document.getElementById(
+        "modalIncomingNo"
+    ).value = "";
 
         document.getElementById(
             "modalPoNo"
@@ -751,6 +827,16 @@
         document.getElementById(
             "btnCompleteInspection"
         ).classList.add("d-none");
+
+            const btnRelease =
+        document.getElementById(
+            "btnReleaseToRmw"
+        );
+
+    btnRelease.classList.add("d-none");
+    btnRelease.disabled = false;
+    btnRelease.innerText =
+        "Release to RMW";
     }
 
         function renderLotTrackedInspection(line, editable) {
@@ -1471,7 +1557,8 @@
         `;
     }
 
-     function addLotRow(qcLineId) {
+    function addLotRow(qcLineId) {
+
         const line =
             currentQcData?.lines?.find(
                 x => Number(x.qcLineId) === Number(qcLineId)
@@ -1483,18 +1570,44 @@
         if (!Array.isArray(line.lots))
             line.lots = [];
 
+
+        const totalReceived =
+            Number(line.receivedQty ?? 0);
+
+
+        const alreadyAllocated =
+            line.lots.reduce(
+                (sum, lot) =>
+                    sum + Number(lot.receivedQty ?? 0),
+                0
+            );
+
+
+        const remainingQty =
+            Math.max(
+                0,
+                totalReceived - alreadyAllocated
+            );
+
+
         line.lots.push({
             qcLineLotId: null,
             lotNo: "",
             manufacturingDate: null,
             expirationDate: null,
-            receivedQty: 0,
-            acceptedQty: 0,
+
+            // Automatically allocate remaining warehouse quantity
+            receivedQty: remainingQty,
+
+            // Default to accepted
+            acceptedQty: remainingQty,
             rejectedQty: 0,
+
             rejectionReason: "",
             remarks: "",
             status: "PENDING"
         });
+
 
         refreshSingleQcLine(qcLineId);
     }
@@ -1509,44 +1622,58 @@
         );
     }
 
-        function lotQtyChanged(input) {
-        const lotRow = input.closest(".lot-row");
+         function lotQtyChanged(input) {
+
+        const lotRow =
+            input.closest(".lot-row");
+
+        if (!lotRow)
+            return;
 
         let receivedQty =
-            Number(
-                lotRow.querySelector(
-                    ".lot-received-qty"
-                ).value || 0
-            );
+            Number(input.value || 0);
+
+        receivedQty =
+            Math.max(0, receivedQty);
+
+        input.value =
+            formatInputNumber(receivedQty);
+
+        // Do NOT automatically change
+        // accepted or rejected quantities.
+        //
+        // QA/QC decides these separately.
+
+        const acceptedInput =
+            lotRow.querySelector(".accepted-qty");
+
+        const rejectedInput =
+            lotRow.querySelector(".rejected-qty");
 
         let acceptedQty =
-            Number(
-                lotRow.querySelector(
-                    ".accepted-qty"
-                ).value || 0
-            );
+            Number(acceptedInput.value || 0);
 
-        receivedQty = Math.max(0, receivedQty);
-        acceptedQty = Math.max(
-            0,
-            Math.min(receivedQty, acceptedQty)
-        );
+        let rejectedQty =
+            Number(rejectedInput.value || 0);
 
-        lotRow.querySelector(
-            ".lot-received-qty"
-        ).value = formatInputNumber(receivedQty);
 
-        lotRow.querySelector(
-            ".accepted-qty"
-        ).value = formatInputNumber(acceptedQty);
+        // Prevent accepted/rejected from exceeding
+        // the lot received quantity.
+        if (acceptedQty > receivedQty) {
+            acceptedQty = receivedQty;
+            acceptedInput.value =
+                formatInputNumber(acceptedQty);
+        }
 
-        lotRow.querySelector(
-            ".rejected-qty"
-        ).value = formatInputNumber(
-            receivedQty - acceptedQty
-        );
+        if (rejectedQty > receivedQty) {
+            rejectedQty = receivedQty;
+            rejectedInput.value =
+                formatInputNumber(rejectedQty);
+        }
+
 
         syncLotRowToData(lotRow);
+
         updateLineLotTotalsFromRow(lotRow);
     }
 
@@ -1924,6 +2051,105 @@
             ".line-status-cell"
         ).innerHTML =
             renderLineStatus(status);
+    }
+
+
+        async function releaseToRmw() {
+
+        if (!currentQcData) {
+            alert(
+                "QC inspection data was not loaded."
+            );
+            return;
+        }
+
+        const quarantineId =
+            Number(
+                currentQcData.quarantineId
+            );
+
+        if (!quarantineId) {
+            alert(
+                "No quarantine record was found for this QC inspection."
+            );
+            return;
+        }
+
+        const quarantineNo =
+            currentQcData.quarantineNo ??
+            "this material";
+
+        const confirmed =
+            confirm(
+                `Release ${quarantineNo} to Raw Material Warehouse?\n\n` +
+                `Accepted materials will become available ` +
+                `for warehouse weighing/counting.`
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        const button =
+            document.getElementById(
+                "btnReleaseToRmw"
+            );
+
+        button.disabled = true;
+        button.innerText =
+            "Releasing...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/quality/qc-inspections/quarantine/${quarantineId}/release`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+            const result =
+                await readJsonResponse(
+                    response
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Unable to release material."
+                );
+            }
+
+
+            alert(
+                result.message ??
+                "Material released to Raw Material Warehouse."
+            );
+
+              qcInspectionModal.hide();
+            // Reload list so any status/count changes are reflected
+            await loadQcInspections();
+
+            // Reload this QC so we get the new quarantine status
+         
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.message ??
+                "Unable to release material."
+            );
+
+            button.disabled = false;
+            button.innerText =
+                "Release to RMW";
+        }
     }
 
       async function completeQcInspection() {
@@ -2350,6 +2576,87 @@
                 "Complete Inspection";
         }
     }
+
+        function renderMaterialStatus(qc) {
+
+        const quarantineStatus =
+            normalizeStatus(
+                qc?.quarantineStatus
+            );
+
+        const decision =
+            normalizeStatus(
+                qc?.decision
+            );
+
+
+        // --------------------------------------------
+        // Passed QC but still physically quarantined
+        // --------------------------------------------
+
+        if (
+            quarantineStatus ===
+            "WAITING_FOR_QA_RELEASE"
+        ) {
+            return `
+                <span class="badge bg-warning text-dark">
+                    ON HOLD (QUARANTINE)
+                </span>
+            `;
+        }
+
+
+        // --------------------------------------------
+        // QA/QC released the material to RMW
+        // --------------------------------------------
+
+        if (
+            quarantineStatus === "RELEASED"
+        ) {
+            return `
+                <span class="badge bg-success">
+                    RELEASED TO RMW
+                </span>
+            `;
+        }
+
+
+        // --------------------------------------------
+        // Completely rejected by QA/QC
+        // --------------------------------------------
+
+        if (decision === "REJECTED") {
+            return `
+                <span class="badge bg-danger">
+                    REJECTED
+                </span>
+            `;
+        }
+
+
+        // --------------------------------------------
+        // Still waiting for QC inspection
+        // --------------------------------------------
+
+        if (
+            normalizeStatus(qc?.status) ===
+            "FOR_INSPECTION"
+        ) {
+            return `
+                <span class="badge bg-secondary">
+                    PENDING QC
+                </span>
+            `;
+        }
+
+
+        return `
+            <span class="badge bg-secondary">
+                -
+            </span>
+        `;
+    }
+
 
     function renderStatus(status) {
         const normalized =

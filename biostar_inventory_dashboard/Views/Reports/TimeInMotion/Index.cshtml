@@ -1,0 +1,2201 @@
+﻿@{
+    ViewData["Title"] = "Time in Motion Report";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================ -->
+
+    <div class="mb-4">
+
+        <div class="text-muted small mb-1">
+            Reports &gt; Time in Motion
+        </div>
+
+        <h2 class="fw-bold mb-1">
+            Time in Motion Report
+        </h2>
+
+        <div class="text-muted">
+            Monitor processing duration from Incoming Receiving
+            up to Final Inventory Commit.
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         SUMMARY CARDS
+    ============================================================ -->
+
+    <div class="row g-3 mb-4">
+
+        <!-- TOTAL -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Total Receiving Cycles
+                    </div>
+
+                    <div id="summaryTotal"
+                         class="fs-3 fw-bold">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Completed
+                    </div>
+
+                    <div id="summaryCompleted"
+                         class="fs-3 fw-bold text-success">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- IN PROGRESS -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        In Progress
+                    </div>
+
+                    <div id="summaryInProgress"
+                         class="fs-3 fw-bold text-warning">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AVG TOTAL -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Avg. Total Duration
+                    </div>
+
+                    <div id="summaryAverage"
+                         class="fs-5 fw-bold text-primary">
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AVG QC -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Avg. QA/QC Time
+                    </div>
+
+                    <div id="summaryQcAverage"
+                         class="fs-5 fw-bold">
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AVG RMW -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Avg. RMW Time
+                    </div>
+
+                    <div id="summaryRmwAverage"
+                         class="fs-5 fw-bold">
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         REPORT
+    ============================================================ -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Receiving Processing Cycles
+                    </h5>
+
+                    <div class="text-muted small">
+                        Processing timeline for raw material receiving.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body px-4">
+
+            <!-- ====================================================
+                 FILTERS
+            ==================================================== -->
+
+            <div class="row g-2 mb-4">
+
+                <!-- SEARCH -->
+                <div class="col-xl-3 col-md-6">
+
+                    <label class="form-label small fw-semibold">
+                        Search
+                    </label>
+
+                    <input id="reportSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="Incoming, PO, Supplier, FRR">
+
+                </div>
+
+
+                <!-- STATUS -->
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Status
+                    </label>
+
+                    <select id="statusFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option value="COMPLETED">
+                            Completed
+                        </option>
+
+                        <option value="IN_PROGRESS">
+                            In Progress
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- CURRENT STAGE -->
+                <div class="col-xl-3 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Current Stage
+                    </label>
+
+                    <select id="stageFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Current Stages
+                        </option>
+
+                        <option value="Incoming Receiving">
+                            Incoming Receiving
+                        </option>
+
+                        <option value="QA/QC Inspection">
+                            QA/QC Inspection
+                        </option>
+
+                        <option value="Quarantine / Hold">
+                            Quarantine / Hold
+                        </option>
+
+                        <option value="Released to RMW">
+                            Released to RMW
+                        </option>
+
+                        <option value="Raw Material Processing">
+                            Raw Material Processing
+                        </option>
+
+                        <option value="Ready for Final RR">
+                            Ready for Final RR
+                        </option>
+
+                        <option value="Final Receiving">
+                            Final Receiving
+                        </option>
+
+                        <option value="Inventory Committed">
+                            Inventory Committed
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- FROM DATE -->
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        From Date
+                    </label>
+
+                    <input id="fromDate"
+                           type="date"
+                           class="form-control">
+
+                </div>
+
+
+                <!-- TO DATE -->
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        To Date
+                    </label>
+
+                    <input id="toDate"
+                           type="date"
+                           class="form-control">
+
+                </div>
+
+            </div>
+
+
+            <!-- RESET -->
+            <div class="mb-3">
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        onclick="resetFilters()">
+
+                    Reset Filters
+
+                </button>
+
+            </div>
+
+
+            <!-- ====================================================
+                 TABLE
+            ==================================================== -->
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="text-nowrap">
+                                Incoming No
+                            </th>
+
+                            <th class="text-nowrap">
+                                PO No
+                            </th>
+
+                            <th>
+                                Supplier
+                            </th>
+
+                            <th>
+                                Warehouse
+                            </th>
+
+                            <th class="text-nowrap">
+                                Final RR
+                            </th>
+
+                            <th class="text-nowrap">
+                                Started
+                            </th>
+
+                            <th class="text-nowrap">
+                                Completed
+                            </th>
+
+                            <th class="text-nowrap">
+                                Total Duration
+                            </th>
+
+                            <th class="text-nowrap">
+                                Current Stage
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="reportTableBody">
+
+                        <tr>
+
+                            <td colspan="11"
+                                class="text-center text-muted py-5">
+
+                                Loading Time in Motion report...
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- RECORD COUNT -->
+            <div class="d-flex justify-content-between mt-3">
+
+                <div id="recordCount"
+                     class="text-muted small">
+                    0 records
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================================
+     TIMELINE MODAL
+================================================================ -->
+
+<div class="modal fade"
+     id="timelineModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog
+                modal-xl
+                modal-dialog-centered
+                modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+
+            <!-- HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h5 class="modal-title fw-bold mb-1">
+                        Processing Timeline
+                    </h5>
+
+                    <div id="timelineReference"
+                         class="text-muted small">
+                    </div>
+
+                </div>
+
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <!-- BODY -->
+
+            <div class="modal-body">
+
+                <!-- OVERALL INFO -->
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-3">
+
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                Incoming No
+                            </div>
+
+                            <div id="timelineIncoming"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                PO No
+                            </div>
+
+                            <div id="timelinePo"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                Final RR
+                            </div>
+
+                            <div id="timelineFinalRr"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="text-muted small">
+                                Total Duration
+                            </div>
+
+                            <div id="timelineTotalDuration"
+                                 class="fw-bold mt-1">
+                                -
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TIMELINE -->
+
+                <div class="border rounded p-4">
+
+                    <div id="timelineContainer">
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        // ================================================================
+        // GLOBALS
+        // ================================================================
+
+        let timeInMotionList = [];
+
+        let timelineModal = null;
+
+
+        // ================================================================
+        // INITIALIZATION
+        // ================================================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const modalElement =
+                    document.getElementById(
+                        "timelineModal"
+                    );
+
+
+                timelineModal =
+                    new bootstrap.Modal(
+                        modalElement
+                    );
+
+
+                document
+                    .getElementById(
+                        "reportSearch"
+                    )
+                    .addEventListener(
+                        "input",
+                        renderReport
+                    );
+
+
+                document
+                    .getElementById(
+                        "statusFilter"
+                    )
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+
+                document
+                    .getElementById(
+                        "stageFilter"
+                    )
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+
+                document
+                    .getElementById(
+                        "fromDate"
+                    )
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+
+                document
+                    .getElementById(
+                        "toDate"
+                    )
+                    .addEventListener(
+                        "change",
+                        renderReport
+                    );
+
+
+                loadTimeInMotion();
+            }
+        );
+
+
+        // ================================================================
+        // LOAD DATA
+        // ================================================================
+
+        async function loadTimeInMotion() {
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="11"
+                        class="text-center text-muted py-5">
+
+                        Loading Time in Motion report...
+
+                    </td>
+                </tr>
+            `;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/reports/time-in-motion/data"
+                    );
+
+
+                let data;
+
+
+                try {
+
+                    data =
+                        await response.json();
+
+                }
+                catch {
+
+                    throw new Error(
+                        "Invalid response received from the server."
+                    );
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        getErrorMessage(
+                            data,
+                            "Failed to load Time in Motion report."
+                        )
+                    );
+                }
+
+
+                timeInMotionList =
+                    Array.isArray(data)
+                        ? data
+                        : [];
+
+
+                renderReport();
+
+            }
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                tbody.innerHTML = `
+                    <tr>
+
+                        <td colspan="11"
+                            class="text-center text-danger py-5">
+
+                            ${escapeHtml(
+                                error.message
+                            )}
+
+                        </td>
+
+                    </tr>
+                `;
+
+
+                updateSummary(
+                    []
+                );
+
+
+                updateRecordCount(
+                    0,
+                    0
+                );
+            }
+        }
+
+
+        // ================================================================
+        // GET FILTERED DATA
+        // ================================================================
+
+        function getFilteredRows() {
+
+            const search =
+                document
+                    .getElementById(
+                        "reportSearch"
+                    )
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+
+            const status =
+                normalizeStatus(
+                    document
+                        .getElementById(
+                            "statusFilter"
+                        )
+                        .value
+                );
+
+
+            const stageFilter =
+                document
+                    .getElementById(
+                        "stageFilter"
+                    )
+                    .value;
+
+
+            const fromDate =
+                document
+                    .getElementById(
+                        "fromDate"
+                    )
+                    .value;
+
+
+            const toDate =
+                document
+                    .getElementById(
+                        "toDate"
+                    )
+                    .value;
+
+
+            return timeInMotionList.filter(
+                item => {
+
+                    // ====================================================
+                    // STATUS
+                    // ====================================================
+
+                    if (
+                        status &&
+                        normalizeStatus(
+                            item.status
+                        ) !== status
+                    ) {
+                        return false;
+                    }
+
+
+                    // ====================================================
+                    // CURRENT STAGE
+                    // ====================================================
+
+                    if (
+                        stageFilter &&
+                        String(
+                            item.currentStage ?? ""
+                        ) !== stageFilter
+                    ) {
+                        return false;
+                    }
+
+
+                    // ====================================================
+                    // SEARCH
+                    // ====================================================
+
+                    if (search) {
+
+                        const searchText = [
+
+                            item.incomingNo,
+                            item.poNo,
+                            item.supplierName,
+                            item.branchId,
+                            item.branchName,
+                            item.qcNo,
+                            item.quarantineNo,
+                            item.processingNo,
+                            item.finalRrNo,
+                            item.currentStage,
+                            item.status
+
+                        ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase();
+
+
+                        if (
+                            !searchText.includes(
+                                search
+                            )
+                        ) {
+                            return false;
+                        }
+                    }
+
+
+                    // ====================================================
+                    // FROM DATE
+                    // ====================================================
+
+                    if (fromDate) {
+
+                        const started =
+                            parseDate(
+                                item.startedAt
+                            );
+
+
+                        const from =
+                            new Date(
+                                `${fromDate}T00:00:00`
+                            );
+
+
+                        if (
+                            !started ||
+                            started < from
+                        ) {
+                            return false;
+                        }
+                    }
+
+
+                    // ====================================================
+                    // TO DATE
+                    // ====================================================
+
+                    if (toDate) {
+
+                        const started =
+                            parseDate(
+                                item.startedAt
+                            );
+
+
+                        const to =
+                            new Date(
+                                `${toDate}T23:59:59.999`
+                            );
+
+
+                        if (
+                            !started ||
+                            started > to
+                        ) {
+                            return false;
+                        }
+                    }
+
+
+                    return true;
+                }
+            );
+        }
+
+
+        // ================================================================
+        // RENDER REPORT
+        // ================================================================
+
+        function renderReport() {
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+
+            const rows =
+                getFilteredRows();
+
+
+            // Summary cards now follow filters.
+            updateSummary(
+                rows
+            );
+
+
+            updateRecordCount(
+                rows.length,
+                timeInMotionList.length
+            );
+
+
+            if (rows.length === 0) {
+
+                tbody.innerHTML = `
+                    <tr>
+
+                        <td colspan="11"
+                            class="text-center text-muted py-5">
+
+                            No Time in Motion records found.
+
+                        </td>
+
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                rows
+                    .map(
+                        item => {
+
+                            return `
+                                <tr>
+
+                                    <!-- INCOMING -->
+
+                                    <td class="fw-semibold text-nowrap">
+
+                                        ${escapeHtml(
+                                            item.incomingNo ??
+                                            "-"
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- PO -->
+
+                                    <td class="text-nowrap">
+
+                                        ${escapeHtml(
+                                            item.poNo ??
+                                            "-"
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- SUPPLIER -->
+
+                                    <td>
+
+                                        ${escapeHtml(
+                                            item.supplierName ??
+                                            "-"
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- WAREHOUSE -->
+
+                                    <td>
+
+                                        ${escapeHtml(
+                                            item.branchName ??
+                                            item.branchId ??
+                                            "-"
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- FINAL RR -->
+
+                                    <td class="text-nowrap">
+
+                                        ${
+                                            item.finalRrNo
+
+                                                ? `
+                                                    <span class="fw-semibold">
+                                                        ${escapeHtml(
+                                                            item.finalRrNo
+                                                        )}
+                                                    </span>
+                                                  `
+
+                                                : `
+                                                    <span class="text-muted">
+                                                        -
+                                                    </span>
+                                                  `
+                                        }
+
+                                    </td>
+
+
+                                    <!-- STARTED -->
+
+                                    <td class="text-nowrap">
+
+                                        ${formatDateTime(
+                                            item.startedAt
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- COMPLETED -->
+
+                                    <td class="text-nowrap">
+
+                                        ${formatDateTime(
+                                            item.completedAt
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- TOTAL DURATION -->
+
+                                    <td class="fw-semibold text-nowrap">
+
+                                        ${formatDuration(
+                                            item.totalDurationMinutes
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- CURRENT STAGE -->
+
+                                    <td>
+
+                                        ${renderCurrentStage(
+                                            item.currentStage
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- STATUS -->
+
+                                    <td>
+
+                                        ${renderStatus(
+                                            item.status
+                                        )}
+
+                                    </td>
+
+
+                                    <!-- ACTION -->
+
+                                    <td class="text-nowrap">
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                onclick="openTimeline(
+                                                    ${Number(
+                                                        item.incomingReceivingId
+                                                    )}
+                                                )">
+
+                                            View Timeline
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                            `;
+                        }
+                    )
+                    .join("");
+        }
+
+
+        // ================================================================
+        // SUMMARY
+        // ================================================================
+
+        function updateSummary(
+            rows
+        ) {
+
+            const list =
+                Array.isArray(rows)
+                    ? rows
+                    : [];
+
+
+            const total =
+                list.length;
+
+
+            const completed =
+                list.filter(
+                    item =>
+                        normalizeStatus(
+                            item.status
+                        ) ===
+                        "COMPLETED"
+                ).length;
+
+
+            const inProgress =
+                list.filter(
+                    item =>
+                        normalizeStatus(
+                            item.status
+                        ) !==
+                        "COMPLETED"
+                ).length;
+
+
+            // ============================================================
+            // TOTAL DURATIONS
+            // ============================================================
+
+            const totalDurations =
+                list
+                    .map(
+                        item =>
+                            Number(
+                                item.totalDurationMinutes
+                            )
+                    )
+                    .filter(
+                        Number.isFinite
+                    );
+
+
+            // ============================================================
+            // STAGE DURATIONS
+            // ============================================================
+
+                  const qcDurations = [];
+
+        const rmwDurations = [];
+
+        for (const item of list) {
+
+            const stages =
+                Array.isArray(item.stages)
+                    ? item.stages
+                    : [];
+
+            let rmwTotalMinutes = 0;
+            let hasRmwDuration = false;
+
+            for (const stage of stages) {
+
+                const duration =
+                    Number(
+                        stage.durationMinutes
+                    );
+
+                if (!Number.isFinite(duration)) {
+                    continue;
+                }
+
+                const stageName =
+                    String(
+                        stage.stage ?? ""
+                    );
+
+                // ==========================================
+                // QA / QC
+                // ==========================================
+
+                if (
+                    stageName ===
+                    "QA/QC Inspection"
+                ) {
+                    qcDurations.push(
+                        duration
+                    );
+                }
+
+
+                // ==========================================
+                // TOTAL RMW TIME
+                // Released → Weighing → Sticker
+                // ==========================================
+
+                if (
+                    stageName === "Released to RMW" ||
+                    stageName === "Weighing / Counting" ||
+                    stageName === "Sticker / Identification"
+                ) {
+                    rmwTotalMinutes += duration;
+                    hasRmwDuration = true;
+                }
+            }
+
+
+            // One RMW duration per receiving cycle
+            if (hasRmwDuration) {
+
+                rmwDurations.push(
+                    rmwTotalMinutes
+                );
+            }
+        }
+
+
+            document
+                .getElementById(
+                    "summaryTotal"
+                )
+                .innerText =
+                    total;
+
+
+            document
+                .getElementById(
+                    "summaryCompleted"
+                )
+                .innerText =
+                    completed;
+
+
+            document
+                .getElementById(
+                    "summaryInProgress"
+                )
+                .innerText =
+                    inProgress;
+
+
+            document
+                .getElementById(
+                    "summaryAverage"
+                )
+                .innerText =
+                    averageDuration(
+                        totalDurations
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryQcAverage"
+                )
+                .innerText =
+                    averageDuration(
+                        qcDurations
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryRmwAverage"
+                )
+                .innerText =
+                    averageDuration(
+                        rmwDurations
+                    );
+        }
+
+
+        // ================================================================
+        // OPEN TIMELINE
+        // ================================================================
+
+        function openTimeline(
+            incomingReceivingId
+        ) {
+
+            const item =
+                timeInMotionList.find(
+                    x =>
+                        Number(
+                            x.incomingReceivingId
+                        ) ===
+                        Number(
+                            incomingReceivingId
+                        )
+                );
+
+
+            if (!item) {
+
+                alert(
+                    "Timeline record was not found."
+                );
+
+                return;
+            }
+
+
+            // ============================================================
+            // HEADER
+            // ============================================================
+
+            document
+                .getElementById(
+                    "timelineReference"
+                )
+                .innerText =
+                    [
+                        item.incomingNo,
+                        item.supplierName,
+                        item.branchName
+                    ]
+                    .filter(Boolean)
+                    .join(" • ");
+
+
+            document
+                .getElementById(
+                    "timelineIncoming"
+                )
+                .innerText =
+                    item.incomingNo ??
+                    "-";
+
+
+            document
+                .getElementById(
+                    "timelinePo"
+                )
+                .innerText =
+                    item.poNo ??
+                    "-";
+
+
+            document
+                .getElementById(
+                    "timelineFinalRr"
+                )
+                .innerText =
+                    item.finalRrNo ??
+                    "-";
+
+
+            document
+                .getElementById(
+                    "timelineTotalDuration"
+                )
+                .innerText =
+                    formatDuration(
+                        item.totalDurationMinutes
+                    );
+
+
+            // ============================================================
+            // STAGES
+            // ============================================================
+
+            const stages =
+                Array.isArray(
+                    item.stages
+                )
+                    ? item.stages
+                    : [];
+
+
+            const container =
+                document.getElementById(
+                    "timelineContainer"
+                );
+
+
+            if (stages.length === 0) {
+
+                container.innerHTML = `
+                    <div class="text-center text-muted py-5">
+
+                        No timeline information available.
+
+                    </div>
+                `;
+
+
+                timelineModal.show();
+
+                return;
+            }
+
+
+            container.innerHTML =
+                stages
+                    .map(
+                        (stage, index) => {
+
+                            const isLast =
+                                index ===
+                                stages.length - 1;
+
+
+                            const completed =
+                                Boolean(
+                                    stage.endAt
+                                );
+
+
+                            return `
+                                <div class="d-flex">
+
+                                    <!-- TIMELINE MARKER -->
+
+                                    <div class="me-3 text-center">
+
+                                        <div
+                                            class="
+                                                rounded-circle
+                                                ${
+                                                    completed
+                                                        ? "bg-success"
+                                                        : "bg-warning"
+                                                }
+                                            "
+                                            style="
+                                                width:18px;
+                                                height:18px;
+                                                margin-top:3px;
+                                            ">
+                                        </div>
+
+
+                                        ${
+                                            !isLast
+
+                                                ? `
+                                                    <div
+                                                        class="
+                                                            mx-auto
+                                                            bg-secondary-subtle
+                                                        "
+                                                        style="
+                                                            width:2px;
+                                                            min-height:105px;
+                                                        ">
+                                                    </div>
+                                                  `
+
+                                                : ""
+                                        }
+
+                                    </div>
+
+
+                                    <!-- STAGE CONTENT -->
+
+                                    <div class="flex-grow-1 pb-4">
+
+                                        <div class="
+                                            d-flex
+                                            justify-content-between
+                                            align-items-start
+                                            gap-3
+                                        ">
+
+                                            <div>
+
+                                                <div class="fw-bold fs-6">
+
+                                                    ${escapeHtml(
+                                                        stage.stage ??
+                                                        "-"
+                                                    )}
+
+                                                </div>
+
+
+                                                <div class="
+                                                    text-muted
+                                                    small
+                                                    mt-1
+                                                ">
+
+                                                    <span>
+                                                        ${formatDateTime(
+                                                            stage.startAt
+                                                        )}
+                                                    </span>
+
+                                                    <span class="mx-2">
+                                                        →
+                                                    </span>
+
+                                                    <span>
+                                                        ${formatDateTime(
+                                                            stage.endAt
+                                                        )}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="text-end">
+
+                                                <div class="fw-bold">
+
+                                                    ${formatDuration(
+                                                        stage.durationMinutes
+                                                    )}
+
+                                                </div>
+
+
+                                                <div class="mt-1">
+
+                                                    ${renderStageStatus(
+                                                        stage.status
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="mt-3">
+
+                                            <span class="text-muted small">
+                                                Responsible:
+                                            </span>
+
+                                            <span class="small fw-semibold">
+
+                                                ${escapeHtml(
+                                                    stage.responsibleUserName ??
+                                                    stage.responsibleUserId ??
+                                                    "-"
+                                                )}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            `;
+                        }
+                    )
+                    .join("");
+
+
+            timelineModal.show();
+        }
+
+
+        // ================================================================
+        // RESET FILTERS
+        // ================================================================
+
+        function resetFilters() {
+
+            document
+                .getElementById(
+                    "reportSearch"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "statusFilter"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "stageFilter"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "fromDate"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "toDate"
+                )
+                .value = "";
+
+
+            renderReport();
+        }
+
+
+        // ================================================================
+        // RECORD COUNT
+        // ================================================================
+
+        function updateRecordCount(
+            filtered,
+            total
+        ) {
+
+            const element =
+                document.getElementById(
+                    "recordCount"
+                );
+
+
+            if (filtered === total) {
+
+                element.innerText =
+                    `${total} record${
+                        total === 1
+                            ? ""
+                            : "s"
+                    }`;
+
+                return;
+            }
+
+
+            element.innerText =
+                `${filtered} of ${total} records`;
+        }
+
+
+        // ================================================================
+        // AVERAGE DURATION
+        // ================================================================
+
+        function averageDuration(
+            values
+        ) {
+
+            if (
+                !Array.isArray(values) ||
+                values.length === 0
+            ) {
+                return "-";
+            }
+
+
+            const total =
+                values.reduce(
+                    (sum, value) =>
+                        sum +
+                        Number(value),
+                    0
+                );
+
+
+            return formatDuration(
+                total /
+                values.length
+            );
+        }
+
+
+        // ================================================================
+        // FORMAT DURATION
+        // ================================================================
+
+        function formatDuration(
+            minutes
+        ) {
+
+            if (
+                minutes === null ||
+                minutes === undefined ||
+                minutes === "" ||
+                !Number.isFinite(
+                    Number(minutes)
+                )
+            ) {
+                return "-";
+            }
+
+
+            let totalMinutes =
+                Math.max(
+                    0,
+                    Math.round(
+                        Number(minutes)
+                    )
+                );
+
+
+            const days =
+                Math.floor(
+                    totalMinutes /
+                    1440
+                );
+
+
+            totalMinutes =
+                totalMinutes %
+                1440;
+
+
+            const hours =
+                Math.floor(
+                    totalMinutes /
+                    60
+                );
+
+
+            const mins =
+                totalMinutes %
+                60;
+
+
+            const parts = [];
+
+
+            if (days > 0) {
+
+                parts.push(
+                    `${days}d`
+                );
+            }
+
+
+            if (hours > 0) {
+
+                parts.push(
+                    `${hours}h`
+                );
+            }
+
+
+            if (
+                mins > 0 ||
+                parts.length === 0
+            ) {
+
+                parts.push(
+                    `${mins}m`
+                );
+            }
+
+
+            return parts.join(" ");
+        }
+
+
+        // ================================================================
+        // FORMAT DATE
+        // ================================================================
+
+        function formatDateTime(
+            value
+        ) {
+
+            if (!value) {
+
+                return "-";
+            }
+
+
+            const date =
+                parseDate(
+                    value
+                );
+
+
+            if (!date) {
+
+                return "-";
+            }
+
+
+            return date.toLocaleString(
+                undefined,
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        // ================================================================
+        // PARSE DATE
+        // ================================================================
+
+        function parseDate(
+            value
+        ) {
+
+            if (!value) {
+
+                return null;
+            }
+
+
+            const date =
+                new Date(
+                    value
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return null;
+            }
+
+
+            return date;
+        }
+
+
+        // ================================================================
+        // STATUS
+        // ================================================================
+
+        function renderStatus(
+            status
+        ) {
+
+            const value =
+                normalizeStatus(
+                    status
+                );
+
+
+            if (
+                value ===
+                "COMPLETED"
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-success
+                    ">
+                        COMPLETED
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="
+                    badge
+                    rounded-pill
+                    bg-warning
+                    text-dark
+                ">
+                    IN PROGRESS
+                </span>
+            `;
+        }
+
+
+        // ================================================================
+        // CURRENT STAGE
+        // ================================================================
+
+        function renderCurrentStage(
+            stage
+        ) {
+
+            const value =
+                String(
+                    stage ?? ""
+                );
+
+
+            if (!value) {
+
+                return "-";
+            }
+
+
+            if (
+                value ===
+                "Inventory Committed"
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-success-subtle
+                        text-success
+                        border
+                        border-success-subtle
+                    ">
+                        Inventory Committed
+                    </span>
+                `;
+            }
+
+
+            if (
+                value ===
+                "Quarantine / Hold"
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-warning-subtle
+                        text-warning-emphasis
+                        border
+                        border-warning-subtle
+                    ">
+                        ${escapeHtml(value)}
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="
+                    badge
+                    rounded-pill
+                    bg-primary-subtle
+                    text-primary
+                    border
+                    border-primary-subtle
+                ">
+                    ${escapeHtml(value)}
+                </span>
+            `;
+        }
+
+
+        // ================================================================
+        // STAGE STATUS
+        // ================================================================
+
+        function renderStageStatus(
+            status
+        ) {
+
+            const value =
+                normalizeStatus(
+                    status
+                );
+
+
+            if (!value) {
+
+                return `
+                    <span class="
+                        badge
+                        bg-light
+                        text-muted
+                        border
+                    ">
+                        -
+                    </span>
+                `;
+            }
+
+
+            const completedStatuses = [
+
+                "COMPLETED",
+                "COMMITTED",
+                "INSPECTED",
+                "RELEASED",
+                "INVENTORY_COMMITTED",
+                "STICKER_COMPLETED",
+                "WEIGHING_COMPLETED"
+
+            ];
+
+
+            if (
+                completedStatuses.includes(
+                    value
+                )
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        bg-success-subtle
+                        text-success
+                        border
+                        border-success-subtle
+                    ">
+                        ${escapeHtml(value)}
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="
+                    badge
+                    bg-light
+                    text-dark
+                    border
+                ">
+                    ${escapeHtml(value)}
+                </span>
+            `;
+        }
+
+
+        // ================================================================
+        // NORMALIZE STATUS
+        // ================================================================
+
+        function normalizeStatus(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+            .trim()
+            .toUpperCase();
+        }
+
+
+        // ================================================================
+        // ERROR MESSAGE
+        // ================================================================
+
+        function getErrorMessage(
+            data,
+            fallback
+        ) {
+
+            if (!data) {
+
+                return fallback;
+            }
+
+
+            if (
+                typeof data ===
+                "string"
+            ) {
+
+                return data;
+            }
+
+
+            if (data.message) {
+
+                return data.message;
+            }
+
+
+            return fallback;
+        }
+
+
+        // ================================================================
+        // HTML ESCAPE
+        // ================================================================
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
+        }
+
+    </script>
+}

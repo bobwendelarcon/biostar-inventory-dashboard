@@ -2,14 +2,65 @@
 let isTypingFilter = false;
 let isLoadingDailyOrders = false;
 
-
-let dailyOrderPage = 1;
 let dailyOrderPageSize = 50;
-let dailyOrderHasMore = true;
-let dailyOrderIsAppending = false;
+
+let dailyOrderCurrentPage = 1;
+let dailyOrderTotalPages = 1;
+
+let dailyOrderIsLoadingPrevious = false;
+
+
+function setDailyOrderDefaultFilters() {
+
+    const now = new Date();
+
+    const currentYear = String(now.getFullYear());
+
+    const currentMonth = now.toLocaleString("en-US", {
+        month: "long"
+    });
+
+    const yearFilter =
+        document.getElementById("yearFilter");
+
+    const monthFilter =
+        document.getElementById("monthFilter");
+
+    const statusFilter =
+        document.getElementById("statusFilter");
+
+    const sortByFilter =
+        document.getElementById("sortByFilter");
+
+    const sortDirFilter =
+        document.getElementById("sortDirFilter");
+
+    if (yearFilter) {
+        yearFilter.value = currentYear;
+    }
+
+    if (monthFilter) {
+        monthFilter.value = currentMonth;
+    }
+
+    if (statusFilter) {
+        statusFilter.value = "ALL";
+    }
+
+    if (sortByFilter) {
+        sortByFilter.value = "dateOrdered";
+    }
+
+    if (sortDirFilter) {
+        sortDirFilter.value = "asc";
+    }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadDailyOrders();
+
+    setDailyOrderDefaultFilters();
+
+    loadDailyOrders(true);
     startDailyOrderAutoRefresh();
     initTableDragScroll();
    
@@ -98,18 +149,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
 
-
-    const tableWrapper = document.querySelector(".dailyorder-table-wrapper");
+    const tableWrapper =
+        document.querySelector(".dailyorder-table-wrapper");
 
     tableWrapper?.addEventListener("scroll", function () {
-        const nearBottom =
-            tableWrapper.scrollTop + tableWrapper.clientHeight >=
-            tableWrapper.scrollHeight - 120;
 
-        if (nearBottom && dailyOrderHasMore && !isLoadingDailyOrders) {
-            loadDailyOrders(true);
+        const nearTop = tableWrapper.scrollTop <= 120;
+
+        if (
+            nearTop &&
+            dailyOrderCurrentPage > 1 &&
+            !dailyOrderIsLoadingPrevious &&
+            !isLoadingDailyOrders
+        ) {
+            loadPreviousDailyOrders();
         }
     });
+   
 
     document.getElementById("btnAddProductLine")?.addEventListener("click", async function () {
         if (!window.currentOrderId) {
@@ -144,28 +200,28 @@ document.addEventListener("DOMContentLoaded", function () {
             window.dailyOrderTypingTimeout = setTimeout(() => {
 
                 isTypingFilter = false;
-                loadDailyOrders();
+                loadDailyOrders(true);
 
             }, 300);
         });
 
     document.getElementById("classFilter")
-        ?.addEventListener("change", () => loadDailyOrders(false));
+        ?.addEventListener("change", () => loadDailyOrders(true));
 
     document.getElementById("yearFilter")
-        ?.addEventListener("change", () => loadDailyOrders(false));
+        ?.addEventListener("change", () => loadDailyOrders(true));
 
     document.getElementById("monthFilter")
-        ?.addEventListener("change", () => loadDailyOrders(false));
+        ?.addEventListener("change", () => loadDailyOrders(true));
 
     document.getElementById("statusFilter")
-        ?.addEventListener("change", () => loadDailyOrders(false));
+        ?.addEventListener("change", () => loadDailyOrders(true));
 
     document.getElementById("sortByFilter")
-        ?.addEventListener("change", () => loadDailyOrders(false));
+        ?.addEventListener("change", () => loadDailyOrders(true));
 
     document.getElementById("sortDirFilter")
-        ?.addEventListener("change", () => loadDailyOrders(false));
+        ?.addEventListener("change", () => loadDailyOrders(true));
 
 
 
@@ -346,7 +402,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     )
                     .hide();
 
-                await loadDailyOrders();
+                await refreshLoadedDailyOrders();
                 await openViewModal(window.currentOrderId);
 
             } catch (err) {
@@ -452,8 +508,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         await markReadyForDispatch(window.currentOrderId);
-        await openViewModal(window.currentOrderId); // refresh modal
-        await loadDailyOrders(); // refresh table
+        await openViewModal(window.currentOrderId);
     });
 
     document.addEventListener("click", async function (e) {
@@ -637,18 +692,26 @@ document.addEventListener("DOMContentLoaded", function () {
 //}
 function resetDailyOrderFilters() {
 
-    document.getElementById("classFilter").selectedIndex = 0;
-    document.getElementById("yearFilter").selectedIndex = 1;   // All Year if that's your first option, or adjust accordingly
-    document.getElementById("monthFilter").selectedIndex = 0;
-    document.getElementById("statusFilter").value = "ALL_EXCL_COMPLETED";
-    document.getElementById("sortByFilter").value = "deliveryDate";
-    document.getElementById("sortDirFilter").value = "asc";
-    document.getElementById("searchInput").value = "";
+    const classFilter =
+        document.getElementById("classFilter");
 
-    dailyOrderPage = 1;
-    dailyOrderHasMore = true;
+    const searchInput =
+        document.getElementById("searchInput");
 
-    loadDailyOrders(false);
+    if (classFilter) {
+        classFilter.selectedIndex = 0;
+    }
+
+    if (searchInput) {
+        searchInput.value = "";
+    }
+
+    setDailyOrderDefaultFilters();
+
+    dailyOrderCurrentPage = 1;
+    dailyOrderTotalPages = 1;
+
+    loadDailyOrders(true);
 }
 async function saveProductLine() {
     const productId = document.getElementById("modalAddLineProduct")?.value;
@@ -683,7 +746,7 @@ async function saveProductLine() {
         .getInstance(document.getElementById("addProductLineModal"))
         ?.hide();
 
-    await loadDailyOrders();
+    await refreshLoadedDailyOrders();
     await openViewModal(window.currentOrderId);
 }
 
@@ -1133,7 +1196,7 @@ async function backToAllocation(orderId) {
 
         alert(result.message || "Order moved back to allocation.");
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
 
         if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
             await openViewModal(orderId);
@@ -1273,10 +1336,20 @@ function startDailyOrderAutoRefresh() {
 
         if (isTypingFilter) return;
 
-        const wrapper = document.querySelector(".dailyorder-table-wrapper");
+        const wrapper =
+            document.querySelector(".dailyorder-table-wrapper");
 
-        if (wrapper && wrapper.scrollTop < 100) {
-            loadDailyOrders();
+        if (!wrapper)
+            return;
+
+        const nearBottom =
+            wrapper.scrollTop + wrapper.clientHeight >=
+            wrapper.scrollHeight - 120;
+
+        if (nearBottom) {
+
+            // refresh only when user is viewing latest entries
+            loadDailyOrders(true);
         }
 
     }, 30000);
@@ -1356,7 +1429,7 @@ async function saveEditOrder() {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
 
         if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
             await openViewModal(orderId);
@@ -1387,79 +1460,485 @@ function toInputDate(dateStr) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-async function loadDailyOrders(append = false) {
+async function loadDailyOrders(scrollToBottom = false) {
 
-    if (append) {
-        if (dailyOrderIsAppending) return;
-        dailyOrderIsAppending = true;
-    }
-
-    if (isLoadingDailyOrders) return;
-
-    if (!append) {
-        dailyOrderPage = 1;
-        dailyOrderHasMore = true;
-    }
-
-    if (append && !dailyOrderHasMore) return;
+    if (isLoadingDailyOrders)
+        return;
 
     isLoadingDailyOrders = true;
 
-    const className = document.getElementById("classFilter")?.value || "";
-    const year = document.getElementById("yearFilter")?.value || "";
-    const month = document.getElementById("monthFilter")?.value || "";
-    const status = document.getElementById("statusFilter")?.value || "";
-    const search = document.getElementById("searchInput")?.value || "";
-    const sortBy = document.getElementById("sortByFilter")?.value || "deliveryDate";
-    const sortDir = document.getElementById("sortDirFilter")?.value || "asc";
-
-    const params = new URLSearchParams();
-
-    if (className) params.append("className", className);
-    if (year) params.append("year", year);
-    if (month) params.append("month", month);
-    if (status) params.append("status", status);
-    if (search) params.append("search", search);
-    params.append("sortBy", sortBy);
-    params.append("sortDir", sortDir);
-
-    params.append("page", dailyOrderPage);
-    params.append("pageSize", dailyOrderPageSize);
-
-    document.getElementById("lastUpdatedText").textContent =
-        "Last updated: " + new Date().toLocaleTimeString();
-
     try {
-        const response = await fetch(`/DailyOrder/GetOrders?${params.toString()}`);
 
-        if (!response.ok) {
-            throw new Error(await response.text());
+        // -----------------------------------------
+        // FIRST REQUEST:
+        // Find total number of records
+        // -----------------------------------------
+
+        const firstResult =
+            await fetchDailyOrderPage(1);
+
+        const totalRecords =
+            Number(firstResult.totalRecords || 0);
+
+        dailyOrderTotalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    totalRecords / dailyOrderPageSize
+                )
+            );
+
+        // -----------------------------------------
+        // GO DIRECTLY TO LAST PAGE
+        // -----------------------------------------
+
+        dailyOrderCurrentPage =
+            dailyOrderTotalPages;
+
+        let result = firstResult;
+
+        // If there is more than one page,
+        // request ONLY the last page.
+        if (dailyOrderTotalPages > 1) {
+
+            result =
+                await fetchDailyOrderPage(
+                    dailyOrderCurrentPage
+                );
         }
 
-        const result = await response.json();
+        // -----------------------------------------
+        // RENDER
+        // -----------------------------------------
 
-        renderDailyOrderSummary(result.summary);
-        renderDailyOrderTable(result.data || [], append);
+        renderDailyOrderSummary(
+            result.summary
+        );
 
-        dailyOrderHasMore = Boolean(result.hasMore);
+        renderDailyOrderTable(
+            result.data || [],
+            "replace"
+        );
 
-        if (dailyOrderHasMore) {
-            dailyOrderPage++;
+        // -----------------------------------------
+        // START AT BOTTOM OF LAST PAGE
+        // -----------------------------------------
+
+        const wrapper =
+            document.querySelector(
+                ".dailyorder-table-wrapper"
+            );
+
+        if (wrapper && scrollToBottom) {
+
+            requestAnimationFrame(() => {
+
+                wrapper.scrollTop =
+                    wrapper.scrollHeight;
+
+            });
         }
 
-    } catch (err) {
-        console.error(err);
+        document.getElementById(
+            "lastUpdatedText"
+        ).textContent =
+            "Last updated: " +
+            new Date().toLocaleTimeString();
 
-        document.getElementById("dailyOrderTableBody").innerHTML = `
+    }
+    catch (err) {
+
+        console.error(
+            "loadDailyOrders error:",
+            err
+        );
+
+        document.getElementById(
+            "dailyOrderTableBody"
+        ).innerHTML = `
             <tr>
-                <td colspan="11" class="text-center text-danger py-4">
+                <td colspan="13"
+                    class="text-center text-danger py-4">
                     Failed to load orders.
                 </td>
             </tr>
         `;
-    } finally {
+    }
+    finally {
+
         isLoadingDailyOrders = false;
-        dailyOrderIsAppending = false;
+    }
+}
+
+async function fetchDailyOrderPage(page) {
+
+    const className =
+        document.getElementById("classFilter")?.value || "";
+
+    const year =
+        document.getElementById("yearFilter")?.value || "";
+
+    const month =
+        document.getElementById("monthFilter")?.value || "";
+
+    const status =
+        document.getElementById("statusFilter")?.value || "";
+
+    const search =
+        document.getElementById("searchInput")?.value || "";
+
+    const sortBy =
+        document.getElementById("sortByFilter")?.value ||
+        "dateOrdered";
+
+    const sortDir =
+        document.getElementById("sortDirFilter")?.value ||
+        "asc";
+
+    const params =
+        new URLSearchParams();
+
+    if (className)
+        params.append("className", className);
+
+    if (year)
+        params.append("year", year);
+
+    if (month)
+        params.append("month", month);
+
+    if (status)
+        params.append("status", status);
+
+    if (search)
+        params.append("search", search);
+
+    params.append("sortBy", sortBy);
+    params.append("sortDir", sortDir);
+
+    params.append(
+        "page",
+        page
+    );
+
+    params.append(
+        "pageSize",
+        dailyOrderPageSize
+    );
+
+    const response =
+        await fetch(
+            `/DailyOrder/GetOrders?${params.toString()}`
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            await response.text()
+        );
+    }
+
+    return await response.json();
+}
+
+async function loadPreviousDailyOrders() {
+
+    if (dailyOrderIsLoadingPrevious)
+        return;
+
+    if (dailyOrderCurrentPage <= 1)
+        return;
+
+    const wrapper =
+        document.querySelector(
+            ".dailyorder-table-wrapper"
+        );
+
+    if (!wrapper)
+        return;
+
+    dailyOrderIsLoadingPrevious = true;
+
+    try {
+
+        const previousPage =
+            dailyOrderCurrentPage - 1;
+
+        // Remember current table height
+        const oldScrollHeight =
+            wrapper.scrollHeight;
+
+        const result =
+            await fetchDailyOrderPage(
+                previousPage
+            );
+
+        // Add older records ABOVE
+        renderDailyOrderTable(
+            result.data || [],
+            "prepend"
+        );
+
+        dailyOrderCurrentPage =
+            previousPage;
+
+        // -----------------------------------------
+        // KEEP USER AT SAME VISUAL POSITION
+        // -----------------------------------------
+
+        requestAnimationFrame(() => {
+
+            const newScrollHeight =
+                wrapper.scrollHeight;
+
+            const addedHeight =
+                newScrollHeight -
+                oldScrollHeight;
+
+            wrapper.scrollTop =
+                addedHeight + 20;
+
+        });
+
+    }
+    catch (err) {
+
+        console.error(
+            "loadPreviousDailyOrders error:",
+            err
+        );
+
+    }
+    finally {
+
+        dailyOrderIsLoadingPrevious =
+            false;
+    }
+}
+
+async function refreshLoadedDailyOrders() {
+
+    if (isLoadingDailyOrders)
+        return;
+
+    const wrapper =
+        document.querySelector(".dailyorder-table-wrapper");
+
+    if (!wrapper)
+        return;
+
+    isLoadingDailyOrders = true;
+
+    try {
+
+        // =========================================
+        // REMEMBER CURRENT VISIBLE ROW
+        // =========================================
+
+        const wrapperRect =
+            wrapper.getBoundingClientRect();
+
+        const rows =
+            [...document.querySelectorAll(
+                "#dailyOrderTableBody .dailyorder-row"
+            )];
+
+        let anchorRow = null;
+
+        for (const row of rows) {
+
+            const rect =
+                row.getBoundingClientRect();
+
+            // first row currently visible
+            if (rect.bottom > wrapperRect.top) {
+                anchorRow = row;
+                break;
+            }
+        }
+
+        let anchorOrderId = null;
+        let anchorLineId = null;
+        let anchorOffset = 0;
+
+        if (anchorRow) {
+
+            anchorOrderId =
+                anchorRow.dataset.orderId;
+
+            anchorLineId =
+                anchorRow.dataset.lineId;
+
+            anchorOffset =
+                anchorRow.getBoundingClientRect().top -
+                wrapperRect.top;
+        }
+
+        // fallback
+        const oldScrollTop =
+            wrapper.scrollTop;
+
+
+        // =========================================
+        // GET NEW TOTAL RECORD COUNT
+        // =========================================
+
+        const firstResult =
+            await fetchDailyOrderPage(1);
+
+        const totalRecords =
+            Number(firstResult.totalRecords || 0);
+
+        const newTotalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    totalRecords /
+                    dailyOrderPageSize
+                )
+            );
+
+
+        // =========================================
+        // KEEP THE SAME OLDEST PAGE CURRENTLY LOADED
+        // =========================================
+
+        let startPage =
+            dailyOrderCurrentPage;
+
+        if (startPage > newTotalPages) {
+            startPage = newTotalPages;
+        }
+
+        startPage =
+            Math.max(1, startPage);
+
+
+        // =========================================
+        // RELOAD ALL CURRENTLY VISIBLE RANGE
+        //
+        // Example:
+        // user loaded pages 3,4,5
+        //
+        // refresh:
+        // page 3 + page 4 + page 5
+        // =========================================
+
+        const refreshedData = [];
+
+        let latestSummary =
+            firstResult.summary;
+
+        for (
+            let page = startPage;
+            page <= newTotalPages;
+            page++
+        ) {
+
+            let pageResult;
+
+            if (page === 1) {
+                pageResult = firstResult;
+            }
+            else {
+                pageResult =
+                    await fetchDailyOrderPage(page);
+            }
+
+            refreshedData.push(
+                ...(pageResult.data || [])
+            );
+
+            latestSummary =
+                pageResult.summary ||
+                latestSummary;
+        }
+
+
+        // =========================================
+        // UPDATE PAGINATION STATE
+        // =========================================
+
+        dailyOrderCurrentPage =
+            startPage;
+
+        dailyOrderTotalPages =
+            newTotalPages;
+
+
+        // =========================================
+        // RENDER REFRESHED DATA
+        // =========================================
+
+        renderDailyOrderSummary(
+            latestSummary
+        );
+
+        renderDailyOrderTable(
+            refreshedData,
+            "replace"
+        );
+
+
+        // =========================================
+        // RESTORE USER'S EXACT POSITION
+        // =========================================
+
+        requestAnimationFrame(() => {
+
+            if (
+                anchorOrderId &&
+                anchorLineId
+            ) {
+
+                const newAnchor =
+                    document.querySelector(
+                        `#dailyOrderTableBody .dailyorder-row[data-order-id="${anchorOrderId}"][data-line-id="${anchorLineId}"]`
+                    );
+
+                if (newAnchor) {
+
+                    const newWrapperRect =
+                        wrapper.getBoundingClientRect();
+
+                    const newOffset =
+                        newAnchor
+                            .getBoundingClientRect()
+                            .top -
+                        newWrapperRect.top;
+
+                    wrapper.scrollTop +=
+                        newOffset -
+                        anchorOffset;
+
+                    return;
+                }
+            }
+
+            // anchor might have been deleted
+            wrapper.scrollTop =
+                oldScrollTop;
+
+        });
+
+
+        document.getElementById(
+            "lastUpdatedText"
+        ).textContent =
+            "Last updated: " +
+            new Date().toLocaleTimeString();
+
+    }
+    catch (err) {
+
+        console.error(
+            "refreshLoadedDailyOrders error:",
+            err
+        );
+
+    }
+    finally {
+
+        isLoadingDailyOrders = false;
     }
 }
 
@@ -1473,18 +1952,18 @@ function renderDailyOrderSummary(summary) {
     document.getElementById("summaryOverdue").textContent = summary?.overdue ?? 0;
     document.getElementById("summaryCompleted").textContent = summary?.completed ?? 0;
 }
-function renderDailyOrderTable(data, append = false) {
+function renderDailyOrderTable(data, mode = "replace") {
     const tbody = document.getElementById("dailyOrderTableBody");
 
     if (!data || data.length === 0) {
 
-        if (!append) {
+        if (mode === "replace") {
             tbody.innerHTML = `
-        <tr>
-            <td colspan="11" class="text-center text-muted py-4">
-                No orders found.
-            </td>
-        </tr>`;
+            <tr>
+                <td colspan="13" class="text-center text-muted py-4">
+                    No orders found.
+                </td>
+            </tr>`;
         }
 
         return;
@@ -1530,6 +2009,11 @@ function renderDailyOrderTable(data, append = false) {
 
         const orderStatus = (order.status || "").toUpperCase();
 
+        const completedClass =
+            orderStatus === "COMPLETED"
+                ? "dailyorder-completed-row"
+                : "";
+
         if (
             orderStatus === "ALLOCATED" ||
             orderStatus === "PARTIALLY ALLOCATED" ||
@@ -1550,7 +2034,10 @@ function renderDailyOrderTable(data, append = false) {
         `;
 
         rows += `
-           <tr class="dailyorder-row" data-menu='${encodeURIComponent(menuItems)}'>
+  <tr class="dailyorder-row ${completedClass}"
+    data-order-id="${order.orderId}"
+    data-line-id="${order.orderLineId}"
+    data-menu='${encodeURIComponent(menuItems)}'>
    <td>${renderDeliveryPriority(order.deliveryDate, order.status)}</td>
 
 <td>
@@ -1612,9 +2099,13 @@ function renderDailyOrderTable(data, append = false) {
         `;
     });
 
-    if (append) {
+    if (mode === "append") {
         tbody.insertAdjacentHTML("beforeend", rows);
-    } else {
+    }
+    else if (mode === "prepend") {
+        tbody.insertAdjacentHTML("afterbegin", rows);
+    }
+    else {
         tbody.innerHTML = rows;
     }
 
@@ -2047,7 +2538,7 @@ async function updateLineRequiredQty(
 
         alert(result.message || "Required qty updated.");
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
         await openViewModal(window.currentOrderId);
 
     } catch (err) {
@@ -2092,7 +2583,7 @@ async function clearLineAllocation(orderLineId) {
             "Allocation cleared."
         );
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
         await openViewModal(window.currentOrderId);
 
     } catch (err) {
@@ -2126,7 +2617,7 @@ async function deleteOrderLine(orderId, orderLineId) {
 
         alert("Product line deleted.");
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
 
         if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
             await openViewModal(orderId);
@@ -2290,7 +2781,7 @@ async function allocateOrder(orderId, lines = null) {
 
        // alert(result.message || "Allocation completed.");
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
 
         if (window.currentOrderId && String(window.currentOrderId) === String(orderId)) {
             await openViewModal(orderId);
@@ -2314,7 +2805,7 @@ async function markReadyForDispatch(orderId) {
 
         const result = await response.json();
         alert(result.message || "Order is now ready for dispatch.");
-        loadDailyOrders();
+        await refreshLoadedDailyOrders();
     } catch (err) {
         console.error(err);
         alert("Failed to mark order as ready for dispatch.");
@@ -2633,7 +3124,7 @@ async function deleteOrder(orderId) {
         }
 
         alert(result.message || "Order deleted successfully.");
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
 
     } catch (err) {
         console.error("deleteOrder error:", err);
@@ -2815,7 +3306,7 @@ async function saveAddOrder() {
         }
 
         resetAddOrderForm();
-        await loadDailyOrders();
+        await loadDailyOrders(true);
     } catch (err) {
         console.error("saveAddOrder error:", err);
         alert("Failed to create order: " + err.message);
@@ -3117,7 +3608,7 @@ async function updateLineRequiredQty(orderLineId, oldQty, dispatchedQty) {
 
         alert(result.message || "Required qty updated.");
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
         await openViewModal(window.currentOrderId);
 
     } catch (err) {
@@ -3147,7 +3638,7 @@ async function clearLineAllocation(orderLineId) {
 
         alert(result.message || "Allocation cleared.");
 
-        await loadDailyOrders();
+        await refreshLoadedDailyOrders();
         await openViewModal(window.currentOrderId);
 
     } catch (err) {

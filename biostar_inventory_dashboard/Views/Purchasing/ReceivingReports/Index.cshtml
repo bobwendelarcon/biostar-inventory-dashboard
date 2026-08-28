@@ -4,60 +4,179 @@
 
 <div class="container-fluid px-4 py-4">
 
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================ -->
     <div class="mb-4">
-        <div class="text-muted small mb-1">Purchasing &gt; Receiving Reports</div>
-        <h2 class="fw-bold mb-1">Receiving Reports</h2>
-        <div class="text-muted">List of Receiving Reports from approved Purchase Orders.</div>
+        <div class="text-muted small mb-1">
+            Purchasing &gt; Receiving Reports
+        </div>
+
+        <h2 class="fw-bold mb-1">
+            Receiving Reports
+        </h2>
+
+        <div class="text-muted">
+            Final receiving reports for materials completed by
+            Raw Material Warehouse.
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
+
+    <!-- ============================================================
+         SUMMARY CARDS
+    ============================================================ -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Ready for Final RR
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="readyCount">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Completed Final RR
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="completedCount">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Total Records
+                    </div>
+
+                    <div class="fs-3 fw-bold"
+                         id="totalCount">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         FILTER
+    ============================================================ -->
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
 
-            <div class="row mb-3">
-                <div class="col-md-4">
+            <div class="row g-3">
+
+                <div class="col-md-5">
+                    <label class="form-label small text-muted">
+                        Search
+                    </label>
+
                     <input id="rrSearch"
                            type="text"
                            class="form-control"
-                           placeholder="Search RR No, PO No, Supplier, SI/DR No">
+                           placeholder="Search Incoming, PO, Supplier, QC or RR No">
                 </div>
 
                 <div class="col-md-3">
-                    <select id="statusFilter" class="form-select">
-                        <option value="">All Status</option>
-                        <option value="DRAFT">Draft</option>
-                        <option value="FOR_QC">For QC</option>
-                        <option value="ACCEPTED">Accepted</option>
-                        <option value="PARTIALLY_ACCEPTED">Partially Accepted</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="COMMITTED">Committed</option>
+                    <label class="form-label small text-muted">
+                        Status
+                    </label>
+
+                    <select id="statusFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option value="READY_FOR_FINAL_RR">
+                            Ready for Final RR
+                        </option>
+
+                        <option value="COMMITTED">
+                            Completed
+                        </option>
+
                     </select>
                 </div>
+
             </div>
 
-            <div class="table-responsive overflow-visible">
+        </div>
+    </div>
+
+
+    <!-- ============================================================
+         TABLE
+    ============================================================ -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="fw-bold mb-1">
+                Receiving Report Records
+            </h5>
+
+            <div class="text-muted small">
+                Materials ready for Final RR and completed
+                receiving reports.
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
                 <table class="table table-hover align-middle">
+
                     <thead class="table-light">
                         <tr>
-                           
                             <th>RR No</th>
+                            <th>Incoming No</th>
                             <th>PO No</th>
                             <th>Supplier</th>
                             <th>SI/DR No</th>
                             <th>Delivery Date</th>
+                            <th>QC No</th>
                             <th>Status</th>
-                            <th>Created By</th>
-                            <th>Created At</th>
-                            <th style="width:90px;">Action</th>
+                            <th style="width:150px;">
+                                Action
+                            </th>
                         </tr>
                     </thead>
+
                     <tbody id="rrTableBody">
+
                         <tr>
-                            <td colspan="9" class="text-center text-muted py-4">
+                            <td colspan="9"
+                                class="text-center text-muted py-4">
+
                                 Loading receiving reports...
+
                             </td>
                         </tr>
+
                     </tbody>
+
                 </table>
+
             </div>
 
         </div>
@@ -65,237 +184,1332 @@
 
 </div>
 
+
+<!-- ================================================================
+     CREATE FINAL RR MODAL
+================================================================ -->
+<div class="modal fade"
+     id="finalRrModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title fw-bold mb-0">
+                        Create Final Receiving Report
+                    </h5>
+
+                    <div class="text-muted small">
+                        Review the final receiving information before
+                        completing the Receiving Report.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="finalProcessingId">
+
+
+                <!-- LOADING -->
+                <div id="finalRrLoading"
+                     class="text-center py-5">
+
+                    <div class="spinner-border"
+                         role="status">
+                    </div>
+
+                    <div class="text-muted mt-2">
+                        Loading Final RR information...
+                    </div>
+
+                </div>
+
+
+                <!-- CONTENT -->
+                <div id="finalRrContent"
+                     class="d-none">
+
+
+                    <!-- DOCUMENT INFORMATION -->
+                    <div class="card border mb-4">
+
+                        <div class="card-header bg-light">
+                            <strong>
+                                Document Information
+                            </strong>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        Incoming No
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalIncomingNo">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        PO No
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalPoNo">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        QC No
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalQcNo">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        RMW Processing No
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalProcessingNo">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <div class="text-muted small">
+                                        Supplier
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalSupplier">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        SI / DR No
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalSiDrNo">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        Delivery Date
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalDeliveryDate">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        QC Status
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalQcStatus">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        QC Decision
+                                    </div>
+
+                                    <div class="fw-semibold"
+                                         id="modalQcDecision">
+                                        -
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <div class="text-muted small">
+                                        RMW Status
+                                    </div>
+
+                                    <div id="modalRmwStatus">
+                                        -
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- QUANTITY SUMMARY -->
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+
+                                <div class="text-muted small">
+                                    QA Accepted Qty
+                                </div>
+
+                                <div class="fs-4 fw-bold"
+                                     id="modalQaQty">
+                                    0.00
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+
+                                <div class="text-muted small">
+                                    RMW Actual Qty
+                                </div>
+
+                                <div class="fs-4 fw-bold"
+                                     id="modalActualQty">
+                                    0.00
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+
+                                <div class="text-muted small">
+                                    Variance
+                                </div>
+
+                                <div class="fs-4 fw-bold"
+                                     id="modalVarianceQty">
+                                    0.00
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- MATERIAL TABLE -->
+                    <div class="card border">
+
+                        <div class="card-header bg-light">
+                            <strong>
+                                Material Details
+                            </strong>
+                        </div>
+
+                        <div class="card-body p-0">
+
+                            <div class="table-responsive">
+
+                                <table class="table table-sm align-middle mb-0">
+
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">
+                                                Material
+                                            </th>
+
+                                            <th>
+                                                Lot No
+                                            </th>
+
+                                            <th class="text-end">
+                                                QA Accepted
+                                            </th>
+
+                                            <th class="text-end">
+                                                RMW Actual
+                                            </th>
+
+                                            <th class="text-end">
+                                                Variance
+                                            </th>
+
+                                            <th>
+                                                UOM
+                                            </th>
+
+                                            <th>
+                                                Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="modalMaterialBody">
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- REMARKS -->
+                    <div class="mt-4">
+
+                        <label for="finalRrRemarks"
+                               class="form-label fw-semibold">
+                            Final RR Remarks
+                        </label>
+
+                        <textarea id="finalRrRemarks"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="1000"
+                                  placeholder="Optional remarks for the Final Receiving Report"></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ERROR -->
+                <div id="finalRrError"
+                     class="alert alert-danger d-none">
+                </div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        id="completeFinalRrBtn"
+                        class="btn btn-success"
+                        disabled>
+                    <i class="bi bi-check-circle me-1"></i>
+                    Complete Final RR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
-    let rrList = [];
 
-    document.addEventListener("DOMContentLoaded", function () {
-        loadReceivingReports();
+    let receivingRows = [];
+    let finalRrModal = null;
 
-        document.getElementById("rrSearch").addEventListener("input", renderTable);
-        document.getElementById("statusFilter").addEventListener("change", renderTable);
-    });
 
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            finalRrModal =
+                new bootstrap.Modal(
+                    document.getElementById(
+                        "finalRrModal"
+                    )
+                );
+
+            loadReceivingReports();
+
+            document
+                .getElementById("rrSearch")
+                .addEventListener(
+                    "input",
+                    renderTable
+                );
+
+            document
+                .getElementById("statusFilter")
+                .addEventListener(
+                    "change",
+                    renderTable
+                );
+
+                document.getElementById("completeFinalRrBtn")
+    .addEventListener(
+        "click",
+        completeFinalRr
+    );
+        }
+    );
+
+
+    // ==============================================================
+    // LOAD BOTH PENDING + COMPLETED
+    // ==============================================================
     async function loadReceivingReports() {
-        try {
-            const response = await fetch("/purchasing/receiving-reports/list");
-            const data = await response.json();
 
-            if (!response.ok) {
-                document.getElementById("rrTableBody").innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-center text-danger py-4">
-                            ${data.message ?? "Failed to load receiving reports."}
-                        </td>
-                    </tr>`;
-                return;
+        const tbody =
+            document.getElementById(
+                "rrTableBody"
+            );
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9"
+                    class="text-center text-muted py-4">
+                    Loading receiving reports...
+                </td>
+            </tr>
+        `;
+
+        try {
+
+            const [
+                pendingResponse,
+                rrResponse
+            ] = await Promise.all([
+
+                fetch(
+                    "/purchasing/receiving-reports/final-rr/pending"
+                ),
+
+                fetch(
+                    "/purchasing/receiving-reports/list"
+                )
+            ]);
+
+
+            const pendingData =
+                await pendingResponse.json();
+
+            const rrData =
+                await rrResponse.json();
+
+
+            if (!pendingResponse.ok) {
+
+                throw new Error(
+                    pendingData.message ??
+                    "Failed to load pending Final RR records."
+                );
             }
 
-            rrList = data;
+
+            if (!rrResponse.ok) {
+
+                throw new Error(
+                    rrData.message ??
+                    "Failed to load Receiving Reports."
+                );
+            }
+
+
+            const pendingRows =
+                (Array.isArray(pendingData)
+                    ? pendingData
+                    : [])
+                .map(x => ({
+
+                    rowType:
+                        "PENDING_FINAL_RR",
+
+                    processingId:
+                        x.processingId,
+
+                    processingNo:
+                        x.processingNo,
+
+                    rrId:
+                        null,
+
+                    rrNo:
+                        null,
+
+                    incomingNo:
+                        x.incomingNo,
+
+                    poNo:
+                        x.printedPoNo ??
+                        x.poNo,
+
+                    supplierName:
+                        x.supplierName,
+
+                    siDrNo:
+                        x.siDrNo,
+
+                    deliveryDate:
+                        x.deliveryDate,
+
+                    qcNo:
+                        x.qcNo,
+
+                    status:
+                        "READY_FOR_FINAL_RR",
+
+                    completedAt:
+                        x.completedAt
+                }));
+
+
+            const completedRows =
+                (Array.isArray(rrData)
+                    ? rrData
+                    : [])
+                .map(x => ({
+
+                    rowType:
+                        "RR",
+
+                    processingId:
+                        null,
+
+                    rrId:
+                        x.rrId,
+
+                    rrNo:
+                        x.rrNo,
+
+                    incomingNo:
+                        x.incomingNo ?? null,
+
+                    poNo:
+                        x.poNo,
+
+                    supplierName:
+                        x.supplierName,
+
+                    siDrNo:
+                        x.siDrNo,
+
+                    deliveryDate:
+                        x.deliveryDate,
+
+                    qcNo:
+                        x.qcNo ?? null,
+
+                    status:
+                        x.status,
+
+                    createdBy:
+                        x.createdBy,
+
+                    createdAt:
+                        x.createdAt
+                }));
+
+
+            receivingRows = [
+                ...pendingRows,
+                ...completedRows
+            ];
+
+
+            updateSummary();
             renderTable();
 
-        } catch (error) {
-            document.getElementById("rrTableBody").innerHTML = `
+        }
+        catch (error) {
+
+            console.error(error);
+
+            tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-danger py-4">
-                        Failed to load receiving reports.
+                    <td colspan="9"
+                        class="text-center text-danger py-4">
+
+                        ${
+                            escapeHtml(
+                                error.message ??
+                                "Failed to load receiving reports."
+                            )
+                        }
+
                     </td>
-                </tr>`;
+                </tr>
+            `;
         }
     }
 
+
+    // ==============================================================
+    // SUMMARY
+    // ==============================================================
+    function updateSummary() {
+
+        const ready =
+            receivingRows.filter(x =>
+                x.status ===
+                "READY_FOR_FINAL_RR"
+            ).length;
+
+
+        const completed =
+            receivingRows.filter(x =>
+                x.status ===
+                "COMMITTED"
+            ).length;
+
+
+        document.getElementById(
+            "readyCount"
+        ).textContent = ready;
+
+
+        document.getElementById(
+            "completedCount"
+        ).textContent = completed;
+
+
+        document.getElementById(
+            "totalCount"
+        ).textContent =
+            receivingRows.length;
+    }
+
+
+    // ==============================================================
+    // TABLE
+    // ==============================================================
     function renderTable() {
-        const tbody = document.getElementById("rrTableBody");
-        const search = document.getElementById("rrSearch").value.toLowerCase();
-        const status = document.getElementById("statusFilter").value;
 
-        let filtered = rrList.filter(rr => {
-            const searchText = `
-                ${rr.rrNo ?? ""}
-                ${rr.poNo ?? ""}
-                ${rr.supplierName ?? ""}
-                ${rr.siDrNo ?? ""}
-            `.toLowerCase();
+        const tbody =
+            document.getElementById(
+                "rrTableBody"
+            );
 
-            const matchesSearch = searchText.includes(search);
-            const matchesStatus = !status || rr.status === status;
+        const search =
+            document.getElementById(
+                "rrSearch"
+            )
+            .value
+            .trim()
+            .toLowerCase();
 
-            return matchesSearch && matchesStatus;
-        });
+
+        const status =
+            document.getElementById(
+                "statusFilter"
+            ).value;
+
+
+        const filtered =
+            receivingRows.filter(x => {
+
+                const searchText = `
+                    ${x.rrNo ?? ""}
+                    ${x.incomingNo ?? ""}
+                    ${x.poNo ?? ""}
+                    ${x.supplierName ?? ""}
+                    ${x.siDrNo ?? ""}
+                    ${x.qcNo ?? ""}
+                    ${x.processingNo ?? ""}
+                `.toLowerCase();
+
+
+                const matchesSearch =
+                    searchText.includes(search);
+
+
+                const matchesStatus =
+                    !status ||
+                    x.status === status;
+
+
+                return (
+                    matchesSearch &&
+                    matchesStatus
+                );
+            });
+
 
         tbody.innerHTML = "";
 
+
         if (filtered.length === 0) {
+
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">
-                        No receiving reports found.
+                    <td colspan="9"
+                        class="text-center text-muted py-4">
+
+                        No receiving report records found.
+
                     </td>
-                </tr>`;
+                </tr>
+            `;
+
             return;
         }
 
-        filtered.forEach(rr => {
+
+        filtered.forEach(row => {
+
+            let actionHtml = "";
+
+
+            if (
+                row.status ===
+                "READY_FOR_FINAL_RR"
+            ) {
+
+                actionHtml = `
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            onclick="openFinalRr(
+                                ${row.processingId}
+                            )">
+
+                        Create Final RR
+
+                    </button>
+                `;
+            }
+            else if (row.rrId) {
+
+                actionHtml = `
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="/purchasing/receiving-reports/details/${row.rrId}">
+
+                        View RR
+
+                    </a>
+                `;
+            }
+
+
             tbody.innerHTML += `
                 <tr>
-               
-                    <td class="fw-semibold">${rr.rrNo ?? ""}</td>
-                    <td>${rr.poNo ?? ""}</td>
-                    <td>${rr.supplierName ?? ""}</td>
-                    <td>${rr.siDrNo ?? "-"}</td>
-                    <td>${formatDate(rr.deliveryDate)}</td>
-                    <td>${renderStatus(rr.status)}</td>
-                    <td>${rr.createdBy ?? ""}</td>
-                    <td>${formatDateTime(rr.createdAt)}</td>
 
+                    <td class="fw-semibold">
+                        ${
+                            row.rrNo
+                                ? escapeHtml(row.rrNo)
+                                : `<span class="text-muted">Pending</span>`
+                        }
+                    </td>
 
-                        <td class="text-end">
-        <div class="dropdown position-static">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown">
-                Action
-            </button>
+                    <td>
+                        ${escapeHtml(row.incomingNo ?? "-")}
+                    </td>
 
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item"
-                       href="/purchasing/receiving-reports/details/${rr.rrId}">
-                        View Details
-                    </a>
-                </li>
+                    <td>
+                        ${escapeHtml(row.poNo ?? "-")}
+                    </td>
 
-                ${rr.status === "DRAFT" ? `
-                    <li>
-                        <button class="dropdown-item"
-                                onclick="submitForQc(${rr.rrId})">
-                            Submit for QC
-                        </button>
-                    </li>
-                ` : ""}
+                    <td>
+                        ${escapeHtml(row.supplierName ?? "-")}
+                    </td>
 
-                ${rr.status === "FOR_QC" ? `
-                    <li>
-                        <span class="dropdown-item-text text-muted">
-                            Waiting for QC inspection
-                        </span>
-                    </li>
-                ` : ""}
+                    <td>
+                        ${escapeHtml(row.siDrNo ?? "-")}
+                    </td>
 
-                ${rr.status === "ACCEPTED" ||
-                  rr.status === "PARTIALLY_ACCEPTED" ? `
-                    <li>
-                        <button class="dropdown-item text-success"
-                                onclick="commitRr(${rr.rrId})">
-                            Commit Accepted Qty
-                        </button>
-                    </li>
-                ` : ""}
+                    <td>
+                        ${formatDate(row.deliveryDate)}
+                    </td>
 
-                ${rr.status === "REJECTED" ? `
-                    <li>
-                        <span class="dropdown-item-text text-danger">
-                            Rejected by QC
-                        </span>
-                    </li>
-                ` : ""}
+                    <td>
+                        ${escapeHtml(row.qcNo ?? "-")}
+                    </td>
 
-                ${rr.status === "COMMITTED" ? `
-                    <li>
-                        <span class="dropdown-item-text text-muted">
-                            Already committed
-                        </span>
-                    </li>
-                ` : ""}
-            </ul>
-        </div>
-    </td>
+                    <td>
+                        ${renderStatus(row.status)}
+                    </td>
+
+                    <td>
+                        ${actionHtml}
+                    </td>
 
                 </tr>
             `;
         });
     }
 
-    async function submitForQc(rrId) {
-        if (!confirm("Submit this RR for QC?")) return;
 
-        await postAction(`/purchasing/receiving-reports/${rrId}/submit-qc`);
-    }
+    // ==============================================================
+    // OPEN FINAL RR
+    // ==============================================================
+       async function openFinalRr(processingId) {
 
-   
+        document.getElementById(
+            "finalProcessingId"
+        ).value = processingId;
 
-    async function commitRr(rrId) {
-        if (!confirm("Commit this RR to inventory?")) return;
+        document.getElementById(
+            "finalRrRemarks"
+        ).value = "";
 
-        await postAction(`/purchasing/receiving-reports/${rrId}/commit`);
-    }
+        document.getElementById(
+            "finalRrLoading"
+        ).classList.remove("d-none");
 
-    async function postAction(url) {
+        document.getElementById(
+            "finalRrContent"
+        ).classList.add("d-none");
+
+        document.getElementById(
+            "finalRrError"
+        ).classList.add("d-none");
+
+        // Disable while loading
+        document.getElementById(
+            "completeFinalRrBtn"
+        ).disabled = true;
+
+        finalRrModal.show();
+
         try {
-            const response = await fetch(url, {
-                method: "POST"
-            });
 
-            const result = await response.json();
+            const response =
+                await fetch(
+                    `/purchasing/receiving-reports/final-rr/${processingId}/details`
+                );
+
+            const data = await response.json();
 
             if (!response.ok) {
-                alert(result.message ?? "Action failed.");
-                return;
+                throw new Error(
+                    data.message ??
+                    "Failed to load Final RR details."
+                );
             }
 
-            alert(result.message ?? "Action completed.");
+            renderFinalRrDetails(data);
+
+            document.getElementById(
+                "finalRrLoading"
+            ).classList.add("d-none");
+
+            document.getElementById(
+                "finalRrContent"
+            ).classList.remove("d-none");
+
+            // ENABLE ONLY AFTER SUCCESSFUL LOAD
+            document.getElementById(
+                "completeFinalRrBtn"
+            ).disabled = false;
+        }
+        catch (error) {
+
+            console.error(error);
+
+            document.getElementById(
+                "finalRrLoading"
+            ).classList.add("d-none");
+
+            const errorBox =
+                document.getElementById(
+                    "finalRrError"
+                );
+
+            errorBox.textContent =
+                error.message ??
+                "Failed to load Final RR details.";
+
+            errorBox.classList.remove("d-none");
+        }
+    }
+
+
+        async function completeFinalRr() {
+
+        const processingId =
+            Number(
+                document.getElementById(
+                    "finalProcessingId"
+                ).value
+            );
+
+        if (!processingId) {
+            alert("Processing ID is missing.");
+            return;
+        }
+
+        const remarks =
+            document.getElementById(
+                "finalRrRemarks"
+            ).value.trim();
+
+        const confirmed =
+            confirm(
+                "Complete this Final Receiving Report?\n\n" +
+                "The RMW actual quantity will be committed to Raw Material Inventory."
+            );
+
+        if (!confirmed)
+            return;
+
+
+        const btn =
+            document.getElementById(
+                "completeFinalRrBtn"
+            );
+
+        try {
+
+            btn.disabled = true;
+
+            btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-1"></span>
+                Completing...
+            `;
+
+
+            const response =
+                await fetch(
+                    `/purchasing/receiving-reports/final-rr/${processingId}/complete`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                remarks:
+                                    remarks || null
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ??
+                    "Failed to complete Final Receiving Report."
+                );
+            }
+
+
+            alert(
+                data.message ??
+                "Final Receiving Report completed successfully."
+            );
+
+
+            finalRrModal.hide();
+
             await loadReceivingReports();
 
-        } catch (error) {
-            alert("Action failed.");
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.message ??
+                "Failed to complete Final Receiving Report."
+            );
+
+            btn.disabled = false;
+        }
+        finally {
+
+            btn.innerHTML = `
+                <i class="bi bi-check-circle me-1"></i>
+                Complete Final RR
+            `;
         }
     }
 
-       function renderStatus(status) {
-        let badge = "bg-secondary";
-        let label = status ?? "";
+    // ==============================================================
+    // RENDER FINAL RR DETAILS
+    // ==============================================================
+    function renderFinalRrDetails(
+        data
+    ) {
 
-        if (status === "DRAFT") {
-            badge = "bg-warning text-dark";
-            label = "DRAFT";
+        document.getElementById(
+            "modalIncomingNo"
+        ).textContent =
+            data.incomingNo ?? "-";
+
+
+        document.getElementById(
+            "modalPoNo"
+        ).textContent =
+            data.printedPoNo ??
+            data.poNo ??
+            "-";
+
+
+        document.getElementById(
+            "modalQcNo"
+        ).textContent =
+            data.qcNo ?? "-";
+
+
+        document.getElementById(
+            "modalProcessingNo"
+        ).textContent =
+            data.processingNo ?? "-";
+
+
+        document.getElementById(
+            "modalSupplier"
+        ).textContent =
+            data.supplierName ?? "-";
+
+
+        document.getElementById(
+            "modalSiDrNo"
+        ).textContent =
+            data.siDrNo ?? "-";
+
+
+        document.getElementById(
+            "modalDeliveryDate"
+        ).textContent =
+            formatDate(
+                data.deliveryDate
+            );
+
+
+        document.getElementById(
+            "modalQcStatus"
+        ).textContent =
+            formatStatusText(
+                data.qcStatus
+            );
+
+
+        document.getElementById(
+            "modalQcDecision"
+        ).textContent =
+            formatStatusText(
+                data.qcDecision
+            );
+
+
+        document.getElementById(
+            "modalRmwStatus"
+        ).innerHTML =
+            renderStatus(
+                data.status
+            );
+
+
+        document.getElementById(
+            "modalQaQty"
+        ).textContent =
+            formatNumber(
+                data.totalQaAcceptedQty
+            );
+
+
+        document.getElementById(
+            "modalActualQty"
+        ).textContent =
+            formatNumber(
+                data.totalActualQty
+            );
+
+
+        document.getElementById(
+            "modalVarianceQty"
+        ).textContent =
+            formatNumber(
+                data.totalVarianceQty
+            );
+
+
+        const tbody =
+            document.getElementById(
+                "modalMaterialBody"
+            );
+
+
+        tbody.innerHTML = "";
+
+
+        const lines =
+            Array.isArray(data.lines)
+                ? data.lines
+                : [];
+
+
+        if (lines.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7"
+                        class="text-center text-muted py-4">
+
+                        No material lines found.
+
+                    </td>
+                </tr>
+            `;
+
+            return;
         }
 
-        if (status === "FOR_QC") {
-            badge = "bg-info text-dark";
-            label = "FOR QC";
-        }
 
-        if (status === "ACCEPTED") {
-            badge = "bg-success";
-            label = "ACCEPTED";
-        }
+        lines.forEach(line => {
 
-        if (status === "PARTIALLY_ACCEPTED") {
-            badge = "bg-primary";
-            label = "PARTIALLY ACCEPTED";
-        }
+            const material =
+                [
+                    line.materialCode,
+                    line.materialName
+                ]
+                .filter(Boolean)
+                .join(" - ");
 
-        if (status === "REJECTED") {
-            badge = "bg-danger";
-            label = "REJECTED";
-        }
 
-        if (status === "COMMITTED") {
-            badge = "bg-dark";
-            label = "COMMITTED";
-        }
+            tbody.innerHTML += `
+                <tr>
 
-        return `<span class="badge ${badge}">${label}</span>`;
+                    <td class="ps-3">
+                        <div class="fw-semibold">
+                            ${escapeHtml(material || "-")}
+                        </div>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(line.lotNo ?? "-")}
+                    </td>
+
+                    <td class="text-end">
+                        ${formatNumber(line.qaAcceptedQty)}
+                    </td>
+
+                    <td class="text-end fw-semibold">
+                        ${formatNumber(line.actualQty)}
+                    </td>
+
+                    <td class="text-end">
+                        ${formatNumber(line.varianceQty)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(line.uom ?? "-")}
+                    </td>
+
+                    <td>
+                        ${renderLineStatus(
+                            line.processingStatus
+                        )}
+                    </td>
+
+                </tr>
+            `;
+        });
     }
 
-    function formatDate(value) {
-        if (!value) return "-";
 
-        return new Date(value).toLocaleDateString();
+    // ==============================================================
+    // STATUS
+    // ==============================================================
+    function renderStatus(
+        status
+    ) {
+
+        let badge =
+            "bg-secondary";
+
+        let label =
+            formatStatusText(status);
+
+
+        if (
+            status ===
+            "READY_FOR_FINAL_RR"
+        ) {
+            badge =
+                "bg-warning text-dark";
+
+            label =
+                "READY FOR FINAL RR";
+        }
+
+
+        if (
+            status ===
+            "COMMITTED"
+        ) {
+            badge =
+                "bg-success";
+
+            label =
+                "COMPLETED";
+        }
+
+
+        return `
+            <span class="badge ${badge}">
+                ${escapeHtml(label)}
+            </span>
+        `;
     }
 
-    function formatDateTime(value) {
-        if (!value) return "-";
 
-        return new Date(value).toLocaleString();
+    function renderLineStatus(
+        status
+    ) {
+
+        let badge =
+            "bg-secondary";
+
+
+        if (
+            status ===
+            "STICKER_COMPLETED"
+        ) {
+            badge =
+                "bg-success";
+        }
+
+
+        return `
+            <span class="badge ${badge}">
+                ${escapeHtml(
+                    formatStatusText(status)
+                )}
+            </span>
+        `;
     }
+
+
+    function formatStatusText(
+        value
+    ) {
+
+        if (!value)
+            return "-";
+
+
+        return String(value)
+            .replaceAll("_", " ");
+    }
+
+
+    // ==============================================================
+    // FORMATTERS
+    // ==============================================================
+    function formatDate(
+        value
+    ) {
+
+        if (!value)
+            return "-";
+
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return "-";
+        }
+
+
+        return date.toLocaleDateString();
+    }
+
+
+    function formatNumber(
+        value
+    ) {
+
+        const number =
+            Number(value ?? 0);
+
+
+        return number.toLocaleString(
+            undefined,
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+    }
+
+
+    function escapeHtml(
+        value
+    ) {
+
+        return String(value ?? "")
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
+    }
+
 </script>

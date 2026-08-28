@@ -1,0 +1,2135 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Processing";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">
+            Inventory &gt; Raw Material Processing
+        </div>
+
+        <h2 class="fw-bold mb-1">
+            Raw Material Processing
+        </h2>
+
+        <div class="text-muted">
+            Monitor QA/QC-approved materials awaiting release
+            and warehouse processing.
+        </div>
+    </div>
+
+
+    <!-- Summary -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        On Hold (Quarantine)
+                    </div>
+
+                    <div id="onHoldCount"
+                         class="fs-4 fw-bold text-warning">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Released to RMW
+                    </div>
+
+                    <div id="releasedCount"
+                         class="fs-4 fw-bold text-success">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Total Lots
+                    </div>
+
+                    <div id="lotCount"
+                         class="fs-4 fw-bold">
+                        0
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-md-4">
+                    <input id="materialSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="Search QT No, QC No, material, lot">
+                </div>
+
+                <div class="col-md-3">
+                    <select id="materialStatusFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Material Status
+                        </option>
+
+                        <option value="READY_FOR_WEIGHING">
+                            Ready for Weighing
+                        </option>
+
+                        <option value="WEIGHING_IN_PROGRESS">
+                            Weighing in Progress
+                        </option>
+
+                        <option value="WEIGHING_COMPLETED">
+                            Weighing Completed
+                        </option>
+
+                        <option value="STICKER_COMPLETED">
+                            Sticker Completed
+                        </option>
+
+                        <option value="INVENTORY_COMMITTED">
+                            Inventory Committed
+                        </option>
+
+                    </select>
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Quarantine No</th>
+                            <th>QC No</th>
+                            <th>Incoming No</th>
+                            <th>Material</th>
+                            <th>Lot No</th>
+                            <th>Mfg Date</th>
+                            <th>Exp Date</th>
+                            <th class="text-end">
+                                Accepted Qty
+                            </th>
+                            <th>Material Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="materialTableBody">
+                        <tr>
+                            <td colspan="10"
+                                class="text-center text-muted py-4">
+                                Loading materials...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade"
+     id="materialProcessingModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        Raw Material Processing
+                    </h5>
+
+                    <div class="text-muted small">
+                        Weigh/count released material and complete identification.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="processingQuarantineId">
+
+                <input type="hidden"
+                       id="processingLineId">
+
+
+                <!-- Material information -->
+
+                <div class="card border-0 bg-light mb-4">
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    Quarantine No
+                                </label>
+
+                                <input id="processingQuarantineNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    QC No
+                                </label>
+
+                                <input id="processingQcNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    Incoming No
+                                </label>
+
+                                <input id="processingIncomingNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Material
+                                </label>
+
+                                <input id="processingMaterial"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Lot No
+                                </label>
+
+                                <input id="processingLotNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Current status -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+                        Processing Status
+                    </label>
+
+                    <div>
+                        <span id="processingStatusBadge"
+                              class="badge bg-info text-dark">
+                            READY FOR WEIGHING
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <!-- Weighing -->
+
+                <div class="card mb-4">
+
+                    <div class="card-header fw-bold">
+                        1. Weighing / Counting
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    QA/QC Accepted Qty
+                                </label>
+
+                                <input id="processingAcceptedQty"
+                                       class="form-control text-end"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Actual Weight / Qty
+                                </label>
+
+                                <input id="processingActualQty"
+                                       type="number"
+                                       min="0"
+                                       step="0.0001"
+                                       class="form-control text-end"
+                                       disabled>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Variance
+                                </label>
+
+                                <input id="processingVariance"
+                                       class="form-control text-end"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    UOM
+                                </label>
+
+                                <input id="processingUom"
+                                       class="form-control"
+                                       value="KG"
+                                       readonly>
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-3">
+
+                            <button type="button"
+                                    id="btnStartWeighing"
+                                    class="btn btn-primary">
+                                Start Weighing / Counting
+                            </button>
+
+                            <button type="button"
+                                    id="btnCompleteWeighing"
+                                    class="btn btn-success d-none">
+                                Complete Weighing / Counting
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Sticker -->
+
+                <div class="card">
+
+                    <div class="card-header fw-bold">
+                        2. Product Sticker / Identification
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Material
+                                </label>
+
+                                <input id="stickerMaterial"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Lot No
+                                </label>
+
+                                <input id="stickerLotNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Manufacturing Date
+                                </label>
+
+                                <input id="stickerMfgDate"
+                                       type="date"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Expiration Date
+                                </label>
+
+                                <input id="stickerExpDate"
+                                       type="date"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    Actual Qty
+                                </label>
+
+                                <input id="stickerActualQty"
+                                       class="form-control text-end"
+                                       readonly>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    QA/QC Status
+                                </label>
+
+                                <input class="form-control"
+                                       value="ACCEPTED"
+                                       readonly>
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-3">
+
+                            <button type="button"
+                                    id="btnCompleteSticker"
+                                    class="btn btn-success"
+                                    disabled>
+                                Complete Sticker / Identification
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            @* <button type="button"
+                    id="btnFinalRr"
+                    class="btn btn-primary"
+                    disabled>
+                Proceed to Final RR
+            </button> *@
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FINAL RECEIVING REPORT MODAL -->
+<div class="modal fade"
+     id="finalRrModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        Final Receiving Report
+                    </h5>
+
+                    <div class="text-muted small">
+                        Review final processed quantities before committing
+                        to Raw Material Inventory.
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- REFERENCES -->
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    Final RR No
+                                </label>
+                                <input id="finalRrNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    Quarantine No
+                                </label>
+                                <input id="finalQuarantineNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    QC No
+                                </label>
+                                <input id="finalQcNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    Incoming No
+                                </label>
+                                <input id="finalIncomingNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    PO No
+                                </label>
+                                <input id="finalPoNo"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    Supplier
+                                </label>
+                                <input id="finalSupplier"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- FINAL LOTS -->
+                <div class="table-responsive">
+
+                    <table class="table table-bordered align-middle">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Material</th>
+                                <th>Lot No</th>
+                                <th>Mfg Date</th>
+                                <th>Exp Date</th>
+
+                                <th class="text-end">
+                                    QA Accepted
+                                </th>
+
+                                <th class="text-end">
+                                    Actual Qty
+                                </th>
+
+                                <th class="text-end">
+                                    Variance
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="finalRrLineBody">
+                        </tbody>
+
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="4"
+                                    class="text-end">
+                                    TOTAL
+                                </th>
+
+                                <th id="finalTotalAccepted"
+                                    class="text-end">
+                                    0.00
+                                </th>
+
+                                <th id="finalTotalActual"
+                                    class="text-end">
+                                    0.00
+                                </th>
+
+                                <th id="finalTotalVariance"
+                                    class="text-end">
+                                    0.00
+                                </th>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+
+                </div>
+
+
+                <div class="alert alert-warning mt-3 mb-3">
+
+                    <strong>Inventory Commit:</strong>
+
+                    The Actual Qty shown above will become the quantity
+                    posted to Raw Material Inventory.
+
+                </div>
+
+
+                <div>
+                    <label class="form-label fw-semibold">
+                        Final Receiving Remarks
+                    </label>
+
+                    <textarea id="finalRrRemarks"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Optional remarks"></textarea>
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Back
+                </button>
+
+                <button type="button"
+                        id="btnCommitInventory"
+                        class="btn btn-success">
+                    Complete Final RR & Commit Inventory
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+       let materialProcessingList = [];
+
+    let materialProcessingModal = null;
+    let finalRrModal = null;
+
+    let currentProcessingHeader = null;
+    let currentProcessingLine = null;
+
+   
+
+    /*
+     * Temporary UI-only statuses.
+     * Later these will come from the database/API.
+     */
+ 
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            document
+                .getElementById("materialSearch")
+                .addEventListener(
+                    "input",
+                    renderMaterialTable
+                );
+
+            document
+                .getElementById("materialStatusFilter")
+                .addEventListener(
+                    "change",
+                    renderMaterialTable
+                );
+
+
+
+                    materialProcessingModal =
+        new bootstrap.Modal(
+            document.getElementById(
+                "materialProcessingModal"
+            )
+        );
+
+
+            finalRrModal =
+        new bootstrap.Modal(
+            document.getElementById(
+                "finalRrModal"
+            )
+        );
+
+
+
+
+  
+
+    document
+        .getElementById("btnStartWeighing")
+        .addEventListener(
+            "click",
+            startWeighing
+        );
+
+    document
+        .getElementById("btnCompleteWeighing")
+        .addEventListener(
+            "click",
+            completeWeighing
+        );
+
+    document
+        .getElementById("btnCompleteSticker")
+        .addEventListener(
+            "click",
+            completeSticker
+        );
+
+    document
+        .getElementById("processingActualQty")
+        .addEventListener(
+            "input",
+            calculateVariance
+        );
+
+
+
+            loadMaterialProcessing();
+        }
+    );
+
+
+             function openMaterialProcessing(
+        processingId,
+        processingLineId
+    ) {
+
+        const header =
+            materialProcessingList.find(
+                x =>
+                    Number(x.processingId) ===
+                    Number(processingId)
+            );
+
+        if (!header) {
+            alert("Material processing record was not found.");
+            return;
+        }
+
+        const line =
+            header.lines?.find(
+                x =>
+                    Number(x.processingLineId) ===
+                    Number(processingLineId)
+            );
+
+        if (!line) {
+            alert("Material processing line was not found.");
+            return;
+        }
+
+        currentProcessingHeader = header;
+        currentProcessingLine = line;
+
+        document.getElementById(
+            "processingQuarantineId"
+        ).value =
+            header.quarantineId ?? "";
+
+        document.getElementById(
+            "processingLineId"
+        ).value =
+            line.processingLineId;
+
+        document.getElementById(
+            "processingQuarantineNo"
+        ).value =
+            header.quarantineNo ?? "";
+
+        document.getElementById(
+            "processingQcNo"
+        ).value =
+            header.qcNo ?? "";
+
+        document.getElementById(
+            "processingIncomingNo"
+        ).value =
+            header.incomingNo ?? "";
+
+        document.getElementById(
+            "processingMaterial"
+        ).value =
+            `${line.materialCode ?? ""} - ${line.materialName ?? ""}`;
+
+        document.getElementById(
+            "processingLotNo"
+        ).value =
+            line.lotNo ?? "";
+
+        document.getElementById(
+            "processingAcceptedQty"
+        ).value =
+            formatQty(line.qaAcceptedQty);
+
+        document.getElementById(
+            "processingUom"
+        ).value =
+            line.uom ?? "";
+
+        document.getElementById(
+            "processingActualQty"
+        ).value =
+            line.actualQty ?? "";
+
+        document.getElementById(
+            "processingVariance"
+        ).value =
+            formatQty(line.varianceQty ?? 0);
+
+        // Sticker information
+
+        document.getElementById(
+            "stickerMaterial"
+        ).value =
+            line.materialName ?? "";
+
+        document.getElementById(
+            "stickerLotNo"
+        ).value =
+            line.lotNo ?? "";
+
+        document.getElementById(
+            "stickerMfgDate"
+        ).value =
+            formatDateInput(
+                line.manufacturingDate
+            );
+
+        document.getElementById(
+            "stickerExpDate"
+        ).value =
+            formatDateInput(
+                line.expirationDate
+            );
+
+        document.getElementById(
+            "stickerActualQty"
+        ).value =
+            line.actualQty != null
+                ? formatQty(line.actualQty)
+                : "";
+
+        restoreProcessingState();
+
+        materialProcessingModal.show();
+    }
+
+        function formatDateInput(value) {
+
+        if (!value)
+            return "";
+
+        return String(value)
+            .split("T")[0];
+    }
+
+           async function startWeighing() {
+
+        if (!currentProcessingLine)
+            return;
+
+        const lineId =
+            currentProcessingLine.processingLineId;
+
+        const btn =
+            document.getElementById(
+                "btnStartWeighing"
+            );
+
+        try {
+
+            btn.disabled = true;
+
+            const response =
+                await fetch(
+                    `/inventory/raw-material-processing/lines/${lineId}/start-weighing`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Failed to start weighing."
+                );
+            }
+
+            currentProcessingLine.status =
+                "WEIGHING_IN_PROGRESS";
+
+            document.getElementById(
+                "processingActualQty"
+            ).disabled = false;
+
+            btn.classList.add(
+                "d-none"
+            );
+
+            document.getElementById(
+                "btnCompleteWeighing"
+            ).classList.remove(
+                "d-none"
+            );
+
+            setProcessingBadge(
+                "WEIGHING IN PROGRESS",
+                "bg-warning text-dark"
+            );
+
+            await loadMaterialProcessing();
+
+        }
+        catch (error) {
+
+            alert(error.message);
+
+            btn.disabled = false;
+        }
+    }
+
+        function calculateVariance() {
+
+        if (!currentProcessingLine)
+            return;
+
+
+        const acceptedQty =
+            Number(
+               currentProcessingLine.qaAcceptedQty ?? 0
+            );
+
+
+        const actualQty =
+            Number(
+                document.getElementById(
+                    "processingActualQty"
+                ).value || 0
+            );
+
+
+        const variance =
+            actualQty - acceptedQty;
+
+
+        document.getElementById(
+            "processingVariance"
+        ).value =
+            formatQty(variance);
+    }
+
+
+        async function completeWeighing() {
+
+        if (!currentProcessingLine)
+            return;
+
+        const lineId =
+            currentProcessingLine.processingLineId;
+
+        const actualQty =
+            Number(
+                document.getElementById(
+                    "processingActualQty"
+                ).value || 0
+            );
+
+        if (actualQty <= 0) {
+
+            alert(
+                "Enter the actual weight / quantity."
+            );
+
+            return;
+        }
+
+        const btn =
+            document.getElementById(
+                "btnCompleteWeighing"
+            );
+
+        try {
+
+            btn.disabled = true;
+
+            const response =
+                await fetch(
+                    `/inventory/raw-material-processing/lines/${lineId}/complete-weighing`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                actualQty:
+                                    actualQty,
+
+                                remarks:
+                                    null
+                            })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Failed to complete weighing."
+                );
+            }
+
+            currentProcessingLine.actualQty =
+                actualQty;
+
+            currentProcessingLine.varianceQty =
+                actualQty -
+                Number(
+                    currentProcessingLine
+                        .qaAcceptedQty ?? 0
+                );
+
+            currentProcessingLine.status =
+                "WEIGHING_COMPLETED";
+
+            document.getElementById(
+                "processingActualQty"
+            ).disabled = true;
+
+            btn.classList.add(
+                "d-none"
+            );
+
+            document.getElementById(
+                "btnCompleteSticker"
+            ).disabled = false;
+
+            document.getElementById(
+                "stickerActualQty"
+            ).value =
+                formatQty(actualQty);
+
+            calculateVariance();
+
+            setProcessingBadge(
+                "WEIGHING COMPLETED",
+                "bg-success"
+            );
+
+            await loadMaterialProcessing();
+
+        }
+        catch (error) {
+
+            alert(error.message);
+
+            btn.disabled = false;
+        }
+    }
+
+      async function completeSticker() {
+
+        if (!currentProcessingLine)
+            return;
+
+        const confirmed =
+            confirm(
+                "Confirm that the product sticker / identification has been completed?"
+            );
+
+        if (!confirmed)
+            return;
+
+        const lineId =
+            currentProcessingLine.processingLineId;
+
+        const btn =
+            document.getElementById(
+                "btnCompleteSticker"
+            );
+
+        try {
+
+            btn.disabled = true;
+
+            const response =
+                await fetch(
+                    `/inventory/raw-material-processing/lines/${lineId}/complete-sticker`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Failed to complete sticker."
+                );
+            }
+
+            currentProcessingLine.status =
+                "STICKER_COMPLETED";
+
+            setProcessingBadge(
+                "STICKER COMPLETED",
+                "bg-primary"
+            );
+
+            await loadMaterialProcessing();
+
+            const header =
+                materialProcessingList.find(
+                    x =>
+                        Number(x.processingId) ===
+                        Number(
+                            currentProcessingHeader
+                                .processingId
+                        )
+                );
+
+            if (header) {
+
+                currentProcessingHeader =
+                    header;
+
+                const allCompleted =
+                    (header.lines ?? [])
+                        .every(line =>
+                            normalizeStatus(
+                                line.status
+                            ) ===
+                            "STICKER_COMPLETED"
+                        );
+
+                if (allCompleted) {
+
+                    
+
+                    setProcessingBadge(
+                        "READY FOR FINAL RR",
+                        "bg-primary"
+                    );
+
+                    alert(
+                        "All lots completed. Ready for Final Receiving Report."
+                    );
+                }
+                else {
+
+                    alert(
+                        "Sticker completed for this lot. Complete the remaining lots before Final RR."
+                    );
+                }
+            }
+
+        }
+        catch (error) {
+
+            alert(error.message);
+
+            btn.disabled = false;
+        }
+    }
+      
+
+        function setProcessingBadge(
+        text,
+        cssClass
+    ) {
+
+        const badge =
+            document.getElementById(
+                "processingStatusBadge"
+            );
+
+        badge.className =
+            `badge ${cssClass}`;
+
+        badge.innerText =
+            text;
+    }
+
+        function restoreProcessingState() {
+
+        if (!currentProcessingLine)
+            return;
+
+        const state = {
+        status:
+            normalizeStatus(
+                currentProcessingLine.status
+            ) || "READY_FOR_WEIGHING",
+
+        actualQty:
+            currentProcessingLine.actualQty,
+
+        varianceQty:
+            currentProcessingLine.varianceQty
+    };
+
+
+        const actualInput =
+            document.getElementById(
+                "processingActualQty"
+            );
+
+        const btnStart =
+            document.getElementById(
+                "btnStartWeighing"
+            );
+
+        const btnComplete =
+            document.getElementById(
+                "btnCompleteWeighing"
+            );
+
+        const btnSticker =
+            document.getElementById(
+                "btnCompleteSticker"
+            );
+
+           
+
+
+           btnStart.classList.add("d-none");
+    btnComplete.classList.add("d-none");
+
+    btnSticker.disabled = true;
+   
+
+
+        switch (state.status) {
+
+            case "WEIGHING_IN_PROGRESS":
+
+                actualInput.disabled = false;
+
+                btnComplete.classList.remove(
+                    "d-none"
+                );
+
+                setProcessingBadge(
+                    "WEIGHING IN PROGRESS",
+                    "bg-warning text-dark"
+                );
+
+                break;
+
+
+            case "WEIGHING_COMPLETED":
+
+                actualInput.value =
+                    state.actualQty ?? "";
+
+                actualInput.disabled = true;
+
+                btnSticker.disabled = false;
+
+                document.getElementById(
+                    "stickerActualQty"
+                ).value =
+                    formatQty(
+                        state.actualQty
+                    );
+
+                calculateVariance();
+
+                setProcessingBadge(
+                    "WEIGHING COMPLETED",
+                    "bg-success"
+                );
+
+                break;
+
+
+         case "STICKER_COMPLETED":
+
+    actualInput.value =
+        state.actualQty ?? "";
+
+    actualInput.disabled = true;
+
+    btnSticker.disabled = true;
+
+    document.getElementById(
+        "stickerActualQty"
+    ).value =
+        state.actualQty != null
+            ? formatQty(state.actualQty)
+            : "";
+
+    calculateVariance();
+
+    const finalReady =
+        normalizeStatus(
+            currentProcessingHeader?.status
+        ) === "READY_FOR_FINAL_RR";
+
+    if (finalReady) {
+
+        setProcessingBadge(
+            "READY FOR FINAL RR",
+            "bg-primary"
+        );
+
+    } else {
+
+        setProcessingBadge(
+            "STICKER COMPLETED",
+            "bg-primary"
+        );
+    }
+
+    break;
+
+
+                case "READY_FOR_FINAL_RR":
+
+    actualInput.value =
+        state.actualQty ?? "";
+
+    actualInput.disabled = true;
+
+    btnSticker.disabled = true;
+
+   
+
+    document.getElementById(
+        "stickerActualQty"
+    ).value =
+        state.actualQty != null
+            ? formatQty(
+                state.actualQty
+            )
+            : "";
+
+    calculateVariance();
+
+    setProcessingBadge(
+        "READY FOR FINAL RR",
+        "bg-primary"
+    );
+
+    break;
+
+
+            default:
+
+                actualInput.disabled = true;
+
+                btnStart.classList.remove(
+                    "d-none"
+                );
+
+                setProcessingBadge(
+                    "READY FOR WEIGHING",
+                    "bg-info text-dark"
+                );
+
+                break;
+        }
+    }
+
+
+    //     function openFinalRr() {
+
+    //     if (!currentProcessingHeader)
+    //         return;
+
+    //     const header =
+    //         currentProcessingHeader;
+
+
+    //     --------------------------------------------------------
+    //     Final RR is allowed only when the entire RMP is ready
+    //     --------------------------------------------------------
+
+    //     if (
+    //         normalizeStatus(header.status) !==
+    //         "READY_FOR_FINAL_RR"
+    //     ) {
+    //         alert(
+    //             "Final Receiving Report is not ready yet.\n\n" +
+    //             "Complete weighing and sticker identification for all lots first."
+    //         );
+
+    //         return;
+    //     }
+
+
+    //     const completedLines =
+    //         (header.lines ?? [])
+    //             .filter(line =>
+    //                 normalizeStatus(
+    //                     line.status
+    //                 ) === "STICKER_COMPLETED"
+    //             );
+
+
+    //     if (
+    //         completedLines.length === 0 ||
+    //         completedLines.length !==
+    //         (header.lines ?? []).length
+    //     ) {
+    //         alert(
+    //             "All lots must complete sticker identification before Final RR."
+    //         );
+
+    //         return;
+    //     }
+
+
+    //     --------------------------------------------------------
+    //     Temporary display number only.
+    //     Actual FRR number will be generated by API.
+    //     --------------------------------------------------------
+
+    //     document.getElementById(
+    //         "finalRrNo"
+    //     ).value =
+    //         `FRR-${new Date().getFullYear()}-PENDING`;
+
+
+    //     document.getElementById(
+    //         "finalQuarantineNo"
+    //     ).value =
+    //         header.quarantineNo ?? "";
+
+
+    //     document.getElementById(
+    //         "finalQcNo"
+    //     ).value =
+    //         header.qcNo ?? "";
+
+
+    //     document.getElementById(
+    //         "finalIncomingNo"
+    //     ).value =
+    //         header.incomingNo ?? "";
+
+
+    //     document.getElementById(
+    //         "finalPoNo"
+    //     ).value =
+    //         header.poNo ?? "";
+
+
+    //     document.getElementById(
+    //         "finalSupplier"
+    //     ).value =
+    //         header.supplierName ?? "";
+
+
+    //     let totalAccepted = 0;
+    //     let totalActual = 0;
+
+
+    //     const tbody =
+    //         document.getElementById(
+    //             "finalRrLineBody"
+    //         );
+
+
+    //     tbody.innerHTML =
+    //         completedLines
+    //             .map(line => {
+
+    //                 const acceptedQty =
+    //                     Number(
+    //                         line.qaAcceptedQty ?? 0
+    //                     );
+
+
+    //                 const actualQty =
+    //                     Number(
+    //                         line.actualQty ?? 0
+    //                     );
+
+
+    //                 const variance =
+    //                     Number(
+    //                         line.varianceQty ??
+    //                         (
+    //                             actualQty -
+    //                             acceptedQty
+    //                         )
+    //                     );
+
+
+    //                 totalAccepted +=
+    //                     acceptedQty;
+
+    //                 totalActual +=
+    //                     actualQty;
+
+
+    //                 return `
+    //                     <tr>
+
+    //                         <td>
+    //                             <div class="fw-semibold">
+    //                                 ${escapeHtml(
+    //                                     line.materialName ?? ""
+    //                                 )}
+    //                             </div>
+
+    //                             <div class="small text-muted">
+    //                                 ${escapeHtml(
+    //                                     line.materialCode ?? ""
+    //                                 )}
+    //                             </div>
+    //                         </td>
+
+    //                         <td>
+    //                             ${escapeHtml(
+    //                                 line.lotNo ?? "-"
+    //                             )}
+    //                         </td>
+
+    //                         <td>
+    //                             ${formatDate(
+    //                                 line.manufacturingDate
+    //                             )}
+    //                         </td>
+
+    //                         <td>
+    //                             ${formatDate(
+    //                                 line.expirationDate
+    //                             )}
+    //                         </td>
+
+    //                         <td class="text-end">
+    //                             ${formatQty(
+    //                                 acceptedQty
+    //                             )}
+    //                         </td>
+
+    //                         <td class="text-end fw-bold">
+    //                             ${formatQty(
+    //                                 actualQty
+    //                             )}
+    //                         </td>
+
+    //                         <td class="text-end">
+    //                             ${formatQty(
+    //                                 variance
+    //                             )}
+    //                         </td>
+
+    //                     </tr>
+    //                 `;
+    //             })
+    //             .join("");
+
+
+    //     document.getElementById(
+    //         "finalTotalAccepted"
+    //     ).innerText =
+    //         formatQty(totalAccepted);
+
+
+    //     document.getElementById(
+    //         "finalTotalActual"
+    //     ).innerText =
+    //         formatQty(totalActual);
+
+
+    //     document.getElementById(
+    //         "finalTotalVariance"
+    //     ).innerText =
+    //         formatQty(
+    //             totalActual -
+    //             totalAccepted
+    //         );
+
+
+    //     materialProcessingModal.hide();
+
+    //     finalRrModal.show();
+    // }
+
+    //   async function commitFinalInventory() {
+
+    //     if (!currentProcessingHeader)
+    //         return;
+
+    //     const processingId =
+    //         currentProcessingHeader.processingId;
+
+    //     const remarks =
+    //         document.getElementById(
+    //             "finalRrRemarks"
+    //         ).value?.trim() ?? "";
+
+    //     const confirmed =
+    //         confirm(
+    //             "Complete Final Receiving Report and commit the actual quantities to Raw Material Inventory?\n\n" +
+    //             "This will officially post the received quantities to inventory."
+    //         );
+
+    //     if (!confirmed)
+    //         return;
+
+
+    //     const btn =
+    //         document.getElementById(
+    //             "btnCommitInventory"
+    //         );
+
+
+    //     try {
+
+    //         btn.disabled = true;
+
+    //         btn.innerText =
+    //             "Committing Inventory...";
+
+
+    //         const response =
+    //             await fetch(
+    //                 `/inventory/raw-material-processing/processing/${processingId}/commit-final-rr`,
+    //                 {
+    //                     method: "POST",
+
+    //                     headers: {
+    //                         "Content-Type":
+    //                             "application/json"
+    //                     },
+
+    //                     body:
+    //                         JSON.stringify({
+    //                             remarks:
+    //                                 remarks || null
+    //                         })
+    //                 }
+    //             );
+
+
+    //         const data =
+    //             await response.json();
+
+
+    //         if (!response.ok) {
+
+    //             throw new Error(
+    //                 data.message ??
+    //                 "Failed to commit Final Receiving Report."
+    //             );
+    //         }
+
+
+    //         alert(
+    //             data.message ??
+    //             "Final Receiving Report completed and inventory committed successfully."
+    //         );
+
+
+    //         finalRrModal.hide();
+
+
+    //         await loadMaterialProcessing();
+
+
+    //         currentProcessingHeader = null;
+    //         currentProcessingLine = null;
+
+    //     }
+    //     catch (error) {
+
+    //         alert(error.message);
+
+    //     }
+    //     finally {
+
+    //         btn.disabled = false;
+
+    //         btn.innerText =
+    //             "Complete Final RR & Commit Inventory";
+    //     }
+    // }
+
+       
+
+    async function loadMaterialProcessing() {
+
+        const tbody =
+            document.getElementById(
+                "materialTableBody"
+            );
+
+        try {
+
+            const response =
+                await fetch(
+                    "/inventory/raw-material-processing/list"
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Failed to load materials."
+                );
+            }
+
+            materialProcessingList =
+                Array.isArray(data)
+                    ? data
+                    : [];
+
+            updateMaterialSummary();
+            renderMaterialTable();
+
+        }
+        catch (error) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10"
+                        class="text-center text-danger py-4">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+
+    function updateMaterialSummary() {
+
+        const onHold =
+            materialProcessingList.filter(x =>
+                normalizeStatus(x.status) ===
+                "WAITING_FOR_QA_RELEASE"
+            ).length;
+
+        const released =
+            materialProcessingList.filter(x =>
+                normalizeStatus(x.status) ===
+                "RELEASED"
+            ).length;
+
+        const lots =
+            materialProcessingList.reduce(
+                (total, x) =>
+                    total +
+                    (
+                        Array.isArray(x.lines)
+                            ? x.lines.length
+                            : 0
+                    ),
+                0
+            );
+
+        document.getElementById(
+            "onHoldCount"
+        ).innerText = onHold;
+
+        document.getElementById(
+            "releasedCount"
+        ).innerText = released;
+
+        document.getElementById(
+            "lotCount"
+        ).innerText = lots;
+    }
+
+
+    function renderMaterialTable() {
+
+        const tbody =
+            document.getElementById(
+                "materialTableBody"
+            );
+
+        const search =
+            document.getElementById(
+                "materialSearch"
+            ).value
+            .trim()
+            .toLowerCase();
+
+        const statusFilter =
+            normalizeStatus(
+                document.getElementById(
+                    "materialStatusFilter"
+                ).value
+            );
+
+        const rows = [];
+
+        for (
+            const header of materialProcessingList
+        ) {
+
+            const headerStatus =
+                normalizeStatus(
+                    header.status
+                );
+
+                    if (headerStatus === "COMPLETED") {
+        continue;
+    }
+
+            if (
+                statusFilter &&
+                headerStatus !== statusFilter
+            ) {
+                continue;
+            }
+
+
+            const lines =
+                Array.isArray(header.lines)
+                    ? header.lines
+                    : [];
+
+            for (const line of lines) {
+
+                const searchText = [
+                    header.quarantineNo,
+                    header.qcNo,
+                    header.incomingNo,
+                    header.supplierName,
+                    line.materialCode,
+                    line.materialName,
+                    line.lotNo
+                ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+
+                if (
+                    search &&
+                    !searchText.includes(search)
+                ) {
+                    continue;
+                }
+
+
+                rows.push({
+                    header,
+                    line
+                });
+            }
+        }
+
+
+        if (rows.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10"
+                        class="text-center text-muted py-4">
+                        No materials found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        tbody.innerHTML = rows
+            .map(x => {
+
+                const header = x.header;
+                const line = x.line;
+
+                return `
+                    <tr>
+
+                        <td class="fw-semibold">
+                            ${escapeHtml(
+                                header.quarantineNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                header.qcNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                header.incomingNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                ${escapeHtml(
+                                    line.materialName ?? ""
+                                )}
+                            </div>
+
+                            <div class="text-muted small">
+                                ${escapeHtml(
+                                    line.materialCode ?? ""
+                                )}
+                            </div>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                line.lotNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDate(
+                                line.manufacturingDate
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDate(
+                                line.expirationDate
+                            )}
+                        </td>
+
+                        <td class="text-end fw-semibold">
+                               ${formatQty(
+        line.qaAcceptedQty
+    )}
+                        </td>
+
+                        <td>
+                            ${renderMaterialStatus(
+                                line.status ??
+                                header.status
+                            )}
+                        </td>
+
+                            <td>
+        ${
+               normalizeStatus(header.status) !== "COMPLETED" &&
+    [
+        "READY_FOR_WEIGHING",
+        "WEIGHING_IN_PROGRESS",
+        "WEIGHING_COMPLETED",
+        "STICKER_COMPLETED",
+        "READY_FOR_FINAL_RR"
+    ].includes(
+        normalizeStatus(
+            line.status ?? header.status
+        )
+    )
+                ? `
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            onclick="openMaterialProcessing(
+                                ${Number(header.processingId)},
+                                ${Number(line.processingLineId)}
+                            )">
+                        Process
+                    </button>
+                  `
+                : `
+                    <span class="text-muted small">
+                        ${escapeHtml(line.status ?? header.status ?? "-")}
+                    </span>
+                  `
+        }
+    </td>
+
+                    </tr>
+                `;
+            })
+            .join("");
+    }
+
+
+    function renderMaterialStatus(status) {
+
+        const value =
+            normalizeStatus(status);
+
+        if (
+            value ===
+            "WAITING_FOR_QA_RELEASE"
+        ) {
+            return `
+                <span class="badge bg-warning text-dark">
+                    ON HOLD (QUARANTINE)
+                </span>
+            `;
+        }
+
+        if (value === "RELEASED") {
+            return `
+                <span class="badge bg-success">
+                    RELEASED TO RMW
+                </span>
+            `;
+        }
+
+        return `
+            <span class="badge bg-secondary">
+                ${escapeHtml(value || "-")}
+            </span>
+        `;
+    }
+
+
+    function normalizeStatus(value) {
+        return String(value ?? "")
+            .trim()
+            .toUpperCase();
+    }
+
+
+    function formatQty(value) {
+
+        const number =
+            Number(value ?? 0);
+
+        return number.toLocaleString(
+            undefined,
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+    }
+
+
+    function formatDate(value) {
+
+        if (!value)
+            return "-";
+
+        const date =
+            new Date(value);
+
+        if (Number.isNaN(date.getTime()))
+            return "-";
+
+        return date.toLocaleDateString();
+    }
+
+
+    function escapeHtml(value) {
+
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+</script>

@@ -108,7 +108,17 @@
 
                 <div class="d-flex align-items-center">
                     <span class="legend-dot legend-purple"></span>
-                    <span class="small">No Confirmation</span>
+                    <span class="small">QC Completed</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot legend-rmw"></span>
+                    <span class="small">RMW Processing</span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot legend-final-rr"></span>
+                    <span class="small">Ready for Final RR</span>
                 </div>
 
                 <div class="d-flex align-items-center">
@@ -125,7 +135,6 @@
                     <span class="legend-dot bg-secondary"></span>
                     <span class="small">Completed</span>
                 </div>
-
 
             </div>
 
@@ -153,11 +162,12 @@
                 <div>
                     <h5 class="modal-title fw-bold mb-1"
                         id="createReceivingModalLabel">
-                        Create Receiving Report
+                        Incoming Delivery / Warehouse Receiving
                     </h5>
 
                     <div class="text-muted small">
-                        Receive the actual truck arrival against the selected delivery schedule.
+                        Verify the incoming supplier delivery, documents, vehicle condition,
+                        and materials before forwarding to QA/QC.
                     </div>
                 </div>
 
@@ -194,10 +204,10 @@
 
                                 <div class="col-lg-2 col-md-4">
                                     <label class="form-label">
-                                        RR No
+                                        Incoming No
                                     </label>
 
-                                    <input id="modalRrNo"
+                                    <input id="modalIncomingNo"
                                            class="form-control"
                                            readonly>
                                 </div>
@@ -304,21 +314,29 @@
                                     </th>
 
                                     <th class="text-end">
-                                        Previously Received
+                                        Scheduled Qty
                                     </th>
 
                                     <th class="text-end">
-                                        Scheduled Balance
+                                        Previously Delivered
+                                    </th>
+
+                                    <th class="text-end">
+                                        Remaining
                                     </th>
 
                                     <th class="text-end"
                                         style="width:150px;">
-                                        Receive Qty
+                                        Delivered Qty
                                     </th>
 
                                     <th>UOM</th>
 
-                                    <th style="min-width:190px;">
+                                    <th style="min-width:280px;">
+                                        Material Check
+                                    </th>
+
+                                    <th style="min-width:180px;">
                                         Remarks
                                     </th>
                                 </tr>
@@ -343,6 +361,250 @@
 
             </div>
 
+
+
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                Warehouse Receiving Checklist
+                            </h5>
+
+                            <div class="text-muted small">
+                                Verify documents, supplier, vehicle and material condition.
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- PO / Supplier -->
+                    <div class="mb-4">
+
+                        <h6 class="fw-bold text-secondary mb-3">
+                            PO / Supplier Verification
+                        </h6>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="chkPoMatched"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkPoMatched">
+                                        Delivery matches Purchase Order
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="chkDeliveryScheduled"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkDeliveryScheduled">
+                                        Delivery is scheduled
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="chkApprovedSupplier"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkApprovedSupplier">
+                                        Supplier is approved
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Documents -->
+                    <div class="mb-4">
+
+                        <h6 class="fw-bold text-secondary mb-3">
+                            Required Documents
+                        </h6>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="chkSalesInvoice"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkSalesInvoice">
+                                        Sales Invoice
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="chkDeliveryReceipt"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkDeliveryReceipt">
+                                        Delivery Receipt
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input id="chkCoa"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkCoa">
+                                        Certificate of Analysis (COA)
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Vehicle -->
+                    <div class="mb-4">
+
+                        <h6 class="fw-bold text-secondary mb-3">
+                            Vehicle Inspection
+                        </h6>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input id="chkVehicleClean"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkVehicleClean">
+                                        Clean
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input id="chkVehicleDry"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkVehicleDry">
+                                        Dry
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input id="chkVehicleOdorFree"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkVehicleOdorFree">
+                                        Free from odor
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-check">
+                                    <input id="chkVehicleResidueFree"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkVehicleResidueFree">
+                                        Free from residue
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Material -->
+                    <div class="mb-3">
+
+                        <h6 class="fw-bold text-secondary mb-3">
+                            General Material Condition
+                        </h6>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkMaterialClean"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkMaterialClean">
+                                        Materials are clean
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkMaterialCovered"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkMaterialCovered">
+                                        Materials are covered / sealed
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div class="mt-4">
+
+                        <label class="form-label fw-semibold">
+                            Inspection Remarks
+                        </label>
+
+                        <textarea id="modalInspectionRemarks"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Enter missing documents, defects or other receiving observations"></textarea>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+
             <div class="modal-footer">
 
                 <button type="button"
@@ -350,12 +612,11 @@
                         data-bs-dismiss="modal">
                     Cancel
                 </button>
-
-                <button id="btnModalSaveRr"
+                <button id="btnModalSaveIncoming"
                         type="button"
                         class="btn btn-success"
                         disabled>
-                    Save Receiving Report
+                    Complete Warehouse Check
                 </button>
 
             </div>
@@ -819,6 +1080,18 @@
         color: #212529 !important;
     }
 
+    .receiving-rmw {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: white !important;
+    }
+
+    .receiving-final-rr {
+        background-color: #7c3aed !important;
+        border-color: #7c3aed !important;
+        color: white !important;
+    }
+
     .receiving-no-confirmation {
         background: #8B5CF6 !important;
         border-color: #8B5CF6 !important;
@@ -848,6 +1121,14 @@
         text-align: center;
         padding: 40px;
         color: #6c757d;
+    }
+
+    .legend-rmw {
+        background: #2563eb;
+    }
+
+    .legend-final-rr {
+        background: #7c3aed;
     }
 
 
@@ -1061,9 +1342,11 @@
 
                       const events = data.map(item => {
 
+
         let eventClass = "receiving-approved";
 
-           switch (item.status) {
+    switch ((item.status ?? "").toUpperCase()) {
+
         case "OPEN":
             eventClass = "receiving-approved";
             break;
@@ -1072,12 +1355,26 @@
             eventClass = "receiving-partial";
             break;
 
-        case "RECEIVED":
-            eventClass = "receiving-completed";
-            break;
-
+        case "WAITING_FOR_QC":
         case "FOR_QC":
             eventClass = "receiving-qc";
+            break;
+
+        case "QC_COMPLETED":
+            eventClass = "receiving-no-confirmation";
+            break;
+
+        case "RMW_PROCESSING":
+            eventClass = "receiving-rmw";
+            break;
+
+        case "READY_FOR_FINAL_RR":
+            eventClass = "receiving-final-rr";
+            break;
+
+        case "RECEIVED":
+        case "COMPLETED":
+            eventClass = "receiving-completed";
             break;
 
         case "NO_CONFIRMATION":
@@ -1090,6 +1387,10 @@
 
         case "CANCELLED":
             eventClass = "receiving-cancelled";
+            break;
+
+        default:
+            eventClass = "receiving-approved";
             break;
     }
 
@@ -1141,19 +1442,43 @@
                 }
             },
 
-                 eventClick: function (info) {
+               eventClick: function (info) {
+
         info.jsEvent.preventDefault();
 
-        const status =
-            info.event.extendedProps.status;
-
         const scheduleId =
-            info.event.extendedProps.scheduleId;
+            Number(
+                info.event.extendedProps.scheduleId
+            );
 
-        if (status === "OPEN") {
+        const status =
+            String(
+                info.event.extendedProps.status ?? ""
+            ).toUpperCase();
+
+        const remainingQty =
+            Number(
+                info.event.extendedProps.totalBalanceQty ?? 0
+            );
+
+
+        // ============================================================
+        // OPEN WAREHOUSE RECEIVING
+        // Schedule still has physical quantity to receive
+        // ============================================================
+
+        if (
+            status === "OPEN" &&
+            remainingQty > 0
+        ) {
             openReceivingModal(scheduleId);
             return;
         }
+
+
+        // ============================================================
+        // OTHERWISE SHOW TRACKING / DETAILS
+        // ============================================================
 
         openScheduleDetailsModal(scheduleId);
     }
@@ -1161,9 +1486,14 @@
 
         calendar.render();
 
-        document
-    .getElementById("btnModalSaveRr")
-    .addEventListener("click", saveReceivingReport);
+     document
+    .getElementById("btnModalSaveIncoming")
+    .addEventListener(
+        "click",
+        saveIncomingReceiving
+    );
+
+
     });
 
 
@@ -1257,93 +1587,157 @@
         return result;
     }
 
-    async function openReceivingModal(scheduleId) {
-    selectedReceivingScheduleId = Number(scheduleId);
+     async function openReceivingModal(scheduleId) {
+
+        selectedReceivingScheduleId =
+            Number(scheduleId);
+
         modalReceivingData = null;
 
         const loading =
-            document.getElementById("receivingModalLoading");
+            document.getElementById(
+                "receivingModalLoading"
+            );
 
         const errorBox =
-            document.getElementById("receivingModalError");
+            document.getElementById(
+                "receivingModalError"
+            );
 
         const content =
-            document.getElementById("receivingModalContent");
+            document.getElementById(
+                "receivingModalContent"
+            );
 
         const saveButton =
-            document.getElementById("btnModalSaveRr");
+            document.getElementById(
+                "btnModalSaveIncoming"
+            );
 
         clearReceivingModal();
 
         loading.classList.remove("d-none");
         errorBox.classList.add("d-none");
         content.classList.add("d-none");
+
         saveButton.disabled = true;
 
         createReceivingModal.show();
 
-         try {
-        const optionsResponse = await fetch(
-            `/purchasing/receiving-reports/create-options/${selectedReceivingScheduleId}`
-        );
+        try {
 
-        const optionsData = await readJsonResponse(
-            optionsResponse,
-            "Unable to load Purchase Order data."
-        );
+            // ------------------------------------------
+            // Load Delivery Schedule
+            // ------------------------------------------
 
-        const numberResponse = await fetch(
-            "/purchasing/receiving-reports/next-number"
-        );
+            const scheduleResponse =
+                await fetch(
+                    `/purchasing/incoming-receiving/schedule/${selectedReceivingScheduleId}`
+                );
 
-        const numberData = await readJsonResponse(
-            numberResponse,
-            "Unable to generate the next RR number."
-        );
+            const scheduleData =
+                await readJsonResponse(
+                    scheduleResponse,
+                    "Unable to load delivery schedule."
+                );
 
-        await loadReceivingBranches();
 
-        modalReceivingData = optionsData;
+            // ------------------------------------------
+            // Get next IR number
+            // ------------------------------------------
 
-        document.getElementById("modalRrNo").value =
-            numberData.rr_no ??
-            numberData.rrNo ??
-            "";
+            const numberResponse =
+                await fetch(
+                    "/purchasing/incoming-receiving/next-number"
+                );
 
-        document.getElementById("modalPoNo").value =
-            optionsData.poNo ?? "";
+            const numberData =
+                await readJsonResponse(
+                    numberResponse,
+                    "Unable to generate Incoming Receiving number."
+                );
 
-        document.getElementById("modalPrintedPoNo").value =
-            optionsData.printedPoNo ?? "";
 
-        document.getElementById("modalSupplierName").value =
-            optionsData.supplierName ?? "";
+            await loadReceivingBranches();
 
-        document.getElementById("modalDeliveryDate").value =
-            getLocalToday();
 
-        renderModalReceivingLines(
-            optionsData.lines ?? []
-        );
+            modalReceivingData =
+                scheduleData;
 
-        loading.classList.add("d-none");
-        content.classList.remove("d-none");
 
-        saveButton.disabled =
-            !optionsData.lines ||
-            optionsData.lines.length === 0;
-    }
-    catch (error) {
-        console.error(error);
+            document
+                .getElementById("modalIncomingNo")
+                .value =
+                    numberData.incoming_no ??
+                    numberData.incomingNo ??
+                    "";
 
-        loading.classList.add("d-none");
 
-        errorBox.textContent =
-            error.message ??
-            "Failed to load receiving information.";
+            document
+                .getElementById("modalPoNo")
+                .value =
+                    scheduleData.poNo ?? "";
 
-        errorBox.classList.remove("d-none");
-    }
+
+            document
+                .getElementById(
+                    "modalPrintedPoNo"
+                )
+                .value =
+                    scheduleData.printedPoNo ?? "";
+
+
+            document
+                .getElementById(
+                    "modalSupplierName"
+                )
+                .value =
+                    scheduleData.supplierName ?? "";
+
+
+            document
+                .getElementById(
+                    "modalDeliveryDate"
+                )
+                .value =
+                    getLocalToday();
+
+
+            renderIncomingReceivingLines(
+                scheduleData.lines ?? []
+            );
+
+
+            loading.classList.add("d-none");
+
+            content.classList.remove("d-none");
+
+
+            const hasRemaining =
+                (scheduleData.lines ?? [])
+                    .some(x =>
+                        Number(
+                            x.remainingScheduledQty ?? 0
+                        ) > 0
+                    );
+
+
+            saveButton.disabled =
+                !hasRemaining;
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            loading.classList.add("d-none");
+
+            errorBox.textContent =
+                error.message ??
+                "Failed to load incoming receiving information.";
+
+            errorBox.classList.remove("d-none");
+        }
     }
 
 
@@ -1918,39 +2312,105 @@
             .replace(/\b\w/g, letter => letter.toUpperCase());
     }
 
-        function clearReceivingModal() {
-        document.getElementById("modalRrNo").value = "";
-        document.getElementById("modalPoNo").value = "";
-        document.getElementById("modalPrintedPoNo").value = "";
-        document.getElementById("modalSupplierName").value = "";
-        document.getElementById("modalBranchId").innerHTML =
-    `<option value="">Select receiving branch</option>`;
-        document.getElementById("modalDeliveryDate").value = "";
-        document.getElementById("modalSiDrNo").value = "";
-        document.getElementById("modalRemarks").value = "";
+         function clearReceivingModal() {
 
-        document.getElementById("modalRrLineBody").innerHTML = `
+        document.getElementById(
+            "modalIncomingNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalPoNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalPrintedPoNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalSupplierName"
+        ).value = "";
+
+        document.getElementById(
+            "modalBranchId"
+        ).innerHTML =
+            `<option value="">
+                Select receiving branch
+             </option>`;
+
+        document.getElementById(
+            "modalDeliveryDate"
+        ).value = "";
+
+        document.getElementById(
+            "modalSiDrNo"
+        ).value = "";
+
+        document.getElementById(
+            "modalRemarks"
+        ).value = "";
+
+
+        // Checklist
+        [
+            "chkPoMatched",
+            "chkDeliveryScheduled",
+            "chkApprovedSupplier",
+
+            "chkSalesInvoice",
+            "chkDeliveryReceipt",
+            "chkCoa",
+
+            "chkVehicleClean",
+            "chkVehicleDry",
+            "chkVehicleOdorFree",
+            "chkVehicleResidueFree",
+
+            "chkMaterialClean",
+            "chkMaterialCovered"
+        ].forEach(id => {
+
+            const element =
+                document.getElementById(id);
+
+            if (element)
+                element.checked = false;
+        });
+
+
+        document.getElementById(
+            "modalInspectionRemarks"
+        ).value = "";
+
+
+        document.getElementById(
+            "modalRrLineBody"
+        ).innerHTML = `
             <tr>
-                <td colspan="8"
+                <td colspan="10"
                     class="text-center text-muted py-4">
-                    Loading receiving lines...
+                    Loading delivery lines...
                 </td>
             </tr>
         `;
     }
 
-        function renderModalReceivingLines(lines) {
+            function renderIncomingReceivingLines(lines) {
+
         const tbody =
-            document.getElementById("modalRrLineBody");
+            document.getElementById(
+                "modalRrLineBody"
+            );
 
         tbody.innerHTML = "";
 
+
         if (!lines || lines.length === 0) {
+
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8"
+                    <td colspan="10"
                         class="text-center text-muted py-4">
-                        No remaining PO balance to receive.
+                        No delivery schedule lines found.
                     </td>
                 </tr>
             `;
@@ -1959,18 +2419,37 @@
         }
 
 
-
         lines.forEach(line => {
-            tbody.insertAdjacentHTML("beforeend", `
-              <tr data-po-line-id="${Number(line.poLineId)}"
-    data-balance-qty="${Number(line.balanceQty ?? 0)}">
+
+            const remaining =
+                Number(
+                    line.remainingScheduledQty ?? 0
+                );
+
+
+            const disabled =
+                remaining <= 0
+                    ? "disabled"
+                    : "";
+
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                <tr
+                    data-po-line-id="${Number(line.poLineId)}"
+                    data-remaining-qty="${remaining}">
 
                     <td>
-                        ${escapeHtml(line.materialCode ?? "")}
+                        ${escapeHtml(
+                            line.materialCode ?? ""
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(line.materialName ?? "")}
+                        ${escapeHtml(
+                            line.materialName ?? ""
+                        )}
                     </td>
 
                     <td class="text-end">
@@ -1978,181 +2457,430 @@
                     </td>
 
                     <td class="text-end">
-                        ${formatQty(line.previouslyReceivedQty)}
+                        ${formatQty(
+                            line.scheduledQty
+                        )}
+                    </td>
+
+                    <td class="text-end">
+                        ${formatQty(
+                            line.previouslyDeliveredQty
+                        )}
                     </td>
 
                     <td class="text-end fw-semibold">
-                        ${formatQty(line.balanceQty)}
+                        ${formatQty(remaining)}
                     </td>
 
                     <td>
-                       <input type="number"
-       class="form-control form-control-sm text-end modal-receive-qty"
-       min="0"
-       step="0.0001"
-       value="0">
+                        <input
+                            type="number"
+                            class="form-control form-control-sm text-end modal-delivered-qty"
+                            min="0"
+                            max="${remaining}"
+                            step="0.0001"
+                            value="0"
+                            ${disabled}>
                     </td>
 
                     <td>
-                        ${escapeHtml(line.uom ?? "")}
+                        ${escapeHtml(
+                            line.uom ?? ""
+                        )}
                     </td>
 
                     <td>
-                        <input type="text"
-                               class="form-control form-control-sm modal-line-remarks"
-                               placeholder="Optional">
+
+                        <div class="form-check">
+                            <input
+                                class="form-check-input line-packaging-ok"
+                                type="checkbox"
+                                checked
+                                ${disabled}>
+
+                            <label class="form-check-label small">
+                                Packaging OK
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input
+                                class="form-check-input line-contamination-ok"
+                                type="checkbox"
+                                checked
+                                ${disabled}>
+
+                            <label class="form-check-label small">
+                                No contamination
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input
+                                class="form-check-input line-labeling-ok"
+                                type="checkbox"
+                                checked
+                                ${disabled}>
+
+                            <label class="form-check-label small">
+                                Labeling OK
+                            </label>
+                        </div>
+
+                    </td>
+
+                    <td>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm modal-line-remarks"
+                            placeholder="Optional"
+                            ${disabled}>
                     </td>
 
                 </tr>
-            `);
+                `
+            );
         });
     }
 
-          async function saveReceivingReport() {
+            async function saveIncomingReceiving() {
 
         if (!modalReceivingData) {
-            alert("Purchase Order data not loaded.");
+
+            alert(
+                "Delivery schedule data not loaded."
+            );
+
             return;
         }
 
-            const branchId =
-        document.getElementById("modalBranchId").value.trim();
 
-    if (!branchId) {
-        alert("Receiving Branch is required.");
-        document.getElementById("modalBranchId").focus();
-        return;
-    }
+        const branchId =
+            document
+                .getElementById("modalBranchId")
+                .value
+                .trim();
+
+
+        if (!branchId) {
+
+            alert(
+                "Receiving Branch is required."
+            );
+
+            return;
+        }
+
 
         const deliveryDate =
-            document.getElementById("modalDeliveryDate").value;
+            document
+                .getElementById(
+                    "modalDeliveryDate"
+                )
+                .value;
+
 
         if (!deliveryDate) {
-            alert("Delivery Date is required.");
+
+            alert(
+                "Delivery Date is required."
+            );
+
             return;
         }
 
-        const rows = document.querySelectorAll(
-            "#modalRrLineBody tr[data-po-line-id]"
-        );
+
+        const rows =
+            document.querySelectorAll(
+                "#modalRrLineBody tr[data-po-line-id]"
+            );
+
 
         const lines = [];
-        let hasOverReceived = false;
+
 
         for (const row of rows) {
 
             const poLineId =
-                Number(row.dataset.poLineId);
-
-            const balance =
-                Number(row.dataset.balanceQty || 0);
-
-            const receiveQty =
                 Number(
-                    row.querySelector(".modal-receive-qty").value || 0
+                    row.dataset.poLineId
                 );
 
-            if (receiveQty > balance) {
-                hasOverReceived = true;
-            }
 
-            if (receiveQty > 0) {
+            const remaining =
+                Number(
+                    row.dataset.remainingQty || 0
+                );
 
-                lines.push({
 
-                    poLineId: poLineId,
+            const deliveredQty =
+                Number(
+                    row.querySelector(
+                        ".modal-delivered-qty"
+                    )?.value || 0
+                );
 
-                    receiveQty: receiveQty,
 
-                    remarks:
-                        row.querySelector(".modal-line-remarks").value
+               if (deliveredQty > remaining) {
 
-                });
+        const excessQty =
+            deliveredQty - remaining;
 
-            }
-        }
+        const lineRemarks =
+            row.querySelector(
+                ".modal-line-remarks"
+            )?.value.trim() ?? "";
 
-        if (lines.length === 0) {
-            alert("Please enter at least one Receive Qty.");
+        if (!lineRemarks) {
+
+            alert(
+                `Over-delivery detected.\n\n` +
+                `Scheduled balance: ${formatQty(remaining)}\n` +
+                `Delivered today: ${formatQty(deliveredQty)}\n` +
+                `Excess quantity: ${formatQty(excessQty)}\n\n` +
+                `Please enter a line remark explaining the excess delivery.`
+            );
+
             return;
         }
 
-        if (hasOverReceived) {
-
-            const proceed = confirm(
-                "One or more items exceed the remaining PO quantity.\n\nContinue as OVER RECEIVING?"
+        const continueOverDelivery =
+            confirm(
+                `This delivery exceeds the scheduled balance.\n\n` +
+                `Scheduled balance: ${formatQty(remaining)}\n` +
+                `Delivered today: ${formatQty(deliveredQty)}\n` +
+                `Excess: ${formatQty(excessQty)}\n\n` +
+                `Continue and record this as an over-delivery?`
             );
 
-            if (!proceed)
-                return;
+        if (!continueOverDelivery) {
+            return;
+        }
+    }
+
+
+            if (deliveredQty > 0) {
+
+                lines.push({
+
+                    poLineId:
+                        poLineId,
+
+                    deliveredQty:
+                        deliveredQty,
+
+                    packagingOk:
+                        row.querySelector(
+                            ".line-packaging-ok"
+                        ).checked,
+
+                    contaminationOk:
+                        row.querySelector(
+                            ".line-contamination-ok"
+                        ).checked,
+
+                    labelingOk:
+                        row.querySelector(
+                            ".line-labeling-ok"
+                        ).checked,
+
+                    remarks:
+                        row.querySelector(
+                            ".modal-line-remarks"
+                        ).value
+                });
+            }
         }
 
-           const payload = {
-        scheduleId: selectedReceivingScheduleId,
 
-        branchId: branchId,
+        if (lines.length === 0) {
 
-        deliveryDate: deliveryDate,
+            alert(
+                "Please enter at least one Delivered Qty."
+            );
 
-        siDrNo:
-            document.getElementById("modalSiDrNo").value,
+            return;
+        }
 
-        remarks:
-            document.getElementById("modalRemarks").value,
 
-        lines: lines
-    };
+        // ============================================================
+        // WAREHOUSE CHECKLIST
+        // ============================================================
+
+        const inspection = {
+
+            poMatched:
+                document.getElementById(
+                    "chkPoMatched"
+                ).checked,
+
+            deliveryScheduled:
+                document.getElementById(
+                    "chkDeliveryScheduled"
+                ).checked,
+
+            approvedSupplier:
+                document.getElementById(
+                    "chkApprovedSupplier"
+                ).checked,
+
+
+            salesInvoiceAvailable:
+                document.getElementById(
+                    "chkSalesInvoice"
+                ).checked,
+
+            deliveryReceiptAvailable:
+                document.getElementById(
+                    "chkDeliveryReceipt"
+                ).checked,
+
+            coaAvailable:
+                document.getElementById(
+                    "chkCoa"
+                ).checked,
+
+
+            vehicleClean:
+                document.getElementById(
+                    "chkVehicleClean"
+                ).checked,
+
+            vehicleDry:
+                document.getElementById(
+                    "chkVehicleDry"
+                ).checked,
+
+            vehicleOdorFree:
+                document.getElementById(
+                    "chkVehicleOdorFree"
+                ).checked,
+
+            vehicleResidueFree:
+                document.getElementById(
+                    "chkVehicleResidueFree"
+                ).checked,
+
+
+            materialClean:
+                document.getElementById(
+                    "chkMaterialClean"
+                ).checked,
+
+            materialCoveredOrSealed:
+                document.getElementById(
+                    "chkMaterialCovered"
+                ).checked,
+
+
+            remarks:
+                document.getElementById(
+                    "modalInspectionRemarks"
+                ).value
+        };
+
+
+        const payload = {
+
+            scheduleId:
+                selectedReceivingScheduleId,
+
+            branchId:
+                branchId,
+
+            deliveryDate:
+                deliveryDate,
+
+            siDrNo:
+                document.getElementById(
+                    "modalSiDrNo"
+                ).value,
+
+            remarks:
+                document.getElementById(
+                    "modalRemarks"
+                ).value,
+
+            lines:
+                lines,
+
+            inspection:
+                inspection
+        };
+
 
         const btn =
-            document.getElementById("btnModalSaveRr");
+            document.getElementById(
+                "btnModalSaveIncoming"
+            );
+
 
         btn.disabled = true;
-        btn.innerHTML = "Saving...";
+        btn.innerHTML =
+            "Processing...";
+
 
         try {
 
-            const response = await fetch(
-                "/purchasing/receiving-reports/create",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
+            const response =
+                await fetch(
+                    "/purchasing/incoming-receiving",
+                    {
+                        method: "POST",
 
-            const result = await response.json();
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(payload)
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
 
             if (!response.ok) {
 
                 alert(
                     result.message ??
-                    "Failed to create Receiving Report."
+                    "Failed to record incoming delivery."
                 );
 
                 return;
             }
 
+
             alert(
                 result.message ??
-                "Receiving Report created successfully."
+                "Incoming delivery recorded successfully."
             );
 
+
             createReceivingModal.hide();
+
 
             calendar.refetchEvents();
 
         }
         catch (ex) {
 
-            alert(ex.message);
+            console.error(ex);
 
+            alert(
+                ex.message ??
+                "Unable to save incoming delivery."
+            );
         }
         finally {
 
             btn.disabled = false;
-            btn.innerHTML = "Save Receiving Report";
 
+            btn.innerHTML =
+                "Complete Warehouse Check";
         }
     }
 
