@@ -691,6 +691,99 @@ namespace biostar_inventory_dashboard.Services
             return result;
         }
 
+        public async Task<string> DeleteUserAsync(string id)
+        {
+            var response =
+                await _httpClient.DeleteAsync(
+                    $"api/User/{Uri.EscapeDataString(id)}");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        // =====================================================
+        // USER ACCESS POINTS
+        // =====================================================
+
+        public async Task<string> GetAvailableAccessPointsAsync()
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    "api/User/available-access-points");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> GetUserAccessPointsAsync(string userId)
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    $"api/User/{Uri.EscapeDataString(userId)}/access-points");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> SaveUserAccessPointsAsync(
+            string userId,
+            string jsonData)
+        {
+            var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            var response =
+                await _httpClient.PutAsync(
+                    $"api/User/{Uri.EscapeDataString(userId)}/access-points",
+                    content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+        public async Task<string> GetUserAccessCodesAsync(
+            string userId)
+        {
+            var response =
+                await _httpClient.GetAsync(
+                    $"api/User/{Uri.EscapeDataString(userId)}/access-codes");
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+
+       
         //partner
 
 
@@ -2217,6 +2310,9 @@ namespace biostar_inventory_dashboard.Services
 
             return result;
         }
+ 
+      
+
 
     }
 }

@@ -61,5 +61,165 @@ namespace biostar_inventory_dashboard.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableAccessPoints()
+        {
+            try
+            {
+                var result =
+                    await _apiService
+                        .GetAvailableAccessPointsAsync();
+
+                return Content(
+                    result,
+                    "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    500,
+                    ex.Message);
+            }
+        }
+    //    [HttpGet]
+    //    public async Task<IActionResult> GetUserAccessPoints(
+    //string id)
+    //    {
+    //        try
+    //        {
+    //            var result =
+    //                await _apiService
+    //                    .GetUserAccessPointsAsync(id);
+
+    //            return Content(
+    //                result,
+    //                "application/json");
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            return StatusCode(
+    //                500,
+    //                ex.Message);
+    //        }
+    //    }
+        [HttpPut]
+        public async Task<IActionResult> SaveUserAccessPoints(
+    string id,
+    [FromBody] JsonElement data)
+        {
+            try
+            {
+                var result =
+                    await _apiService
+                        .SaveUserAccessPointsAsync(
+                            id,
+                            data.GetRawText());
+
+                return Content(
+                    result,
+                    "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    500,
+                    ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserAccessPoints(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    return BadRequest(new { message = "User ID is required." });
+
+                var result =
+                    await _apiService.GetUserAccessPointsAsync(id);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserAccessCodes(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    return BadRequest(new { message = "User ID is required." });
+
+                var result =
+                    await _apiService.GetUserAccessCodesAsync(id);
+
+                return Content(result, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return BadRequest(new
+                    {
+                        message = "User ID is required."
+                    });
+                }
+
+                var currentUserId =
+                    User.FindFirst("user_id")?.Value
+                    ?? User.FindFirst("UserId")?.Value
+                    ?? "";
+
+                if (string.Equals(
+                    currentUserId,
+                    id,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new
+                    {
+                        message = "You cannot delete your own account."
+                    });
+                }
+
+                var role =
+                    User.FindFirst(System.Security.Claims.ClaimTypes.Role)
+                        ?.Value
+                        ?.ToUpper()
+                    ?? "";
+
+                if (role != "ADMIN")
+                {
+                    return Forbid();
+                }
+
+                var result =
+                    await _apiService.DeleteUserAsync(id);
+
+                return Content(
+                    result,
+                    "application/json");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    500,
+                    ex.Message);
+            }
+        }
+
+
     }
 }

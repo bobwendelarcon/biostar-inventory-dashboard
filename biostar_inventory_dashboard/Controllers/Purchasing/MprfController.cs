@@ -120,10 +120,39 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing
         {
             var client = CreateClient();
 
-            var response = await client.PostAsync($"api/purchasing/mprf/{id}/submit", null);
-            var result = await response.Content.ReadAsStringAsync();
+            var userId =
+                User.FindFirst("user_id")?.Value
+                ?? User.FindFirst("UserId")?.Value
+                ?? User.Identity?.Name;
 
-            return StatusCode((int)response.StatusCode, result);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized(new
+                {
+                    message = "Dashboard user account not found."
+                });
+            }
+
+            client.DefaultRequestHeaders.Remove("X-User-Id");
+
+            client.DefaultRequestHeaders.Add(
+                "X-User-Id",
+                userId.Trim()
+            );
+
+            var response =
+                await client.PostAsync(
+                    $"api/purchasing/mprf/{id}/submit",
+                    null
+                );
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
         }
 
         [HttpPost("delete/{id}")]

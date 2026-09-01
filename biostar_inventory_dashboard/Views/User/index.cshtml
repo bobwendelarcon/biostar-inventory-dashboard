@@ -69,75 +69,343 @@
     </div>
 </div>
 
-<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="userModalLabel">Add User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+<div class="modal fade"
+     id="userModal"
+     tabindex="-1"
+     aria-labelledby="userModalLabel"
+     aria-hidden="true">
 
-            <div class="modal-body pt-0">
-                <input type="hidden" id="userFormMode" value="add" />
-                <input type="hidden" id="originalUserId" />
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
 
-                <div class="mb-4">
-                    <h6 class="fw-bold mb-3">User Information</h6>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">User ID</label>
-                            <input type="text" class="form-control" id="userId" placeholder="e.g. U001" />
-                        </div>
+        <div class="modal-content rounded-4 border-0 shadow user-management-modal">
 
-                        <div class="col-md-8">
-                            <label class="form-label fw-semibold">Full Name</label>
-                            <input type="text" class="form-control" id="fullName" placeholder="Enter full name" />
-                        </div>
+            <!-- HEADER -->
+            <div class="modal-header px-4 py-3">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0"
+                        id="userModalLabel">
+                        Add User
+                    </h5>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Username</label>
-                            <input type="text" class="form-control" id="username" placeholder="Enter username" />
-                        </div>
-
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="passwordHash" placeholder="Enter new password (leave blank to keep current)" />
-                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
-                                👁
-                            </button>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Role</label>
-                            <select class="form-select" id="roleName">
-                                <option value="">-- Select Role --</option>
-                                <option value="ADMIN">ADMIN</option>
-                                <option value="STAFF">FG WAREHOUSE STAFF</option>
-                                <option value="PRODUCTION">PRODUCTION</option>
-                                <option value="WAREHOUSE">FG WAREHOUSE</option>
-                                <option value="RM_WAREHOUSE">RM WAREHOUSE STAFF </option>
-                                <option value="PURCHASING_ADMIN">PURCHASING ADMIN </option>
-                                <option value="PURCHASING">PURCHASING STAFF </option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Status</label>
-                            <select class="form-select" id="userStatus">
-                                <option value="false">Active</option>
-                                <option value="true">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
+                    <small class="text-muted">
+                        Manage account information and module access.
+                    </small>
                 </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
             </div>
 
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary rounded-3" id="btnSaveUser">Save User</button>
+
+            <!-- BODY -->
+            <div class="modal-body px-4 py-4">
+
+                <input type="hidden"
+                       id="userFormMode"
+                       value="add" />
+
+                <input type="hidden"
+                       id="originalUserId" />
+
+
+                <!-- USER INFORMATION -->
+                <div class="mb-4">
+
+                    <div class="section-title mb-3">
+                        <h6 class="fw-bold mb-1">
+                            User Information
+                        </h6>
+
+                        <small class="text-muted">
+                            Basic account and login information.
+                        </small>
+                    </div>
+
+
+                    <div class="row g-3">
+
+                        <!-- USER ID -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                User ID
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="userId"
+                                   placeholder="e.g. U001" />
+                        </div>
+
+
+                        <!-- FULL NAME -->
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">
+                                Full Name
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="fullName"
+                                   placeholder="Enter full name" />
+                        </div>
+
+
+                        <!-- USERNAME -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Username
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   id="username"
+                                   placeholder="Enter username" />
+                        </div>
+
+
+                        <!-- PASSWORD -->
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                Password
+                            </label>
+
+                            <div class="input-group">
+
+                                <input type="password"
+                                       class="form-control"
+                                       id="passwordHash"
+                                       placeholder="Leave blank to keep current" />
+
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        onclick="togglePassword()"
+                                        title="Show/Hide Password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ROLE -->
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                Role
+                            </label>
+
+                            <select class="form-select"
+                                    id="roleName">
+
+                                <option value="">
+                                    -- Select Role --
+                                </option>
+
+                                <option value="ADMIN">
+                                    ADMIN
+                                </option>
+
+                                <option value="STAFF">
+                                    FG WAREHOUSE STAFF
+                                </option>
+
+                                <option value="PRODUCTION">
+                                    PRODUCTION
+                                </option>
+
+                                <option value="WAREHOUSE">
+                                    FG WAREHOUSE
+                                </option>
+
+                                <option value="RM_WAREHOUSE">
+                                    RM WAREHOUSE STAFF
+                                </option>
+
+                                <option value="PURCHASING_ADMIN">
+                                    PURCHASING ADMIN
+                                </option>
+
+                                <option value="PURCHASING">
+                                    PURCHASING STAFF
+                                </option>
+
+                                <option value="QA_QC">
+                                    QA / QC
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                Status
+                            </label>
+
+                            <select class="form-select"
+                                    id="userStatus">
+
+                                <option value="false">
+                                    Active
+                                </option>
+
+                                <option value="true">
+                                    Inactive
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <hr class="my-4" />
+
+
+                <!-- ACCESS POINTS -->
+                <div>
+
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+
+                        <div>
+                            <h6 class="fw-bold mb-1">
+                                Access Points
+                            </h6>
+
+                            <small class="text-muted">
+                                Select the modules this account is allowed to access.
+                            </small>
+                        </div>
+
+                    </div>
+
+
+                    <!-- ADMIN NOTICE -->
+                    <div id="adminAccessNotice"
+                         class="alert alert-info py-2 px-3 d-none">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        ADMIN accounts automatically have access
+                        to all modules.
+
+                    </div>
+
+
+                    <!-- LOADING -->
+                    <div id="accessPointLoading"
+                         class="text-center text-muted py-4 d-none">
+
+                        <div class="spinner-border spinner-border-sm me-2"
+                             role="status">
+                        </div>
+
+                        Loading access points...
+
+                    </div>
+
+
+                    <!-- ACCESS CARDS -->
+                    <div id="accessPointContainer"
+                         class="row g-3">
+                    </div>
+
+                </div>
+
             </div>
+
+
+            <!-- FOOTER -->
+            <div class="modal-footer px-4 py-3">
+
+                <button type="button"
+                        class="btn btn-light rounded-3 px-4"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary rounded-3 px-4"
+                        id="btnSaveUser">
+
+                    <i class="bi bi-check-lg me-1"></i>
+                    Save User
+
+                </button>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
+<style>
+    .user-management-modal {
+        max-height: 92vh;
+    }
+
+        .user-management-modal .modal-header {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-management-modal .modal-footer {
+            border-top: 1px solid #e9ecef;
+            background: #fff;
+        }
+
+        .user-management-modal .modal-body {
+            background: #fafbfc;
+        }
+
+        .user-management-modal .section-title h6 {
+            color: #212529;
+        }
+
+        .user-management-modal .form-label {
+            font-size: 0.875rem;
+            margin-bottom: 6px;
+        }
+
+        .user-management-modal .form-control,
+        .user-management-modal .form-select {
+            min-height: 42px;
+        }
+
+    #accessPointContainer > div {
+        display: flex;
+    }
+
+    #accessPointContainer .card {
+        width: 100%;
+        border-color: #e4e7eb !important;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    #accessPointContainer .card-body {
+        padding: 16px 18px;
+    }
+
+    #accessPointContainer .form-check-label {
+        cursor: pointer;
+    }
+
+    #accessPointContainer .access-point-checkbox,
+    #accessPointContainer .module-select-all {
+        cursor: pointer;
+    }
+</style>
 
 @section Scripts {
     <script src="~/js/user.js" asp-append-version="true"></script>

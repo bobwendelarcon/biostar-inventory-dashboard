@@ -71,6 +71,31 @@ namespace biostar_inventory_dashboard.Controllers
 
             var fullName = string.IsNullOrWhiteSpace(user.full_name) ? username : user.full_name;
 
+            // Load access points assigned to this account
+            var accessCodes = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(user.user_id?.ToString()))
+            {
+                try
+                {
+                    var accessJson = await _apiService.GetUserAccessCodesAsync(
+                        user.user_id.ToString());
+
+                    accessCodes =
+                        System.Text.Json.JsonSerializer.Deserialize<List<string>>(
+                            accessJson,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            })
+                        ?? new List<string>();
+                }
+                catch
+                {
+                    accessCodes = new List<string>();
+                }
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, fullName),
@@ -82,6 +107,17 @@ namespace biostar_inventory_dashboard.Controllers
                 new Claim("role", role),
                 new Claim("profile_image", user.profile_image ?? "")
             };
+
+            foreach (var accessCode in accessCodes)
+            {
+                if (!string.IsNullOrWhiteSpace(accessCode))
+                {
+                    claims.Add(
+                        new Claim(
+                            "access_point",
+                            accessCode.Trim().ToUpper()));
+                }
+            }
 
             var identity = new ClaimsIdentity(
                 claims,
