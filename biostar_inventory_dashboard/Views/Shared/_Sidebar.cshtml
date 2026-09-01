@@ -19,6 +19,46 @@
     bool HasAccess(string code) =>
         userRole == "ADMIN" || accessPoints.Contains(code);
 
+
+    // =========================================================
+    // FINISHED GOODS / LEGACY MODULE ACCESS
+    // =========================================================
+
+    var canDashboard =
+    HasAccess("DASHBOARD_VIEW");
+
+    var canReceiving =
+        HasAccess("RCV_TRANSMITTAL_REPORT");
+
+    var canPlanning =
+        HasAccess("PLN_DAILY_ORDERS");
+
+    var canDispatch =
+        HasAccess("DSP_DELIVERY_CHECKLIST");
+
+    var canProduction =
+        HasAccess("PRD_PRODUCT_TO_PRODUCE");
+
+    var canFinishedGoodsInventory =
+        HasAccess("FG_STOCK_OVERVIEW") ||
+        HasAccess("FG_INVENTORY_LIST") ||
+        HasAccess("FG_INVENTORY_AGING") ||
+        HasAccess("FG_TRANSACTION_HISTORY");
+
+    var canReturnProduct =
+        HasAccess("RET_RETURNS");
+
+    var canGeneralReports =
+        HasAccess("RPT_GENERAL_REPORTS");
+
+    var canMasterData =
+        HasAccess("MST_FINISHED_PRODUCT_CATEGORIES") ||
+        HasAccess("MST_FINISHED_PRODUCTS") ||
+        HasAccess("MST_BRANCHES") ||
+        HasAccess("MST_USERS") ||
+        HasAccess("MST_PARTNERS");
+
+
     var canManufacturing =
         HasAccess("MFG_MATERIAL_CATEGORIES") ||
         HasAccess("MFG_MATERIALS") ||
@@ -81,154 +121,461 @@
     <ul class="nav flex-column desktop-sidebar-menu">
 
         @* =========================================================
-           LEGACY / UNSEEDED MODULES
-           Keep current role behavior until access codes are created.
-           ========================================================= *@
+   DASHBOARD
+   ========================================================= *@
 
-        @if (userRole == "PRODUCTION")
+        @if (canDashboard)
         {
             <li class="nav-item mb-2">
-                <a class="nav-link @(currentController == "ProductToProduce" ? "active fw-bold" : "")"
-                   asp-controller="ProductToProduce" asp-action="Index">
-                    <i class="bi bi-gear me-2"></i><span>Production</span>
-                </a>
-            </li>
+                <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")"
+                   href="/Dashboard">
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#receivingMenu">
-                    <div><i class="bi bi-box-arrow-in-down me-2"></i><span>Receiving</span></div>
-                    <span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isReceivingOpen ? "show" : "")" id="receivingMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li>
-                            <a class="nav-link @(currentController == "ManualStockIn" ? "active fw-bold" : "")"
-                               asp-controller="ManualStockIn" asp-action="Index">
-                                <span>Transmittal Report</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    <span>Dashboard</span>
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#finishedInventoryMenu">
-                    <div><i class="bi bi-box-seam me-2"></i><span>Inventory</span></div>
-                    <span class="menu-arrow">▾</span>
                 </a>
-                <div class="collapse @(isInventoryOpen ? "show" : "")" id="finishedInventoryMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory"><span>Inventory List</span></a></li>
-                        <li><a class="nav-link @(currentController == "InventoryAging" ? "active fw-bold" : "")" asp-controller="InventoryAging" asp-action="Index"><span>Inventory Aging &amp; Cleanup</span></a></li>
-                        <li><a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions"><span>Transaction History</span></a></li>
-                    </ul>
-                </div>
             </li>
         }
-        else if (userRole == "ADMIN" || userRole == "STAFF")
+
+
+        @* =========================================================
+   RECEIVING
+   ========================================================= *@
+
+        @if (canReceiving)
         {
             <li class="nav-item mb-2">
-                <a class="nav-link @(currentController == "Dashboard" ? "active fw-bold" : "")" href="/Dashboard">
-                    <i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span>
-                </a>
-            </li>
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#receivingMenu">
-                    <div><i class="bi bi-box-arrow-in-down me-2"></i><span>Receiving</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isReceivingOpen ? "show" : "")" id="receivingMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "ManualStockIn" ? "active fw-bold" : "")" asp-controller="ManualStockIn" asp-action="Index"><span>Transmittal Report</span></a></li>
-                    </ul>
-                </div>
-            </li>
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#receivingMenu">
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#planningMenu">
-                    <div><i class="bi bi-calendar-check me-2"></i><span>Planning</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isPlanningOpen ? "show" : "")" id="planningMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "DailyOrder" ? "active fw-bold" : "")" href="/DailyOrder"><span>Daily Orders</span></a></li>
-                    </ul>
-                </div>
-            </li>
+                    <div>
+                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        <span>Receiving</span>
+                    </div>
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#dispatchMenu">
-                    <div><i class="bi bi-truck me-2"></i><span>Dispatch</span></div><span class="menu-arrow">▾</span>
+                    <span class="menu-arrow">▾</span>
                 </a>
-                <div class="collapse @(isDispatchOpen ? "show" : "")" id="dispatchMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "DeliveryChecklist" ? "active fw-bold" : "")" href="/DeliveryChecklist"><span>Delivery Checklist</span></a></li>
-                    </ul>
-                </div>
-            </li>
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#productionMenu">
-                    <div><i class="bi bi-gear me-2"></i><span>Production</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isProductionOpen ? "show" : "")" id="productionMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "ProductToProduce" ? "active fw-bold" : "")" asp-controller="ProductToProduce" asp-action="Index"><span>Product to Produce</span></a></li>
-                    </ul>
-                </div>
-            </li>
+                <div class="collapse @(isReceivingOpen ? "show" : "")"
+                     id="receivingMenu">
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#finishedInventoryMenu">
-                    <div><i class="bi bi-box-seam me-2"></i><span>Finished Goods Inventory</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isInventoryOpen ? "show" : "")" id="finishedInventoryMenu">
                     <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "StockOverview" ? "active fw-bold" : "")" href="/Inventory/StockOverview"><span>Stock Overview</span></a></li>
-                        <li><a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")" href="/Inventory"><span>Inventory List</span></a></li>
-                        <li><a class="nav-link @(currentController == "InventoryAging" ? "active fw-bold" : "")" asp-controller="InventoryAging" asp-action="Index"><span>Inventory Aging &amp; Cleanup</span></a></li>
-                        <li><a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")" href="/Transactions"><span>Transaction History</span></a></li>
-                    </ul>
-                </div>
-            </li>
 
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#returnMenu">
-                    <div><i class="bi bi-arrow-counterclockwise me-2"></i><span>Return Product</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isReturnOpen ? "show" : "")" id="returnMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "Returns" ? "active fw-bold" : "")" asp-controller="Returns" asp-action="Index"><span>Returns</span></a></li>
-                    </ul>
-                </div>
-            </li>
-
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#generalReportMenu">
-                    <div><i class="bi bi-bar-chart me-2"></i><span>General Reports</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(currentController == "Reports" ? "show" : "")" id="generalReportMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "Reports" ? "active fw-bold" : "")" asp-controller="Reports" asp-action="Index">Reports</a></li>
-                    </ul>
-                </div>
-            </li>
-
-            <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#masterMenu">
-                    <div><i class="bi bi-database me-2"></i><span>Master Data</span></div><span class="menu-arrow">▾</span>
-                </a>
-                <div class="collapse @(isMasterDataOpen ? "show" : "")" id="masterMenu">
-                    <ul class="nav flex-column ms-3 mt-1">
-                        <li><a class="nav-link @(currentController == "Categories" ? "active fw-bold" : "")" href="/Categories"><span>Finished Product Categories</span></a></li>
-                        <li><a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")" href="/Product"><span>Finished Products</span></a></li>
-                        <li><a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")" href="/Branch"><span>Branches</span></a></li>
-                        @if (userRole == "ADMIN")
+                        @if (HasAccess("RCV_TRANSMITTAL_REPORT"))
                         {
-                            <li><a class="nav-link @(currentController == "User" ? "active fw-bold" : "")" href="/User"><span>Users</span></a></li>
+                            <li>
+                                <a class="nav-link @(currentController == "ManualStockIn" ? "active fw-bold" : "")"
+                                   asp-controller="ManualStockIn"
+                                   asp-action="Index">
+
+                                    <span>Transmittal Report</span>
+                                </a>
+                            </li>
                         }
-                        <li><a class="nav-link @(currentController == "Partner" ? "active fw-bold" : "")" href="/Partner"><span>Partners</span></a></li>
+
                     </ul>
+
                 </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   PLANNING
+   ========================================================= *@
+
+        @if (canPlanning)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#planningMenu">
+
+                    <div>
+                        <i class="bi bi-calendar-check me-2"></i>
+                        <span>Planning</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isPlanningOpen ? "show" : "")"
+                     id="planningMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @if (HasAccess("PLN_DAILY_ORDERS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "DailyOrder" ? "active fw-bold" : "")"
+                                   href="/DailyOrder">
+
+                                    <span>Daily Orders</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   DISPATCH
+   ========================================================= *@
+
+        @if (canDispatch)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#dispatchMenu">
+
+                    <div>
+                        <i class="bi bi-truck me-2"></i>
+                        <span>Dispatch</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isDispatchOpen ? "show" : "")"
+                     id="dispatchMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @if (HasAccess("DSP_DELIVERY_CHECKLIST"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "DeliveryChecklist" ? "active fw-bold" : "")"
+                                   href="/DeliveryChecklist">
+
+                                    <span>Delivery Checklist</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   PRODUCTION
+   ========================================================= *@
+
+        @if (canProduction)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#productionMenu">
+
+                    <div>
+                        <i class="bi bi-gear me-2"></i>
+                        <span>Production</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isProductionOpen ? "show" : "")"
+                     id="productionMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @if (HasAccess("PRD_PRODUCT_TO_PRODUCE"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "ProductToProduce" ? "active fw-bold" : "")"
+                                   asp-controller="ProductToProduce"
+                                   asp-action="Index">
+
+                                    <span>Product to Produce</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   FINISHED GOODS INVENTORY
+   ========================================================= *@
+
+        @if (canFinishedGoodsInventory)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#finishedInventoryMenu">
+
+                    <div>
+                        <i class="bi bi-box-seam me-2"></i>
+                        <span>Finished Goods Inventory</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isInventoryOpen ? "show" : "")"
+                     id="finishedInventoryMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @if (HasAccess("FG_STOCK_OVERVIEW"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "StockOverview" ? "active fw-bold" : "")"
+                                   href="/Inventory/StockOverview">
+
+                                    <span>Stock Overview</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("FG_INVENTORY_LIST"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Inventory" ? "active fw-bold" : "")"
+                                   href="/Inventory">
+
+                                    <span>Inventory List</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("FG_INVENTORY_AGING"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "InventoryAging" ? "active fw-bold" : "")"
+                                   asp-controller="InventoryAging"
+                                   asp-action="Index">
+
+                                    <span>Inventory Aging &amp; Cleanup</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("FG_TRANSACTION_HISTORY"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Transactions" ? "active fw-bold" : "")"
+                                   href="/Transactions">
+
+                                    <span>Transaction History</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   RETURN PRODUCT
+   ========================================================= *@
+
+        @if (canReturnProduct)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#returnMenu">
+
+                    <div>
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>
+                        <span>Return Product</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isReturnOpen ? "show" : "")"
+                     id="returnMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @if (HasAccess("RET_RETURNS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Returns" ? "active fw-bold" : "")"
+                                   asp-controller="Returns"
+                                   asp-action="Index">
+
+                                    <span>Returns</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   GENERAL REPORTS
+   ========================================================= *@
+
+        @if (canGeneralReports)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#generalReportMenu">
+
+                    <div>
+                        <i class="bi bi-bar-chart me-2"></i>
+                        <span>General Reports</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(currentController == "Reports" ? "show" : "")"
+                     id="generalReportMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @if (HasAccess("RPT_GENERAL_REPORTS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Reports" ? "active fw-bold" : "")"
+                                   asp-controller="Reports"
+                                   asp-action="Index">
+
+                                    <span>Reports</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </li>
+        }
+
+
+        @* =========================================================
+   MASTER DATA
+   ========================================================= *@
+
+        @if (canMasterData)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#masterMenu">
+
+                    <div>
+                        <i class="bi bi-database me-2"></i>
+                        <span>Master Data</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isMasterDataOpen ? "show" : "")"
+                     id="masterMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+
+                        @if (HasAccess("MST_FINISHED_PRODUCT_CATEGORIES"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Categories" ? "active fw-bold" : "")"
+                                   href="/Categories">
+
+                                    <span>Finished Product Categories</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("MST_FINISHED_PRODUCTS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Product" ? "active fw-bold" : "")"
+                                   href="/Product">
+
+                                    <span>Finished Products</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("MST_BRANCHES"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Branch" ? "active fw-bold" : "")"
+                                   href="/Branch">
+
+                                    <span>Branches</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("MST_USERS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "User" ? "active fw-bold" : "")"
+                                   href="/User">
+
+                                    <span>Users</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (HasAccess("MST_PARTNERS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentController == "Partner" ? "active fw-bold" : "")"
+                                   href="/Partner">
+
+                                    <span>Partners</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
             </li>
         }
 
