@@ -39,8 +39,12 @@ function setDailyOrderDefaultFilters() {
         yearFilter.value = currentYear;
     }
 
+    //if (monthFilter) {
+    //    monthFilter.value = currentMonth;
+    //}
+
     if (monthFilter) {
-        monthFilter.value = currentMonth;
+        monthFilter.value = "";
     }
 
     if (statusFilter) {
