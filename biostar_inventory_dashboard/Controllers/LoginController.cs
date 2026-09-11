@@ -17,6 +17,8 @@ namespace biostar_inventory_dashboard.Controllers
         {
             _apiService = apiService;
         }
+
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -39,11 +41,25 @@ namespace biostar_inventory_dashboard.Controllers
                     return Redirect("/purchasing/mprf");
                 }
 
+                if (role == "QA_QC")
+                {
+                    return Redirect("/quality/qa-qc-receiving");
+                }
+
                 return RedirectToAction("Index", "Dashboard");
             }
 
             return View();
         }
+
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> Index(string username, string password)
         {
@@ -132,6 +148,21 @@ namespace biostar_inventory_dashboard.Controllers
             if (role == "PRODUCTION")
             {
                 return RedirectToAction("Index", "ProductToProduce");
+            }
+
+            if (role == "PURCHASING" || role == "PURCHASING_ADMIN")
+            {
+                return Redirect("/purchasing/mprf/review");
+            }
+
+            if (role == "RM_WAREHOUSE")
+            {
+                return Redirect("/purchasing/mprf");
+            }
+
+            if (role == "QA_QC")
+            {
+                return Redirect("/quality/qa-qc-receiving");
             }
 
             return RedirectToAction("Index", "Dashboard");

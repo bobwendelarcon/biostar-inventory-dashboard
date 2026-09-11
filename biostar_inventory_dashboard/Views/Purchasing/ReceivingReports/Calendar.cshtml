@@ -1,5 +1,12 @@
-﻿@{
+﻿@using System.Security.Claims
+
+@{
     ViewData["Title"] = "Receiving Calendar";
+
+    var loggedInFullName =
+        User.FindFirst("full_name")?.Value
+        ?? User.Identity?.Name
+        ?? "";
 }
 
 <link rel="stylesheet"
@@ -273,7 +280,7 @@
                                            placeholder="Enter SI or DR number">
                                 </div>
 
-                                <div class="col-md-8">
+                                <div class="col-md-6">
                                     <label class="form-label">
                                         Remarks
                                     </label>
@@ -281,6 +288,17 @@
                                     <input id="modalRemarks"
                                            class="form-control"
                                            placeholder="Optional remarks">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label">
+                                        Verified By
+                                    </label>
+
+                                    <input id="modalVerifiedBy"
+                                           class="form-control"
+                                           value="@loggedInFullName"
+                                           readonly>
                                 </div>
 
                             </div>
@@ -325,19 +343,22 @@
                                         Remaining
                                     </th>
 
-                                    <th class="text-end"
-                                        style="width:150px;">
+                                    <th style="width:120px;">
                                         Delivered Qty
                                     </th>
 
                                     <th>UOM</th>
 
-                                    <th style="min-width:280px;">
-                                        Material Check
+                                    <th style="width:110px;">
+                                        Tare Weight
                                     </th>
 
-                                    <th style="min-width:180px;">
+                                    <th style="width:140px;">
                                         Remarks
+                                    </th>
+
+                                    <th style="width:110px;">
+                                        Details
                                     </th>
                                 </tr>
                             </thead>
@@ -359,6 +380,69 @@
 
                 </div>
 
+           
+
+
+            <div id="receivingLotSection"
+                 class="card border-0 bg-light mt-4 d-none">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                Material Receiving Details
+                            </h5>
+
+                            <div id="receivingLotMaterialName"
+                                 class="text-muted small">
+                            </div>
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                onclick="addReceivingLotRow()">
+                                Add Receiving Row
+                        </button>
+                    </div>
+
+                    <input type="hidden"
+                           id="receivingLotPoLineId">
+
+                    <div class="table-responsive border rounded">
+                        <table class="table table-sm align-middle mb-0">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width:180px;">Manufacturer</th>
+                                        <th id="receivingLotNoHeader"
+                                            style="min-width:130px;">
+                                            Lot No.
+                                        </th>
+
+                                        <th id="receivingMfgDateHeader"
+                                            style="min-width:145px;">
+                                            Manufacturing Date
+                                        </th>
+
+                                        <th id="receivingExpDateHeader"
+                                            style="min-width:145px;">
+                                            Expiration Date
+                                        </th>
+                                    <th style="min-width:120px;">No. of Item</th>
+                                    <th style="min-width:120px;">Weight</th>
+                                    <th style="min-width:180px;">Remarks</th>
+                                    <th style="width:70px;"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="receivingLotBody">
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                </div>
             </div>
 
 
@@ -482,17 +566,42 @@
                         </div>
                     </div>
 
-
-                    <!-- Vehicle -->
-                    <div class="mb-4">
+                    <!-- Material Receiving Form -->
+                    <div class="mb-3">
 
                         <h6 class="fw-bold text-secondary mb-3">
-                            Vehicle Inspection
+                            Material Receiving Form Checklist
                         </h6>
 
                         <div class="row g-3">
 
-                            <div class="col-md-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkCorrectQuantityDelivered"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkCorrectQuantityDelivered">
+                                        Correct quantity delivered
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkTruckDoorLock"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkTruckDoorLock">
+                                        Truck door lock is in place
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
                                 <div class="form-check">
                                     <input id="chkVehicleClean"
                                            class="form-check-input"
@@ -500,85 +609,98 @@
 
                                     <label class="form-check-label"
                                            for="chkVehicleClean">
-                                        Clean
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <div class="form-check">
-                                    <input id="chkVehicleDry"
-                                           class="form-check-input"
-                                           type="checkbox">
-
-                                    <label class="form-check-label"
-                                           for="chkVehicleDry">
-                                        Dry
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <div class="form-check">
-                                    <input id="chkVehicleOdorFree"
-                                           class="form-check-input"
-                                           type="checkbox">
-
-                                    <label class="form-check-label"
-                                           for="chkVehicleOdorFree">
-                                        Free from odor
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <div class="form-check">
-                                    <input id="chkVehicleResidueFree"
-                                           class="form-check-input"
-                                           type="checkbox">
-
-                                    <label class="form-check-label"
-                                           for="chkVehicleResidueFree">
-                                        Free from residue
-                                    </label>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-
-                    <!-- Material -->
-                    <div class="mb-3">
-
-                        <h6 class="fw-bold text-secondary mb-3">
-                            General Material Condition
-                        </h6>
-
-                        <div class="row g-3">
-
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input id="chkMaterialClean"
-                                           class="form-check-input"
-                                           type="checkbox">
-
-                                    <label class="form-check-label"
-                                           for="chkMaterialClean">
-                                        Materials are clean
+                                        Vehicle inspected for cleanliness
                                     </label>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-check">
-                                    <input id="chkMaterialCovered"
+                                    <input id="chkContainersCleanSealed"
                                            class="form-check-input"
                                            type="checkbox">
 
                                     <label class="form-check-label"
-                                           for="chkMaterialCovered">
-                                        Materials are covered / sealed
+                                           for="chkContainersCleanSealed">
+                                        Bags / drums / boxes / containers are clean and sealed
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkNoVisibleContamination"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkNoVisibleContamination">
+                                        No visible contamination or sign of spoilage
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkLabelsPresent"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkLabelsPresent">
+                                        Labels are present and legible
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkDriverVerified"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkDriverVerified">
+                                        Driver identity verified (ID seen)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkNoUnauthorizedAccess"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkNoUnauthorizedAccess">
+                                        No unauthorized access observed during unloading
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkHiddenCompartment"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkHiddenCompartment">
+                                        Vehicle inspected for hidden compartments
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input id="chkAuthorizedZone"
+                                           class="form-check-input"
+                                           type="checkbox">
+
+                                    <label class="form-check-label"
+                                           for="chkAuthorizedZone">
+                                        Raw material received only in authorized zone
                                     </label>
                                 </div>
                             </div>
@@ -601,6 +723,8 @@
                     </div>
 
                 </div>
+            </div>
+
             </div>
 
 
@@ -1500,6 +1624,11 @@
 
     let selectedReceivingScheduleId = 0;
     let modalReceivingData = null;
+        let receivingLotsByPoLine = {};
+    let activeReceivingPoLineId = null;
+    let activeReceivingIsLotTracked = false;
+
+    let receivingManufacturersByPoLine = {};
 
 
     async function loadReceivingBranches() {
@@ -1553,6 +1682,505 @@
         finally {
             branchSelect.disabled = false;
         }
+    }
+
+         async function openReceivingDetails(button) {
+
+        const row =
+            button.closest(
+                "tr[data-po-line-id]"
+            );
+
+        if (!row)
+            return;
+
+        const poLineId =
+            Number(row.dataset.poLineId);
+
+        const materialId =
+            Number(row.dataset.materialId);
+
+        const supplierId =
+            Number(
+                modalReceivingData?.supplierId ?? 0
+            );
+
+        activeReceivingPoLineId =
+            poLineId;
+
+        document.getElementById(
+            "receivingLotPoLineId"
+        ).value =
+            poLineId;
+
+        document.getElementById(
+            "receivingLotMaterialName"
+        ).textContent =
+            `${row.dataset.materialCode ?? ""} - ` +
+            `${row.dataset.materialName ?? ""}`;
+
+        const section =
+            document.getElementById(
+                "receivingLotSection"
+            );
+
+        section.classList.remove(
+            "d-none"
+        );
+
+            activeReceivingIsLotTracked =
+        row.dataset.isLotTracked === "true";
+
+    document
+        .getElementById("receivingLotNoHeader")
+        .classList.toggle(
+            "d-none",
+            !activeReceivingIsLotTracked
+        );
+
+    document
+        .getElementById("receivingMfgDateHeader")
+        .classList.toggle(
+            "d-none",
+            !activeReceivingIsLotTracked
+        );
+
+    document
+        .getElementById("receivingExpDateHeader")
+        .classList.toggle(
+            "d-none",
+            !activeReceivingIsLotTracked
+        );
+
+    if (
+        !receivingLotsByPoLine[poLineId] ||
+            receivingLotsByPoLine[poLineId]
+                .length === 0
+        ) {
+            receivingLotsByPoLine[poLineId] = [
+                {
+                    manufacturerId: null,
+                    lotNo: "",
+                    manufacturingDate: "",
+                    expirationDate: "",
+                    itemCount: null,
+                    weight: null,
+                    remarks: ""
+                }
+            ];
+        }
+
+        if (
+            !receivingManufacturersByPoLine[
+                poLineId
+            ]
+        ) {
+            const response =
+                await fetch(
+                    `/purchasing/incoming-receiving/manufacturers` +
+                    `?supplierId=${encodeURIComponent(supplierId)}` +
+                    `&materialId=${encodeURIComponent(materialId)}`
+                );
+
+            const manufacturers =
+                await readJsonResponse(
+                    response,
+                    "Unable to load approved manufacturers."
+                );
+
+            receivingManufacturersByPoLine[
+                poLineId
+            ] =
+                manufacturers ?? [];
+        }
+
+        renderReceivingLotRows();
+
+        section.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+    }
+
+        function addReceivingLotRow() {
+
+        if (!activeReceivingPoLineId)
+            return;
+
+
+        if (!receivingLotsByPoLine[
+            activeReceivingPoLineId
+        ]) {
+            receivingLotsByPoLine[
+                activeReceivingPoLineId
+            ] = [];
+        }
+
+
+        receivingLotsByPoLine[
+            activeReceivingPoLineId
+        ].push({
+
+            manufacturerId: null,
+
+            lotNo: "",
+
+            manufacturingDate: "",
+
+            expirationDate: "",
+
+            itemCount: null,
+
+            weight: null,
+
+            remarks: ""
+        });
+
+
+        renderReceivingLotRows();
+    }
+
+        function renderReceivingLotRows() {
+
+        const tbody =
+            document.getElementById(
+                "receivingLotBody"
+            );
+
+        tbody.innerHTML = "";
+
+
+        if (!activeReceivingPoLineId)
+            return;
+
+
+        const lots =
+            receivingLotsByPoLine[
+                activeReceivingPoLineId
+            ] ?? [];
+
+
+        if (lots.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-muted py-3">
+                        No receiving details entered yet.
+                    </td>
+                </tr>
+            `;
+
+            updateReceivingLotCount(
+                activeReceivingPoLineId
+            );
+
+            return;
+        }
+
+
+        const manufacturers =
+    receivingManufacturersByPoLine[
+        activeReceivingPoLineId
+    ] ?? [];
+
+        lots.forEach((lot, index) => {
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                <tr>
+
+                    <td>
+                            <select
+        class="form-select form-select-sm lot-manufacturer"
+        data-index="${index}">
+
+        <option value="">
+            Select manufacturer
+        </option>
+
+        ${manufacturers.map(m => `
+            <option
+                value="${Number(m.manufacturerId)}"
+                ${
+                    Number(lot.manufacturerId) ===
+                    Number(m.manufacturerId)
+                        ? "selected"
+                        : ""
+                }>
+                ${escapeHtml(
+                    m.manufacturerName ?? ""
+                )}
+            </option>
+        `).join("")}
+
+    </select>
+                    </td>
+
+                      <td class="${activeReceivingIsLotTracked ? "" : "d-none"}">
+        <input
+            type="text"
+            class="form-control form-control-sm lot-number"
+            data-index="${index}"
+            value="${escapeHtml(lot.lotNo ?? "")}"
+            placeholder="Lot No.">
+    </td>
+
+    <td class="${activeReceivingIsLotTracked ? "" : "d-none"}">
+        <input
+            type="date"
+            class="form-control form-control-sm lot-mfg-date"
+            data-index="${index}"
+            value="${escapeHtml(lot.manufacturingDate ?? "")}">
+    </td>
+
+    <td class="${activeReceivingIsLotTracked ? "" : "d-none"}">
+        <input
+            type="date"
+            class="form-control form-control-sm lot-exp-date"
+            data-index="${index}"
+            value="${escapeHtml(lot.expirationDate ?? "")}">
+    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            class="form-control form-control-sm text-end lot-item-count"
+                            data-index="${index}"
+                            min="0"
+                            step="0.0001"
+                            value="${lot.itemCount ?? ""}"
+                            placeholder="0">
+                    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            class="form-control form-control-sm text-end lot-weight"
+                            data-index="${index}"
+                            min="0"
+                            step="0.0001"
+                            value="${lot.weight ?? ""}"
+                            placeholder="0.0000">
+                    </td>
+
+                    <td>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm lot-remarks"
+                            data-index="${index}"
+                            value="${escapeHtml(lot.remarks ?? "")}"
+                            placeholder="Optional">
+                    </td>
+
+                    <td>
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="removeReceivingLotRow(${index})">
+                            Remove
+                        </button>
+                    </td>
+
+                </tr>
+                `
+            );
+        });
+
+
+        bindReceivingLotInputs();
+
+        updateReceivingLotCount(
+            activeReceivingPoLineId
+        );
+    }
+
+        function bindReceivingLotInputs() {
+
+        const tbody =
+            document.getElementById(
+                "receivingLotBody"
+            );
+
+
+        tbody.querySelectorAll(
+            "input, select"
+        ).forEach(element => {
+
+            element.addEventListener(
+                "change",
+                syncReceivingLotInputs
+            );
+
+            element.addEventListener(
+                "input",
+                syncReceivingLotInputs
+            );
+        });
+    }
+
+
+    function syncReceivingLotInputs() {
+
+        if (!activeReceivingPoLineId)
+            return;
+
+
+        const lots =
+            receivingLotsByPoLine[
+                activeReceivingPoLineId
+            ];
+
+        if (!lots)
+            return;
+
+
+        document.querySelectorAll(
+            "#receivingLotBody tr"
+        ).forEach(row => {
+
+            const input =
+                row.querySelector(
+                    "[data-index]"
+                );
+
+            if (!input)
+                return;
+
+
+            const index =
+                Number(
+                    input.dataset.index
+                );
+
+            const lot =
+                lots[index];
+
+            if (!lot)
+                return;
+
+
+            lot.manufacturerId =
+                Number(
+                    row.querySelector(
+                        ".lot-manufacturer"
+                    )?.value || 0
+                ) || null;
+
+
+            lot.lotNo =
+                row.querySelector(
+                    ".lot-number"
+                )?.value.trim() ?? "";
+
+
+            lot.manufacturingDate =
+                row.querySelector(
+                    ".lot-mfg-date"
+                )?.value ?? "";
+
+
+            lot.expirationDate =
+                row.querySelector(
+                    ".lot-exp-date"
+                )?.value ?? "";
+
+
+            const itemCount =
+                row.querySelector(
+                    ".lot-item-count"
+                )?.value;
+
+
+            lot.itemCount =
+                itemCount === ""
+                    ? null
+                    : Number(itemCount);
+
+
+            const weight =
+                row.querySelector(
+                    ".lot-weight"
+                )?.value;
+
+
+            lot.weight =
+                weight === ""
+                    ? null
+                    : Number(weight);
+
+
+            lot.remarks =
+                row.querySelector(
+                    ".lot-remarks"
+                )?.value.trim() ?? "";
+        });
+
+
+        updateReceivingLotCount(
+            activeReceivingPoLineId
+        );
+    }
+
+        function removeReceivingLotRow(index) {
+
+        if (!activeReceivingPoLineId)
+            return;
+
+
+        syncReceivingLotInputs();
+
+
+        const lots =
+            receivingLotsByPoLine[
+                activeReceivingPoLineId
+            ];
+
+        if (!lots)
+            return;
+
+
+        lots.splice(
+            index,
+            1
+        );
+
+
+        renderReceivingLotRows();
+    }
+        function updateReceivingLotCount(poLineId) {
+
+        const lots =
+            receivingLotsByPoLine[
+                poLineId
+            ] ?? [];
+
+
+        const row =
+            document.querySelector(
+                `#modalRrLineBody tr[data-po-line-id="${poLineId}"]`
+            );
+
+        if (!row)
+            return;
+
+
+        const label =
+            row.querySelector(
+                ".receiving-lot-count"
+            );
+
+        if (!label)
+            return;
+
+
+        label.textContent =
+            lots.length === 0
+                ? "No lot details"
+                : lots.length === 1
+                    ? "1 receiving row"
+                    : `${lots.length} receiving rows`;
     }
 
         async function readJsonResponse(response, fallbackMessage) {
@@ -2314,6 +2942,8 @@
 
          function clearReceivingModal() {
 
+             receivingManufacturersByPoLine = {};
+
         document.getElementById(
             "modalIncomingNo"
         ).value = "";
@@ -2349,33 +2979,58 @@
             "modalRemarks"
         ).value = "";
 
+    //         document.getElementById(
+    //     "modalVerifiedBy"
+    // ).value = "";
 
-        // Checklist
-        [
-            "chkPoMatched",
-            "chkDeliveryScheduled",
-            "chkApprovedSupplier",
+    receivingLotsByPoLine = {};
+    activeReceivingPoLineId = null;
 
-            "chkSalesInvoice",
-            "chkDeliveryReceipt",
-            "chkCoa",
+    document.getElementById(
+        "receivingLotSection"
+    ).classList.add("d-none");
 
-            "chkVehicleClean",
-            "chkVehicleDry",
-            "chkVehicleOdorFree",
-            "chkVehicleResidueFree",
+    document.getElementById(
+        "receivingLotBody"
+    ).innerHTML = "";
 
-            "chkMaterialClean",
-            "chkMaterialCovered"
-        ].forEach(id => {
+    document.getElementById(
+        "receivingLotMaterialName"
+    ).textContent = "";
 
-            const element =
-                document.getElementById(id);
+    document.getElementById(
+        "receivingLotPoLineId"
+    ).value = "";
 
-            if (element)
-                element.checked = false;
-        });
 
+           [
+        "chkPoMatched",
+        "chkDeliveryScheduled",
+        "chkApprovedSupplier",
+
+        "chkSalesInvoice",
+        "chkDeliveryReceipt",
+        "chkCoa",
+
+        "chkCorrectQuantityDelivered",
+        "chkTruckDoorLock",
+        "chkVehicleClean",
+        "chkContainersCleanSealed",
+        "chkNoVisibleContamination",
+        "chkLabelsPresent",
+        "chkDriverVerified",
+        "chkNoUnauthorizedAccess",
+        "chkHiddenCompartment",
+        "chkAuthorizedZone"
+    ].forEach(id => {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+            element.checked = false;
+        }
+    });
 
         document.getElementById(
             "modalInspectionRemarks"
@@ -2394,7 +3049,7 @@
         `;
     }
 
-            function renderIncomingReceivingLines(lines) {
+               function renderIncomingReceivingLines(lines) {
 
         const tbody =
             document.getElementById(
@@ -2403,12 +3058,11 @@
 
         tbody.innerHTML = "";
 
-
         if (!lines || lines.length === 0) {
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="10"
+                    <td colspan="11"
                         class="text-center text-muted py-4">
                         No delivery schedule lines found.
                     </td>
@@ -2426,19 +3080,21 @@
                     line.remainingScheduledQty ?? 0
                 );
 
-
             const disabled =
                 remaining <= 0
                     ? "disabled"
                     : "";
 
-
             tbody.insertAdjacentHTML(
                 "beforeend",
                 `
-                <tr
-                    data-po-line-id="${Number(line.poLineId)}"
-                    data-remaining-qty="${remaining}">
+               <tr
+    data-po-line-id="${Number(line.poLineId)}"
+    data-material-id="${Number(line.materialId)}"
+    data-material-code="${escapeHtml(line.materialCode ?? "")}"
+    data-material-name="${escapeHtml(line.materialName ?? "")}"
+    data-is-lot-tracked="${line.isLotTracked ? "true" : "false"}"
+    data-remaining-qty="${remaining}">
 
                     <td>
                         ${escapeHtml(
@@ -2477,7 +3133,6 @@
                             type="number"
                             class="form-control form-control-sm text-end modal-delivered-qty"
                             min="0"
-                            max="${remaining}"
                             step="0.0001"
                             value="0"
                             ${disabled}>
@@ -2490,52 +3145,36 @@
                     </td>
 
                     <td>
-
-                        <div class="form-check">
-                            <input
-                                class="form-check-input line-packaging-ok"
-                                type="checkbox"
-                                checked
-                                ${disabled}>
-
-                            <label class="form-check-label small">
-                                Packaging OK
-                            </label>
-                        </div>
-
-                        <div class="form-check">
-                            <input
-                                class="form-check-input line-contamination-ok"
-                                type="checkbox"
-                                checked
-                                ${disabled}>
-
-                            <label class="form-check-label small">
-                                No contamination
-                            </label>
-                        </div>
-
-                        <div class="form-check">
-                            <input
-                                class="form-check-input line-labeling-ok"
-                                type="checkbox"
-                                checked
-                                ${disabled}>
-
-                            <label class="form-check-label small">
-                                Labeling OK
-                            </label>
-                        </div>
-
-                    </td>
-
-                    <td>
                         <input
-                            type="text"
-                            class="form-control form-control-sm modal-line-remarks"
-                            placeholder="Optional"
+                            type="number"
+                            class="form-control form-control-sm text-end modal-tare-weight"
+                            min="0"
+                            step="0.0001"
+                            placeholder="0.0000"
                             ${disabled}>
                     </td>
+
+                       <td style="min-width:140px;">
+        <input
+            type="text"
+            class="form-control form-control-sm modal-line-remarks"
+            placeholder="Optional"
+            ${disabled}>
+    </td>
+
+    <td style="min-width:110px;">
+        <button
+            type="button"
+            class="btn btn-outline-primary btn-sm w-100"
+            onclick="openReceivingDetails(this)"
+            ${disabled}>
+            Receiving Details
+        </button>
+
+        <div class="small text-muted mt-1 receiving-lot-count text-center">
+            No lot details
+        </div>
+    </td>
 
                 </tr>
                 `
@@ -2543,17 +3182,17 @@
         });
     }
 
-            async function saveIncomingReceiving() {
+         async function saveIncomingReceiving() {
 
         if (!modalReceivingData) {
-
-            alert(
-                "Delivery schedule data not loaded."
-            );
-
+            alert("Delivery schedule data not loaded.");
             return;
         }
 
+
+        // ============================================================
+        // HEADER
+        // ============================================================
 
         const branchId =
             document
@@ -2561,40 +3200,47 @@
                 .value
                 .trim();
 
-
         if (!branchId) {
-
-            alert(
-                "Receiving Branch is required."
-            );
-
+            alert("Receiving Branch is required.");
             return;
         }
 
 
         const deliveryDate =
             document
-                .getElementById(
-                    "modalDeliveryDate"
-                )
+                .getElementById("modalDeliveryDate")
                 .value;
 
-
         if (!deliveryDate) {
-
-            alert(
-                "Delivery Date is required."
-            );
-
+            alert("Delivery Date is required.");
             return;
         }
 
+
+        const verifiedBy =
+            document
+                .getElementById("modalVerifiedBy")
+                .value
+                .trim();
+
+
+        // ============================================================
+        // MAKE SURE ACTIVE LOT EDITS ARE SAVED
+        // ============================================================
+
+        if (activeReceivingPoLineId) {
+            syncReceivingLotInputs();
+        }
+
+
+        // ============================================================
+        // RECEIVING LINES
+        // ============================================================
 
         const rows =
             document.querySelectorAll(
                 "#modalRrLineBody tr[data-po-line-id]"
             );
-
 
         const lines = [];
 
@@ -2602,16 +3248,21 @@
         for (const row of rows) {
 
             const poLineId =
-                Number(
-                    row.dataset.poLineId
-                );
+                Number(row.dataset.poLineId);
 
+
+                    const materialId =
+        Number(row.dataset.materialId);
+
+    const supplierId =
+        Number(
+            modalReceivingData?.supplierId ?? 0
+        );
 
             const remaining =
                 Number(
                     row.dataset.remainingQty || 0
                 );
-
 
             const deliveredQty =
                 Number(
@@ -2620,76 +3271,178 @@
                     )?.value || 0
                 );
 
+            const tareWeightValue =
+                row.querySelector(
+                    ".modal-tare-weight"
+                )?.value ?? "";
 
-               if (deliveredQty > remaining) {
+            const tareWeight =
+                tareWeightValue === ""
+                    ? null
+                    : Number(tareWeightValue);
 
-        const excessQty =
-            deliveredQty - remaining;
-
-        const lineRemarks =
-            row.querySelector(
-                ".modal-line-remarks"
-            )?.value.trim() ?? "";
-
-        if (!lineRemarks) {
-
-            alert(
-                `Over-delivery detected.\n\n` +
-                `Scheduled balance: ${formatQty(remaining)}\n` +
-                `Delivered today: ${formatQty(deliveredQty)}\n` +
-                `Excess quantity: ${formatQty(excessQty)}\n\n` +
-                `Please enter a line remark explaining the excess delivery.`
-            );
-
-            return;
-        }
-
-        const continueOverDelivery =
-            confirm(
-                `This delivery exceeds the scheduled balance.\n\n` +
-                `Scheduled balance: ${formatQty(remaining)}\n` +
-                `Delivered today: ${formatQty(deliveredQty)}\n` +
-                `Excess: ${formatQty(excessQty)}\n\n` +
-                `Continue and record this as an over-delivery?`
-            );
-
-        if (!continueOverDelivery) {
-            return;
-        }
-    }
+            const lineRemarks =
+                row.querySelector(
+                    ".modal-line-remarks"
+                )?.value.trim() ?? "";
 
 
-            if (deliveredQty > 0) {
+            // --------------------------------------------------------
+            // Skip lines with no delivery
+            // --------------------------------------------------------
 
-                lines.push({
+            if (deliveredQty <= 0) {
+                continue;
+            }
 
-                    poLineId:
-                        poLineId,
 
-                    deliveredQty:
-                        deliveredQty,
+            // --------------------------------------------------------
+            // Basic validation
+            // --------------------------------------------------------
 
-                    packagingOk:
-                        row.querySelector(
-                            ".line-packaging-ok"
-                        ).checked,
+            if (tareWeight !== null && tareWeight < 0) {
+                alert(
+                    "Tare Weight cannot be negative."
+                );
+                return;
+            }
 
-                    contaminationOk:
-                        row.querySelector(
-                            ".line-contamination-ok"
-                        ).checked,
 
-                    labelingOk:
-                        row.querySelector(
-                            ".line-labeling-ok"
-                        ).checked,
+            // --------------------------------------------------------
+            // Over-delivery validation
+            // --------------------------------------------------------
+
+            if (deliveredQty > remaining) {
+
+                const excessQty =
+                    deliveredQty - remaining;
+
+                if (!lineRemarks) {
+
+                    alert(
+                        `Over-delivery detected.\n\n` +
+                        `Scheduled balance: ${formatQty(remaining)}\n` +
+                        `Delivered today: ${formatQty(deliveredQty)}\n` +
+                        `Excess quantity: ${formatQty(excessQty)}\n\n` +
+                        `Please enter a line remark explaining the excess delivery.`
+                    );
+
+                    return;
+                }
+
+                const continueOverDelivery =
+                    confirm(
+                        `This delivery exceeds the scheduled balance.\n\n` +
+                        `Scheduled balance: ${formatQty(remaining)}\n` +
+                        `Delivered today: ${formatQty(deliveredQty)}\n` +
+                        `Excess: ${formatQty(excessQty)}\n\n` +
+                        `Continue and record this as an over-delivery?`
+                    );
+
+                if (!continueOverDelivery) {
+                    return;
+                }
+            }
+
+
+            // ========================================================
+            // LOT / MATERIAL RECEIVING DETAILS
+            // ========================================================
+
+            const sourceLots =
+                receivingLotsByPoLine[poLineId] ?? [];
+
+            const lots =
+                sourceLots.map(lot => ({
+
+                    manufacturerId:
+                        lot.manufacturerId
+                            ? Number(lot.manufacturerId)
+                            : null,
+
+                    lotNo:
+                        lot.lotNo?.trim() || null,
+
+                    manufacturingDate:
+                        lot.manufacturingDate || null,
+
+                    expirationDate:
+                        lot.expirationDate || null,
+
+                    itemCount:
+                        lot.itemCount === null ||
+                        lot.itemCount === ""
+                            ? null
+                            : Number(lot.itemCount),
+
+                    weight:
+                        lot.weight === null ||
+                        lot.weight === ""
+                            ? null
+                            : Number(lot.weight),
 
                     remarks:
-                        row.querySelector(
-                            ".modal-line-remarks"
-                        ).value
-                });
+                        lot.remarks?.trim() || null
+                }));
+
+
+            // --------------------------------------------------------
+            // Validate lot rows
+            // --------------------------------------------------------
+
+            for (const lot of lots) {
+
+                if (
+                    lot.itemCount !== null &&
+                    lot.itemCount < 0
+                ) {
+                    alert(
+                        "No. of Item cannot be negative."
+                    );
+                    return;
+                }
+
+                if (
+                    lot.weight !== null &&
+                    lot.weight < 0
+                ) {
+                    alert(
+                        "Receiving Weight cannot be negative."
+                    );
+                    return;
+                }
+
+                if (
+                    lot.manufacturingDate &&
+                    lot.expirationDate &&
+                    lot.expirationDate <
+                        lot.manufacturingDate
+                ) {
+                    alert(
+                        "Expiration Date cannot be earlier than Manufacturing Date."
+                    );
+                    return;
+                }
             }
+
+
+            lines.push({
+
+                poLineId:
+                    poLineId,
+
+                deliveredQty:
+                    deliveredQty,
+
+                tareWeight:
+                    tareWeight,
+
+                remarks:
+                    lineRemarks || null,
+
+                lots:
+                    lots
+            });
         }
 
 
@@ -2704,11 +3457,12 @@
 
 
         // ============================================================
-        // WAREHOUSE CHECKLIST
+        // WAREHOUSE / MATERIAL RECEIVING CHECKLIST
         // ============================================================
 
         const inspection = {
 
+            // PO / Supplier
             poMatched:
                 document.getElementById(
                     "chkPoMatched"
@@ -2725,6 +3479,7 @@
                 ).checked,
 
 
+            // Documents
             salesInvoiceAvailable:
                 document.getElementById(
                     "chkSalesInvoice"
@@ -2741,44 +3496,67 @@
                 ).checked,
 
 
+            // Material Receiving Form
+            correctQuantityDelivered:
+                document.getElementById(
+                    "chkCorrectQuantityDelivered"
+                ).checked,
+
+            truckDoorLockInPlace:
+                document.getElementById(
+                    "chkTruckDoorLock"
+                ).checked,
+
             vehicleClean:
                 document.getElementById(
                     "chkVehicleClean"
                 ).checked,
 
-            vehicleDry:
+            containersCleanAndSealed:
                 document.getElementById(
-                    "chkVehicleDry"
+                    "chkContainersCleanSealed"
                 ).checked,
 
-            vehicleOdorFree:
+            noVisibleContaminationOrSpoilage:
                 document.getElementById(
-                    "chkVehicleOdorFree"
+                    "chkNoVisibleContamination"
                 ).checked,
 
-            vehicleResidueFree:
+            labelsPresentAndLegible:
                 document.getElementById(
-                    "chkVehicleResidueFree"
+                    "chkLabelsPresent"
                 ).checked,
 
-
-            materialClean:
+            driverIdentityVerified:
                 document.getElementById(
-                    "chkMaterialClean"
+                    "chkDriverVerified"
                 ).checked,
 
-            materialCoveredOrSealed:
+            noUnauthorizedAccessDuringUnloading:
                 document.getElementById(
-                    "chkMaterialCovered"
+                    "chkNoUnauthorizedAccess"
                 ).checked,
 
+            hiddenCompartmentChecked:
+                document.getElementById(
+                    "chkHiddenCompartment"
+                ).checked,
+
+            receivedInAuthorizedZone:
+                document.getElementById(
+                    "chkAuthorizedZone"
+                ).checked,
 
             remarks:
                 document.getElementById(
                     "modalInspectionRemarks"
-                ).value
+                ).value.trim() || null
         };
 
+
+        // ============================================================
+        // PAYLOAD
+        // ============================================================
 
         const payload = {
 
@@ -2792,14 +3570,19 @@
                 deliveryDate,
 
             siDrNo:
-                document.getElementById(
-                    "modalSiDrNo"
-                ).value,
+                document
+                    .getElementById("modalSiDrNo")
+                    .value
+                    .trim() || null,
 
             remarks:
-                document.getElementById(
-                    "modalRemarks"
-                ).value,
+                document
+                    .getElementById("modalRemarks")
+                    .value
+                    .trim() || null,
+
+            verifiedBy:
+                verifiedBy || null,
 
             lines:
                 lines,
@@ -2809,15 +3592,23 @@
         };
 
 
+        console.log(
+            "Incoming Receiving Payload:",
+            payload
+        );
+
+
+        // ============================================================
+        // SAVE
+        // ============================================================
+
         const btn =
             document.getElementById(
                 "btnModalSaveIncoming"
             );
 
-
         btn.disabled = true;
-        btn.innerHTML =
-            "Processing...";
+        btn.innerHTML = "Processing...";
 
 
         try {
@@ -2840,18 +3631,10 @@
 
 
             const result =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                alert(
-                    result.message ??
+                await readJsonResponse(
+                    response,
                     "Failed to record incoming delivery."
                 );
-
-                return;
-            }
 
 
             alert(
@@ -2862,9 +3645,7 @@
 
             createReceivingModal.hide();
 
-
             calendar.refetchEvents();
-
         }
         catch (ex) {
 

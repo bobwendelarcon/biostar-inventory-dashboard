@@ -69,6 +69,33 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.IncomingReceiving
 
 
         // ============================================================
+        // GET APPROVED MANUFACTURERS
+        // Supplier + Material
+        // ============================================================
+        [HttpGet("manufacturers")]
+        public async Task<IActionResult> GetManufacturers(
+            [FromQuery] int supplierId,
+            [FromQuery] int materialId)
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync(
+                "api/purchasing/incoming-receiving/manufacturers" +
+                $"?supplierId={supplierId}" +
+                $"&materialId={materialId}"
+            );
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            return StatusCode(
+                (int)response.StatusCode,
+                result
+            );
+        }
+
+
+        // ============================================================
         // CREATE INCOMING RECEIVING
         // ============================================================
 
@@ -84,12 +111,12 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.IncomingReceiving
                 ?? User.Identity?.Name
                 ?? "";
 
-            var userRole =
-                User.FindFirst(
-                    System.Security.Claims.ClaimTypes.Role
-                )?.Value
-                ?? User.FindFirst("role")?.Value
-                ?? "";
+            //var userRole =
+            //    User.FindFirst(
+            //        System.Security.Claims.ClaimTypes.Role
+            //    )?.Value
+            //    ?? User.FindFirst("role")?.Value
+            //    ?? "";
 
 
             var json =
@@ -100,9 +127,10 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.IncomingReceiving
                 ?? new Dictionary<string, object>();
 
 
-            // Do not trust the browser for CreatedBy.
+            // Do not trust the browser for audit fields.
             // Use the logged-in Dashboard user.
             json["createdBy"] = userId;
+            json["verifiedBy"] = userId;
 
 
             var content =

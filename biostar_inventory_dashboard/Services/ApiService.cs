@@ -1218,18 +1218,28 @@ namespace biostar_inventory_dashboard.Services
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> CreateChecklistAsync(object data)
+        public async Task<string> CreateChecklistAsync(
+     object data,
+     string createdBy)
         {
             var json = JsonSerializer.Serialize(data);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json");
 
-            var response = await _httpClient.PostAsync("api/DeliveryChecklist/create", content);
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "api/DeliveryChecklist/create");
+
+            request.Content = content;
+            request.Headers.Add("X-User-Id", createdBy);
+
+            var response = await _httpClient.SendAsync(request);
             var responseBody = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
-            {
                 throw new Exception(responseBody);
-            }
 
             return responseBody;
         }
@@ -2310,8 +2320,303 @@ namespace biostar_inventory_dashboard.Services
 
             return result;
         }
- 
-      
+
+
+        //rmw reports
+        // =====================================================
+        // RAW MATERIAL RELEASE REPORT
+        // =====================================================
+
+        public async Task<string> GetRawMaterialReleaseReportAsync(
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            string? branchId = null,
+            int? materialId = null,
+            string? search = null)
+        {
+            var query = new List<string>();
+
+            if (fromDate.HasValue)
+            {
+                query.Add(
+                    $"FromDate={fromDate.Value:yyyy-MM-dd}"
+                );
+            }
+
+            if (toDate.HasValue)
+            {
+                query.Add(
+                    $"ToDate={toDate.Value:yyyy-MM-dd}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+            {
+                query.Add(
+                    $"BranchId={Uri.EscapeDataString(branchId)}"
+                );
+            }
+
+            if (materialId.HasValue)
+            {
+                query.Add(
+                    $"MaterialId={materialId.Value}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.Add(
+                    $"Search={Uri.EscapeDataString(search)}"
+                );
+            }
+
+            var url =
+                "api/reports/raw-materials/releases";
+
+            if (query.Count > 0)
+            {
+                url +=
+                    "?" + string.Join("&", query);
+            }
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    string.IsNullOrWhiteSpace(result)
+                        ? "Failed to load Raw Material Release report."
+                        : result
+                );
+            }
+
+            return result;
+        }
+
+
+        // =====================================================
+        // RAW MATERIAL AGING & LAST MOVEMENT REPORT
+        // =====================================================
+
+        public async Task<string> GetRawMaterialAgingReportAsync(
+            string? branchId = null,
+            int? categoryId = null,
+            string? search = null,
+            string? movementStatus = null,
+            int? minimumDaysIdle = null,
+            int? maximumDaysIdle = null)
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+            {
+                query.Add(
+                    $"BranchId={Uri.EscapeDataString(branchId.Trim())}"
+                );
+            }
+
+            if (categoryId.HasValue)
+            {
+                query.Add(
+                    $"CategoryId={categoryId.Value}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.Add(
+                    $"Search={Uri.EscapeDataString(search.Trim())}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(movementStatus))
+            {
+                query.Add(
+                    $"MovementStatus={Uri.EscapeDataString(movementStatus.Trim())}"
+                );
+            }
+
+            if (minimumDaysIdle.HasValue)
+            {
+                query.Add(
+                    $"MinimumDaysIdle={minimumDaysIdle.Value}"
+                );
+            }
+
+            if (maximumDaysIdle.HasValue)
+            {
+                query.Add(
+                    $"MaximumDaysIdle={maximumDaysIdle.Value}"
+                );
+            }
+
+            var url =
+                "api/reports/raw-materials/aging";
+
+            if (query.Count > 0)
+            {
+                url +=
+                    "?" + string.Join("&", query);
+            }
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    string.IsNullOrWhiteSpace(result)
+                        ? "Failed to load Raw Material Aging report."
+                        : result
+                );
+            }
+
+            return result;
+        }
+
+
+        public async Task<string> GetRawMaterialUsageTrendReportAsync(
+    DateTime? fromDate = null,
+    DateTime? toDate = null,
+    string? branchId = null,
+    int? materialId = null,
+    int? categoryId = null,
+    string? search = null)
+        {
+            var query = new List<string>();
+
+            if (fromDate.HasValue)
+            {
+                query.Add(
+                    $"FromDate={fromDate.Value:yyyy-MM-dd}"
+                );
+            }
+
+            if (toDate.HasValue)
+            {
+                query.Add(
+                    $"ToDate={toDate.Value:yyyy-MM-dd}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+            {
+                query.Add(
+                    $"BranchId={Uri.EscapeDataString(branchId.Trim())}"
+                );
+            }
+
+            if (materialId.HasValue)
+            {
+                query.Add(
+                    $"MaterialId={materialId.Value}"
+                );
+            }
+
+            if (categoryId.HasValue)
+            {
+                query.Add(
+                    $"CategoryId={categoryId.Value}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.Add(
+                    $"Search={Uri.EscapeDataString(search.Trim())}"
+                );
+            }
+
+            var url =
+                "api/reports/raw-materials/usage-trend";
+
+            if (query.Count > 0)
+            {
+                url +=
+                    "?" + string.Join("&", query);
+            }
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    string.IsNullOrWhiteSpace(result)
+                        ? "Failed to load Raw Material Usage Trend report."
+                        : result
+                );
+            }
+
+            return result;
+        }
+
+        public async Task<string> GetRawMaterialForecastReportAsync(
+    string? branchId = null,
+    int? materialId = null,
+    int? categoryId = null,
+    string? search = null,
+    int usageHistoryDays = 30,
+    int safetyStockDays = 14,
+    int targetCoverDays = 60,
+    string? status = null)
+        {
+            var query = new List<string>
+    {
+        $"UsageHistoryDays={usageHistoryDays}",
+        $"SafetyStockDays={safetyStockDays}",
+        $"TargetCoverDays={targetCoverDays}"
+    };
+
+            if (!string.IsNullOrWhiteSpace(branchId))
+                query.Add($"BranchId={Uri.EscapeDataString(branchId)}");
+
+            if (materialId.HasValue)
+                query.Add($"MaterialId={materialId.Value}");
+
+            if (categoryId.HasValue)
+                query.Add($"CategoryId={categoryId.Value}");
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add($"Search={Uri.EscapeDataString(search)}");
+
+            if (!string.IsNullOrWhiteSpace(status))
+                query.Add($"Status={Uri.EscapeDataString(status)}");
+
+            var url =
+                "api/reports/raw-materials/forecast?"
+                + string.Join("&", query);
+
+            var response =
+                await _httpClient.GetAsync(url);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    string.IsNullOrWhiteSpace(result)
+                        ? "Failed to load Raw Material Forecast / Reorder report."
+                        : result
+                );
+            }
+
+            return result;
+        }
+
+
 
 
     }

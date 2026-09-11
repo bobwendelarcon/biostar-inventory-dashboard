@@ -96,6 +96,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW52ZW50b3J5XFJhd01hdGVyaWFsVHJhbnNhY3Rpb25zXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Login/AccessDenied.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cQWNjZXNzRGVuaWVkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Login/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5caW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -196,6 +200,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHVyY2hhc2luZ1xTdXBwbGllcnNcaW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Quality/QaQcReceiving/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUXVhbGl0eVxRYVFjUmVjZWl2aW5nXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Quality/QcInspections/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUXVhbGl0eVxRY0luc3BlY3Rpb25zXERldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -214,6 +222,22 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/PurchasingLeadTime/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xQdXJjaGFzaW5nTGVhZFRpbWVcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/RawMaterialAging/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xSYXdNYXRlcmlhbEFnaW5nXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/RawMaterialForecast/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xSYXdNYXRlcmlhbEZvcmVjYXN0XEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/RawMaterialRelease/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xSYXdNYXRlcmlhbFJlbGVhc2VcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/RawMaterialUsageTrend/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0c1xSYXdNYXRlcmlhbFVzYWdlVHJlbmRcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/USER/Desktop/BNPI SERVER/source_code/DASHBOARD/biostar_inventory_dashboard/Views/Reports/TimeInMotion/Index.cshtml]

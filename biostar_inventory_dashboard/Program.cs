@@ -12,11 +12,37 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Login/Index";
-        options.AccessDeniedPath = "/Login/Index";
+        options.AccessDeniedPath = "/Login/AccessDenied";
         options.Cookie.Name = "BiostarAuth";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
     });
+
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("DashboardAccess", policy =>
+    {
+        policy.RequireClaim(
+            "access_point",
+            "DASHBOARD_VIEW");
+    });
+
+    options.AddPolicy("QaQcReceivingAccess", policy =>
+    {
+        policy.RequireClaim(
+            "access_point",
+            "QC_RECEIVING_INSPECTION");
+    });
+
+    options.AddPolicy("QaQcInspectionAccess", policy =>
+    {
+        policy.RequireClaim(
+            "access_point",
+            "QC_INSPECTIONS");
+    });
+});
 
 builder.Services.AddHttpClient<ApiService>(client =>
 {

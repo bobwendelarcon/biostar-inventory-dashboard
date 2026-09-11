@@ -1,0 +1,1266 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Usage Trend Report";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <div class="text-muted small mb-1">
+                Reports &gt; Raw Material Usage Trend
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Raw Material Usage Trend Report
+            </h2>
+
+            <div class="text-muted">
+                Analyze raw material consumption based on actual material releases.
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                onclick="loadReport()">
+
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+
+        </button>
+
+    </div>
+
+
+    <!-- DATE PRESETS -->
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+
+        <button class="btn btn-sm btn-primary date-preset-btn"
+                onclick="setDatePreset('LAST_7', this)">
+            Last 7 Days
+        </button>
+
+        <button class="btn btn-sm btn-outline-primary date-preset-btn"
+                onclick="setDatePreset('LAST_30', this)">
+            Last 30 Days
+        </button>
+
+        <button class="btn btn-sm btn-outline-primary date-preset-btn"
+                onclick="setDatePreset('THIS_MONTH', this)">
+            This Month
+        </button>
+
+        <button class="btn btn-sm btn-outline-primary date-preset-btn"
+                onclick="setDatePreset('LAST_MONTH', this)">
+            Last Month
+        </button>
+
+        <button class="btn btn-sm btn-outline-primary date-preset-btn"
+                onclick="setDatePreset('CUSTOM', this)">
+            Custom
+        </button>
+
+    </div>
+
+
+    <!-- FILTERS -->
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-xl-3 col-md-6">
+                    <label class="form-label small fw-semibold">
+                        Search
+                    </label>
+
+                    <input id="searchFilter"
+                           type="text"
+                           class="form-control"
+                           placeholder="Material code or name">
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+                    <label class="form-label small fw-semibold">
+                        From Date
+                    </label>
+
+                    <input id="fromDate"
+                           type="date"
+                           class="form-control">
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+                    <label class="form-label small fw-semibold">
+                        To Date
+                    </label>
+
+                    <input id="toDate"
+                           type="date"
+                           class="form-control">
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+                    <label class="form-label small fw-semibold">
+                        Branch
+                    </label>
+
+                    <select id="branchFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+                    <label class="form-label small fw-semibold">
+                        Material
+                    </label>
+
+                    <select id="materialFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Materials
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div class="col-xl-1 d-flex align-items-end">
+                    <button class="btn btn-primary w-100"
+                            onclick="loadReport()">
+                        Apply
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Release Transactions
+                    </div>
+
+                    <div id="summaryTransactions"
+                         class="fs-3 fw-bold">
+                        0
+                    </div>
+
+                    <div class="small text-muted mt-1">
+                        Actual material releases
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Materials Used
+                    </div>
+
+                    <div id="summaryMaterials"
+                         class="fs-3 fw-bold text-primary">
+                        0
+                    </div>
+
+                    <div class="small text-muted mt-1">
+                        Unique raw materials
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Active Usage Days
+                    </div>
+
+                    <div id="summaryActiveDays"
+                         class="fs-3 fw-bold text-success">
+                        0
+                    </div>
+
+                    <div class="small text-muted mt-1">
+                        Days with material release
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Period
+                    </div>
+
+                    <div id="summaryPeriod"
+                         class="fw-bold fs-5">
+                        -
+                    </div>
+
+                    <div id="summaryDays"
+                         class="small text-muted mt-1">
+                        0 days
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- CHARTS -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl-8">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="fw-bold mb-1">
+                        Daily Usage Trend
+                    </h5>
+
+                    <div class="small text-muted">
+                        Quantity released per day, separated by UOM.
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div style="height:340px;">
+                        <canvas id="dailyUsageChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <h5 class="fw-bold mb-1">
+                        Top Material Usage
+                    </h5>
+
+                    <div class="small text-muted">
+                        Highest consumption in the selected period.
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div style="height:340px;">
+                        <canvas id="materialUsageChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <h5 class="fw-bold mb-1">
+                Material Usage Summary
+            </h5>
+
+            <div class="small text-muted">
+                Consumption totals and average usage by material.
+            </div>
+
+        </div>
+
+
+        <div class="card-body px-4">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Material</th>
+
+                            <th>Category</th>
+
+                            <th class="text-end">
+                                Total Usage
+                            </th>
+
+                            <th class="text-end">
+                                Avg / Day
+                            </th>
+
+                            <th class="text-end">
+                                Avg / Active Day
+                            </th>
+
+                            <th class="text-center">
+                                Active Days
+                            </th>
+
+                            <th class="text-center">
+                                Releases
+                            </th>
+
+                            <th>
+                                Last Usage
+                            </th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="usageTableBody">
+
+                        <tr>
+                            <td colspan="8"
+                                class="text-center text-muted py-5">
+                                Loading usage trend...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        let dailyChart = null;
+        let materialChart = null;
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                setDatePreset(
+                    "LAST_30",
+                    document.querySelector(
+                        ".date-preset-btn"
+                    )
+                );
+            }
+        );
+
+
+        async function loadReport() {
+
+            try {
+
+                const params =
+                    new URLSearchParams();
+
+
+                const fromDate =
+                    document.getElementById(
+                        "fromDate"
+                    ).value;
+
+
+                const toDate =
+                    document.getElementById(
+                        "toDate"
+                    ).value;
+
+
+                const search =
+                    document.getElementById(
+                        "searchFilter"
+                    ).value.trim();
+
+
+                const branchId =
+                    document.getElementById(
+                        "branchFilter"
+                    ).value;
+
+
+                const materialId =
+                    document.getElementById(
+                        "materialFilter"
+                    ).value;
+
+
+                if (fromDate) {
+                    params.set(
+                        "fromDate",
+                        fromDate
+                    );
+                }
+
+
+                if (toDate) {
+                    params.set(
+                        "toDate",
+                        toDate
+                    );
+                }
+
+
+                if (search) {
+                    params.set(
+                        "search",
+                        search
+                    );
+                }
+
+
+                if (branchId) {
+                    params.set(
+                        "branchId",
+                        branchId
+                    );
+                }
+
+
+                if (materialId) {
+                    params.set(
+                        "materialId",
+                        materialId
+                    );
+                }
+
+
+                const url =
+                    `/reports/raw-material-usage-trend/data?${params.toString()}`;
+
+
+                const response =
+                    await fetch(url);
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data?.message ??
+                        "Failed to load usage trend."
+                    );
+                }
+
+
+                renderSummary(
+                    data.summary
+                );
+
+
+                renderDailyChart(
+                    data.dailyTrend ?? []
+                );
+
+
+                renderMaterialChart(
+                    data.materials ?? []
+                );
+
+
+                renderTable(
+                    data.materials ?? []
+                );
+
+
+                populateMaterialFilter(
+                    data.materials ?? []
+                );
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                document.getElementById(
+                    "usageTableBody"
+                ).innerHTML = `
+                    <tr>
+                        <td colspan="8"
+                            class="text-center text-danger py-5">
+                            ${escapeHtml(error.message)}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+
+        function renderSummary(
+            summary
+        ) {
+
+            summary =
+                summary ?? {};
+
+
+            document.getElementById(
+                "summaryTransactions"
+            ).innerText =
+                summary.releaseTransactions ?? 0;
+
+
+            document.getElementById(
+                "summaryMaterials"
+            ).innerText =
+                summary.uniqueMaterials ?? 0;
+
+
+            document.getElementById(
+                "summaryActiveDays"
+            ).innerText =
+                summary.activeUsageDays ?? 0;
+
+
+            document.getElementById(
+                "summaryDays"
+            ).innerText =
+                `${summary.totalDays ?? 0} days`;
+
+
+            const from =
+                formatDate(
+                    summary.fromDate
+                );
+
+
+            const to =
+                formatDate(
+                    summary.toDate
+                );
+
+
+            document.getElementById(
+                "summaryPeriod"
+            ).innerText =
+                `${from} - ${to}`;
+        }
+
+
+        function renderDailyChart(
+            dailyTrend
+        ) {
+
+            const labels =
+                dailyTrend.map(
+                    x =>
+                        formatDateShort(
+                            x.date
+                        )
+                );
+
+
+            const uoms =
+                [
+                    ...new Set(
+                        dailyTrend.flatMap(
+                            day =>
+                                (day.usageByUom ?? [])
+                                    .map(
+                                        x =>
+                                            x.uom
+                                    )
+                        )
+                    )
+                ];
+
+
+            const datasets =
+                uoms.map(
+                    uom => {
+
+                        return {
+                            label: uom,
+
+                            data:
+                                dailyTrend.map(
+                                    day => {
+
+                                        const item =
+                                            (day.usageByUom ?? [])
+                                                .find(
+                                                    x =>
+                                                        x.uom === uom
+                                                );
+
+                                        return item
+                                            ? Number(
+                                                item.quantity
+                                            )
+                                            : 0;
+                                    }
+                                ),
+
+                            tension: 0.25,
+
+                            fill: false
+                        };
+                    }
+                );
+
+
+            if (dailyChart) {
+                dailyChart.destroy();
+            }
+
+
+            dailyChart =
+                new Chart(
+                    document.getElementById(
+                        "dailyUsageChart"
+                    ),
+                    {
+                        type: "line",
+
+                        data: {
+                            labels: labels,
+                            datasets: datasets
+                        },
+
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+
+                            plugins: {
+                                legend: {
+                                    position: "bottom"
+                                },
+
+                                tooltip: {
+                                    mode: "index",
+                                    intersect: false
+                                }
+                            },
+
+                            interaction: {
+                                mode: "nearest",
+                                axis: "x",
+                                intersect: false
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: "Quantity"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+        }
+
+
+        function renderMaterialChart(
+            materials
+        ) {
+
+            const topMaterials =
+                [...materials]
+                    .sort(
+                        (a, b) =>
+                            Number(
+                                b.totalUsage ?? 0
+                            )
+                            -
+                            Number(
+                                a.totalUsage ?? 0
+                            )
+                    )
+                    .slice(
+                        0,
+                        10
+                    );
+
+
+            if (materialChart) {
+                materialChart.destroy();
+            }
+
+
+            materialChart =
+                new Chart(
+                    document.getElementById(
+                        "materialUsageChart"
+                    ),
+                    {
+                        type: "bar",
+
+                        data: {
+
+                            labels:
+                                topMaterials.map(
+                                    x =>
+                                        x.materialName
+                                ),
+
+                            datasets: [
+                                {
+                                    label:
+                                        "Usage",
+
+                                    data:
+                                        topMaterials.map(
+                                            x =>
+                                                Number(
+                                                    x.totalUsage
+                                                    ?? 0
+                                                )
+                                        )
+                                }
+                            ]
+                        },
+
+                        options: {
+
+                            responsive: true,
+                            maintainAspectRatio: false,
+
+                            indexAxis: "y",
+
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+
+                            scales: {
+                                x: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    }
+                );
+        }
+
+
+        function renderTable(
+            materials
+        ) {
+
+            const tbody =
+                document.getElementById(
+                    "usageTableBody"
+                );
+
+
+            if (!materials.length) {
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8"
+                            class="text-center text-muted py-5">
+                            No raw material usage found
+                            for the selected period.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                materials.map(
+                    item => {
+
+                        return `
+                            <tr>
+
+                                <td>
+
+                                    <div class="fw-semibold">
+                                        ${escapeHtml(
+                                            item.materialName
+                                        )}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        ${escapeHtml(
+                                            item.materialCode
+                                        )}
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.categoryName
+                                        ?? "-"
+                                    )}
+                                </td>
+
+
+                                <td class="text-end">
+
+                                    <span class="fw-bold">
+                                        ${formatNumber(
+                                            item.totalUsage
+                                        )}
+                                    </span>
+
+                                    <span class="text-muted small ms-1">
+                                        ${escapeHtml(
+                                            item.uom
+                                        )}
+                                    </span>
+
+                                </td>
+
+
+                                <td class="text-end">
+
+                                    ${formatNumber(
+                                        item.averageDailyUsage
+                                    )}
+
+                                    <span class="small text-muted">
+                                        ${escapeHtml(
+                                            item.uom
+                                        )}/day
+                                    </span>
+
+                                </td>
+
+
+                                <td class="text-end">
+
+                                    ${formatNumber(
+                                        item.averageUsagePerActiveDay
+                                    )}
+
+                                    <span class="small text-muted">
+                                        ${escapeHtml(
+                                            item.uom
+                                        )}
+                                    </span>
+
+                                </td>
+
+
+                                <td class="text-center">
+                                    ${item.activeUsageDays ?? 0}
+                                </td>
+
+
+                                <td class="text-center">
+                                    ${item.releaseTransactions ?? 0}
+                                </td>
+
+
+                                <td>
+                                    ${formatDate(
+                                        item.lastUsageDate
+                                    )}
+                                </td>
+
+                            </tr>
+                        `;
+                    }
+                )
+                .join("");
+        }
+
+
+        function populateMaterialFilter(
+            materials
+        ) {
+
+            const select =
+                document.getElementById(
+                    "materialFilter"
+                );
+
+
+            const selected =
+                select.value;
+
+
+            const map =
+                new Map();
+
+
+            materials.forEach(
+                item => {
+
+                    map.set(
+                        String(
+                            item.materialId
+                        ),
+                        item.materialName
+                    );
+                }
+            );
+
+
+            select.innerHTML =
+                `<option value="">All Materials</option>` +
+                [...map.entries()]
+                    .sort(
+                        (a, b) =>
+                            a[1].localeCompare(
+                                b[1]
+                            )
+                    )
+                    .map(
+                        ([id, name]) =>
+                            `<option value="${id}">${escapeHtml(name)}</option>`
+                    )
+                    .join("");
+
+
+            if (
+                [...select.options]
+                    .some(
+                        x =>
+                            x.value === selected
+                    )
+            ) {
+                select.value =
+                    selected;
+            }
+        }
+
+
+        function setDatePreset(
+            preset,
+            button
+        ) {
+
+            const today =
+                new Date();
+
+
+            let from =
+                new Date(today);
+
+
+            let to =
+                new Date(today);
+
+
+            if (preset === "LAST_7") {
+
+                from.setDate(
+                    today.getDate() - 6
+                );
+            }
+
+
+            else if (
+                preset === "LAST_30"
+            ) {
+
+                from.setDate(
+                    today.getDate() - 29
+                );
+            }
+
+
+            else if (
+                preset === "THIS_MONTH"
+            ) {
+
+                from =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        1
+                    );
+            }
+
+
+            else if (
+                preset === "LAST_MONTH"
+            ) {
+
+                from =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth() - 1,
+                        1
+                    );
+
+
+                to =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        0
+                    );
+            }
+
+
+            else if (
+                preset === "CUSTOM"
+            ) {
+
+                setActivePresetButton(
+                    button
+                );
+
+                return;
+            }
+
+
+            document.getElementById(
+                "fromDate"
+            ).value =
+                formatDateInput(
+                    from
+                );
+
+
+            document.getElementById(
+                "toDate"
+            ).value =
+                formatDateInput(
+                    to
+                );
+
+
+            setActivePresetButton(
+                button
+            );
+
+
+            loadReport();
+        }
+
+
+        function setActivePresetButton(
+            activeButton
+        ) {
+
+            document.querySelectorAll(
+                ".date-preset-btn"
+            )
+            .forEach(
+                button => {
+
+                    button.classList.remove(
+                        "btn-primary"
+                    );
+
+                    button.classList.add(
+                        "btn-outline-primary"
+                    );
+                }
+            );
+
+
+            if (activeButton) {
+
+                activeButton.classList.remove(
+                    "btn-outline-primary"
+                );
+
+                activeButton.classList.add(
+                    "btn-primary"
+                );
+            }
+        }
+
+
+        function formatDateInput(
+            date
+        ) {
+
+            const year =
+                date.getFullYear();
+
+
+            const month =
+                String(
+                    date.getMonth() + 1
+                )
+                .padStart(
+                    2,
+                    "0"
+                );
+
+
+            const day =
+                String(
+                    date.getDate()
+                )
+                .padStart(
+                    2,
+                    "0"
+                );
+
+
+            return `${year}-${month}-${day}`;
+        }
+
+
+        function formatDate(
+            value
+        ) {
+
+            if (!value) {
+                return "-";
+            }
+
+
+            const date =
+                new Date(value);
+
+
+            return date.toLocaleDateString(
+                "en-PH",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit"
+                }
+            );
+        }
+
+
+        function formatDateShort(
+            value
+        ) {
+
+            if (!value) {
+                return "-";
+            }
+
+
+            const date =
+                new Date(value);
+
+
+            return date.toLocaleDateString(
+                "en-PH",
+                {
+                    month: "short",
+                    day: "2-digit"
+                }
+            );
+        }
+
+
+        function formatNumber(
+            value
+        ) {
+
+            const number =
+                Number(
+                    value ?? 0
+                );
+
+
+            return number.toLocaleString(
+                "en-PH",
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
+        }
+
+    </script>
+}

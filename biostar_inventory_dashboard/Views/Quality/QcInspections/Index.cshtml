@@ -153,12 +153,16 @@
                             All Status
                         </option>
 
+                        <option value="FOR_EVALUATION">
+                            For Evaluation
+                        </option>
+
                         <option value="FOR_INSPECTION">
-                            For Inspection
+                            Evaluation In Progress
                         </option>
 
                         <option value="INSPECTED">
-                            Inspected
+                            Evaluated
                         </option>
 
                     </select>
@@ -172,7 +176,7 @@
 
                     <thead class="table-light">
                         <tr>
-                            <th>QC No</th>
+                            <th>Quarantine No</th>
                             <th>Incoming No</th>
                             <th>PO No</th>
                             <th>Supplier</th>
@@ -426,81 +430,138 @@
         loadQcInspections();
     });
 
-    async function loadQcInspections() {
-        const tbody =
-            document.getElementById("qcTableBody");
+async function loadQcInspections() {
+
+    const tbody =
+        document.getElementById("qcTableBody");
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="10"
+                class="text-center text-muted py-4">
+                Loading raw material evaluations...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const [
+            pendingResponse,
+            qcResponse
+        ] = await Promise.all([
+            fetch(
+                "/quality/qc-inspections/pending-evaluation"
+            ),
+            fetch(
+                "/quality/qc-inspections/list"
+            )
+        ]);
+
+        const pendingData =
+            await readJsonResponse(
+                pendingResponse
+            );
+
+        const qcData =
+            await readJsonResponse(
+                qcResponse
+            );
+
+        if (!pendingResponse.ok) {
+            throw new Error(
+                pendingData.message ??
+                "Failed to load pending evaluations."
+            );
+        }
+
+        if (!qcResponse.ok) {
+            throw new Error(
+                qcData.message ??
+                "Failed to load QC evaluations."
+            );
+        }
+
+        const pending =
+            Array.isArray(pendingData)
+                ? pendingData.map(x => ({
+                    ...x,
+
+                    recordType:
+                        "PENDING",
+
+                    qcStatus:
+                        "FOR_EVALUATION",
+
+                    materialStatus:
+                        "QUARANTINED"
+                }))
+                : [];
+
+        const started =
+            Array.isArray(qcData)
+                ? qcData.map(x => ({
+                    ...x,
+
+                    recordType:
+                        "QC",
+
+                    qcStatus:
+                        x.status,
+
+                    materialStatus:
+                        x.quarantineStatus
+                        ?? "QUARANTINED"
+                }))
+                : [];
+
+        qcList = [
+            ...pending,
+            ...started
+        ];
+
+        updateSummaryCards();
+        renderTable();
+    }
+    catch (error) {
+
+        console.error(error);
 
         tbody.innerHTML = `
             <tr>
                 <td colspan="10"
-                    class="text-center text-muted py-4">
-                    Loading QC inspections...
+                    class="text-center text-danger py-4">
+                    ${escapeHtml(
+                        error.message ??
+                        "Failed to load evaluations."
+                    )}
                 </td>
             </tr>
         `;
-
-        try {
-            const response = await fetch(
-                "/quality/qc-inspections/list"
-            );
-
-            const data = await readJsonResponse(response);
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ??
-                    "Failed to load QC inspections."
-                );
-            }
-
-            qcList = Array.isArray(data)
-                ? data
-                : [];
-
-            updateSummaryCards();
-            renderTable();
-
-        } catch (error) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="10"
-                        class="text-center text-danger py-4">
-                        ${escapeHtml(
-                            error.message ??
-                            "Failed to load QC inspections."
-                        )}
-                    </td>
-                </tr>
-            `;
-        }
     }
+}
 
-        function updateSummaryCards() {
+         function updateSummaryCards() {
 
         const forInspection =
             qcList.filter(x =>
-                normalizeStatus(x.status) ===
-                "FOR_INSPECTION"
+                normalizeStatus(x.status) === "QUARANTINED" &&
+                !x.qcId
             ).length;
-
 
         const onHold =
             qcList.filter(x =>
                 normalizeStatus(
                     x.quarantineStatus
-                ) ===
-                "WAITING_FOR_QA_RELEASE"
+                ) === "WAITING_FOR_QA_RELEASE"
             ).length;
-
 
         const released =
             qcList.filter(x =>
                 normalizeStatus(
                     x.quarantineStatus
-                ) ===
-                "RELEASED"
+                ) === "RELEASED"
             ).length;
-
 
         const rejected =
             qcList.filter(x =>
@@ -515,18 +576,15 @@
         ).innerText =
             forInspection;
 
-
         document.getElementById(
             "onHoldCount"
         ).innerText =
             onHold;
 
-
         document.getElementById(
             "releasedCount"
         ).innerText =
             released;
-
 
         document.getElementById(
             "rejectedCount"
@@ -534,7 +592,8 @@
             rejected;
     }
 
-    function renderTable() {
+          function renderTable() {
+
         const tbody =
             document.getElementById("qcTableBody");
 
@@ -544,33 +603,38 @@
                 .trim()
                 .toLowerCase();
 
-        const selectedStatus =
+        const statusFilter =
             normalizeStatus(
-                document.getElementById(
-                    "statusFilter"
-                ).value
+                document.getElementById("statusFilter").value
             );
 
-        const filtered = qcList.filter(qc => {
+        const filtered = qcList.filter(item => {
 
-               const searchText = [
-        qc.qcNo,
-        qc.incomingNo,
-        qc.poNo,
-        qc.supplierName
-    ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
+            const searchText = [
+                item.quarantineNo,
+                item.qcNo,
+                item.incomingNo,
+                item.poNo,
+                item.supplierName
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
 
             const matchesSearch =
                 !search ||
                 searchText.includes(search);
 
+            const actualQcStatus =
+                item.recordType === "PENDING"
+                    ? "FOR_EVALUATION"
+                    : normalizeStatus(
+                        item.qcStatus ?? item.status
+                    );
+
             const matchesStatus =
-                !selectedStatus ||
-                normalizeStatus(qc.status) ===
-                selectedStatus;
+                !statusFilter ||
+                actualQcStatus === statusFilter;
 
             return matchesSearch && matchesStatus;
         });
@@ -578,11 +642,12 @@
         tbody.innerHTML = "";
 
         if (filtered.length === 0) {
+
             tbody.innerHTML = `
                 <tr>
                     <td colspan="10"
                         class="text-center text-muted py-4">
-                        No QC inspections found.
+                        No raw material evaluations found.
                     </td>
                 </tr>
             `;
@@ -590,66 +655,308 @@
             return;
         }
 
-        for (const qc of filtered) {
-            const canInspect =
-                normalizeStatus(qc.status) ===
-                "FOR_INSPECTION";
+        for (const item of filtered) {
+
+            const isPending =
+                item.recordType === "PENDING";
+
+            const qcStatus =
+                isPending
+                    ? "FOR_EVALUATION"
+                    : normalizeStatus(
+                        item.qcStatus ?? item.status
+                    );
+
+            const decision =
+                normalizeStatus(item.decision);
+
+            const materialStatus =
+                normalizeStatus(
+                    item.materialStatus ??
+                    item.quarantineStatus ??
+                    "QUARANTINED"
+                );
+
+            let qcBadge = "";
+
+            switch (qcStatus) {
+
+                case "FOR_EVALUATION":
+                    qcBadge = `
+                        <span class="badge bg-info text-dark">
+                            FOR EVALUATION
+                        </span>
+                    `;
+                    break;
+
+                case "FOR_INSPECTION":
+                    qcBadge = `
+                        <span class="badge bg-primary">
+                            FOR INSPECTION
+                        </span>
+                    `;
+                    break;
+
+                case "INSPECTED":
+                    qcBadge = `
+                        <span class="badge bg-success">
+                            INSPECTED
+                        </span>
+                    `;
+                    break;
+
+                default:
+                    qcBadge = `
+                        <span class="badge bg-secondary">
+                            ${escapeHtml(qcStatus || "-")}
+                        </span>
+                    `;
+                    break;
+            }
+
+
+            let decisionBadge = "-";
+
+            switch (decision) {
+
+                case "ACCEPTED":
+                    decisionBadge = `
+                        <span class="badge bg-success">
+                            ACCEPTED
+                        </span>
+                    `;
+                    break;
+
+                case "PARTIALLY_ACCEPTED":
+                    decisionBadge = `
+                        <span class="badge bg-warning text-dark">
+                            PARTIALLY ACCEPTED
+                        </span>
+                    `;
+                    break;
+
+                case "REJECTED":
+                    decisionBadge = `
+                        <span class="badge bg-danger">
+                            REJECTED
+                        </span>
+                    `;
+                    break;
+            }
+
+
+            let materialBadge = "";
+
+            switch (materialStatus) {
+
+                case "QUARANTINED":
+                    materialBadge = `
+                        <span class="badge bg-warning text-dark">
+                            QUARANTINED
+                        </span>
+                    `;
+                    break;
+
+                case "WAITING_FOR_QA_RELEASE":
+                    materialBadge = `
+                        <span class="badge bg-warning text-dark">
+                            WAITING FOR RELEASE
+                        </span>
+                    `;
+                    break;
+
+                case "RELEASED":
+                    materialBadge = `
+                        <span class="badge bg-success">
+                            RELEASED
+                        </span>
+                    `;
+                    break;
+
+                case "REJECTED":
+                    materialBadge = `
+                        <span class="badge bg-danger">
+                            REJECTED
+                        </span>
+                    `;
+                    break;
+
+                case "FOR_VALIDATION":
+                    materialBadge = `
+                        <span class="badge bg-info text-dark">
+                            FOR VALIDATION
+                        </span>
+                    `;
+                    break;
+
+                default:
+                    materialBadge = `
+                        <span class="badge bg-secondary">
+                            ${escapeHtml(materialStatus || "-")}
+                        </span>
+                    `;
+                    break;
+            }
+
+
+            let actionButton = "";
+
+            /*
+             * Not yet started:
+             * create/start Raw Material Evaluation.
+             */
+            if (isPending) {
+
+                actionButton = `
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            onclick="openRawMaterialEvaluation(
+                                ${Number(item.quarantineId)}
+                            )">
+                        Evaluate
+                    </button>
+                `;
+            }
+
+            /*
+             * QC already exists.
+             * Open existing evaluation instead of starting another one.
+             */
+            else if (Number(item.qcId) > 0) {
+
+                const buttonText =
+                    materialStatus === "RELEASED"
+                        ? "View"
+                        : qcStatus === "INSPECTED"
+                            ? "View"
+                            : "Continue";
+
+                const buttonClass =
+                    materialStatus === "RELEASED"
+                        ? "btn-outline-success"
+                        : "btn-outline-primary";
+
+                actionButton = `
+                    <button type="button"
+                            class="btn btn-sm ${buttonClass}"
+                            onclick="window.location.href=
+                                '/quality/qc-inspections/details/${Number(item.qcId)}'">
+                        ${buttonText}
+                    </button>
+                `;
+            }
+
 
             tbody.insertAdjacentHTML(
                 "beforeend",
                 `
-                    <tr>
-                        <td class="fw-semibold">
-                            ${escapeHtml(qc.qcNo ?? "")}
-                        </td>
+                <tr>
 
-                           <td>
-        ${escapeHtml(qc.incomingNo ?? "-")}
-    </td>
+                    <td class="fw-semibold">
+                        ${escapeHtml(
+                            item.quarantineNo ?? "-"
+                        )}
+                    </td>
 
-                        <td>
-                            ${escapeHtml(qc.poNo ?? "")}
-                        </td>
+                    <td>
+                        ${escapeHtml(
+                            item.incomingNo ?? "-"
+                        )}
+                    </td>
 
-                        <td>
-                            ${escapeHtml(qc.supplierName ?? "")}
-                        </td>
+                    <td>
+                        ${escapeHtml(
+                            item.poNo ?? "-"
+                        )}
+                    </td>
 
-                        <td>
-                            ${formatDate(qc.inspectionDate)}
-                        </td>
+                    <td>
+                        ${escapeHtml(
+                            item.supplierName ?? "-"
+                        )}
+                    </td>
 
-                        <td>
-                               ${escapeHtml(
-        qc.inspectorName ??
-        qc.inspectorId ??
-        "-"
-    )}
-                        </td>
+                    <td>
+                        ${
+                            item.inspectionDate
+                                ? escapeHtml(
+                                    String(item.inspectionDate)
+                                        .split("T")[0]
+                                )
+                                : "-"
+                        }
+                    </td>
 
-                           <td>
-        ${renderStatus(qc.status)}
-    </td>
+                    <td>
+                        ${escapeHtml(
+                            item.inspectorId ??
+                            item.inspectedBy ??
+                            "-"
+                        )}
+                    </td>
 
-    <td>
-        ${renderDecision(qc.decision)}
-    </td>
+                    <td>
+                        ${qcBadge}
+                    </td>
 
-    <td>
-        ${renderMaterialStatus(qc)}
-    </td>
+                    <td>
+                        ${decisionBadge}
+                    </td>
 
-    <td class="text-end">
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-primary"
-                                    onclick="openQcInspection(${Number(qc.qcId)})">
+                    <td>
+                        ${materialBadge}
+                    </td>
 
-                                ${canInspect ? "Inspect" : "View"}
+                    <td class="text-end">
+                        ${actionButton}
+                    </td>
 
-                            </button>
-                        </td>
-                    </tr>
+                </tr>
                 `
+            );
+        }
+    }
+
+            async function openRawMaterialEvaluation(quarantineId) {
+
+        try {
+
+            const response = await fetch(
+                `/quality/qc-inspections/quarantine/${quarantineId}/start-evaluation`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            const data =
+                await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Failed to start Raw Material Evaluation."
+                );
+            }
+
+            if (!data.qcId) {
+                throw new Error(
+                    "QC ID was not returned by the server."
+                );
+            }
+
+            window.location.href =
+                `/quality/qc-inspections/details/${data.qcId}`;
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.message ??
+                "Failed to start Raw Material Evaluation."
             );
         }
     }

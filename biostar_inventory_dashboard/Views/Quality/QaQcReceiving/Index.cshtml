@@ -1,0 +1,2298 @@
+﻿@{
+    ViewData["Title"] = "QA/QC Receiving Inspection";
+}
+
+<style>
+    .summary-card {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    }
+
+        .summary-card .count {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+    .inspection-header {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .inspection-section {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .inspection-section-title {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 10px 14px;
+        font-weight: 700;
+    }
+
+    .inspection-section-body {
+        padding: 14px;
+    }
+
+    .material-card {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .material-card-header {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .receiving-detail-box {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+
+    .modal-dialog-qa-receiving {
+        max-width: 96vw;
+    }
+
+    .result-select {
+        min-width: 160px;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- ========================================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="mb-4">
+        <div class="text-muted small mb-1">
+            Quality Control &gt; QA/QC Receiving Inspection
+        </div>
+
+        <h2 class="fw-bold mb-1">
+            Raw Material Inspection & Receiving
+        </h2>
+
+        <div class="text-muted">
+            Inspect materials received by Raw Material Warehouse
+            before placing them under quarantine.
+        </div>
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SUMMARY -->
+    <!-- ========================================================= -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        For QA/QC Inspection
+                    </div>
+
+                    <div id="pendingCount"
+                         class="count text-primary">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- PENDING RECEIVING LIST -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-md-5">
+                    <input id="searchInput"
+                           type="text"
+                           class="form-control"
+                           placeholder="Search Incoming No, PO No, Supplier">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="button"
+                            class="btn btn-outline-secondary w-100"
+                            onclick="loadPending()">
+                        Refresh
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Incoming No</th>
+                            <th>PO No</th>
+                            <th>Supplier</th>
+                            <th>Delivery Date</th>
+                            <th>Received By</th>
+                            <th>Verified By</th>
+                            <th>Status</th>
+                            <th class="text-end"
+                                style="width:130px;">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="pendingBody">
+
+                        <tr>
+                            <td colspan="8"
+                                class="text-center text-muted py-4">
+                                Loading receiving records...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================= -->
+<!-- QA/QC RECEIVING INSPECTION MODAL -->
+<!-- ============================================================= -->
+
+<div class="modal fade"
+     id="qaReceivingModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-qa-receiving
+                modal-dialog-centered modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title fw-bold mb-1">
+                        Raw Material Inspection and Receiving Form
+                    </h5>
+
+                    <div class="text-muted small">
+                        QA/QC receiving inspection before quarantine
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="incomingReceivingId">
+
+
+                <!-- ================================================= -->
+                <!-- HEADER -->
+                <!-- ================================================= -->
+
+                <div class="inspection-header mb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                Inspection No
+                            </label>
+
+                            <input id="inspectionNo"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                Incoming No
+                            </label>
+
+                            <input id="incomingNo"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold">
+                                PO No
+                            </label>
+
+                            <input id="poNo"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                Supplier
+                            </label>
+
+                            <input id="supplierName"
+                                   class="form-control"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">
+                                Inspection Date
+                            </label>
+
+                            <input id="inspectionDate"
+                                   type="date"
+                                   class="form-control">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- MATERIAL INSPECTIONS -->
+                <!-- ================================================= -->
+
+                <div id="materialInspectionContainer">
+
+                    <div class="text-center text-muted py-5">
+                        Loading inspection form...
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- FINAL INFORMATION -->
+                <!-- ================================================= -->
+
+                <div class="card border-0 bg-light mt-4">
+
+                    <div class="card-body">
+
+                        <h5 class="fw-bold mb-3">
+                            Inspection Information
+                        </h5>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    QA/QC Received By
+                                </label>
+
+                                <input id="receivedBy"
+                                       class="form-control"
+                                       readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">
+                                    Noted By
+                                </label>
+
+                                <input id="notedBy"
+                                       class="form-control"
+                                       placeholder="Supervisor / Approver">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">
+                                    Overall Remarks
+                                </label>
+
+                                <textarea id="overallRemarks"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder="Enter overall QA/QC receiving findings"></textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <button type="button"
+                        id="btnSaveInspection"
+                        class="btn btn-success">
+                    Complete QA/QC Receiving Inspection
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+
+    let pendingList = [];
+    let currentReceiving = null;
+    let qaReceivingModal = null;
+
+        const loggedInFullName =
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            ViewBag.LoggedInFullName ?? ""
+                ));
+
+    const loggedInUserId =
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                        ViewBag.LoggedInUserId ?? ""
+                ));
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            qaReceivingModal =
+                new bootstrap.Modal(
+                    document.getElementById(
+                        "qaReceivingModal"
+                    )
+                );
+
+                document
+    .getElementById("materialInspectionContainer")
+    .addEventListener(
+        "change",
+        handleInspectionFieldChange
+    );
+
+            document
+                .getElementById("searchInput")
+                .addEventListener(
+                    "input",
+                    renderPending
+                );
+
+            document
+                .getElementById("btnSaveInspection")
+                .addEventListener(
+                    "click",
+                    saveInspection
+                );
+
+            loadPending();
+        }
+    );
+
+
+    // =============================================================
+    // LOAD PENDING RMW RECEIVINGS
+    // =============================================================
+
+    async function loadPending() {
+
+        const tbody =
+            document.getElementById("pendingBody");
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8"
+                    class="text-center text-muted py-4">
+                    Loading receiving records...
+                </td>
+            </tr>
+        `;
+
+        try {
+
+            const response =
+                await fetch(
+                    "/quality/qa-qc-receiving/pending"
+                );
+
+            const data =
+                await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Unable to load receiving records."
+                );
+            }
+
+            pendingList =
+                Array.isArray(data)
+                    ? data
+                    : [];
+
+            document.getElementById(
+                "pendingCount"
+            ).innerText =
+                pendingList.length;
+
+            renderPending();
+
+        }
+        catch (error) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-danger py-4">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+
+    // =============================================================
+    // RENDER PENDING TABLE
+    // =============================================================
+
+    function renderPending() {
+
+        const tbody =
+            document.getElementById("pendingBody");
+
+        const search =
+            document.getElementById(
+                "searchInput"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+        const filtered =
+            pendingList.filter(x => {
+
+                const searchable = [
+                    x.incomingNo,
+                    x.poNo,
+                    x.supplierName,
+                    x.receivedBy,
+                    x.verifiedBy
+                ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+                return !search ||
+                    searchable.includes(search);
+            });
+
+
+        tbody.innerHTML = "";
+
+
+        if (filtered.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-muted py-4">
+                        No receiving records waiting for QA/QC inspection.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        for (const row of filtered) {
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <tr>
+
+                        <td class="fw-semibold">
+                            ${escapeHtml(
+                                row.incomingNo ?? ""
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.poNo ?? ""
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.supplierName ?? ""
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDate(
+                                row.deliveryDate
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.receivedBy ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.verifiedBy ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="badge bg-warning text-dark">
+                                For QA/QC Inspection
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+
+                            <button type="button"
+                                    class="btn btn-sm btn-primary"
+                                    onclick="openInspection(
+                                        ${Number(
+                                            row.incomingReceivingId
+                                        )}
+                                    )">
+                                Inspect
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `
+            );
+        }
+    }
+
+
+    // =============================================================
+    // OPEN INSPECTION
+    // =============================================================
+
+    async function openInspection(
+        incomingReceivingId
+    ) {
+
+        resetModal();
+
+        qaReceivingModal.show();
+
+        try {
+
+            const [
+                detailResponse,
+                numberResponse
+            ] =
+                await Promise.all([
+                    fetch(
+                        `/quality/qa-qc-receiving/incoming/${incomingReceivingId}`
+                    ),
+
+                    fetch(
+                        "/quality/qa-qc-receiving/next-number"
+                    )
+                ]);
+
+
+            const detailResult =
+                await readJsonResponse(
+                    detailResponse
+                );
+
+            const numberResult =
+                await readJsonResponse(
+                    numberResponse
+                );
+
+
+            if (!detailResponse.ok) {
+                throw new Error(
+                    detailResult.message ??
+                    "Unable to load receiving details."
+                );
+            }
+
+
+            currentReceiving =
+                detailResult.data ??
+                detailResult;
+
+
+            document.getElementById(
+                "incomingReceivingId"
+            ).value =
+                currentReceiving
+                    .incomingReceivingId;
+
+
+            document.getElementById(
+                "incomingNo"
+            ).value =
+                currentReceiving
+                    .incomingNo ?? "";
+
+
+            document.getElementById(
+                "poNo"
+            ).value =
+                currentReceiving
+                    .poNo ?? "";
+
+
+            document.getElementById(
+                "supplierName"
+            ).value =
+                currentReceiving
+                    .supplierName ?? "";
+
+
+            document.getElementById(
+                "inspectionNo"
+            ).value =
+                extractInspectionNumber(
+                    numberResult
+                );
+
+
+            document.getElementById(
+                "inspectionDate"
+            ).value =
+                getTodayDate();
+
+
+            renderMaterials(
+                currentReceiving.lines ?? []
+            );
+
+        }
+        catch (error) {
+
+            document.getElementById(
+                "materialInspectionContainer"
+            ).innerHTML = `
+                <div class="alert alert-danger">
+                    ${escapeHtml(
+                        error.message ??
+                        "Unable to load inspection form."
+                    )}
+                </div>
+            `;
+        }
+    }
+
+
+    // =============================================================
+    // RENDER MATERIALS
+    // =============================================================
+
+    function renderMaterials(lines) {
+
+        const container =
+            document.getElementById(
+                "materialInspectionContainer"
+            );
+
+        container.innerHTML = "";
+
+
+        if (!Array.isArray(lines) ||
+            lines.length === 0) {
+
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    No received material lines found.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        for (const line of lines) {
+
+            let lots =
+                Array.isArray(line.lots)
+                    ? line.lots
+                    : [];
+
+
+            /*
+             * Every inspection row needs a receiving-detail
+             * reference when one exists.
+             *
+             * For safety, if no receiving detail exists,
+             * create one UI inspection entry with null lot ID.
+             */
+            if (lots.length === 0) {
+
+                lots = [{
+                    incomingReceivingLineLotId: null,
+                    manufacturerName: null,
+                    lotNo: null,
+                    manufacturingDate: null,
+                    expirationDate: null,
+                    itemCount: null,
+                    weight: null,
+                    remarks: null
+                }];
+            }
+
+
+            const detailsHtml =
+                lots.map(
+                    (lot, index) =>
+                        renderInspectionDetail(
+                            line,
+                            lot,
+                            index
+                        )
+                )
+                .join("");
+
+
+            container.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <div class="material-card">
+
+                        <div class="material-card-header">
+
+                            <div class="d-flex
+                                        justify-content-between
+                                        align-items-center">
+
+                                <div>
+
+                                    <div class="fw-bold">
+                                        ${escapeHtml(
+                                            line.materialName ?? ""
+                                        )}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        ${escapeHtml(
+                                            line.materialCode ?? ""
+                                        )}
+                                    </div>
+
+                                </div>
+
+                                <div class="text-end">
+
+                                    <div class="text-muted small">
+                                        Delivered Quantity
+                                    </div>
+
+                                    <div class="fw-bold">
+                                        ${formatQty(
+                                            line.deliveredQty
+                                        )}
+                                        ${escapeHtml(
+                                            line.uom ?? ""
+                                        )}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="p-3">
+
+                            ${detailsHtml}
+
+                        </div>
+
+                    </div>
+                `
+            );
+        }
+
+        initializeInspectionFields();
+    }
+
+        function initializeInspectionFields() {
+
+        const rows =
+            document.querySelectorAll(
+                ".qa-inspection-row"
+            );
+
+        rows.forEach(row => {
+
+            // =========================================================
+            // ASSAY
+            // =========================================================
+
+            const assay =
+                row.querySelector(
+                    ".assay-result"
+                );
+
+            if (assay) {
+                assay.dispatchEvent(
+                    new Event(
+                        "change",
+                        { bubbles: true }
+                    )
+                );
+            }
+
+
+            // =========================================================
+            // SOLUBILITY
+            // =========================================================
+
+            const solubility =
+                row.querySelector(
+                    ".solubility-result"
+                );
+
+            if (solubility) {
+                solubility.dispatchEvent(
+                    new Event(
+                        "change",
+                        { bubbles: true }
+                    )
+                );
+            }
+
+
+            // =========================================================
+            // COLOR
+            // =========================================================
+
+            const color =
+                row.querySelector(
+                    ".color-result"
+                );
+
+            if (color) {
+                color.dispatchEvent(
+                    new Event(
+                        "change",
+                        { bubbles: true }
+                    )
+                );
+            }
+
+
+            // =========================================================
+            // ODOR
+            // =========================================================
+
+            const odor =
+                row.querySelector(
+                    ".odor-result"
+                );
+
+            if (odor) {
+                odor.dispatchEvent(
+                    new Event(
+                        "change",
+                        { bubbles: true }
+                    )
+                );
+            }
+
+
+                const appearance =
+        row.querySelector(".appearance-na");
+
+    if (appearance) {
+        appearance.dispatchEvent(
+            new Event(
+                "change",
+                { bubbles: true }
+            )
+        );
+    }
+
+        });
+    }
+
+
+    // =============================================================
+    // ONE RECEIVING DETAIL / LOT INSPECTION
+    // =============================================================
+
+    function renderInspectionDetail(
+        line,
+        lot,
+        index
+    ) {
+
+        const lineId =
+            Number(
+                line.incomingReceivingLineId
+            );
+
+        const lotId =
+            lot.incomingReceivingLineLotId ??
+            "";
+
+
+                const isLotTracked =
+        line.isLotTracked === true;
+
+    const lotTrackingHtml =
+        isLotTracked
+            ? `
+                <div class="col-md-2">
+                    <div class="text-muted small">
+                        Lot Number
+                    </div>
+
+                    <div class="fw-semibold">
+                        ${escapeHtml(
+                            lot.lotNo ?? "-"
+                        )}
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="text-muted small">
+                        Manufacturing Date
+                    </div>
+
+                    <div class="fw-semibold">
+                        ${formatDate(
+                            lot.manufacturingDate
+                        )}
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="text-muted small">
+                        Expiration Date
+                    </div>
+
+                    <div class="fw-semibold">
+                        ${formatDate(
+                            lot.expirationDate
+                        )}
+                    </div>
+                </div>
+            `
+            : "";
+
+
+        return `
+            <div class="qa-inspection-row"
+                 data-incoming-line-id="${lineId}"
+                 data-incoming-lot-id="${lotId}">
+
+
+                <!-- ================================================ -->
+                <!-- RECEIVING INFORMATION -->
+                <!-- ================================================ -->
+
+                  <div class="receiving-detail-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div class="fw-bold">
+                Receiving Details
+                ${index + 1}
+            </div>
+
+            <span class="badge ${
+                isLotTracked
+                    ? "bg-primary"
+                    : "bg-secondary"
+            }">
+                ${
+                    isLotTracked
+                        ? "Lot Tracked"
+                        : "Non-Lot Tracked"
+                }
+            </span>
+
+        </div>
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <div class="text-muted small">
+                    Manufacturer
+                </div>
+
+                <div class="fw-semibold">
+                    ${escapeHtml(
+                        lot.manufacturerName ?? "-"
+                    )}
+                </div>
+            </div>
+
+            ${lotTrackingHtml}
+
+            <div class="col-md-2">
+                <div class="text-muted small">
+                    No. Item
+                </div>
+
+                <div class="fw-semibold">
+                    ${formatNullableQty(
+                        lot.itemCount
+                    )}
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="text-muted small">
+                    Weight
+                </div>
+
+                <div class="fw-semibold">
+                    ${formatNullableQty(
+                        lot.weight
+                    )}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+                <!-- ================================================ -->
+                <!-- 1 APPEARANCE OF PACKAGING -->
+                <!-- ================================================ -->
+
+                <div class="inspection-section">
+
+                    <div class="inspection-section-title">
+                        1. Appearance of Packaging
+                    </div>
+
+                    <div class="inspection-section-body">
+
+                        <div class="row g-3">
+
+                            ${renderYesNoCheck(
+                                "packaging-clean",
+                                "Clean"
+                            )}
+
+                            ${renderYesNoCheck(
+                                "readable-label",
+                                "Readable Label"
+                            )}
+
+                            ${renderYesNoCheck(
+                                "properly-sealed",
+                                "Closed and Properly Sealed"
+                            )}
+
+                            ${renderYesNoCheck(
+                                "no-deterioration",
+                                "No Sign of Deterioration"
+                            )}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================ -->
+                <!-- 2 RAW MATERIAL APPEARANCE -->
+                <!-- ================================================ -->
+
+                <div class="inspection-section">
+
+                    <div class="inspection-section-title">
+                        2. Appearance of Raw Material
+                    </div>
+
+                    <div class="inspection-section-body">
+
+                        <div class="row g-3">
+
+
+                            ${renderYesNoCheck(
+                                "no-foreign-matter",
+                                "No Foreign Matter Observed"
+                            )}
+
+
+                            ${renderYesNoCheck(
+                                "no-infestation",
+                                "No Infestation"
+                            )}
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Appearance
+                                </label>
+
+                                <select class="form-select appearance-na">
+
+                                    <option value="false">
+                                        Applicable
+                                    </option>
+
+                                    <option value="true">
+                                        Not Applicable
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Powder - No Lump Formation
+                                </label>
+
+                                ${renderOptionalResultSelect(
+                                    "powder-no-lump"
+                                )}
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Powder - Good Flowability
+                                </label>
+
+                                ${renderOptionalResultSelect(
+                                    "powder-good-flowability"
+                                )}
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Liquid - No Solidification
+                                </label>
+
+                                ${renderOptionalResultSelect(
+                                    "liquid-no-solidification"
+                                )}
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Liquid - No Precipitation
+                                </label>
+
+                                ${renderOptionalResultSelect(
+                                    "liquid-no-precipitation"
+                                )}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================ -->
+                <!-- 3 COLOR -->
+                <!-- ================================================ -->
+
+                <div class="inspection-section">
+
+                    <div class="inspection-section-title">
+                        3. Color
+                    </div>
+
+                    <div class="inspection-section-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+
+                                <label class="form-label">
+                                    Result
+                                </label>
+
+                                ${renderComplianceSelect(
+                                    "color-result"
+                                )}
+
+                            </div>
+
+                            <div class="col-md-8">
+
+                                <label class="form-label">
+                                    Actual Color
+                                </label>
+
+                                <input type="text"
+                                       class="form-control actual-color"
+                                       placeholder="Observed color">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================ -->
+                <!-- 4 ODOR -->
+                <!-- ================================================ -->
+
+                <div class="inspection-section">
+
+                    <div class="inspection-section-title">
+                        4. Odor
+                    </div>
+
+                    <div class="inspection-section-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+
+                                <label class="form-label">
+                                    Result
+                                </label>
+
+                                ${renderComplianceSelect(
+                                    "odor-result"
+                                )}
+
+                            </div>
+
+                            <div class="col-md-8">
+
+                                <label class="form-label">
+                                    Actual Odor
+                                </label>
+
+                                <input type="text"
+                                       class="form-control actual-odor"
+                                       placeholder="Observed odor">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================ -->
+                <!-- 5 ASSAY -->
+                <!-- ================================================ -->
+
+                <div class="inspection-section">
+
+                    <div class="inspection-section-title">
+                        5. Assay
+                    </div>
+
+                    <div class="inspection-section-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Result
+                                </label>
+
+                                   ${renderComplianceSelect(
+        "assay-result",
+        "N/A"
+    )}
+
+                            </div>
+
+
+                            <div class="col-md-4">
+
+                                <label class="form-label">
+                                    Assay Result on COA
+                                </label>
+
+                                <input type="text"
+                                       class="form-control coa-assay-result">
+
+                            </div>
+
+
+                            <div class="col-md-5">
+
+                                <label class="form-label">
+                                    BNPI Specification
+                                </label>
+
+                                <input type="text"
+                                       class="form-control bnpi-assay-specification">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================ -->
+                <!-- 6 SOLUBILITY -->
+                <!-- ================================================ -->
+
+                <div class="inspection-section">
+
+                    <div class="inspection-section-title">
+                        6. Solubility
+                    </div>
+
+                    <div class="inspection-section-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+
+                                <label class="form-label">
+                                    Result
+                                </label>
+
+                                    ${renderComplianceSelect(
+        "solubility-result",
+        "N/A"
+    )}
+
+                            </div>
+
+
+                            <div class="col-md-8">
+
+                                <label class="form-label">
+                                    Solubility Test
+                                </label>
+
+                                <input type="text"
+                                       class="form-control solubility-test"
+                                       placeholder="Enter test observation/result">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================ -->
+                <!-- REMARKS -->
+                <!-- ================================================ -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+                        Material Remarks
+                    </label>
+
+                    <textarea class="form-control line-remarks"
+                              rows="2"
+                              placeholder="Enter remarks for this material"></textarea>
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+
+
+
+        function handleInspectionFieldChange(event) {
+
+        const target = event.target;
+
+        if (!target)
+            return;
+
+        const row =
+            target.closest(".qa-inspection-row");
+
+        if (!row)
+            return;
+
+
+        // =========================================================
+        // ASSAY
+        // =========================================================
+
+        if (target.classList.contains("assay-result")) {
+
+            const isNA =
+                target.value === "N/A";
+
+            const coa =
+                row.querySelector(
+                    ".coa-assay-result"
+                );
+
+            const specification =
+                row.querySelector(
+                    ".bnpi-assay-specification"
+                );
+
+            coa.disabled = isNA;
+            specification.disabled = isNA;
+
+            if (isNA) {
+                coa.value = "";
+                specification.value = "";
+            }
+        }
+
+
+        // =========================================================
+        // SOLUBILITY
+        // =========================================================
+
+        if (target.classList.contains("solubility-result")) {
+
+            const isNA =
+                target.value === "N/A";
+
+            const test =
+                row.querySelector(
+                    ".solubility-test"
+                );
+
+            test.disabled = isNA;
+
+            if (isNA) {
+                test.value = "";
+            }
+        }
+
+
+
+            // =========================================================
+    // COLOR
+    // =========================================================
+
+    if (target.classList.contains("color-result")) {
+
+        const isNA =
+            target.value === "N/A";
+
+        const actualColor =
+            row.querySelector(".actual-color");
+
+        if (actualColor) {
+            actualColor.disabled = isNA;
+
+            if (isNA)
+                actualColor.value = "";
+        }
+    }
+
+
+    // =========================================================
+    // ODOR
+    // =========================================================
+
+    if (target.classList.contains("odor-result")) {
+
+        const isNA =
+            target.value === "N/A";
+
+        const actualOdor =
+            row.querySelector(".actual-odor");
+
+        if (actualOdor) {
+            actualOdor.disabled = isNA;
+
+            if (isNA)
+                actualOdor.value = "";
+        }
+    }
+
+
+    }
+
+
+        // =========================================================
+    // RAW MATERIAL APPEARANCE
+    // =========================================================
+
+    if (target.classList.contains("appearance-na")) {
+
+        const isNA =
+            target.value === "true";
+
+        const noForeignMatter =
+            row.querySelector(".no-foreign-matter");
+
+        const noInfestation =
+            row.querySelector(".no-infestation");
+
+        const powderNoLump =
+            row.querySelector(".powder-no-lump");
+
+        const powderGoodFlowability =
+            row.querySelector(".powder-good-flowability");
+
+        const liquidNoSolidification =
+            row.querySelector(".liquid-no-solidification");
+
+        const liquidNoPrecipitation =
+            row.querySelector(".liquid-no-precipitation");
+
+
+        if (noForeignMatter) {
+            noForeignMatter.disabled = isNA;
+
+            if (isNA)
+                noForeignMatter.value = "true";
+        }
+
+        if (noInfestation) {
+            noInfestation.disabled = isNA;
+
+            if (isNA)
+                noInfestation.value = "true";
+        }
+
+        const optionalFields = [
+            powderNoLump,
+            powderGoodFlowability,
+            liquidNoSolidification,
+            liquidNoPrecipitation
+        ];
+
+        optionalFields.forEach(field => {
+
+            if (!field)
+                return;
+
+            field.disabled = isNA;
+
+            if (isNA)
+                field.value = "";
+        });
+    }
+
+
+    // =============================================================
+    // SAVE
+    // =============================================================
+
+    async function saveInspection() {
+
+        if (!currentReceiving)
+            return;
+
+
+        const rows =
+            document.querySelectorAll(
+                ".qa-inspection-row"
+            );
+
+
+        if (rows.length === 0) {
+
+            alert(
+                "No inspection lines found."
+            );
+
+            return;
+        }
+
+
+        const lines = [];
+
+
+        for (const row of rows) {
+
+            lines.push({
+
+                incomingReceivingLineId:
+                    Number(
+                        row.dataset.incomingLineId
+                    ),
+
+                incomingReceivingLineLotId:
+                    row.dataset.incomingLotId
+                        ? Number(
+                            row.dataset.incomingLotId
+                          )
+                        : null,
+
+
+                packagingClean:
+                    getYesNo(
+                        row,
+                        ".packaging-clean"
+                    ),
+
+                readableLabel:
+                    getYesNo(
+                        row,
+                        ".readable-label"
+                    ),
+
+                properlySealed:
+                    getYesNo(
+                        row,
+                        ".properly-sealed"
+                    ),
+
+                noDeterioration:
+                    getYesNo(
+                        row,
+                        ".no-deterioration"
+                    ),
+
+
+                noForeignMatter:
+                    getYesNo(
+                        row,
+                        ".no-foreign-matter"
+                    ),
+
+                noInfestation:
+                    getYesNo(
+                        row,
+                        ".no-infestation"
+                    ),
+
+                appearanceNotApplicable:
+                    row.querySelector(
+                        ".appearance-na"
+                    ).value === "true",
+
+
+                powderNoLump:
+                    getOptionalBoolean(
+                        row,
+                        ".powder-no-lump"
+                    ),
+
+                powderGoodFlowability:
+                    getOptionalBoolean(
+                        row,
+                        ".powder-good-flowability"
+                    ),
+
+                liquidNoSolidification:
+                    getOptionalBoolean(
+                        row,
+                        ".liquid-no-solidification"
+                    ),
+
+                liquidNoPrecipitation:
+                    getOptionalBoolean(
+                        row,
+                        ".liquid-no-precipitation"
+                    ),
+
+
+                colorResult:
+                    row.querySelector(
+                        ".color-result"
+                    ).value,
+
+                actualColor:
+                    getInputValue(
+                        row,
+                        ".actual-color"
+                    ),
+
+
+                odorResult:
+                    row.querySelector(
+                        ".odor-result"
+                    ).value,
+
+                actualOdor:
+                    getInputValue(
+                        row,
+                        ".actual-odor"
+                    ),
+
+
+                assayResultStatus:
+                    row.querySelector(
+                        ".assay-result"
+                    ).value,
+
+                coaAssayResult:
+                    getInputValue(
+                        row,
+                        ".coa-assay-result"
+                    ),
+
+                bnpiAssaySpecification:
+                    getInputValue(
+                        row,
+                        ".bnpi-assay-specification"
+                    ),
+
+
+                solubilityResult:
+                    row.querySelector(
+                        ".solubility-result"
+                    ).value,
+
+                solubilityTest:
+                    getInputValue(
+                        row,
+                        ".solubility-test"
+                    ),
+
+
+                remarks:
+                    getInputValue(
+                        row,
+                        ".line-remarks"
+                    )
+            });
+        }
+
+
+        const inspectionDate =
+            document.getElementById(
+                "inspectionDate"
+            ).value;
+
+
+        if (!inspectionDate) {
+
+            alert(
+                "Inspection date is required."
+            );
+
+            return;
+        }
+
+
+        const payload = {
+
+            incomingReceivingId:
+                Number(
+                    currentReceiving
+                        .incomingReceivingId
+                ),
+
+            inspectionDate:
+                inspectionDate,
+
+            remarks:
+                document.getElementById(
+                    "overallRemarks"
+                ).value.trim() || null,
+
+    receivedBy:
+        loggedInUserId || null,
+
+            notedBy:
+                document.getElementById(
+                    "notedBy"
+                ).value.trim() || null,
+
+            lines:
+                lines
+        };
+
+
+        const confirmed =
+            confirm(
+                "Complete this QA/QC Receiving Inspection?\n\n" +
+                "If all inspection requirements pass, " +
+                "the material will automatically be placed under QUARANTINE."
+            );
+
+
+        if (!confirmed)
+            return;
+
+
+        const button =
+            document.getElementById(
+                "btnSaveInspection"
+            );
+
+
+        button.disabled = true;
+
+        button.innerText =
+            "Saving Inspection...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/quality/qa-qc-receiving/save",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(payload)
+                    }
+                );
+
+
+            const result =
+                await readJsonResponse(
+                    response
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.message ??
+                    "Unable to save QA/QC inspection."
+                );
+            }
+
+
+            alert(
+                result.message ??
+                "QA/QC Receiving Inspection saved successfully."
+            );
+
+
+            qaReceivingModal.hide();
+
+            currentReceiving = null;
+
+            await loadPending();
+
+        }
+        catch (error) {
+
+            alert(
+                error.message ??
+                "Unable to save QA/QC inspection."
+            );
+        }
+        finally {
+
+            button.disabled = false;
+
+            button.innerText =
+                "Complete QA/QC Receiving Inspection";
+        }
+    }
+
+
+    // =============================================================
+    // UI HELPERS
+    // =============================================================
+
+    function renderYesNoCheck(
+        cssClass,
+        label
+    ) {
+
+        return `
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    ${escapeHtml(label)}
+                </label>
+
+                <select class="form-select ${cssClass}">
+
+                    <option value="true">
+                        Yes
+                    </option>
+
+                    <option value="false">
+                        No
+                    </option>
+
+                </select>
+
+            </div>
+        `;
+    }
+
+
+    function renderOptionalResultSelect(
+        cssClass
+    ) {
+
+        return `
+            <select class="form-select ${cssClass}">
+
+                <option value="">
+                    N/A
+                </option>
+
+                <option value="true">
+                    Yes
+                </option>
+
+                <option value="false">
+                    No
+                </option>
+
+            </select>
+        `;
+    }
+
+
+     function renderComplianceSelect(
+        cssClass,
+        defaultValue = "COMPLIANT"
+    ) {
+
+        return `
+            <select class="form-select result-select ${cssClass}">
+
+                <option value="COMPLIANT"
+                    ${defaultValue === "COMPLIANT" ? "selected" : ""}>
+                    Compliant
+                </option>
+
+                <option value="NON_COMPLIANT"
+                    ${defaultValue === "NON_COMPLIANT" ? "selected" : ""}>
+                    Non Compliant
+                </option>
+
+                <option value="N/A"
+                    ${defaultValue === "N/A" ? "selected" : ""}>
+                    N/A
+                </option>
+
+            </select>
+        `;
+    }
+
+
+    function getYesNo(
+        row,
+        selector
+    ) {
+
+        return row.querySelector(
+            selector
+        ).value === "true";
+    }
+
+
+    function getOptionalBoolean(
+        row,
+        selector
+    ) {
+
+        const value =
+            row.querySelector(
+                selector
+            ).value;
+
+
+        if (value === "")
+            return null;
+
+
+        return value === "true";
+    }
+
+
+    function getInputValue(
+        row,
+        selector
+    ) {
+
+        const value =
+            row.querySelector(
+                selector
+            )?.value
+            ?.trim();
+
+
+        return value || null;
+    }
+
+
+    function extractInspectionNumber(
+        result
+    ) {
+
+        if (!result)
+            return "";
+
+
+        if (typeof result === "string")
+            return result;
+
+
+        return (
+            result.inspectionNo ??
+            result.number ??
+            result.data ??
+            ""
+        );
+    }
+
+
+    function resetModal() {
+
+        currentReceiving = null;
+
+
+        document.getElementById(
+            "incomingReceivingId"
+        ).value = "";
+
+
+        document.getElementById(
+            "inspectionNo"
+        ).value = "";
+
+
+        document.getElementById(
+            "incomingNo"
+        ).value = "";
+
+
+        document.getElementById(
+            "poNo"
+        ).value = "";
+
+
+        document.getElementById(
+            "supplierName"
+        ).value = "";
+
+
+        document.getElementById(
+            "inspectionDate"
+        ).value =
+            getTodayDate();
+
+
+           document.getElementById(
+        "receivedBy"
+    ).value =
+        loggedInFullName;
+
+
+        document.getElementById(
+            "notedBy"
+        ).value = "";
+
+
+        document.getElementById(
+            "overallRemarks"
+        ).value = "";
+
+
+        document.getElementById(
+            "materialInspectionContainer"
+        ).innerHTML = `
+            <div class="text-center text-muted py-5">
+                Loading inspection form...
+            </div>
+        `;
+    }
+
+
+    // =============================================================
+    // GENERAL HELPERS
+    // =============================================================
+
+    async function readJsonResponse(
+        response
+    ) {
+
+        const text =
+            await response.text();
+
+
+        if (!text)
+            return {};
+
+
+        try {
+            return JSON.parse(text);
+        }
+        catch {
+            return {
+                message: text
+            };
+        }
+    }
+
+
+    function getTodayDate() {
+
+        const now =
+            new Date();
+
+        const year =
+            now.getFullYear();
+
+        const month =
+            String(
+                now.getMonth() + 1
+            ).padStart(2, "0");
+
+        const day =
+            String(
+                now.getDate()
+            ).padStart(2, "0");
+
+
+        return `${year}-${month}-${day}`;
+    }
+
+
+    function formatDate(
+        value
+    ) {
+
+        if (!value)
+            return "-";
+
+
+        const date =
+            new Date(value);
+
+
+        if (isNaN(date.getTime()))
+            return "-";
+
+
+        return date.toLocaleDateString();
+    }
+
+
+    function formatQty(
+        value
+    ) {
+
+        return Number(
+            value ?? 0
+        ).toLocaleString(
+            undefined,
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            }
+        );
+    }
+
+
+    function formatNullableQty(
+        value
+    ) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+
+        return Number(
+            value
+        ).toLocaleString(
+            undefined,
+            {
+                maximumFractionDigits: 4
+            }
+        );
+    }
+
+
+    function escapeHtml(
+        value
+    ) {
+
+        return String(
+            value ?? ""
+        )
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+</script>

@@ -83,7 +83,18 @@ namespace biostar_inventory_dashboard.Controllers
         {
             try
             {
-                var result = await _apiService.CreateChecklistAsync(data);
+                var userId =
+                    HttpContext.Session.GetString("UserId")
+                    ?? User.FindFirst("UserId")?.Value;
+
+                if (string.IsNullOrWhiteSpace(userId))
+                    return Unauthorized("Unable to determine logged-in user.");
+
+                var result = await _apiService.CreateChecklistAsync(
+                    data,
+                    userId
+                );
+
                 return Content(result, "application/json");
             }
             catch (HttpRequestException ex)

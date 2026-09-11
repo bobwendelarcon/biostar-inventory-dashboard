@@ -1,0 +1,1454 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Release Report";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================ -->
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <div class="text-muted small mb-1">
+                Reports &gt; Raw Material Release
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Raw Material Release Report
+            </h2>
+
+            <div class="text-muted">
+                Monitor raw materials released through
+                Material Requisitions (MRS).
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                onclick="loadReport()">
+
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+
+        </button>
+
+    </div>
+
+
+    <!-- ============================================================
+         QUICK PERIOD FILTERS
+    ============================================================ -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <button type="button"
+                        id="periodToday"
+                        class="btn btn-primary btn-sm period-btn"
+                        onclick="setPeriod('today')">
+                    Today
+                </button>
+
+                <button type="button"
+                        id="periodYesterday"
+                        class="btn btn-outline-primary btn-sm period-btn"
+                        onclick="setPeriod('yesterday')">
+                    Yesterday
+                </button>
+
+                <button type="button"
+                        id="periodWeek"
+                        class="btn btn-outline-primary btn-sm period-btn"
+                        onclick="setPeriod('week')">
+                    This Week
+                </button>
+
+                <button type="button"
+                        id="periodMonth"
+                        class="btn btn-outline-primary btn-sm period-btn"
+                        onclick="setPeriod('month')">
+                    This Month
+                </button>
+
+                <button type="button"
+                        id="periodLastMonth"
+                        class="btn btn-outline-primary btn-sm period-btn"
+                        onclick="setPeriod('lastMonth')">
+                    Last Month
+                </button>
+
+                <button type="button"
+                        id="periodCustom"
+                        class="btn btn-outline-secondary btn-sm period-btn"
+                        onclick="setCustomPeriod()">
+                    Custom
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         SUMMARY
+    ============================================================ -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        MRS Released
+                    </div>
+
+                    <div id="summaryMrs"
+                         class="fs-3 fw-bold text-primary">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Release Transactions
+                    </div>
+
+                    <div id="summaryTransactions"
+                         class="fs-3 fw-bold">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Unique Materials
+                    </div>
+
+                    <div id="summaryMaterials"
+                         class="fs-3 fw-bold text-success">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-2">
+                        Branches
+                    </div>
+
+                    <div id="summaryBranches"
+                         class="fs-3 fw-bold">
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         RELEASED BY UOM
+    ============================================================ -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <h5 class="fw-bold mb-1">
+                Released Quantity
+            </h5>
+
+            <div class="text-muted small">
+                Quantities are separated by unit of measure.
+            </div>
+
+        </div>
+
+        <div class="card-body px-4">
+
+            <div id="releasedByUom"
+                 class="row g-3">
+
+                <div class="col-12 text-muted">
+                    No released quantity.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         REPORT
+    ============================================================ -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <h5 class="fw-bold mb-1">
+                Material Releases
+            </h5>
+
+            <div class="text-muted small">
+                Actual raw material quantities released from inventory.
+            </div>
+
+        </div>
+
+
+        <div class="card-body px-4">
+
+            <!-- ====================================================
+                 FILTERS
+            ==================================================== -->
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-xl-3 col-md-6">
+
+                    <label class="form-label small fw-semibold">
+                        Search
+                    </label>
+
+                    <input id="reportSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="MRS, material, lot">
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Branch
+                    </label>
+
+                    <select id="branchFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-3 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Material
+                    </label>
+
+                    <select id="materialFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Materials
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        From Date
+                    </label>
+
+                    <input id="fromDate"
+                           type="date"
+                           class="form-control">
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        To Date
+                    </label>
+
+                    <input id="toDate"
+                           type="date"
+                           class="form-control">
+
+                </div>
+
+            </div>
+
+
+            <div class="d-flex gap-2 mb-4">
+
+                <button type="button"
+                        class="btn btn-primary btn-sm"
+                        onclick="loadReport()">
+
+                    <i class="bi bi-search me-1"></i>
+                    Search
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        onclick="resetReport()">
+
+                    Reset
+
+                </button>
+
+            </div>
+
+
+            <!-- ====================================================
+                 TABLE
+            ==================================================== -->
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="text-nowrap">
+                                Date / Time
+                            </th>
+
+                            <th class="text-nowrap">
+                                MRS No.
+                            </th>
+
+                            <th>
+                                Material
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Branch
+                            </th>
+
+                            <th class="text-nowrap">
+                                Lot No.
+                            </th>
+
+                            <th class="text-end text-nowrap">
+                                Qty Released
+                            </th>
+
+                            <th>
+                                UOM
+                            </th>
+
+                            <th class="text-nowrap">
+                                Released By
+                            </th>
+
+                            <th class="text-nowrap">
+                                Received By
+                            </th>
+
+                            <th class="text-nowrap">
+                                Verified By
+                            </th>
+
+                            <th class="text-nowrap">
+                                Posted By
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="reportTableBody">
+
+                        <tr>
+                            <td colspan="12"
+                                class="text-center text-muted py-5">
+
+                                Loading Raw Material Release report...
+
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="d-flex justify-content-between mt-3">
+
+                <div id="recordCount"
+                     class="text-muted small">
+                    0 records
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        let releaseReportData = null;
+
+        let currentPeriod =
+            "today";
+
+
+        // ============================================================
+        // INITIALIZE
+        // ============================================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                setPeriod(
+                    "today"
+                );
+            }
+        );
+
+
+        // ============================================================
+        // PERIOD
+        // ============================================================
+
+        function setPeriod(
+            period
+        ) {
+
+            currentPeriod =
+                period;
+
+            const today =
+                startOfDay(
+                    new Date()
+                );
+
+            let from =
+                new Date(today);
+
+            let to =
+                new Date(today);
+
+
+            if (period === "yesterday") {
+
+                from.setDate(
+                    from.getDate() - 1
+                );
+
+                to =
+                    new Date(from);
+            }
+
+
+            if (period === "week") {
+
+                const day =
+                    today.getDay();
+
+                const diff =
+                    day === 0
+                        ? 6
+                        : day - 1;
+
+                from.setDate(
+                    today.getDate() - diff
+                );
+            }
+
+
+            if (period === "month") {
+
+                from =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        1
+                    );
+            }
+
+
+            if (period === "lastMonth") {
+
+                from =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth() - 1,
+                        1
+                    );
+
+                to =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        0
+                    );
+            }
+
+
+            document
+                .getElementById(
+                    "fromDate"
+                )
+                .value =
+                    formatInputDate(from);
+
+
+            document
+                .getElementById(
+                    "toDate"
+                )
+                .value =
+                    formatInputDate(to);
+
+
+            updatePeriodButtons();
+
+            loadReport();
+        }
+
+
+        function setCustomPeriod() {
+
+            currentPeriod =
+                "custom";
+
+            updatePeriodButtons();
+
+            document
+                .getElementById(
+                    "fromDate"
+                )
+                .focus();
+        }
+
+
+        function updatePeriodButtons() {
+
+            const buttons = {
+                today:
+                    "periodToday",
+
+                yesterday:
+                    "periodYesterday",
+
+                week:
+                    "periodWeek",
+
+                month:
+                    "periodMonth",
+
+                lastMonth:
+                    "periodLastMonth",
+
+                custom:
+                    "periodCustom"
+            };
+
+
+            for (
+                const [key, id]
+                of Object.entries(buttons)
+            ) {
+
+                const button =
+                    document.getElementById(
+                        id
+                    );
+
+                if (!button)
+                    continue;
+
+
+                const active =
+                    key === currentPeriod;
+
+
+                button.classList.toggle(
+                    "btn-primary",
+                    active
+                );
+
+                button.classList.toggle(
+                    "btn-outline-primary",
+                    !active &&
+                    key !== "custom"
+                );
+
+                if (key === "custom") {
+
+                    button.classList.toggle(
+                        "btn-secondary",
+                        active
+                    );
+
+                    button.classList.toggle(
+                        "btn-outline-secondary",
+                        !active
+                    );
+                }
+            }
+        }
+
+
+        // ============================================================
+        // LOAD
+        // ============================================================
+
+        async function loadReport() {
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="12"
+                        class="text-center text-muted py-5">
+
+                        Loading Raw Material Release report...
+
+                    </td>
+                </tr>
+            `;
+
+
+            try {
+
+                const parameters =
+                    new URLSearchParams();
+
+
+                const fromDate =
+                    document
+                        .getElementById(
+                            "fromDate"
+                        )
+                        .value;
+
+
+                const toDate =
+                    document
+                        .getElementById(
+                            "toDate"
+                        )
+                        .value;
+
+
+                const branchId =
+                    document
+                        .getElementById(
+                            "branchFilter"
+                        )
+                        .value;
+
+
+                const materialId =
+                    document
+                        .getElementById(
+                            "materialFilter"
+                        )
+                        .value;
+
+
+                const search =
+                    document
+                        .getElementById(
+                            "reportSearch"
+                        )
+                        .value
+                        .trim();
+
+
+                if (fromDate) {
+                    parameters.set(
+                        "fromDate",
+                        fromDate
+                    );
+                }
+
+
+                if (toDate) {
+                    parameters.set(
+                        "toDate",
+                        toDate
+                    );
+                }
+
+
+                if (branchId) {
+                    parameters.set(
+                        "branchId",
+                        branchId
+                    );
+                }
+
+
+                if (materialId) {
+                    parameters.set(
+                        "materialId",
+                        materialId
+                    );
+                }
+
+
+                if (search) {
+                    parameters.set(
+                        "search",
+                        search
+                    );
+                }
+
+
+                const response =
+                    await fetch(
+                        `/reports/raw-material-release/data?${parameters.toString()}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        getErrorMessage(
+                            data,
+                            "Failed to load Raw Material Release report."
+                        )
+                    );
+                }
+
+
+                releaseReportData =
+                    data;
+
+
+                populateDropdowns(
+                    data.items ?? []
+                );
+
+
+                renderReport(
+                    data
+                );
+            }
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                tbody.innerHTML = `
+                    <tr>
+
+                        <td colspan="12"
+                            class="text-center text-danger py-5">
+
+                            ${escapeHtml(
+                                error.message
+                            )}
+
+                        </td>
+
+                    </tr>
+                `;
+
+
+                clearSummary();
+            }
+        }
+
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+
+        function renderReport(
+            data
+        ) {
+
+            const summary =
+                data?.summary ?? {};
+
+
+            document
+                .getElementById(
+                    "summaryMrs"
+                )
+                .innerText =
+                    Number(
+                        summary.totalMrsReleased ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryTransactions"
+                )
+                .innerText =
+                    Number(
+                        summary.totalReleaseTransactions ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryMaterials"
+                )
+                .innerText =
+                    Number(
+                        summary.uniqueMaterials ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryBranches"
+                )
+                .innerText =
+                    Number(
+                        summary.totalBranches ?? 0
+                    );
+
+
+            renderUomSummary(
+                data?.releasedByUom ?? []
+            );
+
+
+            renderRows(
+                data?.items ?? []
+            );
+        }
+
+
+        function renderRows(
+            items
+        ) {
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+
+            const list =
+                Array.isArray(items)
+                    ? items
+                    : [];
+
+
+            document
+                .getElementById(
+                    "recordCount"
+                )
+                .innerText =
+                    `${list.length} record${
+                        list.length === 1
+                            ? ""
+                            : "s"
+                    }`;
+
+
+            if (list.length === 0) {
+
+                tbody.innerHTML = `
+                    <tr>
+
+                        <td colspan="12"
+                            class="text-center text-muted py-5">
+
+                            No raw material releases found
+                            for the selected period.
+
+                        </td>
+
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                list
+                    .map(
+                        item => `
+                            <tr>
+
+                                <td class="text-nowrap">
+                                    ${formatDateTime(
+                                        item.transactionDate
+                                    )}
+                                </td>
+
+                                <td class="fw-semibold text-nowrap">
+                                    ${escapeHtml(
+                                        item.requisitionNo ?? "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        ${escapeHtml(
+                                            item.materialName ?? "-"
+                                        )}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        ${escapeHtml(
+                                            item.materialCode ?? ""
+                                        )}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.categoryName ?? "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.branchName ??
+                                        item.branchId ??
+                                        "-"
+                                    )}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    ${escapeHtml(
+                                        item.lotDisplay ??
+                                        item.lotNo ??
+                                        "-"
+                                    )}
+                                </td>
+
+                                <td class="text-end fw-semibold">
+                                    ${formatNumber(
+                                        item.quantityReleased
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.uom ?? "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.releasedByName ??
+                                        item.releasedBy ??
+                                        "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.receivedByName ??
+                                        item.receivedBy ??
+                                        "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.verifiedByName ??
+                                        item.verifiedBy ??
+                                        "-"
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        item.postedByName ??
+                                        item.postedBy ??
+                                        "-"
+                                    )}
+                                </td>
+
+                            </tr>
+                        `
+                    )
+                    .join("");
+        }
+
+
+        // ============================================================
+        // UOM SUMMARY
+        // ============================================================
+
+        function renderUomSummary(
+            list
+        ) {
+
+            const container =
+                document.getElementById(
+                    "releasedByUom"
+                );
+
+
+            if (
+                !Array.isArray(list) ||
+                list.length === 0
+            ) {
+
+                container.innerHTML = `
+                    <div class="col-12 text-muted">
+                        No released quantity.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            container.innerHTML =
+                list
+                    .map(
+                        item => `
+                            <div class="col-xl-2 col-md-3 col-sm-6">
+
+                                <div class="border rounded p-3 h-100">
+
+                                    <div class="text-muted small">
+                                        ${escapeHtml(
+                                            item.uom ?? "-"
+                                        )}
+                                    </div>
+
+                                    <div class="fs-4 fw-bold mt-1">
+                                        ${formatNumber(
+                                            item.quantity
+                                        )}
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        `
+                    )
+                    .join("");
+        }
+
+
+        // ============================================================
+        // DROPDOWNS
+        // ============================================================
+
+        function populateDropdowns(
+            items
+        ) {
+
+            const branchSelect =
+                document.getElementById(
+                    "branchFilter"
+                );
+
+            const materialSelect =
+                document.getElementById(
+                    "materialFilter"
+                );
+
+
+            const selectedBranch =
+                branchSelect.value;
+
+            const selectedMaterial =
+                materialSelect.value;
+
+
+            const branches =
+                new Map();
+
+            const materials =
+                new Map();
+
+
+            for (const item of items) {
+
+                if (item.branchId) {
+
+                    branches.set(
+                        String(item.branchId),
+                        item.branchName ??
+                        item.branchId
+                    );
+                }
+
+
+                if (item.materialId) {
+
+                    materials.set(
+                        String(item.materialId),
+                        `${item.materialCode ?? ""} - ${item.materialName ?? ""}`
+                    );
+                }
+            }
+
+
+            branchSelect.innerHTML =
+                `<option value="">All Branches</option>` +
+                [...branches.entries()]
+                    .sort(
+                        (a, b) =>
+                            String(a[1])
+                                .localeCompare(
+                                    String(b[1])
+                                )
+                    )
+                    .map(
+                        ([id, name]) =>
+                            `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`
+                    )
+                    .join("");
+
+
+            materialSelect.innerHTML =
+                `<option value="">All Materials</option>` +
+                [...materials.entries()]
+                    .sort(
+                        (a, b) =>
+                            String(a[1])
+                                .localeCompare(
+                                    String(b[1])
+                                )
+                    )
+                    .map(
+                        ([id, name]) =>
+                            `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`
+                    )
+                    .join("");
+
+
+            if (
+                [...branchSelect.options]
+                    .some(
+                        x =>
+                            x.value ===
+                            selectedBranch
+                    )
+            ) {
+                branchSelect.value =
+                    selectedBranch;
+            }
+
+
+            if (
+                [...materialSelect.options]
+                    .some(
+                        x =>
+                            x.value ===
+                            selectedMaterial
+                    )
+            ) {
+                materialSelect.value =
+                    selectedMaterial;
+            }
+        }
+
+
+        // ============================================================
+        // RESET
+        // ============================================================
+
+        function resetReport() {
+
+            document
+                .getElementById(
+                    "reportSearch"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "branchFilter"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "materialFilter"
+                )
+                .value = "";
+
+
+            setPeriod(
+                "today"
+            );
+        }
+
+
+        function clearSummary() {
+
+            document
+                .getElementById(
+                    "summaryMrs"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryTransactions"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryMaterials"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryBranches"
+                )
+                .innerText = "0";
+
+            renderUomSummary(
+                []
+            );
+        }
+
+
+        // ============================================================
+        // DATE HELPERS
+        // ============================================================
+
+        function startOfDay(
+            value
+        ) {
+
+            return new Date(
+                value.getFullYear(),
+                value.getMonth(),
+                value.getDate()
+            );
+        }
+
+
+        function formatInputDate(
+            value
+        ) {
+
+            const year =
+                value.getFullYear();
+
+            const month =
+                String(
+                    value.getMonth() + 1
+                )
+                .padStart(
+                    2,
+                    "0"
+                );
+
+            const day =
+                String(
+                    value.getDate()
+                )
+                .padStart(
+                    2,
+                    "0"
+                );
+
+
+            return `${year}-${month}-${day}`;
+        }
+
+
+        function formatDateTime(
+            value
+        ) {
+
+            if (!value)
+                return "-";
+
+
+            const date =
+                new Date(value);
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "-";
+            }
+
+
+            return date.toLocaleString(
+                undefined,
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        // ============================================================
+        // NUMBER
+        // ============================================================
+
+        function formatNumber(
+            value
+        ) {
+
+            const number =
+                Number(value);
+
+
+            if (!Number.isFinite(number))
+                return "0";
+
+
+            return number.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        // ============================================================
+        // ERROR / HTML
+        // ============================================================
+
+        function getErrorMessage(
+            data,
+            fallback
+        ) {
+
+            if (!data)
+                return fallback;
+
+
+            if (
+                typeof data ===
+                "string"
+            ) {
+                return data;
+            }
+
+
+            return data.message ??
+                fallback;
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
+        }
+
+    </script>
+}

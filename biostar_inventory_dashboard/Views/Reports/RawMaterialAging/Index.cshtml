@@ -1,0 +1,1848 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Aging & Last Movement Report";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- ============================================================
+         HEADER
+    ============================================================ -->
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <div class="text-muted small mb-1">
+                Reports &gt; Raw Material Aging &amp; Last Movement
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Raw Material Aging &amp; Last Movement Report
+            </h2>
+
+            <div class="text-muted">
+                Monitor idle, slow-moving, non-moving,
+                and expiring raw material inventory.
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                onclick="loadReport()">
+
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+
+        </button>
+
+    </div>
+
+
+    <!-- ============================================================
+         SUMMARY
+    ============================================================ -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Total Inventory Lots
+                        </div>
+
+                        <div id="summaryTotal"
+                             class="fs-3 fw-bold">
+                            0
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Current raw material lots
+                        </div>
+                    </div>
+
+                    <div class="rounded-circle bg-primary-subtle text-primary
+                            d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;">
+                        <i class="bi bi-box-seam fs-4"></i>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Active Lots
+                        </div>
+
+                        <div id="summaryActive"
+                             class="fs-3 fw-bold text-success">
+                            0
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Moved within 30 days
+                        </div>
+                    </div>
+
+                    <div class="rounded-circle bg-success-subtle text-success
+                            d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;">
+                        <i class="bi bi-arrow-repeat fs-4"></i>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Slow / Non-Moving
+                        </div>
+
+                        <div class="d-flex align-items-end gap-2">
+
+                            <div id="summarySlow"
+                                 class="fs-3 fw-bold text-warning">
+                                0
+                            </div>
+
+                            <div class="text-muted pb-1">
+                                /
+                            </div>
+
+                            <div id="summaryNonMoving"
+                                 class="fs-4 fw-bold text-danger">
+                                0
+                            </div>
+
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Requires attention
+                        </div>
+                    </div>
+
+                    <div class="rounded-circle bg-warning-subtle text-warning
+                            d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;">
+                        <i class="bi bi-hourglass-split fs-4"></i>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Expiry Risk
+                        </div>
+
+                        <div class="d-flex align-items-end gap-2">
+
+                            <div id="summaryNearExpiry"
+                                 class="fs-3 fw-bold text-warning">
+                                0
+                            </div>
+
+                            <div class="text-muted pb-1">
+                                /
+                            </div>
+
+                            <div id="summaryExpired"
+                                 class="fs-4 fw-bold text-danger">
+                                0
+                            </div>
+
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Near expiry / Expired
+                        </div>
+                    </div>
+
+                    <div class="rounded-circle bg-danger-subtle text-danger
+                            d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;">
+                        <i class="bi bi-calendar-exclamation fs-4"></i>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         REPORT
+    ============================================================ -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <h5 class="fw-bold mb-1">
+                Raw Material Lots
+            </h5>
+
+            <div class="text-muted small">
+                Current inventory ranked by last movement and idle days.
+            </div>
+
+        </div>
+
+
+        <div class="card-body px-4">
+
+
+            <div class="d-flex flex-wrap gap-2 mb-4">
+
+                <button type="button"
+                        class="btn btn-sm btn-primary quick-status-btn"
+                        data-status=""
+                        onclick="setQuickStatus(this, '')">
+
+                    All
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-success quick-status-btn"
+                        data-status="ACTIVE"
+                        onclick="setQuickStatus(this, 'ACTIVE')">
+
+                    Active
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-warning quick-status-btn"
+                        data-status="SLOW_MOVING"
+                        onclick="setQuickStatus(this, 'SLOW_MOVING')">
+
+                    Slow Moving
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-warning quick-status-btn"
+                        data-status="VERY_SLOW"
+                        onclick="setQuickStatus(this, 'VERY_SLOW')">
+
+                    Very Slow
+
+                </button>
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger quick-status-btn"
+                        data-status="NON_MOVING"
+                        onclick="setQuickStatus(this, 'NON_MOVING')">
+
+                    Non-Moving
+
+                </button>
+
+            </div>
+
+            <!-- ====================================================
+                 FILTERS
+            ==================================================== -->
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-xl-3 col-md-6">
+
+                    <label class="form-label small fw-semibold">
+                        Search
+                    </label>
+
+                    <input id="reportSearch"
+                           type="text"
+                           class="form-control"
+                           placeholder="Material code, name, lot">
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Branch
+                    </label>
+
+                    <select id="branchFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Branches
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Category
+                    </label>
+
+                    <select id="categoryFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-2 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Movement Status
+                    </label>
+
+                    <select id="movementStatusFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option value="ACTIVE">
+                            Active
+                        </option>
+
+                        <option value="SLOW_MOVING">
+                            Slow Moving
+                        </option>
+
+                        <option value="VERY_SLOW">
+                            Very Slow
+                        </option>
+
+                        <option value="NON_MOVING">
+                            Non-Moving
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-xl-1 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Min Idle
+                    </label>
+
+                    <input id="minimumDaysIdle"
+                           type="number"
+                           min="0"
+                           class="form-control"
+                           placeholder="0">
+
+                </div>
+
+
+                <div class="col-xl-1 col-md-3">
+
+                    <label class="form-label small fw-semibold">
+                        Max Idle
+                    </label>
+
+                    <input id="maximumDaysIdle"
+                           type="number"
+                           min="0"
+                           class="form-control"
+                           placeholder="Any">
+
+                </div>
+
+            </div>
+
+
+            <div class="d-flex gap-2 mb-4">
+
+                <button type="button"
+                        class="btn btn-primary btn-sm"
+                        onclick="loadReport()">
+
+                    <i class="bi bi-search me-1"></i>
+                    Search
+
+                </button>
+
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        onclick="resetFilters()">
+
+                    Reset
+
+                </button>
+
+            </div>
+
+
+            <!-- ====================================================
+                 TABLE
+            ==================================================== -->
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th style="min-width:190px;">
+                                Material
+                            </th>
+
+                            <th style="min-width:150px;">
+                                Branch / Lot
+                            </th>
+
+                            <th class="text-end text-nowrap">
+                                On Hand
+                            </th>
+
+                            <th class="text-nowrap">
+                                Last Release
+                            </th>
+
+                            <th style="min-width:180px;">
+                                Last Movement
+                            </th>
+
+                            <th class="text-center">
+                                Idle
+                            </th>
+
+                            <th style="min-width:170px;">
+                                Expiry
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="reportTableBody">
+
+                        <tr>
+                            <td colspan="8"
+                                class="text-center text-muted py-5">
+
+                                Loading Raw Material Aging report...
+
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="mt-3">
+
+                <div id="recordCount"
+                     class="text-muted small">
+                    0 records
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        let agingReportData = null;
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                loadReport();
+            }
+        );
+
+
+        // ============================================================
+        // LOAD
+        // ============================================================
+
+
+
+
+
+        async function loadReport() {
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-muted py-5">
+
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Loading Raw Material Aging report...
+
+                    </td>
+                </tr>
+            `;
+
+
+            try {
+
+                const parameters =
+                    new URLSearchParams();
+
+
+                const branchId =
+                    document
+                        .getElementById(
+                            "branchFilter"
+                        )
+                        .value;
+
+
+                const categoryId =
+                    document
+                        .getElementById(
+                            "categoryFilter"
+                        )
+                        .value;
+
+
+                const search =
+                    document
+                        .getElementById(
+                            "reportSearch"
+                        )
+                        .value
+                        .trim();
+
+
+                const movementStatus =
+                    document
+                        .getElementById(
+                            "movementStatusFilter"
+                        )
+                        .value;
+
+
+                const minimumDaysIdle =
+                    document
+                        .getElementById(
+                            "minimumDaysIdle"
+                        )
+                        .value;
+
+
+                const maximumDaysIdle =
+                    document
+                        .getElementById(
+                            "maximumDaysIdle"
+                        )
+                        .value;
+
+
+                if (branchId) {
+                    parameters.set(
+                        "branchId",
+                        branchId
+                    );
+                }
+
+
+                if (categoryId) {
+                    parameters.set(
+                        "categoryId",
+                        categoryId
+                    );
+                }
+
+
+                if (search) {
+                    parameters.set(
+                        "search",
+                        search
+                    );
+                }
+
+
+                if (movementStatus) {
+                    parameters.set(
+                        "movementStatus",
+                        movementStatus
+                    );
+                }
+
+
+                if (minimumDaysIdle) {
+                    parameters.set(
+                        "minimumDaysIdle",
+                        minimumDaysIdle
+                    );
+                }
+
+
+                if (maximumDaysIdle) {
+                    parameters.set(
+                        "maximumDaysIdle",
+                        maximumDaysIdle
+                    );
+                }
+
+
+                const url =
+                    parameters.toString()
+                        ? `/reports/raw-material-aging/data?${parameters.toString()}`
+                        : "/reports/raw-material-aging/data";
+
+
+                const response =
+                    await fetch(url);
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data?.message ??
+                        "Failed to load Raw Material Aging report."
+                    );
+                }
+
+
+                agingReportData =
+                    data;
+
+
+                populateFilters(
+                    data.items ?? []
+                );
+
+
+                renderReport(
+                    data
+                );
+            }
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                tbody.innerHTML = `
+                    <tr>
+
+                        <td colspan="8"
+                            class="text-center text-danger py-5">
+
+                            ${escapeHtml(
+                                error.message
+                            )}
+
+                        </td>
+
+                    </tr>
+                `;
+
+
+                clearSummary();
+            }
+        }
+
+
+        // ============================================================
+        // REPORT
+        // ============================================================
+
+        function renderReport(
+            data
+        ) {
+
+            const summary =
+                data?.summary ?? {};
+
+
+            document
+                .getElementById(
+                    "summaryTotal"
+                )
+                .innerText =
+                    Number(
+                        summary.totalLots ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryActive"
+                )
+                .innerText =
+                    Number(
+                        summary.active ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summarySlow"
+                )
+                .innerText =
+                    Number(
+                        summary.slowMoving ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryNonMoving"
+                )
+                .innerText =
+                    Number(
+                        summary.nonMoving ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryNearExpiry"
+                )
+                .innerText =
+                    Number(
+                        summary.nearExpiry ?? 0
+                    );
+
+
+            document
+                .getElementById(
+                    "summaryExpired"
+                )
+                .innerText =
+                    Number(
+                        summary.expired ?? 0
+                    );
+
+
+            renderRows(
+                data?.items ?? []
+            );
+        }
+
+
+        // ============================================================
+        // ROWS
+        // ============================================================
+
+        function renderRows(
+            items
+        ) {
+
+            const list =
+                Array.isArray(items)
+                    ? items
+                    : [];
+
+
+            const tbody =
+                document.getElementById(
+                    "reportTableBody"
+                );
+
+
+            document
+                .getElementById(
+                    "recordCount"
+                )
+                .innerText =
+                    `${list.length} record${
+                        list.length === 1
+                            ? ""
+                            : "s"
+                    }`;
+
+
+            if (list.length === 0) {
+
+                tbody.innerHTML = `
+                    <tr>
+
+                        <td colspan="8"
+                            class="text-center text-muted py-5">
+
+                            No raw material aging records found.
+
+                        </td>
+
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                list
+                    .map(
+                        item => {
+
+                            const idleDays =
+                                item.daysSinceLastMovement ??
+                                item.daysInInventory ??
+                                0;
+
+
+                                  return `
+            <tr>
+
+                <td>
+
+                    <div class="fw-semibold">
+                        ${escapeHtml(
+                            item.materialName ?? "-"
+                        )}
+                    </div>
+
+                    <div class="small text-muted">
+                        ${escapeHtml(
+                            item.materialCode ?? ""
+                        )}
+                    </div>
+
+                    <div class="small text-muted">
+                        ${escapeHtml(
+                            item.categoryName ?? ""
+                        )}
+                    </div>
+
+                </td>
+
+
+                <td>
+
+                    <div class="fw-semibold">
+                        ${escapeHtml(
+                            item.branchName ??
+                            item.branchId ??
+                            "-"
+                        )}
+                    </div>
+
+                    <div class="small text-muted mt-1">
+                        Lot:
+                        ${escapeHtml(
+                            item.lotDisplay ??
+                            item.lotNo ??
+                            "-"
+                        )}
+                    </div>
+
+                </td>
+
+
+                <td class="text-end">
+
+                    <div class="fw-bold">
+                        ${formatNumber(
+                            item.quantity
+                        )}
+                    </div>
+
+                    <div class="small text-muted">
+                        ${escapeHtml(
+                            item.uom ?? "-"
+                        )}
+                    </div>
+
+                </td>
+
+
+                <td class="text-nowrap">
+
+                    ${formatDate(
+                        item.lastReleaseDate
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    ${renderLastMovement(
+                        item.lastMovementDate,
+                        item.lastMovementType,
+                        item.lastMovement
+                    )}
+
+                </td>
+
+
+                <td class="text-center">
+
+                    ${renderIdleDays(
+                        idleDays
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    ${renderExpirySummary(
+                        item.expirationDate,
+                        item.daysToExpiry,
+                        item.expiryStatus
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    ${renderMovementStatus(
+                        item.movementStatus
+                    )}
+
+                </td>
+
+            </tr>
+        `;
+                        }
+                    )
+                    .join("");
+        }
+
+
+                function renderLastMovement(
+            date,
+            transactionType,
+            movement
+        ) {
+
+            if (!date) {
+
+                return `
+                    <span class="text-muted">
+                        No movement
+                    </span>
+                `;
+            }
+
+
+            const direction =
+                String(
+                    movement ?? ""
+                )
+                .toUpperCase();
+
+
+            const badgeClass =
+                direction === "OUT"
+                    ? "bg-danger-subtle text-danger"
+                    : "bg-success-subtle text-success";
+
+
+            return `
+                <div class="text-nowrap fw-semibold">
+                    ${formatDate(date)}
+                </div>
+
+                <div class="mt-1">
+
+                    <span class="badge ${badgeClass}">
+                        ${escapeHtml(
+                            direction || "-"
+                        )}
+                    </span>
+
+                    <span class="small text-muted ms-1">
+                        ${escapeHtml(
+                            transactionType ?? "-"
+                        )}
+                    </span>
+
+                </div>
+            `;
+        }
+
+
+        function renderIdleDays(
+            days
+        ) {
+
+            const value =
+                Number(days ?? 0);
+
+
+            let badgeClass =
+                "bg-success-subtle text-success";
+
+
+            if (value > 90) {
+
+                badgeClass =
+                    "bg-danger-subtle text-danger";
+            }
+            else if (value > 60) {
+
+                badgeClass =
+                    "bg-warning text-dark";
+            }
+            else if (value > 30) {
+
+                badgeClass =
+                    "bg-warning-subtle text-warning-emphasis";
+            }
+
+
+            return `
+                <span class="badge rounded-pill ${badgeClass}">
+                    ${value} day${value === 1 ? "" : "s"}
+                </span>
+            `;
+        }
+
+
+        function renderExpirySummary(
+            expirationDate,
+            daysToExpiry,
+            expiryStatus
+        ) {
+
+            if (!expirationDate) {
+
+                return `
+                    <span class="text-muted">
+                        No expiration
+                    </span>
+                `;
+            }
+
+
+            const status =
+                String(
+                    expiryStatus ?? ""
+                )
+                .toUpperCase();
+
+
+            let textClass =
+                "";
+
+
+            if (status === "EXPIRED") {
+
+                textClass =
+                    "text-danger";
+            }
+            else if (
+                status === "NEAR_EXPIRY"
+            ) {
+
+                textClass =
+                    "text-warning";
+            }
+
+
+            let daysText =
+                "-";
+
+
+            if (
+                daysToExpiry !== null &&
+                daysToExpiry !== undefined
+            ) {
+
+                const days =
+                    Number(daysToExpiry);
+
+
+                daysText =
+                    days < 0
+                        ? `${Math.abs(days)} days expired`
+                        : `${days} days left`;
+            }
+
+
+            return `
+                <div class="fw-semibold ${textClass}">
+                    ${formatDate(
+                        expirationDate
+                    )}
+                </div>
+
+                <div class="small text-muted mt-1">
+                    ${escapeHtml(
+                        daysText
+                    )}
+                </div>
+            `;
+        }
+
+
+        // ============================================================
+        // FILTER DROPDOWNS
+        // ============================================================
+
+        function populateFilters(
+            items
+        ) {
+
+            const branchSelect =
+                document.getElementById(
+                    "branchFilter"
+                );
+
+
+            const categorySelect =
+                document.getElementById(
+                    "categoryFilter"
+                );
+
+
+            const selectedBranch =
+                branchSelect.value;
+
+
+            const selectedCategory =
+                categorySelect.value;
+
+
+            const branches =
+                new Map();
+
+
+            const categories =
+                new Map();
+
+
+            for (const item of items) {
+
+                if (item.branchId) {
+
+                    branches.set(
+                        String(item.branchId),
+                        item.branchName ??
+                        item.branchId
+                    );
+                }
+
+
+                if (item.categoryId) {
+
+                    categories.set(
+                        String(item.categoryId),
+                        item.categoryName ??
+                        item.categoryId
+                    );
+                }
+            }
+
+
+            branchSelect.innerHTML =
+                `<option value="">All Branches</option>` +
+                [...branches.entries()]
+                    .sort(
+                        (a, b) =>
+                            String(a[1])
+                                .localeCompare(
+                                    String(b[1])
+                                )
+                    )
+                    .map(
+                        ([id, name]) =>
+                            `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`
+                    )
+                    .join("");
+
+
+            categorySelect.innerHTML =
+                `<option value="">All Categories</option>` +
+                [...categories.entries()]
+                    .sort(
+                        (a, b) =>
+                            String(a[1])
+                                .localeCompare(
+                                    String(b[1])
+                                )
+                    )
+                    .map(
+                        ([id, name]) =>
+                            `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`
+                    )
+                    .join("");
+
+
+            if (
+                [...branchSelect.options]
+                    .some(
+                        x =>
+                            x.value ===
+                            selectedBranch
+                    )
+            ) {
+                branchSelect.value =
+                    selectedBranch;
+            }
+
+
+            if (
+                [...categorySelect.options]
+                    .some(
+                        x =>
+                            x.value ===
+                            selectedCategory
+                    )
+            ) {
+                categorySelect.value =
+                    selectedCategory;
+            }
+        }
+
+
+        // ============================================================
+        // MOVEMENT STATUS
+        // ============================================================
+
+        function renderMovementStatus(
+            status
+        ) {
+
+            const value =
+                String(
+                    status ?? ""
+                )
+                .toUpperCase();
+
+
+            if (value === "ACTIVE") {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-success-subtle
+                        text-success
+                        border
+                        border-success-subtle
+                    ">
+                        ACTIVE
+                    </span>
+                `;
+            }
+
+
+            if (
+                value === "SLOW_MOVING"
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-warning-subtle
+                        text-warning-emphasis
+                        border
+                        border-warning-subtle
+                    ">
+                        SLOW MOVING
+                    </span>
+                `;
+            }
+
+
+            if (
+                value === "VERY_SLOW"
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-warning
+                        text-dark
+                    ">
+                        VERY SLOW
+                    </span>
+                `;
+            }
+
+
+            if (
+                value === "NON_MOVING"
+            ) {
+
+                return `
+                    <span class="
+                        badge
+                        rounded-pill
+                        bg-danger-subtle
+                        text-danger
+                        border
+                        border-danger-subtle
+                    ">
+                        NON-MOVING
+                    </span>
+                `;
+            }
+
+
+            return `
+                <span class="badge bg-light text-dark border">
+                    ${escapeHtml(
+                        value || "-"
+                    )}
+                </span>
+            `;
+        }
+
+
+        // ============================================================
+        // MOVEMENT TYPE
+        // ============================================================
+
+        function renderMovementType(
+            transactionType,
+            movement
+        ) {
+
+            const type =
+                String(
+                    transactionType ?? ""
+                );
+
+
+            const direction =
+                String(
+                    movement ?? ""
+                )
+                .toUpperCase();
+
+
+            if (!type) {
+                return "-";
+            }
+
+
+            const badge =
+                direction === "OUT"
+                    ? "bg-danger-subtle text-danger"
+                    : "bg-success-subtle text-success";
+
+
+            return `
+                <div>
+                    <span class="badge ${badge}">
+                        ${escapeHtml(
+                            direction || "-"
+                        )}
+                    </span>
+
+                    <div class="small text-muted mt-1">
+                        ${escapeHtml(
+                            type
+                        )}
+                    </div>
+                </div>
+            `;
+        }
+
+
+        // ============================================================
+        // EXPIRY
+        // ============================================================
+
+        function renderExpiry(
+            expirationDate,
+            status
+        ) {
+
+            if (!expirationDate) {
+                return "-";
+            }
+
+
+            const value =
+                String(
+                    status ?? ""
+                )
+                .toUpperCase();
+
+
+            const dateText =
+                formatDate(
+                    expirationDate
+                );
+
+
+            if (value === "EXPIRED") {
+
+                return `
+                    <span class="text-danger fw-semibold">
+                        ${dateText}
+                    </span>
+                `;
+            }
+
+
+            if (
+                value === "NEAR_EXPIRY"
+            ) {
+
+                return `
+                    <span class="text-warning fw-semibold">
+                        ${dateText}
+                    </span>
+                `;
+            }
+
+
+            return dateText;
+        }
+
+
+        function formatDaysToExpiry(
+            value
+        ) {
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+                return "-";
+            }
+
+
+            const days =
+                Number(value);
+
+
+            if (!Number.isFinite(days)) {
+                return "-";
+            }
+
+
+            if (days < 0) {
+
+                return `
+                    <span class="text-danger fw-semibold">
+                        ${Math.abs(days)} days expired
+                    </span>
+                `;
+            }
+
+
+            if (days <= 30) {
+
+                return `
+                    <span class="text-warning fw-semibold">
+                        ${days} days
+                    </span>
+                `;
+            }
+
+
+            return `${days} days`;
+        }
+
+
+        // ============================================================
+        // RESET
+        // ============================================================
+
+        function resetFilters() {
+
+            document
+                .getElementById(
+                    "reportSearch"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "branchFilter"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "categoryFilter"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "movementStatusFilter"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "minimumDaysIdle"
+                )
+                .value = "";
+
+
+            document
+                .getElementById(
+                    "maximumDaysIdle"
+                )
+                .value = "";
+
+
+                        document
+            .querySelectorAll(".quick-status-btn")
+            .forEach(button => {
+
+                button.classList.remove(
+                    "btn-primary",
+                    "btn-success",
+                    "btn-warning",
+                    "btn-danger",
+                    "btn-outline-primary",
+                    "btn-outline-success",
+                    "btn-outline-warning",
+                    "btn-outline-danger"
+                );
+
+                const status =
+                    button.dataset.status;
+
+                if (!status) {
+                    button.classList.add(
+                        "btn-primary"
+                    );
+                }
+                else if (status === "ACTIVE") {
+                    button.classList.add(
+                        "btn-outline-success"
+                    );
+                }
+                else if (
+                    status === "SLOW_MOVING" ||
+                    status === "VERY_SLOW"
+                ) {
+                    button.classList.add(
+                        "btn-outline-warning"
+                    );
+                }
+                else if (status === "NON_MOVING") {
+                    button.classList.add(
+                        "btn-outline-danger"
+                    );
+                }
+            });
+
+        loadReport();
+
+
+            loadReport();
+        }
+
+
+        // ============================================================
+        // SUMMARY
+        // ============================================================
+
+        function clearSummary() {
+
+            document
+                .getElementById(
+                    "summaryTotal"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryActive"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summarySlow"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryNonMoving"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryNearExpiry"
+                )
+                .innerText = "0";
+
+            document
+                .getElementById(
+                    "summaryExpired"
+                )
+                .innerText = "0";
+        }
+
+
+        // ============================================================
+        // FORMAT
+        // ============================================================
+
+        function formatNumber(
+            value
+        ) {
+
+            const number =
+                Number(value);
+
+
+            if (!Number.isFinite(number)) {
+                return "0";
+            }
+
+
+            return number.toLocaleString(
+                "en-PH",
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 4
+                }
+            );
+        }
+
+
+        function formatDate(
+            value
+        ) {
+
+            if (!value) {
+                return "-";
+            }
+
+
+            const date =
+                new Date(value);
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return "-";
+            }
+
+
+            return date.toLocaleDateString(
+                "en-PH",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit"
+                }
+            );
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
+        }
+
+                function setQuickStatus(
+            button,
+            status
+        ) {
+
+            document
+                .getElementById(
+                    "movementStatusFilter"
+                )
+                .value =
+                    status;
+
+
+            document
+                .querySelectorAll(
+                    ".quick-status-btn"
+                )
+                .forEach(
+                    item => {
+
+                              item.classList.remove(
+            "btn-primary",
+            "btn-success",
+            "btn-warning",
+            "btn-danger",
+            "btn-outline-primary",
+            "btn-outline-success",
+            "btn-outline-warning",
+            "btn-outline-danger"
+        );
+
+                        const itemStatus =
+                            item.dataset.status;
+
+
+                        if (itemStatus === "ACTIVE") {
+
+                            item.classList.add(
+                                "btn-outline-success"
+                            );
+                        }
+                               else if (
+            itemStatus === "SLOW_MOVING" ||
+            itemStatus === "VERY_SLOW"
+        ) {
+            item.classList.add(
+                "btn-outline-warning"
+            );
+        }
+                        else if (
+                            itemStatus === "NON_MOVING"
+                        ) {
+
+                            item.classList.add(
+                                "btn-outline-danger"
+                            );
+                        }
+                        else {
+
+                            item.classList.add(
+                                "btn-outline-primary"
+                            );
+                        }
+                    }
+                );
+
+
+            if (status === "ACTIVE") {
+
+                button.classList.remove(
+                    "btn-outline-success"
+                );
+
+                button.classList.add(
+                    "btn-success"
+                );
+            }
+                   else if (
+            status === "SLOW_MOVING" ||
+            status === "VERY_SLOW"
+        ) {
+
+                button.classList.remove(
+                    "btn-outline-warning"
+                );
+
+                button.classList.add(
+                    "btn-warning"
+                );
+            }
+            else if (
+                status === "NON_MOVING"
+            ) {
+
+                button.classList.remove(
+                    "btn-outline-danger"
+                );
+
+                button.classList.add(
+                    "btn-danger"
+                );
+            }
+            else {
+
+                button.classList.remove(
+                    "btn-outline-primary"
+                );
+
+                button.classList.add(
+                    "btn-primary"
+                );
+            }
+
+
+            loadReport();
+        }
+
+    </script>
+}

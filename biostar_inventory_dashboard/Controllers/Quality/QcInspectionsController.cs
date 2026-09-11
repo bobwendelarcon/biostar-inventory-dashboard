@@ -141,7 +141,76 @@ namespace biostar_inventory_dashboard.Controllers.Quality
             }
         }
 
-      
+        [HttpPost("quarantine/{quarantineId:int}/start-evaluation")]
+        public async Task<IActionResult> StartEvaluation(
+      int quarantineId)
+        {
+            try
+            {
+                var userId =
+                    User.FindFirstValue("user_id")
+                    ?? User.FindFirstValue("UserId")
+                    ?? User.FindFirstValue("userId")
+                    ?? User.FindFirstValue("id")
+                    ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue("sub")
+                    ?? User.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Unauthorized(new
+                    {
+                        message =
+                            "Dashboard login does not contain a valid user ID."
+                    });
+                }
+
+                var client = CreateClient();
+
+                using var request =
+                    new HttpRequestMessage(
+                        HttpMethod.Post,
+                        $"api/purchasing/qc-inspections/quarantine/{quarantineId}/start-evaluation"
+                    );
+
+                request.Headers.TryAddWithoutValidation(
+                    "X-User-Id",
+                    userId.Trim()
+                );
+
+                request.Content =
+                    new StringContent(
+                        "{}",
+                        Encoding.UTF8,
+                        "application/json"
+                    );
+
+                var response =
+                    await client.SendAsync(request);
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode =
+                        (int)response.StatusCode,
+
+                    Content =
+                        result,
+
+                    ContentType =
+                        "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
 
 
         [HttpPost("quarantine/{id:int}/release")]
@@ -211,6 +280,37 @@ namespace biostar_inventory_dashboard.Controllers.Quality
             {
                 return BadRequest(new
                 {
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("pending-evaluation")]
+        public async Task<IActionResult> GetPendingEvaluation()
+        {
+            try
+            {
+                var client = CreateClient();
+
+                var response = await client.GetAsync(
+                    "api/purchasing/qc-inspections/pending-evaluation"
+                );
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode = (int)response.StatusCode,
+                    Content = result,
+                    ContentType = "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
                     message = ex.Message
                 });
             }

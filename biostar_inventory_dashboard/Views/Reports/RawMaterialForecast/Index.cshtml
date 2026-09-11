@@ -1,0 +1,963 @@
+﻿@{
+    ViewData["Title"] = "Raw Material Forecast / Reorder Report";
+}
+
+<div class="container-fluid forecast-page py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <div class="text-muted small mb-1">
+                Reports &gt; Raw Material Forecast / Reorder
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Raw Material Forecast / Reorder Report
+            </h2>
+
+            <div class="text-muted">
+                Forecast stock coverage and identify materials requiring replenishment.
+            </div>
+        </div>
+
+        <button class="btn btn-outline-primary"
+                onclick="loadReport()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Refresh
+        </button>
+    </div>
+
+
+    <!-- SETTINGS -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-lg-3">
+                    <label class="form-label">
+                        Search
+                    </label>
+
+                    <input id="search"
+                           class="form-control"
+                           placeholder="Material code or name">
+                </div>
+
+
+                <div class="col-lg-2">
+                    <label class="form-label">
+                        Usage History
+                    </label>
+
+                    <select id="usageHistoryDays"
+                            class="form-select">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="60">Last 60 Days</option>
+                        <option value="90">Last 90 Days</option>
+                        <option value="180">Last 180 Days</option>
+                    </select>
+                </div>
+
+
+                <div class="col-lg-2">
+                    <label class="form-label">
+                        Safety Stock Days
+                    </label>
+
+                    <input id="safetyStockDays"
+                           type="number"
+                           min="0"
+                           value="14"
+                           class="form-control">
+                </div>
+
+
+                <div class="col-lg-2">
+                    <label class="form-label">
+                        Target Cover Days
+                    </label>
+
+                    <input id="targetCoverDays"
+                           type="number"
+                           min="1"
+                           value="60"
+                           class="form-control">
+                </div>
+
+
+                <div class="col-lg-2">
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select id="status"
+                            class="form-select">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option value="CRITICAL">
+                            Critical
+                        </option>
+
+                        <option value="REORDER">
+                            Reorder
+                        </option>
+
+                        <option value="WATCH">
+                            Watch
+                        </option>
+
+                        <option value="HEALTHY">
+                            Healthy
+                        </option>
+
+                        <option value="NO_USAGE_HISTORY">
+                            No Usage History
+                        </option>
+
+                    </select>
+                </div>
+
+
+                <div class="col-lg-1">
+                    <button class="btn btn-primary w-100"
+                            onclick="loadReport()">
+                        Apply
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- KPI -->
+    <div class="row g-3 mb-4">
+
+        <div class="col">
+            <div class="forecast-kpi">
+                <div class="kpi-label">
+                    Materials
+                </div>
+
+                <div id="totalMaterials"
+                     class="kpi-value text-primary">
+                    0
+                </div>
+
+                <div class="kpi-description">
+                    Materials analyzed
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col">
+            <div class="forecast-kpi">
+                <div class="kpi-label">
+                    Healthy
+                </div>
+
+                <div id="healthy"
+                     class="kpi-value text-success">
+                    0
+                </div>
+
+                <div class="kpi-description">
+                    Sufficient coverage
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col">
+            <div class="forecast-kpi">
+                <div class="kpi-label">
+                    Watch
+                </div>
+
+                <div id="watch"
+                     class="kpi-value text-warning">
+                    0
+                </div>
+
+                <div class="kpi-description">
+                    Monitor closely
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col">
+            <div class="forecast-kpi">
+                <div class="kpi-label">
+                    Reorder
+                </div>
+
+                <div id="reorder"
+                     class="kpi-value text-warning">
+                    0
+                </div>
+
+                <div class="kpi-description">
+                    Purchase recommended
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col">
+            <div class="forecast-kpi">
+                <div class="kpi-label">
+                    Critical
+                </div>
+
+                <div id="critical"
+                     class="kpi-value text-danger">
+                    0
+                </div>
+
+                <div class="kpi-description">
+                    Immediate attention
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- CHARTS -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-1">
+                        Stock Coverage
+                    </h5>
+
+                    <div class="text-muted small mb-3">
+                        Estimated number of days current inventory can support usage.
+                    </div>
+
+                    <div style="height:320px">
+                        <canvas id="coverageChart"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-1">
+                        Forecast Status
+                    </h5>
+
+                    <div class="text-muted small mb-3">
+                        Current replenishment risk distribution.
+                    </div>
+
+                    <div style="height:320px">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="mb-3">
+                <h5 class="fw-bold mb-1">
+                    Reorder Recommendations
+                </h5>
+
+                <div class="text-muted small">
+                    Materials ranked by replenishment priority and stock coverage.
+                </div>
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table forecast-table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th class="text-end">Current</th>
+                            <th class="text-end">Incoming</th>
+                            <th class="text-end">Avg / Day</th>
+                            <th class="text-end">Days Cover</th>
+                            <th class="text-end">Lead Time</th>
+                            <th class="text-end">Reorder Point</th>
+                            <th class="text-end">Suggested Order</th>
+                            <th>Next Delivery</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="forecastRows"></tbody>
+
+                </table>
+
+            </div>
+
+            <div id="recordCount"
+                 class="text-muted small mt-2">
+                0 records
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .forecast-page {
+        background: #f6f8fb;
+        min-height: 100vh;
+    }
+
+    .forecast-kpi {
+        background: white;
+        border-radius: 10px;
+        padding: 18px;
+        min-height: 115px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+
+    .kpi-label {
+        color: #6c757d;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .kpi-value {
+        font-size: 27px;
+        font-weight: 700;
+    }
+
+    .kpi-description {
+        color: #8a94a3;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .forecast-table thead th {
+        background: #f7f8fa;
+        font-size: 12px;
+        white-space: nowrap;
+        border-bottom: 1px solid #adb5bd;
+    }
+
+    .forecast-table td {
+        font-size: 13px;
+    }
+
+    .material-code {
+        color: #8a94a3;
+        font-size: 11px;
+    }
+
+    .uom {
+        color: #8a94a3;
+        font-size: 11px;
+        margin-left: 3px;
+    }
+
+    .suggested-order {
+        font-weight: 700;
+    }
+
+    .status-badge {
+        padding: 4px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .status-healthy {
+        background: #e8f7ee;
+        color: #198754;
+    }
+
+    .status-watch {
+        background: #fff4d6;
+        color: #b77900;
+    }
+
+    .status-reorder {
+        background: #fff0d6;
+        color: #dc7b00;
+    }
+
+    .status-critical {
+        background: #fde8e8;
+        color: #dc3545;
+    }
+
+    .status-no-history {
+        background: #eceff3;
+        color: #6c757d;
+    }
+
+</style>
+
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        let coverageChart = null;
+        let statusChart = null;
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                loadReport();
+            }
+        );
+
+
+        async function loadReport() {
+
+            try {
+
+                const params =
+                    new URLSearchParams();
+
+
+                const search =
+                    document.getElementById("search").value.trim();
+
+                const usageHistoryDays =
+                    document.getElementById("usageHistoryDays").value;
+
+                const safetyStockDays =
+                    document.getElementById("safetyStockDays").value;
+
+                const targetCoverDays =
+                    document.getElementById("targetCoverDays").value;
+
+                const status =
+                    document.getElementById("status").value;
+
+
+                if (search)
+                    params.append("search", search);
+
+                if (status)
+                    params.append("status", status);
+
+
+                params.append(
+                    "usageHistoryDays",
+                    usageHistoryDays
+                );
+
+                params.append(
+                    "safetyStockDays",
+                    safetyStockDays
+                );
+
+                params.append(
+                    "targetCoverDays",
+                    targetCoverDays
+                );
+
+
+                const response =
+                    await fetch(
+                        "/reports/raw-material-forecast/data?"
+                        + params.toString()
+                    );
+
+
+                if (!response.ok)
+                    throw new Error(
+                        "Failed to load forecast."
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                renderSummary(
+                    data.summary || {}
+                );
+
+                renderTable(
+                    data.items || []
+                );
+
+                renderCoverageChart(
+                    data.items || []
+                );
+
+                renderStatusChart(
+                    data.summary || {}
+                );
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                document.getElementById(
+                    "forecastRows"
+                ).innerHTML =
+                    `
+                    <tr>
+                        <td colspan="10"
+                            class="text-center text-danger py-4">
+                            Failed to load Forecast / Reorder report.
+                        </td>
+                    </tr>
+                    `;
+            }
+        }
+
+
+        function renderSummary(summary) {
+
+            document.getElementById(
+                "totalMaterials"
+            ).textContent =
+                summary.totalMaterials ?? 0;
+
+            document.getElementById(
+                "healthy"
+            ).textContent =
+                summary.healthy ?? 0;
+
+            document.getElementById(
+                "watch"
+            ).textContent =
+                summary.watch ?? 0;
+
+            document.getElementById(
+                "reorder"
+            ).textContent =
+                summary.reorder ?? 0;
+
+            document.getElementById(
+                "critical"
+            ).textContent =
+                summary.critical ?? 0;
+        }
+
+
+        function renderTable(items) {
+
+            const tbody =
+                document.getElementById(
+                    "forecastRows"
+                );
+
+
+            if (!items.length) {
+
+                tbody.innerHTML =
+                    `
+                    <tr>
+                        <td colspan="10"
+                            class="text-center text-muted py-4">
+                            No forecast data found.
+                        </td>
+                    </tr>
+                    `;
+
+                document.getElementById(
+                    "recordCount"
+                ).textContent =
+                    "0 records";
+
+                return;
+            }
+
+
+            tbody.innerHTML =
+                items.map(item => {
+
+                    const daysCover =
+                        item.daysCover == null
+                            ? "—"
+                            : formatNumber(
+                                item.daysCover,
+                                1
+                            ) + " days";
+
+
+                    const leadTime =
+                        item.leadTimeDays == null
+                            ? "—"
+                            : item.leadTimeDays +
+                              " days";
+
+
+                    const nextDelivery =
+                        item.nextExpectedDelivery
+                            ? formatDate(
+                                item.nextExpectedDelivery
+                            )
+                            : "—";
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                <div class="fw-semibold">
+                                    ${escapeHtml(item.materialName)}
+                                </div>
+
+                                <div class="material-code">
+                                    ${escapeHtml(item.materialCode)}
+                                    ·
+                                    ${escapeHtml(item.categoryName)}
+                                </div>
+                            </td>
+
+
+                            <td class="text-end fw-semibold">
+                                ${formatNumber(item.currentStock, 2)}
+                                <span class="uom">
+                                    ${escapeHtml(item.uom)}
+                                </span>
+                            </td>
+
+
+                            <td class="text-end">
+                                ${formatNumber(item.incomingPoQty, 2)}
+                                <span class="uom">
+                                    ${escapeHtml(item.uom)}
+                                </span>
+                            </td>
+
+
+                            <td class="text-end">
+                                ${formatNumber(item.averageDailyUsage, 4)}
+                                <span class="uom">
+                                    ${escapeHtml(item.uom)}/day
+                                </span>
+                            </td>
+
+
+                            <td class="text-end">
+                                ${daysCover}
+                            </td>
+
+
+                            <td class="text-end">
+                                ${leadTime}
+                            </td>
+
+
+                            <td class="text-end">
+                                ${formatNumber(item.reorderPoint, 2)}
+                                <span class="uom">
+                                    ${escapeHtml(item.uom)}
+                                </span>
+                            </td>
+
+
+                            <td class="text-end suggested-order">
+                                ${formatNumber(item.suggestedOrderQty, 2)}
+                                <span class="uom">
+                                    ${escapeHtml(item.uom)}
+                                </span>
+                            </td>
+
+
+                            <td>
+                                ${nextDelivery}
+
+                                ${
+                                    item.supplierName
+                                    ?
+                                    `
+                                    <div class="material-code">
+                                        ${escapeHtml(item.supplierName)}
+                                    </div>
+                                    `
+                                    :
+                                    ""
+                                }
+                            </td>
+
+
+                            <td>
+                                ${statusBadge(item.status)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }).join("");
+
+
+            document.getElementById(
+                "recordCount"
+            ).textContent =
+                items.length +
+                (items.length === 1
+                    ? " record"
+                    : " records");
+        }
+
+
+        function renderCoverageChart(items) {
+
+            if (coverageChart)
+                coverageChart.destroy();
+
+
+            const chartItems =
+                items
+                    .filter(x =>
+                        x.daysCover != null
+                    )
+                    .slice(0, 12);
+
+
+            const ctx =
+                document.getElementById(
+                    "coverageChart"
+                );
+
+
+            coverageChart =
+                new Chart(
+                    ctx,
+                    {
+                        type: "bar",
+
+                        data: {
+                            labels:
+                                chartItems.map(
+                                    x => x.materialName
+                                ),
+
+                            datasets: [
+                                {
+                                    label:
+                                        "Days Cover",
+
+                                    data:
+                                        chartItems.map(
+                                            x => x.daysCover
+                                        )
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+
+                            indexAxis: "y",
+
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+
+                                tooltip: {
+                                    callbacks: {
+                                        label:
+                                            function(context) {
+                                                return (
+                                                    formatNumber(
+                                                        context.raw,
+                                                        1
+                                                    )
+                                                    +
+                                                    " days"
+                                                );
+                                            }
+                                    }
+                                }
+                            },
+
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+
+                                    title: {
+                                        display: true,
+                                        text:
+                                            "Estimated Days of Stock"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+        }
+
+
+        function renderStatusChart(summary) {
+
+            if (statusChart)
+                statusChart.destroy();
+
+
+            const ctx =
+                document.getElementById(
+                    "statusChart"
+                );
+
+
+            statusChart =
+                new Chart(
+                    ctx,
+                    {
+                        type: "doughnut",
+
+                        data: {
+                            labels: [
+                                "Healthy",
+                                "Watch",
+                                "Reorder",
+                                "Critical",
+                                "No Usage History"
+                            ],
+
+                            datasets: [
+                                {
+                                    data: [
+                                        summary.healthy ?? 0,
+                                        summary.watch ?? 0,
+                                        summary.reorder ?? 0,
+                                        summary.critical ?? 0,
+                                        summary.noUsageHistory ?? 0
+                                    ]
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    }
+                );
+        }
+
+
+        function statusBadge(status) {
+
+            switch (status) {
+
+                case "HEALTHY":
+                    return `
+                        <span class="status-badge status-healthy">
+                            HEALTHY
+                        </span>
+                    `;
+
+                case "WATCH":
+                    return `
+                        <span class="status-badge status-watch">
+                            WATCH
+                        </span>
+                    `;
+
+                case "REORDER":
+                    return `
+                        <span class="status-badge status-reorder">
+                            REORDER
+                        </span>
+                    `;
+
+                case "CRITICAL":
+                    return `
+                        <span class="status-badge status-critical">
+                            CRITICAL
+                        </span>
+                    `;
+
+                case "NO_USAGE_HISTORY":
+                    return `
+                        <span class="status-badge status-no-history">
+                            NO USAGE HISTORY
+                        </span>
+                    `;
+
+                default:
+                    return escapeHtml(status || "");
+            }
+        }
+
+
+        function formatNumber(value, decimals) {
+
+            const number =
+                Number(value ?? 0);
+
+            return number.toLocaleString(
+                undefined,
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: decimals
+                }
+            );
+        }
+
+
+        function formatDate(value) {
+
+            const date =
+                new Date(value);
+
+            if (isNaN(date))
+                return "—";
+
+            return date.toLocaleDateString(
+                "en-US",
+                {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric"
+                }
+            );
+        }
+
+
+        function escapeHtml(value) {
+
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+    </script>
+
+}

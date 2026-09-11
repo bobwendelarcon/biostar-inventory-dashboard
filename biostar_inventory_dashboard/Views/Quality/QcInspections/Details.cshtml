@@ -80,30 +80,14 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
 
-            <h5 class="fw-bold mb-3">Inspection Lines</h5>
+            <h5 class="fw-bold mb-3">
+                Raw Material Evaluation
+            </h5>
 
-            <div class="table-responsive overflow-visible">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Material Code</th>
-                            <th>Material Name</th>
-                            <th class="text-end">Received Qty</th>
-                            <th class="text-end" style="width:150px;">Accepted Qty</th>
-                            <th class="text-end" style="width:150px;">Rejected Qty</th>
-                            <th>Reason</th>
-                            <th>Remarks</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="qcLineBody">
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                Loading QC inspection...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="qcLineBody">
+                <div class="text-center text-muted py-4">
+                    Loading raw material evaluation...
+                </div>
             </div>
 
         </div>
@@ -166,14 +150,16 @@
             renderLines(data.lines ?? []);
             setupButtons(data);
 
-        } catch (error) {
-            document.getElementById("qcLineBody").innerHTML = `
-                <tr>
-                    <td colspan="8" class="text-center text-danger py-4">
-                        Failed to load QC inspection.
-                    </td>
-                </tr>`;
-        }
+           } catch (error) {
+
+        console.error("loadQcDetails error:", error);
+
+        document.getElementById("qcLineBody").innerHTML = `
+            <div class="alert alert-danger mb-0">
+                Failed to load QC inspection.
+            </div>
+        `;
+    }
     }
 
     function renderLines(lines) {
@@ -311,101 +297,296 @@
 
     }
 
-    async function saveInspection() {
+        async function saveInspection() {
+
+        if (!qcData) {
+            alert("QC inspection data is not loaded.");
+            return;
+        }
+
         const lines = [];
 
-           const rows = document.querySelectorAll(
-        "#qcLineBody tr[data-qc-line-id]"
-    );
+        const rows = document.querySelectorAll(
+            "#qcLineBody [data-qc-line-id]"
+        );
 
-    for (const row of rows) {
-        const qcLineId =
-            Number(row.dataset.qcLineId);
+        for (const row of rows) {
 
-        const receivedQty =
-            Number(row.dataset.receivedQty);
+            const qcLineId =
+                Number(row.dataset.qcLineId);
 
-        const acceptedQty =
-            Number(
-                row.querySelector(".accepted-qty").value || 0
-            );
+            const receivedQty =
+                Number(row.dataset.receivedQty || 0);
 
-        const rejectedQty =
-            Number(
-                row.querySelector(".rejected-qty").value || 0
-            );
+            const lineData =
+                qcData.lines?.find(
+                    x =>
+                        Number(x.qcLineId) ===
+                        qcLineId
+                );
 
-        const rejectionReason =
-            row.querySelector(".rejection-reason").value;
+            if (!lineData) {
+                alert(
+                    `QC line ${qcLineId} was not found.`
+                );
 
-        const remarks =
-            row.querySelector(".line-remarks").value;
-
-        if (
-            Math.abs(
-                acceptedQty +
-                rejectedQty -
-                receivedQty
-            ) > 0.0001
-        ) {
-            alert(
-                "Accepted quantity plus rejected quantity " +
-                "must equal received quantity."
-            );
-
-            return;
-        }
-
-        if (
-            rejectedQty > 0 &&
-            rejectionReason.trim() === ""
-        ) {
-            alert(
-                "Rejection reason is required when " +
-                "rejected quantity is greater than zero."
-            );
-
-            return;
-        }
-
-        lines.push({
-            qcLineId,
-            acceptedQty,
-            rejectedQty,
-            rejectionReason,
-            remarks
-        });
-    }
-
-        const payload = {
-            inspectionDate: document.getElementById("inspectionDate").value,
-            remarks: document.getElementById("remarks").value,
-            lines: lines
-        };
-
-        if (!confirm("Save this QC inspection?")) return;
-
-        try {
-            const response = await fetch(`/quality/qc-inspections/${qcId}/save-inspection`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                alert(result.message ?? "Failed to save QC inspection.");
                 return;
             }
 
-            alert(result.message ?? "QC inspection saved.");
-            await loadQcDetails();
+            // ============================================================
+            // CURRENT SCREEN:
+            // NON-LOT-TRACKED MATERIAL
+            // ============================================================
 
-        } catch (error) {
-            alert(error.message ?? "Failed to save QC inspection.");
+            if (lineData.isLotTracked) {
+                alert(
+                    `${lineData.materialName} is lot-tracked. ` +
+                    `Lot-tracked evaluation will be handled separately.`
+                );
+
+                return;
+            }
+
+            const acceptedQty =
+                Number(
+                    row.querySelector(
+                        ".accepted-qty"
+                    )?.value || 0
+                );
+
+            const rejectedQty =
+                Number(
+                    row.querySelector(
+                        ".rejected-qty"
+                    )?.value || 0
+                );
+
+            const rejectionReason =
+                row.querySelector(
+                    ".rejection-reason"
+                )?.value.trim() ?? "";
+
+            const lineRemarks =
+                row.querySelector(
+                    ".line-remarks"
+                )?.value.trim() ?? "";
+
+
+            // ============================================================
+            // VALIDATION
+            // ============================================================
+
+            if (
+                acceptedQty < 0 ||
+                rejectedQty < 0
+            ) {
+                alert(
+                    `${lineData.materialName}: ` +
+                    `Accepted and rejected quantities cannot be negative.`
+                );
+
+                return;
+            }
+
+            if (
+                Math.abs(
+                    acceptedQty +
+                    rejectedQty -
+                    receivedQty
+                ) > 0.0001
+            ) {
+                alert(
+                    `${lineData.materialName}: ` +
+                    `Accepted quantity plus rejected quantity ` +
+                    `must equal received quantity ` +
+                    `(${formatQty(receivedQty)}).`
+                );
+
+                return;
+            }
+
+            if (
+                rejectedQty > 0 &&
+                rejectionReason === ""
+            ) {
+                alert(
+                    `${lineData.materialName}: ` +
+                    `Rejection reason is required when ` +
+                    `rejected quantity is greater than zero.`
+                );
+
+                row.querySelector(
+                    ".rejection-reason"
+                )?.focus();
+
+                return;
+            }
+
+
+            // ============================================================
+            // EXISTING INTERNAL QC LOT
+            // In case this evaluation was previously saved.
+            // ============================================================
+
+            const existingLot =
+                Array.isArray(lineData.lots) &&
+                lineData.lots.length > 0
+                    ? lineData.lots[0]
+                    : null;
+
+
+            // ============================================================
+            // BUILD LINE + ONE INTERNAL NON-LOT ALLOCATION
+            // ============================================================
+
+            lines.push({
+
+                qcLineId: qcLineId,
+
+                remarks:
+                    lineRemarks || null,
+
+                lots: [
+                    {
+                        qcLineLotId:
+                            existingLot?.qcLineLotId ??
+                            null,
+
+                        // Blank is correct for non-lot materials.
+                        // Backend will generate its internal NOLOT key.
+                        lotNo: "",
+
+                        manufacturingDate:
+                            null,
+
+                        expirationDate:
+                            null,
+
+                        receivedQty:
+                            receivedQty,
+
+                        acceptedQty:
+                            acceptedQty,
+
+                        rejectedQty:
+                            rejectedQty,
+
+                        rejectionReason:
+                            rejectionReason || null,
+
+                        remarks:
+                            lineRemarks || null
+                    }
+                ]
+            });
+        }
+
+
+        if (lines.length === 0) {
+            alert(
+                "Raw Material Evaluation must contain at least one material."
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // PAYLOAD
+        // ============================================================
+
+        const payload = {
+
+            inspectionDate:
+                document.getElementById(
+                    "inspectionDate"
+                ).value || null,
+
+            remarks:
+                document.getElementById(
+                    "remarks"
+                ).value.trim() || null,
+
+            lines: lines
+        };
+
+
+        console.log(
+            "Raw Material Evaluation Payload:",
+            payload
+        );
+
+
+        if (
+            !confirm(
+                "Complete this Raw Material Evaluation?"
+            )
+        ) {
+            return;
+        }
+
+
+        const button =
+            document.getElementById(
+                "btnSaveInspection"
+            );
+
+        button.disabled = true;
+        button.innerText =
+            "Saving Evaluation...";
+
+
+        try {
+
+            const response = await fetch(
+                `/quality/qc-inspections/${qcId}/save-inspection`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(payload)
+                }
+            );
+
+            const result =
+                await response.json();
+
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ??
+                    "Failed to save Raw Material Evaluation."
+                );
+            }
+
+
+            alert(
+                result.message ??
+                "Raw Material Evaluation saved successfully."
+            );
+
+            await loadQcDetails();
+        }
+        catch (error) {
+
+            console.error(
+                "saveInspection error:",
+                error
+            );
+
+            alert(
+                error.message ??
+                "Failed to save Raw Material Evaluation."
+            );
+
+            button.disabled = false;
+            button.innerText =
+                "Save Inspection";
         }
     }
 
@@ -516,7 +697,298 @@
             .replaceAll("_", " ");
     }
 
-       function renderLineStatus(status) {
+        function renderLines(lines) {
+
+        const container =
+            document.getElementById("qcLineBody");
+
+        container.innerHTML = "";
+
+        if (lines.length === 0) {
+
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    No raw materials found.
+                </div>
+            `;
+
+            return;
+        }
+
+        const editable =
+            qcData.status === "FOR_INSPECTION";
+
+        lines.forEach(line => {
+
+            const lotNo =
+                line.receivingLotNo || "N/A";
+
+            const manufacturingDate =
+                formatDate(line.receivingManufacturingDate);
+
+            const expirationDate =
+                formatDate(line.receivingExpirationDate);
+
+            const manufacturer =
+                line.manufacturerName || "N/A";
+
+            const itemCount =
+                line.receivingItemCount != null
+                    ? formatQty(line.receivingItemCount)
+                    : "N/A";
+
+            const weight =
+                line.receivingWeight != null
+                    ? formatQty(line.receivingWeight)
+                    : "N/A";
+
+            const receivingRemarks =
+                line.receivingRemarks || "N/A";
+
+            container.innerHTML += `
+
+                <div class="card border mb-4"
+                     data-qc-line-id="${line.qcLineId}"
+                     data-received-qty="${line.receivedQty}">
+
+                    <div class="card-header bg-light">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center">
+
+                            <div>
+                                <strong>
+                                    ${escapeHtml(line.materialCode)}
+                                </strong>
+
+                                <span class="ms-2">
+                                    ${escapeHtml(line.materialName)}
+                                </span>
+                            </div>
+
+                            <div>
+                                ${renderLineStatus(line.status)}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- RECEIVING INFORMATION -->
+
+                        <h6 class="fw-bold mb-3">
+                            Receiving Information
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Manufacturer
+                                </div>
+                                <div class="fw-semibold">
+                                    ${escapeHtml(manufacturer)}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Lot No.
+                                </div>
+                                <div class="fw-semibold">
+                                    ${escapeHtml(lotNo)}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Manufacturing Date
+                                </div>
+                                <div class="fw-semibold">
+                                    ${manufacturingDate}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Expiration Date
+                                </div>
+                                <div class="fw-semibold">
+                                    ${expirationDate}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    No. of Items
+                                </div>
+                                <div class="fw-semibold">
+                                    ${itemCount}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Weight
+                                </div>
+                                <div class="fw-semibold">
+                                    ${weight}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Received Quantity
+                                </div>
+                                <div class="fw-semibold">
+                                    ${formatQty(line.receivedQty)}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">
+                                    Lot Tracked
+                                </div>
+                                <div class="fw-semibold">
+                                    ${line.isLotTracked ? "Yes" : "No"}
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="text-muted small">
+                                    Receiving Remarks
+                                </div>
+                                <div>
+                                    ${escapeHtml(receivingRemarks)}
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <hr>
+
+
+                        <!-- EVALUATION -->
+
+                        <h6 class="fw-bold mb-3">
+                            Evaluation
+                        </h6>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Accepted Qty
+                                </label>
+
+                                <input type="number"
+                                       class="form-control accepted-qty"
+                                       min="0"
+                                       step="0.0001"
+                                       value="${line.acceptedQty ?? 0}"
+                                       ${editable ? "" : "disabled"}>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label">
+                                    Rejected Qty
+                                </label>
+
+                                <input type="number"
+                                       class="form-control rejected-qty"
+                                       min="0"
+                                       step="0.0001"
+                                       value="${line.rejectedQty ?? 0}"
+                                       ${editable ? "" : "disabled"}>
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Rejection Reason
+                                </label>
+
+                                <input type="text"
+                                       class="form-control rejection-reason"
+                                       value="${escapeHtml(
+                                           line.rejectionReason || ""
+                                       )}"
+                                       placeholder="Required if rejected"
+                                       ${editable ? "" : "disabled"}>
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Evaluation Remarks
+                                </label>
+
+                                <textarea
+                                    class="form-control line-remarks"
+                                    rows="2"
+                                    ${editable ? "" : "disabled"}
+                                >${escapeHtml(
+                                    line.remarks || ""
+                                )}</textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+        });
+    }
+
+    function formatQty(value) {
+        return Number(value ?? 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4
+        });
+    }
+
+        function formatDate(value) {
+
+        if (!value)
+            return "N/A";
+
+        const date = new Date(value);
+
+        if (isNaN(date.getTime()))
+            return "N/A";
+
+        return date.toLocaleDateString();
+    }
+
+
+    function escapeHtml(value) {
+
+        if (value === null || value === undefined)
+            return "";
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+        function renderLineStatus(status) {
+
         let badge = "bg-secondary";
 
         if (status === "PENDING")
@@ -538,10 +1010,6 @@
         `;
     }
 
-    function formatQty(value) {
-        return Number(value ?? 0).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 4
-        });
-    }
+
+
 </script>

@@ -81,10 +81,17 @@
         HasAccess("INV_TRANSACTIONS");
 
     var canAccessReports =
-        HasAccess("RPT_TIME_IN_MOTION") ||
-        HasAccess("RPT_PURCHASING_LEAD_TIME");
+      HasAccess("RPT_TIME_IN_MOTION") ||
+      HasAccess("RPT_PURCHASING_LEAD_TIME") ||
+      HasAccess("RPT_RAW_MATERIAL_RELEASE") ||
+      HasAccess("RPT_RAW_MATERIAL_AGING") ||
+      HasAccess("RPT_INVENTORY_RECONCILIATION") ||
+      HasAccess("RPT_RAW_MATERIAL_USAGE_TREND") ||
+      HasAccess("RPT_RAW_MATERIAL_FORECAST");
 
-    var canQualityControl = HasAccess("QC_INSPECTIONS");
+    var canQualityControl =
+     HasAccess("QC_RECEIVING_INSPECTION") ||
+     HasAccess("QC_INSPECTIONS");
 
     var isReceivingOpen = currentController == "ManualStockIn";
     var isPlanningOpen = currentController == "DailyOrder";
@@ -687,21 +694,113 @@
         @if (canAccessReports)
         {
             <li class="nav-item mb-2">
-                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#accessReportMenu">
-                    <div><i class="bi bi-bar-chart me-2"></i><span>Reports</span></div><span class="menu-arrow">▾</span>
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#accessReportMenu">
+
+                    <div>
+                        <i class="bi bi-bar-chart me-2"></i>
+                        <span>Reports</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
                 </a>
-                <div class="collapse @(isReportOpen ? "show" : "")" id="accessReportMenu">
+
+                <div class="collapse @(isReportOpen ? "show" : "")"
+                     id="accessReportMenu">
+
                     <ul class="nav flex-column ms-3 mt-1">
+
+                        @* =====================================================
+                   EXISTING REPORTS
+                   ===================================================== *@
+
                         @if (HasAccess("RPT_TIME_IN_MOTION"))
                         {
-                            <li><a class="nav-link @(currentController == "TimeInMotion" ? "active fw-bold" : "")" href="/reports/time-in-motion"><span>Time in Motion Report</span></a></li>
+                            <li>
+                                <a class="nav-link @(currentController == "TimeInMotion" ? "active fw-bold" : "")"
+                                   href="/reports/time-in-motion">
+
+                                    <span>Time in Motion Report</span>
+                                </a>
+                            </li>
                         }
+
                         @if (HasAccess("RPT_PURCHASING_LEAD_TIME"))
                         {
-                            <li><a class="nav-link @(currentController == "PurchasingLeadTime" ? "active fw-bold" : "")" href="/reports/purchasing-lead-time"><span>Purchasing Lead Time Report</span></a></li>
+                            <li>
+                                <a class="nav-link @(currentController == "PurchasingLeadTime" ? "active fw-bold" : "")"
+                                   href="/reports/purchasing-lead-time">
+
+                                    <span>Purchasing Lead Time Report</span>
+                                </a>
+                            </li>
                         }
+
+
+                        @* =====================================================
+                   RAW MATERIAL REPORTS
+                   ===================================================== *@
+
+                        @if (HasAccess("RPT_RAW_MATERIAL_RELEASE"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/reports/raw-material-release") ? "active fw-bold" : "")"
+                                   href="/reports/raw-material-release">
+
+                                    <span>Raw Material Release Report</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (HasAccess("RPT_RAW_MATERIAL_AGING"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/reports/raw-material-aging") ? "active fw-bold" : "")"
+                                   href="/reports/raw-material-aging">
+
+                                    <span>Aging &amp; Last Movement Report</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (HasAccess("RPT_INVENTORY_RECONCILIATION"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/reports/inventory-reconciliation") ? "active fw-bold" : "")"
+                                   href="/reports/inventory-reconciliation">
+
+                                    <span>Inventory Reconciliation Report</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (HasAccess("RPT_RAW_MATERIAL_USAGE_TREND"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/reports/raw-material-usage-trend") ? "active fw-bold" : "")"
+                                   href="/reports/raw-material-usage-trend">
+
+                                    <span>Usage Trend Report</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (HasAccess("RPT_RAW_MATERIAL_FORECAST"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/reports/raw-material-forecast") ? "active fw-bold" : "")"
+                                   href="/reports/raw-material-forecast">
+
+                                    <span>Forecast / Reorder Report</span>
+                                </a>
+                            </li>
+                        }
+
                     </ul>
                 </div>
+
             </li>
         }
 
@@ -713,9 +812,24 @@
                 </a>
                 <div class="collapse @(isQualityOpen ? "show" : "")" id="qualityMenu">
                     <ul class="nav flex-column ms-3 mt-1">
+                        @if (HasAccess("QC_RECEIVING_INSPECTION"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/quality/qa-qc-receiving") ? "active fw-bold" : "")"
+                                   href="/quality/qa-qc-receiving">
+                                    <span>QA/QC Receiving Inspection</span>
+                                </a>
+                            </li>
+                        }
+
                         @if (HasAccess("QC_INSPECTIONS"))
                         {
-                            <li><a class="nav-link @(currentPath.StartsWith("/quality/qc-inspections") ? "active fw-bold" : "")" href="/quality/qc-inspections"><span>QA/QC Inspection</span></a></li>
+                            <li>
+                                <a class="nav-link @(currentPath.StartsWith("/quality/qc-inspections") ? "active fw-bold" : "")"
+                                   href="/quality/qc-inspections">
+                                    <span>Raw Material Evaluation</span>
+                                </a>
+                            </li>
                         }
                     </ul>
                 </div>

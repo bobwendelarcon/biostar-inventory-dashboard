@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize(Roles = "ADMIN,STAFF")]
+[Authorize(Policy = "DashboardAccess")]
 public class DashboardController : Controller
 {
     private readonly ApiService _apiService;
