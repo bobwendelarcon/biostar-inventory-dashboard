@@ -1,7 +1,7 @@
-wwwroot\js\dailyorder.js
-wwwroot\js\dashboard.js
+wwwroot\css\dailyorder.css
+wwwroot\css\dashboard.css
 wwwroot\css\delivery-checklist-print.css
-wwwroot\js\stock-overview.js
+wwwroot\css\inventory.css
 wwwroot\css\login.css
 wwwroot\css\producttoproduce.css
 wwwroot\css\purchasing\mprf.css
@@ -12,14 +12,15 @@ wwwroot\favicon.ico
 wwwroot\images\default-user.png
 wwwroot\js\branch.js
 wwwroot\js\categories.js
-wwwroot\css\dailyorder.css
-wwwroot\css\dashboard.css
+wwwroot\js\dailyorder.js
+wwwroot\js\dashboard.js
 wwwroot\js\delivery-checklist-print.js
 wwwroot\js\delivery-checklist.js
-wwwroot\css\inventory.css
+wwwroot\js\inventory.js
 wwwroot\js\manual-stock-in.js
 wwwroot\js\manufacturing\materials\material-categories.js
 wwwroot\js\manufacturing\materials\materials.js
+wwwroot\js\manufacturing\materials\raw-material-transactions.js
 wwwroot\js\partner.js
 wwwroot\js\products.js
 wwwroot\js\producttoproduce.js
@@ -31,6 +32,7 @@ wwwroot\js\purchasing\suppliers\suppliers.js
 wwwroot\js\report.js
 wwwroot\js\returns.js
 wwwroot\js\site.js
+wwwroot\js\stock-overview.js
 wwwroot\js\transaction.js
 wwwroot\js\user.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
@@ -91,5 +93,3 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
-wwwroot\js\inventory.js
-wwwroot\js\manufacturing\materials\raw-material-transactions.js
