@@ -89,13 +89,18 @@ namespace biostar_inventory_dashboard.Controllers.Manufacturing
         // ==========================
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetMaterials()
+        public async Task<IActionResult> GetMaterials(
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 1000)
         {
             var client = CreateClient();
-            var result = await client.GetStringAsync("api/manufacturing/materials?page=1&pageSize=100");
+
+            var result = await client.GetStringAsync(
+                $"api/manufacturing/materials?page={page}&pageSize={pageSize}"
+            );
+
             return Content(result, "application/json");
         }
-
         [HttpPost("create")]
         public async Task<IActionResult> CreateMaterial([FromBody] object dto)
         {

@@ -1086,9 +1086,18 @@ document.addEventListener("click", function (event) {
     }
 });
 
-window.addEventListener("scroll", function () {
+window.addEventListener("scroll", function (event) {
     const portal = getMaterialPortal();
-    portal.style.display = "none";
+
+    // Do not close when scrolling inside the material dropdown
+    if (portal.contains(event.target)) {
+        return;
+    }
+
+    // If the page/table scrolls, reposition instead of closing
+    if (activeMaterialInput && portal.style.display !== "none") {
+        positionMaterialPortal(activeMaterialInput);
+    }
 }, true);
 
 // =========================

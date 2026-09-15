@@ -4,7 +4,7 @@ let subCategories = [];
 let materialModal;
 
 let currentPage = 1;
-const pageSize = 10;
+const pageSize = 50;
 
 document.addEventListener("DOMContentLoaded", function () {
     materialModal = new bootstrap.Modal(document.getElementById("materialModal"));
@@ -83,7 +83,14 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnResetFilters").addEventListener("click", resetFilters);
 
     document.getElementById("txtSearchMaterial").addEventListener("input", renderMaterials);
-    document.getElementById("filterCategory").addEventListener("change", renderMaterials);
+    document.getElementById("filterCategory").addEventListener("change", function () {
+
+        currentPage = 1;
+
+        filterSubCategoriesByCategory(this.value);
+
+        renderMaterials();
+    });
     document.getElementById("filterSubCategory").addEventListener("change", renderMaterials);
 
     document.getElementById("materialCategoryId").addEventListener("change", async function () {
@@ -142,6 +149,52 @@ async function loadAllSubCategories() {
     });
 }
 
+function filterSubCategoriesByCategory(categoryId) {
+
+    const filterSubCategory =
+        document.getElementById("filterSubCategory");
+
+    filterSubCategory.innerHTML =
+        `<option value="">All Sub Categories</option>`;
+
+    // If All Categories is selected,
+    // show all subcategories
+    if (!categoryId) {
+        subCategories.forEach(sc => {
+
+            const id = sc.material_subcategory_id;
+            const name = sc.subcategory_name;
+
+            if (!id || !name) return;
+
+            filterSubCategory.innerHTML +=
+                `<option value="${id}">
+                    ${escapeHtml(name)}
+                </option>`;
+        });
+
+        return;
+    }
+
+    // Only show subcategories belonging to selected category
+    subCategories
+        .filter(sc =>
+            String(sc.material_category_id) === String(categoryId)
+        )
+        .forEach(sc => {
+
+            const id = sc.material_subcategory_id;
+            const name = sc.subcategory_name;
+
+            if (!id || !name) return;
+
+            filterSubCategory.innerHTML +=
+                `<option value="${id}">
+                    ${escapeHtml(name)}
+                </option>`;
+        });
+}
+
 async function loadSubCategoriesForModal(categoryId, selectedSubCategoryId = null) {
     const dropdown = document.getElementById("materialSubCategoryId");
 
@@ -173,7 +226,10 @@ async function loadMaterials() {
     const tbody = document.getElementById("materialsTableBody");
 
     try {
-        const response = await fetch("/manufacturing/materials/list");
+        const response = await fetch(
+            "/manufacturing/materials/list?page=1&pageSize=1000"
+        );
+
         const result = await response.json();
 
         materials = result.data ?? result.items ?? result.materials ?? result;
@@ -182,13 +238,15 @@ async function loadMaterials() {
             materials = [];
         }
 
+        currentPage = 1;
         renderMaterials();
+
     } catch (error) {
         console.error(error);
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="10" class="text-center text-danger py-4">
+                <td colspan="11" class="text-center text-danger py-4">
                     Failed to load materials.
                 </td>
             </tr>`;
@@ -428,48 +486,86 @@ function updateRecordInfo(totalRecords) {
 
 function renderPagination(totalPages) {
 
-    const pagination =
-        document.getElementById("materialsPagination");
+    const pagination = document.getElementById("materialsPagination");
 
     if (!pagination) return;
 
     if (totalPages <= 1) {
-
         pagination.innerHTML = "";
         return;
     }
 
     let html = "";
 
+    // Previous
     html += `
-    <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
-        <a class="page-link"
-           href="#"
-           onclick="changePage(${currentPage - 1})">
-            Previous
-        </a>
-    </li>`;
-
-    for (let i = 1; i <= totalPages; i++) {
-
-        html += `
-        <li class="page-item ${currentPage === i ? "active" : ""}">
+        <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
             <a class="page-link"
                href="#"
-               onclick="changePage(${i})">
-               ${i}
+               onclick="event.preventDefault(); changePage(${currentPage - 1})">
+                Previous
             </a>
-        </li>`;
+        </li>
+    `;
+
+    const pages = [];
+
+    // Always show page 1
+    pages.push(1);
+
+    // Pages around current page
+    for (
+        let i = Math.max(2, currentPage - 2);
+        i <= Math.min(totalPages - 1, currentPage + 2);
+        i++
+    ) {
+        pages.push(i);
     }
 
+    // Always show last page
+    if (totalPages > 1) {
+        pages.push(totalPages);
+    }
+
+    // Remove duplicates and sort
+    const uniquePages = [...new Set(pages)].sort((a, b) => a - b);
+
+    let previousPage = 0;
+
+    uniquePages.forEach(page => {
+
+        // Add ... when there is a gap
+        if (previousPage && page - previousPage > 1) {
+            html += `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            `;
+        }
+
+        html += `
+            <li class="page-item ${currentPage === page ? "active" : ""}">
+                <a class="page-link"
+                   href="#"
+                   onclick="event.preventDefault(); changePage(${page})">
+                    ${page}
+                </a>
+            </li>
+        `;
+
+        previousPage = page;
+    });
+
+    // Next
     html += `
-    <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
-        <a class="page-link"
-           href="#"
-           onclick="changePage(${currentPage + 1})">
-            Next
-        </a>
-    </li>`;
+        <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+            <a class="page-link"
+               href="#"
+               onclick="event.preventDefault(); changePage(${currentPage + 1})">
+                Next
+            </a>
+        </li>
+    `;
 
     pagination.innerHTML = html;
 }

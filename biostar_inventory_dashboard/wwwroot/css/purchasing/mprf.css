@@ -45,7 +45,28 @@
     overflow: visible !important;
 }
 
+.material-results-portal {
+    position: fixed;
+    z-index: 99999;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overscroll-behavior: contain;
+}
 
+    .material-results-portal .list-group-item {
+        cursor: pointer;
+    }
+
+        .material-results-portal .list-group-item:hover,
+        .material-results-portal .list-group-item.active {
+            background-color: #f1f5f9;
+            color: inherit;
+        }
 
 
 .mprf-action-menu {
