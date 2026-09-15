@@ -458,9 +458,9 @@
               "Title": "mprf.css",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\purchasing\\mprf.css",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\css\\purchasing\\mprf.css",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\purchasing\\mprf.css*",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\css\\purchasing\\mprf.css*",
-              "ViewState": "AgIAAAoAAAAAAAAAAAAcwEQAAAAJAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\css\\purchasing\\mprf.css",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\css\\purchasing\\mprf.css",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAcwC4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2026-09-15T08:28:18.539Z",
               "EditorCaption": ""
@@ -475,8 +475,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\Views\\Purchasing\\Mprf\\Create.cshtml",
               "ViewState": "AgIAADcAAAAAAAAAAAAowHQAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-09-15T08:24:57.927Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-15T08:24:57.927Z"
             },
             {
               "$type": "Document",
@@ -532,12 +531,11 @@
               "Title": "mprf.js",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js*",
-              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js*",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js",
+              "RelativeToolTip": "biostar_inventory_dashboard\\wwwroot\\js\\purchasing\\mprf.js",
               "ViewState": "AgIAAC0EAAAAAAAAAAAtwEwEAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-07-02T00:54:32.908Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T00:54:32.908Z"
             },
             {
               "$type": "Document",
@@ -561,8 +559,7 @@
               "RelativeToolTip": "biostar_inventory_dashboard\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-07-02T03:24:48.169Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-02T03:24:48.169Z"
             },
             {
               "$type": "Document",
