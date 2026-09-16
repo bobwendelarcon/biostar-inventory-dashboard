@@ -4,6 +4,7 @@ wwwroot\css\delivery-checklist-print.css
 wwwroot\css\inventory.css
 wwwroot\css\login.css
 wwwroot\css\producttoproduce.css
+wwwroot\css\purchasing\mprf.css
 wwwroot\css\reports.css
 wwwroot\css\returns.css
 wwwroot\css\site.css
@@ -92,4 +93,3 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\profile\user001_20260423084822.png
-wwwroot\css\purchasing\mprf.css
