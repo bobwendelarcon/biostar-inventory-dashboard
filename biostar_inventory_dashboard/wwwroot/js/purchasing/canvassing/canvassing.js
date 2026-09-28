@@ -1,13 +1,26 @@
 ﻿let currentCanvassId = null;
 let currentCanvassStatus = "";
+let linkSupplierModal = null;
 
 document.addEventListener("DOMContentLoaded", function () {
     const canvassId = document.getElementById("canvassId")?.value;
+
+    linkSupplierModal =
+        new bootstrap.Modal(
+            document.getElementById("linkSupplierModal")
+        );
 
     if (canvassId) {
         currentCanvassId = canvassId;
         loadCanvassing(canvassId);
     }
+
+    document
+        .getElementById("linkSupplierId")
+        .addEventListener(
+            "change",
+            loadLinkSupplierManufacturers
+        );
 });
 
 async function loadCanvassing(canvassId) {
@@ -27,18 +40,18 @@ async function loadCanvassing(canvassId) {
     document.getElementById("status").value = data.header.status ?? "";
     currentCanvassStatus = data.header.status ?? "";
 
-    if (data.header.status === "OPEN" || data.header.status === "COMPLETED") {
+    //if (data.header.status === "OPEN" || data.header.status === "COMPLETED") {
 
-        document.getElementById("createPoContainer").innerHTML = `
-            <button class="btn btn-warning"
-                    onclick="createPo()">
-                Create PO
-            </button>
-        `;
-    }
-    else {
-        document.getElementById("createPoContainer").innerHTML = "";
-    }
+    //    document.getElementById("createPoContainer").innerHTML = `
+    //        <button class="btn btn-warning"
+    //                onclick="createPo()">
+    //            Create PO
+    //        </button>
+    //    `;
+    //}
+    //else {
+    //    document.getElementById("createPoContainer").innerHTML = "";
+    //}
 
     renderMaterials(data.lines ?? []);
     await loadPoProgress();
@@ -461,11 +474,21 @@ async function openQuoteModal(canvassLineId, materialId, materialName) {
     document.getElementById("quoteUnitPrice").value = "";
     document.getElementById("quotePaymentTerms").value = "";
     document.getElementById("quoteDeliveryDays").value = "";
+    const today = new Date();
+    const localToday =
+        today.getFullYear() + "-" +
+        String(today.getMonth() + 1).padStart(2, "0") + "-" +
+        String(today.getDate()).padStart(2, "0");
+
+    document.getElementById("quoteDate").value = localToday;
+
     document.getElementById("quoteDocumentsRemarks").value = "";
     document.getElementById("quoteQuotationRef").value = "";
-    document.getElementById("quoteDate").value = "";
+   
     document.getElementById("quoteRemarks").value = "";
     document.getElementById("quoteCoaAvailable").value = "true";
+
+
 
     await loadLinkedSuppliers(materialId);
 
@@ -539,6 +562,31 @@ async function loadLinkedSuppliers(materialId) {
         document.getElementById("quoteDeliveryDays").value =
             selected.getAttribute("data-days") || "";
     };
+}
+async function reloadQuoteSuppliersAfterLink(materialId, supplierId) {
+
+    // Reload linked suppliers for this material
+    await loadLinkedSuppliers(materialId);
+
+    const supplierSelect =
+        document.getElementById("quoteSupplierId");
+
+    // Automatically select the supplier we just linked
+    supplierSelect.value = String(supplierId);
+
+    if (supplierSelect.value !== String(supplierId)) {
+        alert(
+            "Supplier was linked successfully, " +
+            "but could not be selected automatically."
+        );
+        return;
+    }
+
+    // Trigger existing onchange logic
+    // This fills Payment Terms and Delivery Days
+    supplierSelect.dispatchEvent(
+        new Event("change")
+    );
 }
 
 async function saveQuote() {
@@ -713,4 +761,335 @@ function createPo() {
     }
     window.location.href =
         `/purchasing/purchase-orders/create/${canvassId}`;
+}
+
+async function openLinkSupplierModal() {
+
+    const materialId =
+        parseInt(
+            document.getElementById("quoteMaterialId").value || "0"
+        );
+
+    const materialName =
+        document.getElementById("quoteMaterial").value;
+
+    if (!materialId) {
+        alert("Material is not available.");
+        return;
+    }
+
+    document.getElementById("linkMaterialId").value =
+        materialId;
+
+    document.getElementById("linkMaterialName").value =
+        materialName;
+
+    document.getElementById("linkPreferred").checked =
+        false;
+
+    document.getElementById("linkSupplierRemarks").value =
+        "";
+
+    await loadSuppliersForLinking();
+
+    document.getElementById("linkManufacturerId").innerHTML =
+        '<option value="">Select Manufacturer</option>';
+
+    const quoteModalEl =
+        document.getElementById("quoteModal");
+
+    quoteModalEl.addEventListener(
+        "hidden.bs.modal",
+        function handler() {
+
+            quoteModalEl.removeEventListener(
+                "hidden.bs.modal",
+                handler
+            );
+
+            linkSupplierModal.show();
+        }
+    );
+
+    bootstrap.Modal
+        .getOrCreateInstance(quoteModalEl)
+        .hide();
+}
+
+async function loadSuppliersForLinking() {
+
+    const ddl =
+        document.getElementById("linkSupplierId");
+
+    ddl.innerHTML =
+        '<option value="">Loading suppliers...</option>';
+
+    try {
+
+        const response =
+            await fetch("/purchasing/suppliers/lookup");
+
+        if (!response.ok) {
+            ddl.innerHTML =
+                '<option value="">Failed to load suppliers</option>';
+            return;
+        }
+
+        const result = await response.json();
+
+        const data =
+            result.data ??
+            result.Data ??
+            result;
+
+        ddl.innerHTML =
+            '<option value="">Select Existing Supplier</option>';
+
+        data.forEach(item => {
+
+            const supplierId =
+                item.supplierId ??
+                item.SupplierId;
+
+            const supplierCode =
+                item.supplierCode ??
+                item.SupplierCode ??
+                "";
+
+            const supplierName =
+                item.supplierName ??
+                item.SupplierName ??
+                "";
+
+            ddl.innerHTML += `
+                <option value="${supplierId}">
+                    ${escapeHtml(supplierCode)}
+                    - ${escapeHtml(supplierName)}
+                </option>
+            `;
+        });
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        ddl.innerHTML =
+            '<option value="">Failed to load suppliers</option>';
+    }
+}
+
+async function loadLinkSupplierManufacturers() {
+
+    const supplierId =
+        parseInt(
+            document.getElementById("linkSupplierId").value || "0"
+        );
+
+    const ddl =
+        document.getElementById("linkManufacturerId");
+
+    ddl.innerHTML =
+        '<option value="">Select Manufacturer</option>';
+
+    if (!supplierId)
+        return;
+
+    try {
+
+        const response =
+            await fetch(
+                `/purchasing/suppliers/${supplierId}/manufacturers`
+            );
+
+        if (!response.ok) {
+            alert("Failed to load supplier manufacturers.");
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if (!data || data.length === 0) {
+
+            ddl.innerHTML =
+                '<option value="">No manufacturer linked</option>';
+
+            return;
+        }
+
+        data.forEach(item => {
+
+            const manufacturerId =
+                item.manufacturerId ??
+                item.ManufacturerId;
+
+            const manufacturerName =
+                item.manufacturerName ??
+                item.ManufacturerName ??
+                "";
+
+            ddl.innerHTML += `
+                <option value="${manufacturerId}">
+                    ${escapeHtml(manufacturerName)}
+                </option>
+            `;
+        });
+
+    }
+    catch (error) {
+        console.error(error);
+        alert("Failed to load supplier manufacturers.");
+    }
+}
+
+async function linkSupplierToMaterial() {
+
+    const supplierId =
+        parseInt(
+            document.getElementById("linkSupplierId").value || "0"
+        );
+
+    const materialId =
+        parseInt(
+            document.getElementById("linkMaterialId").value || "0"
+        );
+
+    const manufacturerId =
+        parseInt(
+            document.getElementById("linkManufacturerId").value || "0"
+        );
+
+    if (!supplierId) {
+        alert("Please select supplier.");
+        return;
+    }
+
+    if (!materialId) {
+        alert("Material is required.");
+        return;
+    }
+
+    if (!manufacturerId) {
+        alert("Please select manufacturer.");
+        return;
+    }
+
+    const payload = {
+
+        supplierId: supplierId,
+
+        materialId: materialId,
+
+        manufacturerId: manufacturerId,
+
+        isPreferred:
+            document.getElementById("linkPreferred").checked,
+
+        remarks:
+            document
+                .getElementById("linkSupplierRemarks")
+                .value
+                .trim()
+    };
+
+    try {
+
+        const response =
+            await fetch(
+                "/purchasing/suppliers/materials/create",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(payload)
+                }
+            );
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            alert(
+                errorText ||
+                "Failed to link supplier to material."
+            );
+
+            return;
+        }
+
+        // Close link modal first
+        linkSupplierModal.hide();
+
+        // Wait until it is completely closed
+        const linkModalEl =
+            document.getElementById("linkSupplierModal");
+
+        linkModalEl.addEventListener(
+            "hidden.bs.modal",
+            async function handler() {
+
+                linkModalEl.removeEventListener(
+                    "hidden.bs.modal",
+                    handler
+                );
+
+                /*
+                 * IMPORTANT:
+                 * Reload the supplier list for the current material.
+                 *
+                 * We will connect this to your existing canvassing
+                 * supplier-loading function.
+                 */
+
+                await reloadQuoteSuppliersAfterLink(
+                    materialId,
+                    supplierId
+                );
+
+                bootstrap.Modal
+                    .getOrCreateInstance(
+                        document.getElementById("quoteModal")
+                    )
+                    .show();
+            }
+        );
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Failed to link supplier to material."
+        );
+    }
+}
+function closeLinkSupplierModal() {
+
+    linkSupplierModal.hide();
+
+    const linkModalEl =
+        document.getElementById("linkSupplierModal");
+
+    linkModalEl.addEventListener(
+        "hidden.bs.modal",
+        function handler() {
+
+            linkModalEl.removeEventListener(
+                "hidden.bs.modal",
+                handler
+            );
+
+            bootstrap.Modal
+                .getOrCreateInstance(
+                    document.getElementById("quoteModal")
+                )
+                .show();
+        }
+    );
 }

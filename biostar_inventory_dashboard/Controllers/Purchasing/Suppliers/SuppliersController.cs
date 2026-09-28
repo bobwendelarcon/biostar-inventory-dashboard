@@ -282,6 +282,24 @@ namespace biostar_inventory_dashboard.Controllers.Purchasing.Suppliers
             return StatusCode((int)response.StatusCode, result);
         }
 
+        [HttpGet("lookup")]
+        public async Task<IActionResult> Lookup(string? search)
+        {
+            var client = CreateClient();
+
+            var url =
+                $"api/purchasing/suppliers" +
+                $"?search={Uri.EscapeDataString(search ?? "")}" +
+                $"&status=Active" +
+                $"&supplierType=" +
+                $"&page=1" +
+                $"&pageSize=1000";
+
+            var result = await client.GetStringAsync(url);
+
+            return Content(result, "application/json");
+        }
+
 
     }
 }
