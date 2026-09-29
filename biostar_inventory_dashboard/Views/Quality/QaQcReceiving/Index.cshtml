@@ -95,9 +95,11 @@
 
     <div class="row g-3 mb-4">
 
+        <!-- Pending -->
         <div class="col-md-3">
             <div class="card summary-card">
                 <div class="card-body">
+
                     <div class="text-muted small">
                         For QA/QC Inspection
                     </div>
@@ -106,6 +108,25 @@
                          class="count text-primary">
                         0
                     </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed -->
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Completed Inspections
+                    </div>
+
+                    <div id="historyCount"
+                         class="count text-success">
+                        0
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -166,6 +187,116 @@
                             <td colspan="8"
                                 class="text-center text-muted py-4">
                                 Loading receiving records...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- QA/QC INSPECTION HISTORY -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-header bg-white border-0 pt-3 px-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h5 class="fw-bold mb-1">
+                        QA/QC Inspection History
+                    </h5>
+
+                    <div class="text-muted small">
+                        Completed raw material receiving inspections
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-md-5">
+
+                    <input id="historySearchInput"
+                           type="text"
+                           class="form-control"
+                           placeholder="Search Inspection No, Incoming No, PO No, Supplier">
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <select id="historyStatusFilter"
+                            class="form-select">
+
+                        <option value="">
+                            All Results
+                        </option>
+
+                        <option value="PASSED">
+                            Passed
+                        </option>
+
+                        <option value="FAILED">
+                            Failed
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button type="button"
+                            class="btn btn-outline-secondary w-100"
+                            onclick="loadHistory()">
+                        Refresh
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Inspection No</th>
+                            <th>Incoming No</th>
+                            <th>PO No</th>
+                            <th>Supplier</th>
+                            <th>Inspection Date</th>
+                            <th>Inspected By</th>
+                            <th>Result</th>
+                            <th>Current Stage</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="historyBody">
+
+                        <tr>
+                            <td colspan="8"
+                                class="text-center text-muted py-4">
+                                Loading inspection history...
                             </td>
                         </tr>
 
@@ -379,9 +510,13 @@
 
 
 
-    let pendingList = [];
+       let pendingList = [];
+    let historyList = [];
+
     let currentReceiving = null;
     let qaReceivingModal = null;
+
+
 
         const loggedInFullName =
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
@@ -426,10 +561,262 @@
                     saveInspection
                 );
 
-            loadPending();
+                    document
+        .getElementById("historySearchInput")
+        .addEventListener(
+            "input",
+            renderHistory
+        );
+
+    document
+        .getElementById("historyStatusFilter")
+        .addEventListener(
+            "change",
+            renderHistory
+        );
+
+                loadPending();
+    loadHistory();
         }
     );
+        // =============================================================
+    // LOAD QA/QC INSPECTION HISTORY
+    // =============================================================
 
+    async function loadHistory() {
+
+        const tbody =
+            document.getElementById("historyBody");
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8"
+                    class="text-center text-muted py-4">
+                    Loading inspection history...
+                </td>
+            </tr>
+        `;
+
+        try {
+
+            const response =
+                await fetch(
+                    "/quality/qa-qc-receiving/history"
+                );
+
+            const data =
+                await readJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message ??
+                    "Unable to load inspection history."
+                );
+            }
+
+            historyList =
+                Array.isArray(data)
+                    ? data
+                    : [];
+
+            document.getElementById(
+                "historyCount"
+            ).innerText =
+                historyList.length;
+
+            renderHistory();
+        }
+        catch (error) {
+
+            historyList = [];
+
+            document.getElementById(
+                "historyCount"
+            ).innerText = "0";
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-danger py-4">
+                        ${escapeHtml(error.message)}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+        // =============================================================
+    // RENDER QA/QC INSPECTION HISTORY
+    // =============================================================
+
+    function renderHistory() {
+
+        const tbody =
+            document.getElementById("historyBody");
+
+        const search =
+            document.getElementById(
+                "historySearchInput"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+        const status =
+            document.getElementById(
+                "historyStatusFilter"
+            ).value;
+
+        const filtered =
+            historyList.filter(x => {
+
+                const searchable = [
+                    x.inspectionNo,
+                    x.incomingNo,
+                    x.poNo,
+                    x.supplierName,
+                    x.inspectedBy,
+                    x.receivedBy,
+                    x.notedBy
+                ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+                const matchesSearch =
+                    !search ||
+                    searchable.includes(search);
+
+                const matchesStatus =
+                    !status ||
+                    String(x.status ?? "")
+                        .toUpperCase() === status;
+
+                return matchesSearch &&
+                       matchesStatus;
+            });
+
+
+        tbody.innerHTML = "";
+
+
+        if (filtered.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8"
+                        class="text-center text-muted py-4">
+                        No QA/QC inspection history found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        for (const row of filtered) {
+
+            const result =
+                String(row.status ?? "")
+                    .toUpperCase();
+
+            let resultBadge =
+                "bg-secondary";
+
+            if (result === "PASSED") {
+                resultBadge =
+                    "bg-success";
+            }
+            else if (result === "FAILED") {
+                resultBadge =
+                    "bg-danger";
+            }
+
+
+            const currentStatus =
+                String(
+                    row.currentReceivingStatus ?? ""
+                );
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <tr>
+
+                        <td class="fw-semibold">
+                            ${escapeHtml(
+                                row.inspectionNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.incomingNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.poNo ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.supplierName ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDate(
+                                row.inspectionDate
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                row.inspectedBy ?? "-"
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="badge ${resultBadge}">
+                                ${escapeHtml(
+                                    result || "-"
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                ${escapeHtml(
+                                    formatReceivingStatus(
+                                        currentStatus
+                                    )
+                                )}
+                            </span>
+                        </td>
+
+                    </tr>
+                `
+            );
+        }
+    }
+
+        function formatReceivingStatus(value) {
+
+        if (!value)
+            return "-";
+
+        return String(value)
+            .replaceAll("_", " ")
+            .toLowerCase()
+            .replace(
+                /\b\w/g,
+                x => x.toUpperCase()
+            );
+    }
 
     // =============================================================
     // LOAD PENDING RMW RECEIVINGS
@@ -1582,7 +1969,7 @@
     }
 
 
-    }
+  
 
 
         // =========================================================
@@ -1645,6 +2032,9 @@
                 field.value = "";
         });
     }
+
+
+      }
 
 
     // =============================================================
@@ -1937,7 +2327,10 @@
 
             currentReceiving = null;
 
-            await loadPending();
+                await Promise.all([
+        loadPending(),
+        loadHistory()
+    ]);
 
         }
         catch (error) {
