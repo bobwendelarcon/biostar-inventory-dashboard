@@ -7,95 +7,60 @@ let currentPage = 1;
 const pageSize = 50;
 
 document.addEventListener("DOMContentLoaded", function () {
-    materialModal = new bootstrap.Modal(document.getElementById("materialModal"));
+
+    materialModal = new bootstrap.Modal(
+        document.getElementById("materialModal")
+    );
 
     loadCategories();
     loadAllSubCategories();
     loadMaterials();
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
+    document.getElementById("btnAddMaterial")
+        .addEventListener("click", openAddModal);
 
-            materialModal =
-                new bootstrap.Modal(
-                    document.getElementById(
-                        "materialModal"
-                    )
-                );
+    document.getElementById("btnSaveMaterial")
+        .addEventListener("click", saveMaterial);
 
-            loadCategories();
-            loadAllSubCategories();
-            loadMaterials();
+    document.getElementById("btnResetFilters")
+        .addEventListener("click", resetFilters);
 
-            document.getElementById(
-                "btnAddMaterial"
-            ).addEventListener(
-                "click",
-                openAddModal
-            );
+    document.getElementById("txtSearchMaterial")
+        .addEventListener("input", function () {
+            currentPage = 1;
+            renderMaterials();
+        });
 
-            document.getElementById(
-                "btnSaveMaterial"
-            ).addEventListener(
-                "click",
-                saveMaterial
-            );
+    document.getElementById("filterCategory")
+        .addEventListener("change", function () {
 
-            document.getElementById(
-                "btnResetFilters"
-            ).addEventListener(
-                "click",
-                resetFilters
-            );
+            currentPage = 1;
 
+            filterSubCategoriesByCategory(this.value);
 
-            document.addEventListener(
-                "click",
-                function () {
-                    closeMaterialMenu();
-                }
-            );
+            renderMaterials();
+        });
 
-            window.addEventListener(
-                "scroll",
-                closeMaterialMenu,
-                true
-            );
+    document.getElementById("filterSubCategory")
+        .addEventListener("change", function () {
+            currentPage = 1;
+            renderMaterials();
+        });
 
+    document.getElementById("materialCategoryId")
+        .addEventListener("change", async function () {
+            await loadSubCategoriesForModal(this.value);
+        });
 
-            document.getElementById(
-                "materialCategoryId"
-            ).addEventListener(
-                "change",
-                async function () {
+    document.addEventListener("click", function () {
+        closeMaterialMenu();
+    });
 
-                    await loadSubCategoriesForModal(
-                        this.value
-                    );
-                }
-            );
-        }
+    window.addEventListener(
+        "scroll",
+        closeMaterialMenu,
+        true
     );
-
-    document.getElementById("btnAddMaterial").addEventListener("click", openAddModal);
-    document.getElementById("btnSaveMaterial").addEventListener("click", saveMaterial);
-    document.getElementById("btnResetFilters").addEventListener("click", resetFilters);
-
-    document.getElementById("txtSearchMaterial").addEventListener("input", renderMaterials);
-    document.getElementById("filterCategory").addEventListener("change", function () {
-
-        currentPage = 1;
-
-        filterSubCategoriesByCategory(this.value);
-
-        renderMaterials();
-    });
-    document.getElementById("filterSubCategory").addEventListener("change", renderMaterials);
-
-    document.getElementById("materialCategoryId").addEventListener("change", async function () {
-        await loadSubCategoriesForModal(this.value);
-    });
 });
 
 async function loadCategories() {
@@ -607,6 +572,12 @@ async function editMaterial(id) {
     document.getElementById("isLotTracked").checked =
         m.is_lot_tracked ?? false;
 
+    document.getElementById("processingType").value =
+        m.processing_type ?? "NONE";
+
+    document.getElementById("requiresSticker").checked =
+        m.requires_sticker ?? false;
+
     materialModal.show();
 }
 
@@ -625,7 +596,10 @@ async function saveMaterial() {
         pack_qty: parseFloat(document.getElementById("packQty").value || 0),
         minimum_stock: parseFloat(document.getElementById("minimumStock").value || 0),
         description: document.getElementById("description").value.trim(),
-        is_lot_tracked: document.getElementById("isLotTracked").checked
+        is_lot_tracked: document.getElementById("isLotTracked").checked,
+
+        processing_type: document.getElementById("processingType").value,
+        requires_sticker: document.getElementById("requiresSticker").checked
     };
 
     if (id) {
@@ -705,13 +679,20 @@ function clearForm() {
     document.getElementById("materialCode").value = "Auto-generated";
     document.getElementById("materialName").value = "";
     document.getElementById("materialCategoryId").value = "";
-    document.getElementById("materialSubCategoryId").innerHTML = `<option value="">No Sub Category</option>`;
+    document.getElementById("materialSubCategoryId").innerHTML =
+        `<option value="">No Sub Category</option>`;
+
     document.getElementById("uom").value = "";
     document.getElementById("packUom").value = "";
     document.getElementById("packQty").value = 0;
     document.getElementById("minimumStock").value = 0;
     document.getElementById("description").value = "";
+
     document.getElementById("isLotTracked").checked = false;
+
+    // RMW processing defaults
+    document.getElementById("processingType").value = "NONE";
+    document.getElementById("requiresSticker").checked = false;
 }
 
 function formatNumber(value) {

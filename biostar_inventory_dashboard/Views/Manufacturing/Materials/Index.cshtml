@@ -246,6 +246,75 @@
                     </div>
 
 
+                    <!-- RMW Processing -->
+                    <div class="col-md-12">
+                        <div class="border rounded p-3 bg-light">
+
+                            <div class="fw-semibold mb-3">
+                                Raw Material Processing
+                            </div>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Processing Type
+                                    </label>
+
+                                    <select id="processingType"
+                                            class="form-select">
+
+                                        <option value="NONE">
+                                            None
+                                        </option>
+
+                                        <option value="WEIGHING">
+                                            Weighing
+                                        </option>
+
+                                        <option value="COUNTING">
+                                            Counting
+                                        </option>
+
+                                    </select>
+
+                                    <div class="form-text">
+                                        None = no weighing/counting required.
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label d-block">
+                                        Sticker / Identification
+                                    </label>
+
+                                    <div class="form-check form-switch mt-2">
+
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               role="switch"
+                                               id="requiresSticker">
+
+                                        <label class="form-check-label fw-semibold"
+                                               for="requiresSticker">
+                                            Requires Sticker
+                                        </label>
+
+                                    </div>
+
+                                    <div class="form-text">
+                                        Enable when RMW must apply a sticker or
+                                        identification label before final receiving.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
                     <!-- Description -->
                     <div class="col-md-12">
                         <label class="form-label">
