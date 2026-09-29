@@ -190,5 +190,46 @@ namespace biostar_inventory_dashboard.Controllers.Quality
                     "application/json"
             };
         }
+
+        // ============================================================
+        // GET QA/QC RECEIVING INSPECTION HISTORY
+        // ============================================================
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            try
+            {
+                var client = CreateClient();
+
+                var response =
+                    await client.GetAsync(
+                        "api/purchasing/qa-qc-receiving/history"
+                    );
+
+                var result =
+                    await response.Content.ReadAsStringAsync();
+
+                return new ContentResult
+                {
+                    StatusCode =
+                        (int)response.StatusCode,
+
+                    Content =
+                        result,
+
+                    ContentType =
+                        "application/json"
+                };
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+
     }
 }
