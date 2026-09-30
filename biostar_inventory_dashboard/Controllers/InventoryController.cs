@@ -338,26 +338,136 @@ order
                     }
                 }
             }
+            ViewBag.GeneratedAt =
+                DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt");
 
-            ViewBag.GeneratedAt = DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt");
             ViewBag.Warehouse = warehouseName;
-            ViewBag.Category = string.IsNullOrWhiteSpace(category) ? "All" : category;
+
+            ViewBag.Category =
+                string.IsNullOrWhiteSpace(category)
+                    ? "All"
+                    : category;
+
+            ViewBag.LotNo = lot_no;
+            ViewBag.Search = search;
+
             ViewBag.StockStatus = stockStatus;
             ViewBag.ExpiryStatus = expiryStatus;
-            ViewBag.TotalRecords = result.Data?.Count ?? 0;
-            ViewBag.PrintedBy = User.Identity?.Name ?? "Unknown";
+            ViewBag.Months = months;
+
+            ViewBag.DateFrom = from;
+            ViewBag.DateTo = to;
+
+            ViewBag.SortBy = sortBy;
+            ViewBag.Order = order;
+
+            ViewBag.TotalRecords =
+                result.Data?.Count ?? 0;
+
+            ViewBag.PrintedBy =
+                User.Identity?.Name ?? "Unknown";
 
             return View("Print", result.Data ?? new());
         }
 
 
+        //   [HttpGet]
+        //   public async Task<IActionResult> PrintSummary(
+        //string search = "",
+        //string warehouse = "",
+        //string categories = "",
+        //string stockStatus = "",
+        //string order = "asc")
+        //   {
+        //       try
+        //       {
+        //           var items =
+        //               await _apiService.GetInventoryPrintSummaryAsync(
+        //                   search,
+        //                   warehouse,
+        //                   categories,
+        //                   stockStatus,
+        //                   order
+        //               );
+
+        //           var branches =
+        //               await _apiService.GetBranchesAsync();
+
+        //           string warehouseName = "All Warehouses";
+
+        //           if (!string.IsNullOrWhiteSpace(warehouse))
+        //           {
+        //               foreach (JsonElement branch in branches)
+        //               {
+        //                   string branchId =
+        //                       branch.TryGetProperty(
+        //                           "branch_id",
+        //                           out var idProperty)
+        //                           ? idProperty.GetString() ?? ""
+        //                           : "";
+
+        //                   if (branchId == warehouse)
+        //                   {
+        //                       warehouseName =
+        //                           branch.TryGetProperty(
+        //                               "branch_name",
+        //                               out var nameProperty)
+        //                               ? nameProperty.GetString() ?? warehouse
+        //                               : warehouse;
+
+        //                       break;
+        //                   }
+        //               }
+        //           }
+
+        //           var selectedCategories =
+        //               (categories ?? "")
+        //               .Split(
+        //                   '|',
+        //                   StringSplitOptions.RemoveEmptyEntries |
+        //                   StringSplitOptions.TrimEntries
+        //               );
+
+        //           ViewBag.GeneratedAt =
+        //               DateTime.Now.ToString(
+        //                   "MMMM dd, yyyy hh:mm tt"
+        //               );
+
+        //           ViewBag.Warehouse = warehouseName;
+
+        //           ViewBag.Category =
+        //               selectedCategories.Length == 0
+        //                   ? "All Categories"
+        //                   : string.Join(", ", selectedCategories);
+
+        //           ViewBag.TotalRecords = items.Count;
+
+        //           ViewBag.PrintedBy =
+        //               User.Identity?.Name ?? "Unknown";
+
+        //           return View("PrintSummary", items);
+        //       }
+        //       catch (Exception ex)
+        //       {
+        //           return Content(
+        //               $"Failed to load inventory summary: {ex.Message}"
+        //           );
+        //       }
+        //   }
+
+
         [HttpGet]
         public async Task<IActionResult> PrintSummary(
-     string search = "",
-     string warehouse = "",
-     string categories = "",
-     string stockStatus = "",
-     string order = "asc")
+       string search = "",
+       string warehouse = "",
+       string categories = "",
+       string stockStatus = "",
+       string expiryStatus = "",
+       string months = "",
+       string from = "",
+       string to = "",
+       string sortBy = "lot",
+       string order = "desc")
         {
             try
             {
@@ -367,6 +477,11 @@ order
                         warehouse,
                         categories,
                         stockStatus,
+                        expiryStatus,
+                        months,
+                        from,
+                        to,
+                        sortBy,
                         order
                     );
 
@@ -409,9 +524,7 @@ order
                     );
 
                 ViewBag.GeneratedAt =
-                    DateTime.Now.ToString(
-                        "MMMM dd, yyyy hh:mm tt"
-                    );
+                    DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt");
 
                 ViewBag.Warehouse = warehouseName;
 
@@ -419,6 +532,17 @@ order
                     selectedCategories.Length == 0
                         ? "All Categories"
                         : string.Join(", ", selectedCategories);
+
+                ViewBag.Search = search;
+                ViewBag.StockStatus = stockStatus;
+                ViewBag.ExpiryStatus = expiryStatus;
+                ViewBag.Months = months;
+
+                ViewBag.DateFrom = from;
+                ViewBag.DateTo = to;
+
+                ViewBag.SortBy = sortBy;
+                ViewBag.Order = order;
 
                 ViewBag.TotalRecords = items.Count;
 
@@ -434,5 +558,7 @@ order
                 );
             }
         }
+
+
     }
 }

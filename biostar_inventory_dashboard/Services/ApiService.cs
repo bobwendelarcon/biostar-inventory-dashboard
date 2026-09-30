@@ -1742,12 +1742,17 @@ namespace biostar_inventory_dashboard.Services
 
 
         public async Task<List<InventoryPrintSummaryDto>>
-       GetInventoryPrintSummaryAsync(
-           string search = "",
-           string warehouse = "",
-           string categories = "",
-           string stockStatus = "",
-           string order = "asc")
+GetInventoryPrintSummaryAsync(
+    string search = "",
+    string warehouse = "",
+    string categories = "",
+    string stockStatus = "",
+    string expiryStatus = "",
+    string months = "",
+    string from = "",
+    string to = "",
+    string sortBy = "lot",
+    string order = "desc")
         {
             var queryParams = new List<string>();
 
@@ -1779,6 +1784,46 @@ namespace biostar_inventory_dashboard.Services
                 );
             }
 
+            // Expiry filter
+            if (!string.IsNullOrWhiteSpace(expiryStatus))
+            {
+                queryParams.Add(
+                    $"expiryStatus={Uri.EscapeDataString(expiryStatus)}"
+                );
+            }
+
+            // Remaining months filter
+            if (!string.IsNullOrWhiteSpace(months))
+            {
+                queryParams.Add(
+                    $"months={Uri.EscapeDataString(months)}"
+                );
+            }
+
+            // Date filters
+            if (!string.IsNullOrWhiteSpace(from))
+            {
+                queryParams.Add(
+                    $"from={Uri.EscapeDataString(from)}"
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(to))
+            {
+                queryParams.Add(
+                    $"to={Uri.EscapeDataString(to)}"
+                );
+            }
+
+            // Sort field
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                queryParams.Add(
+                    $"sortBy={Uri.EscapeDataString(sortBy)}"
+                );
+            }
+
+            // Sort direction
             if (!string.IsNullOrWhiteSpace(order))
             {
                 queryParams.Add(
@@ -1810,7 +1855,6 @@ namespace biostar_inventory_dashboard.Services
             >(json, _jsonOptions)
             ?? new List<InventoryPrintSummaryDto>();
         }
-
 
         public async Task<string> GetAvailableLinesForChecklistAsync(long checklistId)
         {

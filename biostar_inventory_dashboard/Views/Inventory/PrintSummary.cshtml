@@ -541,38 +541,172 @@
 
                     <div>
                         <div>
-                            <span class="meta-label">
-                                Warehouse:
-                            </span>
-
+                            <span class="meta-label">Warehouse:</span>
                             @ViewBag.Warehouse
                         </div>
 
                         <div>
-                            <span class="meta-label">
-                                Category:
-                            </span>
-
+                            <span class="meta-label">Category:</span>
                             @ViewBag.Category
                         </div>
+
+                        @* DATE FILTER *@
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.DateFrom)) ||
+                                        !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.DateTo)))
+                        {
+                            string dateFromText = "";
+                            string dateToText = "";
+
+                            if (DateTime.TryParse(
+                            Convert.ToString(ViewBag.DateFrom),
+                            out DateTime dateFrom))
+                            {
+                                dateFromText = dateFrom.ToString("MMM dd, yyyy");
+                            }
+
+                            if (DateTime.TryParse(
+                            Convert.ToString(ViewBag.DateTo),
+                            out DateTime dateTo))
+                            {
+                                dateToText = dateTo.ToString("MMM dd, yyyy");
+                            }
+
+                            <div>
+                                <span class="meta-label">Inventory Date:</span>
+
+                                @if (!string.IsNullOrWhiteSpace(dateFromText) &&
+                                                    !string.IsNullOrWhiteSpace(dateToText))
+                                {
+                                    if (dateFromText == dateToText)
+                                    {
+                                        @dateFromText
+                                    }
+                                    else
+                                    {
+                                        @($"{dateFromText} - {dateToText}")
+                                    }
+                                }
+                                else if (!string.IsNullOrWhiteSpace(dateFromText))
+                                {
+                                    @($"From {dateFromText}")
+                                }
+                                else if (!string.IsNullOrWhiteSpace(dateToText))
+                                {
+                                    @($"Up to {dateToText}")
+                                }
+                            </div>
+                        }
+
+                        @* PRODUCT SEARCH *@
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Search)))
+                        {
+                            <div>
+                                <span class="meta-label">Search:</span>
+                                @ViewBag.Search
+                            </div>
+                        }
+
+                        @* STOCK STATUS *@
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.StockStatus)))
+                        {
+                            var stockStatus =
+                            Convert.ToString(ViewBag.StockStatus);
+
+                            var stockText =
+                            stockStatus == "available" ? "Available" :
+                            stockStatus == "out" ? "Out of Stock" :
+                            stockStatus;
+
+                            <div>
+                                <span class="meta-label">Stock Status:</span>
+                                @stockText
+                            </div>
+                        }
+
+                        @* EXPIRY STATUS *@
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.ExpiryStatus)))
+                        {
+                            var expiryStatus =
+                            Convert.ToString(ViewBag.ExpiryStatus);
+
+                            var expiryText =
+                            expiryStatus == "expired" ? "Expired" :
+                            expiryStatus == "notexpired" ? "Not Expired" :
+                            expiryStatus == "available" ? "Available / Not Expired" :
+                            expiryStatus == "near" ? "Near Expiry (≤ 2 months)" :
+                            expiryStatus == "safe" ? "Safe (> 2 months)" :
+                            expiryStatus == "noexp" ? "No Expiration Date" :
+                            expiryStatus;
+
+                            <div>
+                                <span class="meta-label">Expiry Status:</span>
+                                @expiryText
+                            </div>
+                        }
+
+                        @* REMAINING MONTHS *@
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Months)))
+                        {
+                            var months =
+                            Convert.ToString(ViewBag.Months);
+
+                            var monthsText =
+                            months == "over12"
+                            ? "Over 12 Months"
+                            : $"{months} Month{(months == "1" ? "" : "s")}";
+
+                            <div>
+                                <span class="meta-label">Remaining:</span>
+                                @monthsText
+                            </div>
+                        }
                     </div>
 
                     <div class="report-meta-right">
-                        <div>
-                            <span class="meta-label">
-                                Total Products:
-                            </span>
 
+                        <div>
+                            <span class="meta-label">Total Products:</span>
                             @ViewBag.TotalRecords
                         </div>
 
                         <div>
-                            <span class="meta-label">
-                                Printed By:
-                            </span>
-
+                            <span class="meta-label">Printed By:</span>
                             @ViewBag.PrintedBy
                         </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.SortBy)))
+                        {
+                            var sortBy =
+                            Convert.ToString(ViewBag.SortBy);
+
+                            var sortText =
+                            sortBy == "generic" ? "Generic Name" :
+                            sortBy == "brand" ? "Brand Name" :
+                            sortBy == "lot" ? "Lot No" :
+                            sortBy;
+
+                            <div>
+                                <span class="meta-label">Sort By:</span>
+                                @sortText
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Order)))
+                        {
+                            var order =
+                            Convert.ToString(ViewBag.Order);
+
+                            var orderText =
+                            order == "desc"
+                            ? "Descending"
+                            : "Ascending";
+
+                            <div>
+                                <span class="meta-label">Order:</span>
+                                @orderText
+                            </div>
+                        }
+
                     </div>
 
                 </div>

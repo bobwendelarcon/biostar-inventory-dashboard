@@ -1080,11 +1080,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.querySelectorAll(
                     ".print-category-checkbox:checked"
                 )
-            ).map(checkbox =>
-                checkbox.dataset.category || ""
-            ).filter(category =>
-                category.trim() !== ""
-            );
+            )
+                .map(checkbox => checkbox.dataset.category || "")
+                .filter(category => category.trim() !== "");
 
             if (selectedCategories.length === 0) {
                 alert("Please select at least one category.");
@@ -1114,17 +1112,37 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             params.set(
+                "expiryStatus",
+                document.getElementById("expiryStatusFilter")?.value || ""
+            );
+
+            params.set(
+                "months",
+                document.getElementById("monthsFilter")?.value || ""
+            );
+
+            params.set(
+                "from",
+                document.getElementById("dateFromFilter")?.value || ""
+            );
+
+            params.set(
+                "to",
+                document.getElementById("dateToFilter")?.value || ""
+            );
+
+            params.set(
+                "sortBy",
+                document.getElementById("sortByFilter")?.value || "lot"
+            );
+
+            params.set(
                 "order",
-                document.getElementById("orderFilter")?.value || "asc"
+                document.getElementById("orderFilter")?.value || "desc"
             );
 
             console.log(
-                "Selected print categories:",
-                selectedCategories
-            );
-
-            console.log(
-                "Print URL:",
+                "Print Summary URL:",
                 `/Inventory/PrintSummary?${params.toString()}`
             );
 

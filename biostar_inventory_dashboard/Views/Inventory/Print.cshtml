@@ -138,11 +138,122 @@
     <div class="header">
         <div class="title">BNPI INVENTORY STOCK REPORT</div>
         <div class="meta">
-            <div><strong>Generated:</strong> @ViewBag.GeneratedAt</div>
-            <div><strong>Printed By:</strong> @ViewBag.PrintedBy</div>
-            <div><strong>Total Records:</strong> @ViewBag.TotalRecords</div>
-            <div><strong>Warehouse:</strong> @ViewBag.Warehouse</div>
-            <div><strong>Category:</strong> @ViewBag.Category</div>
+
+            <div>
+                <strong>Generated:</strong>
+                @ViewBag.GeneratedAt
+            </div>
+
+            <div>
+                <strong>Printed By:</strong>
+                @ViewBag.PrintedBy
+            </div>
+
+            <div>
+                <strong>Total Records:</strong>
+                @ViewBag.TotalRecords
+            </div>
+
+            <div>
+                <strong>Warehouse:</strong>
+                @ViewBag.Warehouse
+            </div>
+
+            <div>
+                <strong>Category:</strong>
+                @ViewBag.Category
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.LotNo)))
+            {
+                <div>
+                    <strong>Lot No:</strong>
+                    @ViewBag.LotNo
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Search)))
+            {
+                <div>
+                    <strong>Search:</strong>
+                    @ViewBag.Search
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.DateFrom)) ||
+                        !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.DateTo)))
+            {
+                <div>
+                    <strong>Date:</strong>
+
+                    @{
+                        string fromText = "";
+                        string toText = "";
+
+                        if (DateTime.TryParse(
+                        Convert.ToString(ViewBag.DateFrom),
+                        out DateTime fromDate))
+                        {
+                            fromText =
+                            fromDate.ToString("MMM dd, yyyy");
+                        }
+
+                        if (DateTime.TryParse(
+                        Convert.ToString(ViewBag.DateTo),
+                        out DateTime toDate))
+                        {
+                            toText =
+                            toDate.ToString("MMM dd, yyyy");
+                        }
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(fromText) &&
+                                    !string.IsNullOrWhiteSpace(toText))
+                    {
+                        if (fromText == toText)
+                        {
+                            @fromText
+                        }
+                        else
+                        {
+                            @($"{fromText} - {toText}")
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(fromText))
+                    {
+                        @($"From {fromText}")
+                    }
+                    else if (!string.IsNullOrWhiteSpace(toText))
+                    {
+                        @($"Up to {toText}")
+                    }
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.StockStatus)))
+            {
+                <div>
+                    <strong>Stock Status:</strong>
+                    @ViewBag.StockStatus
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.ExpiryStatus)))
+            {
+                <div>
+                    <strong>Expiry Status:</strong>
+                    @ViewBag.ExpiryStatus
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Months)))
+            {
+                <div>
+                    <strong>Months Left:</strong>
+                    @ViewBag.Months
+                </div>
+            }
+
         </div>
     </div>
 
