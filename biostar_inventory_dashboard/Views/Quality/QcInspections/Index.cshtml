@@ -515,10 +515,30 @@ async function loadQcInspections() {
                 }))
                 : [];
 
-        qcList = [
-            ...pending,
-            ...started
-        ];
+            // ------------------------------------------------------------
+    // Remove pending quarantine rows that already have a QC record.
+    // The QC record becomes the authoritative row once evaluation
+    // has been started.
+    // ------------------------------------------------------------
+    const startedQuarantineIds = new Set(
+        started
+            .map(x => Number(x.quarantineId))
+            .filter(x => x > 0)
+    );
+
+    const actualPending = pending.filter(x => {
+        const quarantineId = Number(x.quarantineId);
+
+        return (
+            quarantineId > 0 &&
+            !startedQuarantineIds.has(quarantineId)
+        );
+    });
+
+    qcList = [
+        ...actualPending,
+        ...started
+    ];
 
         updateSummaryCards();
         renderTable();
@@ -541,12 +561,11 @@ async function loadQcInspections() {
     }
 }
 
-         function updateSummaryCards() {
+        function updateSummaryCards() {
 
         const forInspection =
             qcList.filter(x =>
-                normalizeStatus(x.status) === "QUARANTINED" &&
-                !x.qcId
+                x.recordType === "PENDING"
             ).length;
 
         const onHold =
@@ -570,26 +589,21 @@ async function loadQcInspections() {
                 ) === "REJECTED"
             ).length;
 
-
         document.getElementById(
             "forInspectionCount"
-        ).innerText =
-            forInspection;
+        ).innerText = forInspection;
 
         document.getElementById(
             "onHoldCount"
-        ).innerText =
-            onHold;
+        ).innerText = onHold;
 
         document.getElementById(
             "releasedCount"
-        ).innerText =
-            released;
+        ).innerText = released;
 
         document.getElementById(
             "rejectedCount"
-        ).innerText =
-            rejected;
+        ).innerText = rejected;
     }
 
           function renderTable() {

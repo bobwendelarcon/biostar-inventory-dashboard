@@ -774,25 +774,25 @@
                         : "PENDING"
             },
 
-            {
-                name: "PO Approval",
+                   {
+            name: "PO Approval",
 
-                start: item.poApprovedAt,
+            start: item.poApprovedAt,
 
-                end: null,
+            end: null,
 
-                duration: null,
+            duration: null,
 
-                responsible:
-                    item.approvedByName ??
-                    item.approvedBy ??
-                    "-",
+            responsible:
+                item.approvedByName ??
+                item.approvedBy ??
+                "-",
 
-                status:
-                    item.poApprovedAt
-                        ? "APPROVED"
-                        : "PENDING"
-            },
+            status:
+                item.poApprovedAt
+                    ? "APPROVED"
+                    : "PENDING"
+        },
 
             {
                 name: "Supplier Delivery",
@@ -816,25 +816,25 @@
                         )
             },
 
-            {
-                name: "Incoming Receiving",
+                   {
+            name: "Incoming Receiving",
 
-                start: item.incomingReceivedAt,
+            start: item.incomingReceivedAt,
 
-                end: null,
+            end: item.incomingReceivingCompletedAt,
 
-                duration: null,
+            duration: item.incomingReceivingMinutes,
 
-                   responsible:
-        item.incomingReceivedByName ??
-        item.incomingReceivedBy ??
-        "-",
+            responsible:
+                item.incomingReceivedByName ??
+                item.incomingReceivedBy ??
+                "-",
 
-                status:
-                    item.incomingReceivedAt
-                        ? "RECEIVED"
-                        : "PENDING"
-            }
+            status:
+                item.incomingReceivedAt
+                    ? "RECEIVED"
+                    : "PENDING"
+        }
 
         ];
 

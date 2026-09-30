@@ -115,6 +115,9 @@
                         <option value="STICKER_COMPLETED">
                             Sticker Completed
                         </option>
+                        <option value="READY_FOR_FINAL_RR">
+                            Ready for Final RR
+                        </option>
 
                         <option value="INVENTORY_COMMITTED">
                             Inventory Committed
@@ -2015,37 +2018,51 @@
                             )}
                         </td>
 
-                            <td>
+                           <td>
         ${
-               normalizeStatus(header.status) !== "COMPLETED" &&
-    [
-        "READY_FOR_WEIGHING",
-        "WEIGHING_IN_PROGRESS",
-        "WEIGHING_COMPLETED",
-        "STICKER_COMPLETED",
-        "READY_FOR_FINAL_RR"
-    ].includes(
-        normalizeStatus(
-            line.status ?? header.status
-        )
-    )
+            normalizeStatus(
+                line.status ?? header.status
+            ) === "READY_FOR_FINAL_RR"
                 ? `
-                    <button type="button"
-                            class="btn btn-sm btn-primary"
-                            onclick="openMaterialProcessing(
-                                ${Number(header.processingId)},
-                                ${Number(line.processingLineId)}
-                            )">
-                        Process
-                    </button>
-                  `
-                : `
-                    <span class="text-muted small">
-                        ${escapeHtml(line.status ?? header.status ?? "-")}
+                    <span class="badge bg-success">
+                        READY FOR FINAL RR
                     </span>
                   `
+                : (
+                    normalizeStatus(header.status) !== "COMPLETED" &&
+                    [
+                        "READY_FOR_WEIGHING",
+                        "WEIGHING_IN_PROGRESS",
+                        "WEIGHING_COMPLETED",
+                        "STICKER_COMPLETED"
+                    ].includes(
+                        normalizeStatus(
+                            line.status ?? header.status
+                        )
+                    )
+                )
+                    ? `
+                        <button type="button"
+                                class="btn btn-sm btn-primary"
+                                onclick="openMaterialProcessing(
+                                    ${Number(header.processingId)},
+                                    ${Number(line.processingLineId)}
+                                )">
+                            Process
+                        </button>
+                      `
+                    : `
+                        <span class="text-muted small">
+                            ${escapeHtml(
+                                line.status ??
+                                header.status ??
+                                "-"
+                            )}
+                        </span>
+                      `
         }
     </td>
+
 
                     </tr>
                 `;

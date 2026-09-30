@@ -1851,36 +1851,28 @@
         // FORMAT DATE
         // ================================================================
 
-        function formatDateTime(
-            value
-        ) {
+              function formatDateTime(value) {
 
             if (!value) {
-
                 return "-";
             }
 
-
-            const date =
-                parseDate(
-                    value
-                );
-
+            const date = parseDate(value);
 
             if (!date) {
-
                 return "-";
             }
 
-
             return date.toLocaleString(
-                undefined,
+                "en-PH",
                 {
+                    timeZone: "Asia/Manila",
                     year: "numeric",
                     month: "short",
                     day: "2-digit",
                     hour: "2-digit",
-                    minute: "2-digit"
+                    minute: "2-digit",
+                    hour12: true
                 }
             );
         }
@@ -1890,31 +1882,29 @@
         // PARSE DATE
         // ================================================================
 
-        function parseDate(
-            value
-        ) {
+               function parseDate(value) {
 
             if (!value) {
-
                 return null;
             }
 
+            let dateValue = String(value).trim();
 
-            const date =
-                new Date(
-                    value
-                );
+            // Backend stores/sends UTC timestamps.
+            // If API did not include Z or an offset, explicitly mark it as UTC.
+            const hasTimezone =
+                /Z$/i.test(dateValue) ||
+                /[+-]\d{2}:\d{2}$/.test(dateValue);
 
-
-            if (
-                Number.isNaN(
-                    date.getTime()
-                )
-            ) {
-
-                return null;
+            if (!hasTimezone) {
+                dateValue += "Z";
             }
 
+            const date = new Date(dateValue);
+
+            if (Number.isNaN(date.getTime())) {
+                return null;
+            }
 
             return date;
         }

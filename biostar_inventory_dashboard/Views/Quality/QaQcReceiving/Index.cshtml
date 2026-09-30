@@ -169,6 +169,7 @@
                         <tr>
                             <th>Incoming No</th>
                             <th>PO No</th>
+                            <th>Printed PO No</th>
                             <th>Supplier</th>
                             <th>Delivery Date</th>
                             <th>Received By</th>
@@ -184,7 +185,7 @@
                     <tbody id="pendingBody">
 
                         <tr>
-                            <td colspan="8"
+                            <td colspan="9"
                                 class="text-center text-muted py-4">
                                 Loading receiving records...
                             </td>
@@ -282,11 +283,13 @@
                             <th>Inspection No</th>
                             <th>Incoming No</th>
                             <th>PO No</th>
+                            <th>Printed PO No</th>
                             <th>Supplier</th>
                             <th>Inspection Date</th>
                             <th>Inspected By</th>
                             <th>Result</th>
                             <th>Current Stage</th>
+                            <th class="text-center">Action</th>
                         </tr>
 
                     </thead>
@@ -294,7 +297,7 @@
                     <tbody id="historyBody">
 
                         <tr>
-                            <td colspan="8"
+                            <td colspan="10"
                                 class="text-center text-muted py-4">
                                 Loading inspection history...
                             </td>
@@ -506,6 +509,264 @@
 </div>
 
 
+<!-- ============================================================ -->
+<!-- COMPLETED QA/QC INSPECTION DETAILS MODAL -->
+<!-- ============================================================ -->
+
+<div class="modal fade"
+     id="qaQcHistoryDetailsModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title mb-0">
+                        QA/QC Receiving Inspection Details
+                    </h5>
+
+                    <small class="text-muted">
+                        Completed Raw Material Inspection
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- LOADING -->
+                <div id="historyDetailsLoading"
+                     class="text-center py-5">
+
+                    <div class="spinner-border text-primary mb-3"
+                         role="status">
+                    </div>
+
+                    <div class="text-muted">
+                        Loading inspection details...
+                    </div>
+
+                </div>
+
+
+                <!-- ERROR -->
+                <div id="historyDetailsError"
+                     class="alert alert-danger d-none">
+                </div>
+
+
+                <!-- CONTENT -->
+                <div id="historyDetailsContent"
+                     class="d-none">
+
+                    <!-- ======================================== -->
+                    <!-- HEADER INFORMATION -->
+                    <!-- ======================================== -->
+
+                    <div class="card mb-3">
+
+                        <div class="card-header fw-semibold">
+                            Inspection Information
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Inspection No
+                                    </small>
+                                    <span id="detailInspectionNo"
+                                          class="fw-semibold">
+                                    </span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Incoming No
+                                    </small>
+                                    <span id="detailIncomingNo"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        PO No
+                                    </small>
+                                    <span id="detailPoNo"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Printed PO No
+                                    </small>
+                                    <span id="detailPrintedPoNo"></span>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">
+                                        Supplier
+                                    </small>
+                                    <span id="detailSupplier"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Inspection Date
+                                    </small>
+                                    <span id="detailInspectionDate"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Delivery Date
+                                    </small>
+                                    <span id="detailDeliveryDate"></span>
+                                </div>
+
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        SI / DR No
+                                    </small>
+                                    <span id="detailSiDrNo"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Result
+                                    </small>
+                                    <span id="detailOverallStatus"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Current Stage
+                                    </small>
+                                    <span id="detailCurrentStage"></span>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        Created At
+                                    </small>
+                                    <span id="detailCreatedAt"></span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ======================================== -->
+                    <!-- MATERIAL INSPECTIONS -->
+                    <!-- ======================================== -->
+
+                    <div class="d-flex justify-content-between
+                                align-items-center mb-2">
+
+                        <h6 class="mb-0 fw-semibold">
+                            Material Inspection Details
+                        </h6>
+
+                        <span id="detailMaterialCount"
+                              class="badge bg-secondary">
+                        </span>
+
+                    </div>
+
+                    <div id="historyMaterialDetails">
+                    </div>
+
+
+                    <!-- ======================================== -->
+                    <!-- APPROVAL / REMARKS -->
+                    <!-- ======================================== -->
+
+                    <div class="card mt-3">
+
+                        <div class="card-header fw-semibold">
+                            Inspection Summary
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-12">
+                                    <small class="text-muted d-block">
+                                        Overall Remarks
+                                    </small>
+
+                                    <div id="detailOverallRemarks"
+                                         class="border rounded p-2 bg-light"
+                                         style="min-height:45px;">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">
+                                        Inspected By
+                                    </small>
+                                    <span id="detailInspectedBy"></span>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">
+                                        Received By
+                                    </small>
+                                    <span id="detailReceivedBy"></span>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">
+                                        Noted By
+                                    </small>
+                                    <span id="detailNotedBy"></span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
 
 
@@ -590,7 +851,7 @@
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="8"
+                <td colspan="10"
                     class="text-center text-muted py-4">
                     Loading inspection history...
                 </td>
@@ -636,13 +897,1031 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8"
+                    <td colspan="10"
                         class="text-center text-danger py-4">
                         ${escapeHtml(error.message)}
                     </td>
                 </tr>
             `;
         }
+    }
+
+
+        // ============================================================
+    // VIEW COMPLETED QA/QC INSPECTION DETAILS
+    // ============================================================
+
+    async function viewInspectionDetails(qaReceivingId) {
+
+        if (!qaReceivingId)
+            return;
+
+        const modalElement =
+            document.getElementById(
+                "qaQcHistoryDetailsModal"
+            );
+
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(
+                modalElement
+            );
+
+
+        const loading =
+            document.getElementById(
+                "historyDetailsLoading"
+            );
+
+        const error =
+            document.getElementById(
+                "historyDetailsError"
+            );
+
+        const content =
+            document.getElementById(
+                "historyDetailsContent"
+            );
+
+
+        // RESET
+        loading.classList.remove("d-none");
+        error.classList.add("d-none");
+        content.classList.add("d-none");
+
+        error.textContent = "";
+
+        document.getElementById(
+            "historyMaterialDetails"
+        ).innerHTML = "";
+
+
+        modal.show();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/quality/qa-qc-receiving/history/${qaReceivingId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result?.message ??
+                    "Unable to load inspection details."
+                );
+            }
+
+
+            const data =
+                result?.data;
+
+
+            if (!data) {
+
+                throw new Error(
+                    "Inspection details were not returned."
+                );
+            }
+
+
+            renderHistoryDetails(data);
+
+
+            loading.classList.add("d-none");
+            content.classList.remove("d-none");
+
+        }
+        catch (err) {
+
+            console.error(
+                "QA/QC history details error:",
+                err
+            );
+
+            loading.classList.add("d-none");
+
+            error.textContent =
+                err?.message ??
+                "Unable to load inspection details.";
+
+            error.classList.remove("d-none");
+        }
+    }
+
+        // ============================================================
+    // RENDER COMPLETED INSPECTION DETAILS
+    // ============================================================
+
+    function renderHistoryDetails(data) {
+
+        setDetailText(
+            "detailInspectionNo",
+            data.inspectionNo
+        );
+
+        setDetailText(
+            "detailIncomingNo",
+            data.incomingNo
+        );
+
+        setDetailText(
+            "detailPoNo",
+            data.poNo
+        );
+
+        setDetailText(
+            "detailPrintedPoNo",
+            data.printedPoNo
+        );
+
+        setDetailText(
+            "detailSupplier",
+            data.supplierName
+        );
+
+        setDetailText(
+            "detailInspectionDate",
+            formatHistoryDate(
+                data.inspectionDate
+            )
+        );
+
+        setDetailText(
+            "detailDeliveryDate",
+            formatHistoryDate(
+                data.deliveryDate
+            )
+        );
+
+        setDetailText(
+            "detailSiDrNo",
+            data.siDrNo
+        );
+
+        setDetailText(
+            "detailCreatedAt",
+            formatHistoryDateTime(
+                data.createdAt
+            )
+        );
+
+
+        // ========================================================
+        // OVERALL STATUS
+        // ========================================================
+
+        const overallStatus =
+            document.getElementById(
+                "detailOverallStatus"
+            );
+
+        overallStatus.innerHTML =
+            buildResultBadge(
+                data.status
+            );
+
+
+        // ========================================================
+        // CURRENT STAGE
+        // ========================================================
+
+        const currentStage =
+            document.getElementById(
+                "detailCurrentStage"
+            );
+
+        currentStage.innerHTML =
+            buildStageBadge(
+                data.currentReceivingStatus
+            );
+
+
+        // ========================================================
+        // PEOPLE / REMARKS
+        // ========================================================
+
+        setDetailText(
+            "detailInspectedBy",
+            data.inspectedBy
+        );
+
+        setDetailText(
+            "detailReceivedBy",
+            data.receivedBy
+        );
+
+        setDetailText(
+            "detailNotedBy",
+            data.notedBy
+        );
+
+        setDetailText(
+            "detailOverallRemarks",
+            data.remarks
+        );
+
+
+            // ============================================================
+    // RENDER MATERIAL INSPECTION LINES
+    // ============================================================
+
+    function renderHistoryMaterialLines(lines) {
+
+        const container =
+            document.getElementById(
+                "historyMaterialDetails"
+            );
+
+
+        if (!lines.length) {
+
+            container.innerHTML = `
+                <div class="alert alert-light border text-muted">
+                    No material inspection details found.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        container.innerHTML =
+            lines.map((line, index) => {
+
+                const materialStatus =
+                    buildResultBadge(
+                        line.status
+                    );
+
+
+                const appearanceValue =
+                    line.appearanceNotApplicable
+                        ? `<span class="badge bg-secondary">N/A</span>`
+                        : `<span class="badge bg-success">APPLICABLE</span>`;
+
+
+                return `
+
+                    <div class="card mb-3">
+
+                        <!-- ====================================== -->
+                        <!-- MATERIAL HEADER -->
+                        <!-- ====================================== -->
+
+                        <div class="card-header">
+
+                            <div class="d-flex
+                                        justify-content-between
+                                        align-items-center
+                                        flex-wrap gap-2">
+
+                                <div>
+
+                                    <span class="fw-semibold">
+                                        Material ${index + 1}
+                                    </span>
+
+                                    <span class="ms-2">
+                                        ${escapeHtml(
+                                            line.materialCode ?? "-"
+                                        )}
+                                    </span>
+
+                                    <span class="text-muted ms-1">
+                                        -
+                                        ${escapeHtml(
+                                            line.materialName ?? "-"
+                                        )}
+                                    </span>
+
+                                </div>
+
+                                <div>
+                                    ${materialStatus}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="card-body">
+
+                            <!-- ================================== -->
+                            <!-- RECEIVING DETAILS -->
+                            <!-- ================================== -->
+
+                            <h6 class="fw-semibold mb-3">
+                                Receiving / Lot Information
+                            </h6>
+
+
+                            <div class="row g-3 mb-4">
+
+                                ${detailItem(
+                                    "Scheduled Qty",
+                                    formatQty(
+                                        line.scheduledQty
+                                    )
+                                )}
+
+                                ${detailItem(
+                                    "Delivered Qty",
+                                    formatQty(
+                                        line.deliveredQty
+                                    )
+                                )}
+
+                                ${detailItem(
+                                    "UOM",
+                                    line.uom
+                                )}
+
+                                ${detailItem(
+                                    "Tare Weight",
+                                    formatNullableQty(
+                                        line.tareWeight
+                                    )
+                                )}
+
+
+                                ${detailItem(
+                                    "Manufacturer",
+                                    line.manufacturerName
+                                )}
+
+                                ${detailItem(
+                                    "Lot No",
+                                    line.lotNo
+                                )}
+
+                                ${detailItem(
+                                    "Manufacturing Date",
+                                    formatHistoryDate(
+                                        line.manufacturingDate
+                                    )
+                                )}
+
+                                ${detailItem(
+                                    "Expiration Date",
+                                    formatHistoryDate(
+                                        line.expirationDate
+                                    )
+                                )}
+
+
+                                ${detailItem(
+                                    "No. Item",
+                                    formatNullableQty(
+                                        line.itemCount
+                                    )
+                                )}
+
+                                ${detailItem(
+                                    "Weight",
+                                    formatNullableQty(
+                                        line.weight
+                                    )
+                                )}
+
+                            </div>
+
+
+                            <hr>
+
+
+                            <!-- ================================== -->
+                            <!-- 1. PACKAGING -->
+                            <!-- ================================== -->
+
+                            <h6 class="fw-semibold mt-3">
+                                1. Appearance of Packaging
+                            </h6>
+
+                            <div class="table-responsive mb-4">
+
+                                <table class="table table-sm
+                                              table-bordered mb-0">
+
+                                    <tbody>
+
+                                        ${checkRow(
+                                            "Clean",
+                                            line.packagingClean
+                                        )}
+
+                                        ${checkRow(
+                                            "Readable Label",
+                                            line.readableLabel
+                                        )}
+
+                                        ${checkRow(
+                                            "Closed & Properly Sealed",
+                                            line.properlySealed
+                                        )}
+
+                                        ${checkRow(
+                                            "No Sign of Deterioration",
+                                            line.noDeterioration
+                                        )}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+
+                            <!-- ================================== -->
+                            <!-- 2. RAW MATERIAL APPEARANCE -->
+                            <!-- ================================== -->
+
+                            <h6 class="fw-semibold">
+                                2. Appearance of Raw Material
+                            </h6>
+
+
+                            <div class="mb-2">
+                                <span class="text-muted">
+                                    Applicability:
+                                </span>
+
+                                ${appearanceValue}
+                            </div>
+
+
+                            ${
+                                line.appearanceNotApplicable
+                                ? `
+                                    <div class="alert alert-light border py-2">
+                                        Raw material appearance inspection
+                                        was marked as not applicable.
+                                    </div>
+                                  `
+                                : `
+                                    <div class="table-responsive mb-4">
+
+                                        <table class="table table-sm
+                                                      table-bordered mb-0">
+
+                                            <tbody>
+
+                                                ${checkRow(
+                                                    "No Foreign Matter",
+                                                    line.noForeignMatter
+                                                )}
+
+                                                ${checkRow(
+                                                    "No Infestation",
+                                                    line.noInfestation
+                                                )}
+
+                                                ${nullableCheckRow(
+                                                    "Powder - No Lump",
+                                                    line.powderNoLump
+                                                )}
+
+                                                ${nullableCheckRow(
+                                                    "Powder - Good Flowability",
+                                                    line.powderGoodFlowability
+                                                )}
+
+                                                ${nullableCheckRow(
+                                                    "Liquid - No Solidification",
+                                                    line.liquidNoSolidification
+                                                )}
+
+                                                ${nullableCheckRow(
+                                                    "Liquid - No Precipitation",
+                                                    line.liquidNoPrecipitation
+                                                )}
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+                                  `
+                            }
+
+
+                            <!-- ================================== -->
+                            <!-- 3. COLOR -->
+                            <!-- ================================== -->
+
+                            ${qualityResultSection(
+                                "3. Color",
+                                line.colorResult,
+                                [
+                                    {
+                                        label: "Actual Color",
+                                        value: line.actualColor
+                                    }
+                                ]
+                            )}
+
+
+                            <!-- ================================== -->
+                            <!-- 4. ODOR -->
+                            <!-- ================================== -->
+
+                            ${qualityResultSection(
+                                "4. Odor",
+                                line.odorResult,
+                                [
+                                    {
+                                        label: "Actual Odor",
+                                        value: line.actualOdor
+                                    }
+                                ]
+                            )}
+
+
+                            <!-- ================================== -->
+                            <!-- 5. ASSAY -->
+                            <!-- ================================== -->
+
+                            ${qualityResultSection(
+                                "5. Assay",
+                                line.assayResultStatus,
+                                [
+                                    {
+                                        label: "COA Assay Result",
+                                        value: line.coaAssayResult
+                                    },
+                                    {
+                                        label: "BNPI Specification",
+                                        value: line.bnpiAssaySpecification
+                                    }
+                                ]
+                            )}
+
+
+                            <!-- ================================== -->
+                            <!-- 6. SOLUBILITY -->
+                            <!-- ================================== -->
+
+                            ${qualityResultSection(
+                                "6. Solubility",
+                                line.solubilityResult,
+                                [
+                                    {
+                                        label: "Solubility Test",
+                                        value: line.solubilityTest
+                                    }
+                                ]
+                            )}
+
+
+                            <!-- ================================== -->
+                            <!-- LINE RESULT -->
+                            <!-- ================================== -->
+
+                            <div class="border rounded p-3 bg-light mt-3">
+
+                                <div class="row g-3">
+
+                                    <div class="col-md-3">
+
+                                        <small class="text-muted d-block">
+                                            Material Result
+                                        </small>
+
+                                        ${materialStatus}
+
+                                    </div>
+
+
+                                    <div class="col-md-9">
+
+                                        <small class="text-muted d-block">
+                                            Material Remarks
+                                        </small>
+
+                                        <span>
+                                            ${escapeHtml(
+                                                line.remarks ?? "-"
+                                            )}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+
+            }).join("");
+    }
+
+
+        // ============================================================
+    // HISTORY DETAIL HELPERS
+    // ============================================================
+
+    function setDetailText(id, value) {
+
+        const element =
+            document.getElementById(id);
+
+        if (!element)
+            return;
+
+        element.textContent =
+            value === null ||
+            value === undefined ||
+            value === ""
+                ? "-"
+                : value;
+    }
+
+
+    function detailItem(label, value) {
+
+        const displayValue =
+            value === null ||
+            value === undefined ||
+            value === ""
+                ? "-"
+                : value;
+
+        return `
+            <div class="col-md-3">
+
+                <small class="text-muted d-block">
+                    ${escapeHtml(label)}
+                </small>
+
+                <span>
+                    ${escapeHtml(
+                        String(displayValue)
+                    )}
+                </span>
+
+            </div>
+        `;
+    }
+
+
+    function checkRow(label, value) {
+
+        return `
+            <tr>
+
+                <td>
+                    ${escapeHtml(label)}
+                </td>
+
+                <td style="width:180px;">
+                    ${
+                        value === true
+                            ? `<span class="badge bg-success">YES</span>`
+                            : `<span class="badge bg-danger">NO</span>`
+                    }
+                </td>
+
+            </tr>
+        `;
+    }
+
+
+    function nullableCheckRow(label, value) {
+
+        let badge;
+
+        if (value === true) {
+
+            badge =
+                `<span class="badge bg-success">YES</span>`;
+
+        }
+        else if (value === false) {
+
+            badge =
+                `<span class="badge bg-danger">NO</span>`;
+
+        }
+        else {
+
+            badge =
+                `<span class="badge bg-secondary">N/A</span>`;
+        }
+
+
+        return `
+            <tr>
+
+                <td>
+                    ${escapeHtml(label)}
+                </td>
+
+                <td style="width:180px;">
+                    ${badge}
+                </td>
+
+            </tr>
+        `;
+    }
+
+
+    function qualityResultSection(
+        title,
+        result,
+        details
+    ) {
+
+        const normalized =
+            (result ?? "")
+                .toString()
+                .toUpperCase();
+
+
+        let badgeClass =
+            "bg-secondary";
+
+
+        if (normalized === "COMPLIANT") {
+
+            badgeClass =
+                "bg-success";
+
+        }
+        else if (
+            normalized === "NON_COMPLIANT" ||
+            normalized === "FAILED"
+        ) {
+
+            badgeClass =
+                "bg-danger";
+        }
+
+
+        const displayResult =
+            result || "N/A";
+
+
+        const detailHtml =
+            (details ?? [])
+                .map(item => {
+
+                    const value =
+                        item.value === null ||
+                        item.value === undefined ||
+                        item.value === ""
+                            ? "-"
+                            : item.value;
+
+
+                    return `
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block">
+                                ${escapeHtml(item.label)}
+                            </small>
+
+                            <span>
+                                ${escapeHtml(
+                                    String(value)
+                                )}
+                            </span>
+
+                        </div>
+
+                    `;
+
+                })
+                .join("");
+
+
+        return `
+
+            <div class="mb-4">
+
+                <h6 class="fw-semibold">
+                    ${escapeHtml(title)}
+                </h6>
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <small class="text-muted d-block">
+                            Result
+                        </small>
+
+                        <span class="badge ${badgeClass}">
+                            ${escapeHtml(displayResult)}
+                        </span>
+
+                    </div>
+
+                    ${detailHtml}
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    function buildResultBadge(status) {
+
+        const normalized =
+            (status ?? "")
+                .toString()
+                .toUpperCase();
+
+
+        if (normalized === "PASSED") {
+
+            return `
+                <span class="badge bg-success">
+                    PASSED
+                </span>
+            `;
+        }
+
+
+        if (normalized === "FAILED") {
+
+            return `
+                <span class="badge bg-danger">
+                    FAILED
+                </span>
+            `;
+        }
+
+
+        return `
+            <span class="badge bg-secondary">
+                ${escapeHtml(status || "-")}
+            </span>
+        `;
+    }
+
+
+    function buildStageBadge(status) {
+
+        const normalized =
+            (status ?? "")
+                .toString()
+                .toUpperCase();
+
+
+        let badgeClass =
+            "bg-secondary";
+
+
+        if (
+            normalized === "QUARANTINED" ||
+            normalized === "COMPLETED" ||
+            normalized === "COMMITTED"
+        ) {
+            badgeClass =
+                "bg-success";
+        }
+        else if (
+            normalized.includes("FAILED") ||
+            normalized.includes("REJECT")
+        ) {
+            badgeClass =
+                "bg-danger";
+        }
+        else if (
+            normalized.includes("PROCESS") ||
+            normalized.includes("WEIGH") ||
+            normalized.includes("COUNT") ||
+            normalized.includes("STICKER")
+        ) {
+            badgeClass =
+                "bg-warning text-dark";
+        }
+
+
+        const display =
+            status
+                ? status
+                    .replaceAll("_", " ")
+                : "-";
+
+
+        return `
+            <span class="badge ${badgeClass}">
+                ${escapeHtml(display)}
+            </span>
+        `;
+    }
+
+
+    function formatHistoryDate(value) {
+
+        if (!value)
+            return "-";
+
+        const date =
+            new Date(value);
+
+        if (Number.isNaN(date.getTime()))
+            return "-";
+
+        return date.toLocaleDateString();
+    }
+
+
+    function formatHistoryDateTime(value) {
+
+        if (!value)
+            return "-";
+
+        const date =
+            new Date(value);
+
+        if (Number.isNaN(date.getTime()))
+            return "-";
+
+        return date.toLocaleString();
+    }
+
+
+    function formatQty(value) {
+
+        const number =
+            Number(value ?? 0);
+
+        if (!Number.isFinite(number))
+            return "0";
+
+        return number.toLocaleString(
+            undefined,
+            {
+                maximumFractionDigits: 4
+            }
+        );
+    }
+
+
+    function formatNullableQty(value) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+        const number =
+            Number(value);
+
+        if (!Number.isFinite(number))
+            return "-";
+
+        return number.toLocaleString(
+            undefined,
+            {
+                maximumFractionDigits: 4
+            }
+        );
+    }
+
+
+        // ========================================================
+        // MATERIALS
+        // ========================================================
+
+        const lines =
+            Array.isArray(data.lines)
+                ? data.lines
+                : [];
+
+
+        document.getElementById(
+            "detailMaterialCount"
+        ).textContent =
+            `${lines.length} material${lines.length === 1 ? "" : "s"}`;
+
+
+        renderHistoryMaterialLines(
+            lines
+        );
     }
 
         // =============================================================
@@ -670,15 +1949,16 @@
         const filtered =
             historyList.filter(x => {
 
-                const searchable = [
-                    x.inspectionNo,
-                    x.incomingNo,
-                    x.poNo,
-                    x.supplierName,
-                    x.inspectedBy,
-                    x.receivedBy,
-                    x.notedBy
-                ]
+                    const searchable = [
+        x.inspectionNo,
+        x.incomingNo,
+        x.poNo,
+        x.printedPoNo,
+        x.supplierName,
+        x.inspectedBy,
+        x.receivedBy,
+        x.notedBy
+    ]
                 .filter(Boolean)
                 .join(" ")
                 .toLowerCase();
@@ -704,7 +1984,7 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8"
+                    <td colspan="10"
                         class="text-center text-muted py-4">
                         No QA/QC inspection history found.
                     </td>
@@ -756,17 +2036,23 @@
                             )}
                         </td>
 
-                        <td>
-                            ${escapeHtml(
-                                row.poNo ?? "-"
-                            )}
-                        </td>
+                              <td>
+        ${escapeHtml(
+            row.poNo ?? "-"
+        )}
+    </td>
 
-                        <td>
-                            ${escapeHtml(
-                                row.supplierName ?? "-"
-                            )}
-                        </td>
+    <td>
+        ${escapeHtml(
+            row.printedPoNo ?? "-"
+        )}
+    </td>
+
+    <td>
+        ${escapeHtml(
+            row.supplierName ?? "-"
+        )}
+    </td>
 
                         <td>
                             ${formatDate(
@@ -797,6 +2083,19 @@
                                 )}
                             </span>
                         </td>
+
+
+                            <td class="text-center">
+
+        <button type="button"
+                class="btn btn-sm btn-outline-primary"
+                onclick="viewInspectionDetails(${row.qaReceivingId})">
+
+            View Details
+
+        </button>
+
+    </td>
 
                     </tr>
                 `
@@ -829,7 +2128,7 @@
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="8"
+                <td colspan="9"
                     class="text-center text-muted py-4">
                     Loading receiving records...
                 </td>
@@ -870,7 +2169,7 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8"
+                    <td colspan="9"
                         class="text-center text-danger py-4">
                         ${escapeHtml(error.message)}
                     </td>
@@ -900,13 +2199,14 @@
         const filtered =
             pendingList.filter(x => {
 
-                const searchable = [
-                    x.incomingNo,
-                    x.poNo,
-                    x.supplierName,
-                    x.receivedBy,
-                    x.verifiedBy
-                ]
+                    const searchable = [
+        x.incomingNo,
+        x.poNo,
+        x.printedPoNo,
+        x.supplierName,
+        x.receivedBy,
+        x.verifiedBy
+    ]
                 .filter(Boolean)
                 .join(" ")
                 .toLowerCase();
@@ -923,7 +2223,7 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8"
+                    <td colspan="9"
                         class="text-center text-muted py-4">
                         No receiving records waiting for QA/QC inspection.
                     </td>
@@ -952,6 +2252,12 @@
                                 row.poNo ?? ""
                             )}
                         </td>
+
+                            <td>
+        ${escapeHtml(
+            row.printedPoNo ?? "-"
+        )}
+    </td>
 
                         <td>
                             ${escapeHtml(
