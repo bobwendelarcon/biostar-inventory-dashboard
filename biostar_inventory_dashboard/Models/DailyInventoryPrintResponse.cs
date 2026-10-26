@@ -43,8 +43,8 @@
 
         public class DailyInventoryTransactionRow
         {
-            public string TransactionId { get; set; } = "";
-            public DateTime Date { get; set; }
+        public long TransactionId { get; set; }
+        public DateTime Date { get; set; }
             public string Type { get; set; } = "";
             public string ReferenceType { get; set; } = "";
             public string Category { get; set; } = "";
