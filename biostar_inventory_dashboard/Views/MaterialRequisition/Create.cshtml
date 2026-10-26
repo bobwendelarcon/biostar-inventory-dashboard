@@ -169,8 +169,16 @@
 
                     <thead>
                         <tr>
-                            <th style="min-width:180px;">
-                                Material
+                            <th style="min-width:160px;">
+                                Category
+                            </th>
+
+                            <th style="min-width:170px;">
+                                Subcategory
+                            </th>
+
+                            <th style="min-width:220px;">
+                                Item
                             </th>
 
                             <th style="min-width:130px;">
@@ -343,7 +351,9 @@
 
     <script>
 
-        let materials = [];
+               let materials = [];
+        let categories = [];
+        let subCategories = [];
         let lineCounter = 0;
 
 
@@ -355,12 +365,12 @@
 
                 bindEvents();
 
-                await loadBranches();
+                       await loadBranches();
+        await loadCategories();
+        await loadSubCategories();
+        await loadMaterials();
 
-                await loadMaterials();
-
-                addMaterialLine();
-
+        addMaterialLine();
             }
         );
 
@@ -518,7 +528,84 @@
             }
         }
 
+                async function loadCategories() {
 
+            try {
+
+                const response = await fetch(
+                    "/manufacturing/materials/categories/list"
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+                categories =
+                    result.data ??
+                    result.items ??
+                    result.categories ??
+                    result;
+
+                if (!Array.isArray(categories)) {
+                    categories = [];
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Unable to load categories:",
+                    error
+                );
+
+                categories = [];
+            }
+        }
+
+
+        async function loadSubCategories() {
+
+            try {
+
+                const response = await fetch(
+                    "/manufacturing/materials/subcategories/list"
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        await response.text()
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+                subCategories =
+                    result.data ??
+                    result.items ??
+                    result.subCategories ??
+                    result;
+
+                if (!Array.isArray(subCategories)) {
+                    subCategories = [];
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Unable to load subcategories:",
+                    error
+                );
+
+                subCategories = [];
+            }
+        }
         async function loadMaterials() {
 
             try {
@@ -568,8 +655,7 @@
 
             lineCounter++;
 
-            const id =
-                lineCounter;
+            const id = lineCounter;
 
             const tbody =
                 document.getElementById(
@@ -589,10 +675,42 @@
                 <td>
 
                     <select class="form-select form-select-sm"
+                            id="category_${id}"
+                            onchange="handleCategoryChange(${id})">
+
+                        ${getCategoryOptions()}
+
+                    </select>
+
+                </td>
+
+
+                <td>
+
+                    <select class="form-select form-select-sm"
+                            id="subcategory_${id}"
+                            disabled
+                            onchange="handleSubCategoryChange(${id})">
+
+                        <option value="">
+                            Select Category First
+                        </option>
+
+                    </select>
+
+                </td>
+
+
+                <td>
+
+                    <select class="form-select form-select-sm"
                             id="material_${id}"
+                            disabled
                             onchange="handleMaterialChange(${id})">
 
-                        ${getMaterialOptions()}
+                        <option value="">
+                            Select Subcategory First
+                        </option>
 
                     </select>
 
@@ -636,7 +754,7 @@
                             onchange="handleLotChange(${id})">
 
                         <option value="">
-                            Select Material First
+                            Select Item First
                         </option>
 
                     </select>
@@ -690,20 +808,196 @@
             `;
 
             tbody.appendChild(row);
-
         }
 
 
-        function getMaterialOptions() {
+               function getCategoryOptions() {
 
             let html = `
                 <option value="">
-                    Select Material
+                    Select Category
                 </option>
             `;
 
-            materials
-                .sort(function (a, b) {
+            [...categories]
+                .sort((a, b) => {
+
+                    const nameA =
+                        a.category_name ??
+                        a.categoryName ??
+                        "";
+
+                    const nameB =
+                        b.category_name ??
+                        b.categoryName ??
+                        "";
+
+                    return String(nameA)
+                        .localeCompare(String(nameB));
+                })
+                .forEach(category => {
+
+                    const id =
+                        category.material_category_id ??
+                        category.materialCategoryId;
+
+                    const name =
+                        category.category_name ??
+                        category.categoryName ??
+                        "";
+
+                    if (!id) {
+                        return;
+                    }
+
+                    html += `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(name)}
+                        </option>
+                    `;
+                });
+
+            return html;
+        }
+
+
+        function getSubCategoryOptions(categoryId) {
+
+            let html = `
+                <option value="">
+                    Select Subcategory
+                </option>
+            `;
+
+            const matchingSubCategories =
+                subCategories.filter(sc =>
+
+                    String(
+                        sc.material_category_id ??
+                        sc.materialCategoryId
+                    ) === String(categoryId)
+                );
+
+            matchingSubCategories
+                .sort((a, b) => {
+
+                    const nameA =
+                        a.subcategory_name ??
+                        a.subcategoryName ??
+                        "";
+
+                    const nameB =
+                        b.subcategory_name ??
+                        b.subcategoryName ??
+                        "";
+
+                    return String(nameA)
+                        .localeCompare(String(nameB));
+                })
+                .forEach(sc => {
+
+                    const id =
+                        sc.material_subcategory_id ??
+                        sc.materialSubcategoryId;
+
+                    const name =
+                        sc.subcategory_name ??
+                        sc.subcategoryName ??
+                        "";
+
+                    if (!id) {
+                        return;
+                    }
+
+                    html += `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(name)}
+                        </option>
+                    `;
+                });
+
+
+            // Materials under this category that do not
+            // have a subcategory.
+            const hasUncategorizedMaterials =
+                materials.some(m => {
+
+                    const materialCategoryId =
+                        m.material_category_id ??
+                        m.materialCategoryId;
+
+                    const materialSubCategoryId =
+                        m.material_subcategory_id ??
+                        m.materialSubcategoryId;
+
+                    return (
+                        String(materialCategoryId) ===
+                            String(categoryId) &&
+                        !materialSubCategoryId
+                    );
+                });
+
+
+            if (hasUncategorizedMaterials) {
+
+                html += `
+                    <option value="NONE">
+                        No Subcategory
+                    </option>
+                `;
+            }
+
+
+            return html;
+        }
+
+
+        function getFilteredMaterialOptions(
+            categoryId,
+            subCategoryId) {
+
+            let html = `
+                <option value="">
+                    Select Item
+                </option>
+            `;
+
+
+            const filtered =
+                materials.filter(material => {
+
+                    const materialCategoryId =
+                        material.material_category_id ??
+                        material.materialCategoryId;
+
+                    const materialSubCategoryId =
+                        material.material_subcategory_id ??
+                        material.materialSubcategoryId;
+
+
+                    if (
+                        String(materialCategoryId) !==
+                        String(categoryId)
+                    ) {
+                        return false;
+                    }
+
+
+                    if (subCategoryId === "NONE") {
+
+                        return !materialSubCategoryId;
+                    }
+
+
+                    return (
+                        String(materialSubCategoryId) ===
+                        String(subCategoryId)
+                    );
+                });
+
+
+            filtered
+                .sort((a, b) => {
 
                     const nameA =
                         a.material_name ??
@@ -716,41 +1010,184 @@
                         "";
 
                     return String(nameA)
-                        .localeCompare(
-                            String(nameB)
-                        );
-
+                        .localeCompare(String(nameB));
                 })
-                .forEach(
-                    function (material) {
+                .forEach(material => {
 
-                        const id =
-                            material.material_id ??
-                            material.materialId;
+                    const id =
+                        material.material_id ??
+                        material.materialId;
 
-                        const code =
-                            material.material_code ??
-                            material.materialCode ??
-                            "";
+                    const code =
+                        material.material_code ??
+                        material.materialCode ??
+                        "";
 
-                        const name =
-                            material.material_name ??
-                            material.materialName ??
-                            "";
+                    const name =
+                        material.material_name ??
+                        material.materialName ??
+                        "";
 
-                        html += `
-                            <option value="${escapeAttribute(id)}">
-                                ${escapeHtml(code)} - ${escapeHtml(name)}
-                            </option>
-                        `;
-                    }
-                );
+                    html += `
+                        <option value="${escapeAttribute(id)}">
+                            ${escapeHtml(code)} - ${escapeHtml(name)}
+                        </option>
+                    `;
+                });
+
 
             return html;
+        }
 
+                function handleCategoryChange(lineId) {
+
+            const categoryId =
+                document.getElementById(
+                    `category_${lineId}`
+                ).value;
+
+            const subCategorySelect =
+                document.getElementById(
+                    `subcategory_${lineId}`
+                );
+
+            resetMaterialSelection(lineId);
+
+
+            if (!categoryId) {
+
+                subCategorySelect.disabled = true;
+
+                subCategorySelect.innerHTML = `
+                    <option value="">
+                        Select Category First
+                    </option>
+                `;
+
+                return;
+            }
+
+
+            subCategorySelect.innerHTML =
+                getSubCategoryOptions(
+                    categoryId
+                );
+
+            subCategorySelect.disabled = false;
         }
 
 
+        function handleSubCategoryChange(lineId) {
+
+            const categoryId =
+                document.getElementById(
+                    `category_${lineId}`
+                ).value;
+
+            const subCategoryId =
+                document.getElementById(
+                    `subcategory_${lineId}`
+                ).value;
+
+            const materialSelect =
+                document.getElementById(
+                    `material_${lineId}`
+                );
+
+
+            resetMaterialSelection(
+                lineId,
+                false
+            );
+
+
+            if (!categoryId ||
+                !subCategoryId) {
+
+                materialSelect.disabled = true;
+
+                materialSelect.innerHTML = `
+                    <option value="">
+                        Select Subcategory First
+                    </option>
+                `;
+
+                return;
+            }
+
+
+            materialSelect.innerHTML =
+                getFilteredMaterialOptions(
+                    categoryId,
+                    subCategoryId
+                );
+
+            materialSelect.disabled = false;
+        }
+
+
+        function resetMaterialSelection(
+            lineId,
+            resetMaterialDropdown = true) {
+
+            const materialSelect =
+                document.getElementById(
+                    `material_${lineId}`
+                );
+
+            const lotSelect =
+                document.getElementById(
+                    `lot_${lineId}`
+                );
+
+            if (resetMaterialDropdown) {
+
+                materialSelect.innerHTML = `
+                    <option value="">
+                        Select Subcategory First
+                    </option>
+                `;
+
+                materialSelect.disabled = true;
+            }
+
+
+            lotSelect.innerHTML = `
+                <option value="">
+                    Select Item First
+                </option>
+            `;
+
+            lotSelect.disabled = true;
+
+
+            document.getElementById(
+                `materialInfo_${lineId}`
+            ).textContent = "";
+
+
+            document.getElementById(
+                `availableStock_${lineId}`
+            ).textContent = "";
+
+
+            document.getElementById(
+                `expiration_${lineId}`
+            ).value = "—";
+
+
+            document.getElementById(
+                `uom_${lineId}`
+            ).textContent = "UOM";
+
+
+            const qtyInput =
+                document.getElementById(
+                    `requestedQty_${lineId}`
+                );
+
+            qtyInput.dataset.available = "";
+        }
         async function handleMaterialChange(lineId) {
 
             const materialId =

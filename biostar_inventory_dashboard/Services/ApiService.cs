@@ -1,4 +1,5 @@
 ﻿using biostar_inventory_dashboard.Models;
+
 using System.Text;
 using System.Text.Json;
 
@@ -2658,6 +2659,27 @@ GetInventoryPrintSummaryAsync(
             }
 
             return result;
+        }
+
+
+
+
+        public async Task<DailyInventoryPrintResponse?> GetDailyInventoryPrintAsync(
+            DateTime fromDate,
+            DateTime toDate,
+            string warehouse = "")
+        {
+            var url =
+                "api/inventoryDisplay/daily-inventory-print" +
+                $"?fromDate={fromDate:yyyy-MM-dd}" +
+                $"&toDate={toDate:yyyy-MM-dd}";
+
+            if (!string.IsNullOrWhiteSpace(warehouse))
+            {
+                url += $"&warehouse={Uri.EscapeDataString(warehouse.Trim())}";
+            }
+
+            return await GetAsync<DailyInventoryPrintResponse>(url);
         }
 
 

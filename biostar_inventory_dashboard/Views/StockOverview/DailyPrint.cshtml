@@ -1,0 +1,628 @@
+﻿@model global::biostar_inventory_dashboard.Models.DailyInventoryPrintResponse
+
+@{
+    Layout = null;
+
+    var rows = Model.Data
+        .OrderBy(x => x.BranchName)
+        .ThenBy(x => x.CategoryName)
+        .ThenBy(x => x.ProductName)
+        .ToList();
+
+    var totalOpening = rows.Sum(x => x.Opening);
+    var totalProductionIn = rows.Sum(x => x.ProductionIn);
+    var totalStockOut = rows.Sum(x => x.StockOut);
+    var totalAdjustmentIn = rows.Sum(x => x.AdjustmentIn);
+    var totalAdjustmentOut = rows.Sum(x => x.AdjustmentOut);
+    var totalTransferIn = rows.Sum(x => x.TransferIn);
+    var totalTransferOut = rows.Sum(x => x.TransferOut);
+    var totalOtherIn = rows.Sum(x => x.OtherIn);
+    var totalOtherOut = rows.Sum(x => x.OtherOut);
+    var totalClosing = rows.Sum(x => x.Closing);
+
+    var hasMixedUom = rows
+        .Select(x => x.Uom)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Count() > 1;
+
+    var fromDate = DateTime.TryParse(Model.FromDate, out var parsedFrom)
+        ? parsedFrom.ToString("MMM dd, yyyy")
+        : Model.FromDate;
+
+    var toDate = DateTime.TryParse(Model.ToDate, out var parsedTo)
+        ? parsedTo.ToString("MMM dd, yyyy")
+        : Model.ToDate;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Daily Inventory Print - BNPI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #202a36;
+            background: #f1f4f8;
+        }
+
+        .report {
+            max-width: 1600px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border: 1px solid #d9e1e8;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            border-bottom: 2px solid #263e5c;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .company-name {
+            font-size: 19px;
+            font-weight: 700;
+            color: #183e67;
+        }
+
+        .report-title {
+            margin-top: 5px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .report-subtitle {
+            margin-top: 5px;
+            color: #687788;
+        }
+
+        .report-meta {
+            text-align: right;
+            line-height: 1.7;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 9px 17px;
+            border: 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-print {
+            background: #225ea8;
+            color: white;
+        }
+
+        .btn-close {
+            background: #e5eaf0;
+            color: #263645;
+        }
+
+        .section-title {
+            margin: 22px 0 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #183e67;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+        }
+
+        th, td {
+            border: 1px solid #cdd6df;
+            padding: 6px 5px;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #e8eef6;
+            color: #183e67;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        td.number {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        td.text {
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .product-name {
+            font-weight: 700;
+        }
+
+        .product-description {
+            color: #697586;
+            font-size: 8px;
+            margin-top: 3px;
+        }
+
+        .total-row td {
+            background: #dce8f5;
+            font-weight: 700;
+        }
+
+        .positive {
+            color: #17623a;
+        }
+
+        .negative {
+            color: #9e2d2d;
+        }
+
+        .closing {
+            font-weight: 700;
+            background: #f0f5fb;
+        }
+
+        .note {
+            margin-top: 10px;
+            color: #687788;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .transaction-heading {
+            background: #e8eef6;
+            padding: 8px 10px;
+            margin-top: 15px;
+            font-weight: 700;
+            border: 1px solid #cdd6df;
+        }
+
+            .transaction-heading small {
+                font-weight: 400;
+                color: #57697a;
+            }
+
+        .empty-state {
+            padding: 20px;
+            text-align: center;
+            color: #7a8795;
+        }
+
+        .report-footer {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            color: #667789;
+            font-size: 10px;
+        }
+
+        @@page {
+            size: A3 landscape;
+            margin: 10mm;
+        }
+
+        @@media print {
+            body {
+                padding: 0;
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .report {
+                border: none;
+                padding: 0;
+                max-width: none;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .table-wrapper {
+                overflow: visible;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .transaction-heading {
+                break-after: avoid;
+            }
+
+            .report-header {
+                break-inside: avoid;
+            }
+
+            table {
+                font-size: 8px;
+            }
+
+            th, td {
+                padding: 4px 3px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="report">
+
+        <div class="toolbar no-print">
+            <button type="button"
+                    class="btn btn-print"
+                    onclick="window.print()">
+                Print Report
+            </button>
+
+            <button type="button"
+                    class="btn btn-close"
+                    onclick="window.close()">
+                Close
+            </button>
+        </div>
+
+        <div class="report-header">
+            <div>
+                <div class="company-name">
+                    BNPI
+                </div>
+
+                <div class="report-title">
+                    DAILY INVENTORY MOVEMENT REPORT
+                </div>
+
+                <div class="report-subtitle">
+                    Finished Goods Inventory
+                </div>
+            </div>
+
+            <div class="report-meta">
+                <div>
+                    <strong>Period:</strong>
+                    @fromDate - @toDate
+                </div>
+
+                <div>
+                    <strong>Warehouse:</strong>
+                    @(string.IsNullOrWhiteSpace(Model.Warehouse)
+                                        ? "All Warehouses"
+                                        : Model.Warehouse)
+                </div>
+
+                <div>
+                    <strong>Printed:</strong>
+                    @DateTime.Now.ToString("MMM dd, yyyy hh:mm tt")
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            INVENTORY MOVEMENT SUMMARY
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">No.</th>
+                        <th rowspan="2">Product / Description</th>
+                        <th rowspan="2">Category</th>
+                        <th rowspan="2">Warehouse</th>
+                        <th rowspan="2">UOM</th>
+                        <th rowspan="2">Opening</th>
+
+                        <th colspan="4">STOCK IN</th>
+                        <th colspan="4">STOCK OUT</th>
+
+                        <th rowspan="2">Closing</th>
+                    </tr>
+
+                    <tr>
+                        <th>Production</th>
+                        <th>Adjustment</th>
+                        <th>Transfer</th>
+                        <th>Other</th>
+
+                        <th>Dispatch</th>
+                        <th>Adjustment</th>
+                        <th>Transfer</th>
+                        <th>Other</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (!rows.Any())
+                    {
+                        <tr>
+                            <td colspan="15" class="empty-state">
+                                No inventory records found for the selected period.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var rowNumber = 0;
+
+                        foreach (var item in rows)
+                        {
+                            rowNumber++;
+
+                            <tr>
+                                <td class="number">@rowNumber</td>
+
+                                <td class="text">
+                                    <div class="product-name">
+                                        @item.ProductName
+                                    </div>
+
+                                    <div class="product-description">
+                                        @item.ProductDescription
+                                    </div>
+                                </td>
+
+                                <td>@item.CategoryName</td>
+                                <td>@item.BranchName</td>
+                                <td>@item.Uom</td>
+
+                                <td class="number">
+                                    @item.Opening.ToString("N2")
+                                </td>
+
+                                <td class="number positive">
+                                    @item.ProductionIn.ToString("N2")
+                                </td>
+
+                                <td class="number positive">
+                                    @item.AdjustmentIn.ToString("N2")
+                                </td>
+
+                                <td class="number positive">
+                                    @item.TransferIn.ToString("N2")
+                                </td>
+
+                                <td class="number positive">
+                                    @item.OtherIn.ToString("N2")
+                                </td>
+
+                                <td class="number negative">
+                                    @item.StockOut.ToString("N2")
+                                </td>
+
+                                <td class="number negative">
+                                    @item.AdjustmentOut.ToString("N2")
+                                </td>
+
+                                <td class="number negative">
+                                    @item.TransferOut.ToString("N2")
+                                </td>
+
+                                <td class="number negative">
+                                    @item.OtherOut.ToString("N2")
+                                </td>
+
+                                <td class="number closing">
+                                    @item.Closing.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!hasMixedUom)
+                        {
+                            <tr class="total-row">
+                                <td colspan="5">GRAND TOTAL</td>
+
+                                <td class="number">
+                                    @totalOpening.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalProductionIn.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalAdjustmentIn.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalTransferIn.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalOtherIn.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalStockOut.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalAdjustmentOut.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalTransferOut.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalOtherOut.ToString("N2")
+                                </td>
+
+                                <td class="number">
+                                    @totalClosing.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (hasMixedUom)
+        {
+            <div class="note">
+                Grand totals are not displayed because the report
+                contains different units of measurement.
+                Quantities in KG, PCS, BOX, or other units should
+                not be added together.
+            </div>
+        }
+
+        <div class="note">
+            Closing Balance = Opening Balance + All Stock IN
+            - All Stock OUT.
+            Other IN/OUT includes transactions without a recognized
+            reference classification.
+        </div>
+
+        <div class="section-title">
+            TRANSACTION DETAILS
+        </div>
+
+        @{
+            var productsWithTransactions = rows
+            .Where(x => x.Transactions != null &&
+            x.Transactions.Any())
+            .ToList();
+        }
+
+        @if (!productsWithTransactions.Any())
+        {
+            <div class="empty-state">
+                No inventory movements recorded within this period.
+            </div>
+        }
+        else
+        {
+            foreach (var item in productsWithTransactions)
+            {
+                <div class="transaction-heading">
+                    @item.ProductName
+                    —
+                    @item.BranchName
+
+                    <small>
+                        (@item.ProductId | @item.Uom)
+                    </small>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date / Time</th>
+                                <th>Type</th>
+                                <th>Movement</th>
+                                <th>Lot No.</th>
+                                <th>Reference No.</th>
+                                <th>IN</th>
+                                <th>OUT</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var tx in item.Transactions
+                                                .OrderBy(x => x.Date))
+                            {
+                                var referenceNumbers = new[]
+                                {
+                                        tx.TransmittalNo,
+                                        tx.DeliveryReceiptNo,
+                                        tx.InvoiceNo,
+                                        tx.PurchaseOrderNo,
+                                        tx.ChecklistNo,
+                                        tx.OrderNo
+                                        }
+                                .Where(x => !string.IsNullOrWhiteSpace(x))
+                                .Distinct();
+
+                                <tr>
+                                    <td>
+                                        @tx.Date.ToString("yyyy-MM-dd HH:mm")
+                                    </td>
+
+                                    <td>@tx.Type</td>
+
+                                    <td>
+                                        @tx.Category.Replace("_", " ")
+                                    </td>
+
+                                    <td>@tx.LotNo</td>
+
+                                    <td>
+                                        @string.Join(" / ", referenceNumbers)
+                                    </td>
+
+                                    <td class="number positive">
+                                        @(tx.Type == "IN"
+                                                                    ? tx.Quantity.ToString("N2")
+                                                                    : "")
+                                                                     </td>
+
+                                    <td class="number negative">
+                                        @(tx.Type == "OUT"
+                                                                    ? tx.Quantity.ToString("N2")
+                                                                    : "")
+                        </td>
+
+                                    <td>@tx.Remarks</td>
+                                </tr>
+                                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+
+        <div class="report-footer">
+            <div>
+                BNPI Inventory Management System
+            </div>
+
+            <div>
+                Daily Inventory Movement Report
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

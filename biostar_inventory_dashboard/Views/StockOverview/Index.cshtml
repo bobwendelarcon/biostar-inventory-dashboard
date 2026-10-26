@@ -29,6 +29,17 @@
             <i class="bi bi-printer me-1"></i>
             Inventory Print
         </button>
+
+        <button type="button"
+                class="btn btn-primary ms-2"
+                id="btnDailyInventoryPrint"
+                data-bs-toggle="modal"
+                data-bs-target="#dailyInventoryPrintModal">
+            <i class="bi bi-calendar-check me-1"></i>
+            Daily Inventory Print
+        </button>
+
+
     </div>
 </div>
 
@@ -149,6 +160,123 @@
         </div>
     </div>
 </div>
+
+
+<!-- DAILY INVENTORY PRINT MODAL -->
+<div class="modal fade"
+     id="dailyInventoryPrintModal"
+     tabindex="-1"
+     aria-labelledby="dailyInventoryPrintModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"
+                    id="dailyInventoryPrintModalLabel">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Daily Inventory Print
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <p class="text-muted small">
+                    Select the inventory period.
+                    The report includes Stock IN, Stock OUT,
+                    adjustments, and closing inventory.
+                </p>
+
+                <div class="mb-3">
+                    <label for="dailyInventoryFromDate"
+                           class="form-label fw-semibold">
+                        From Date
+                    </label>
+                    <input type="date"
+                           id="dailyInventoryFromDate"
+                           class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label for="dailyInventoryToDate"
+                           class="form-label fw-semibold">
+                        To Date
+                    </label>
+                    <input type="date"
+                           id="dailyInventoryToDate"
+                           class="form-control">
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        Select Categories
+                    </label>
+
+                    <div class="border rounded p-3"
+                         style="max-height:260px; overflow-y:auto;">
+
+                        <div class="form-check mb-2">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   id="dailySelectAllCategories"
+                                   checked>
+
+                            <label class="form-check-label fw-semibold"
+                                   for="dailySelectAllCategories">
+                                Select All Categories
+                            </label>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <div id="dailyInventoryCategoryList">
+                            <div class="text-muted small">
+                                Loading categories...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-text">
+                        Only products from selected categories
+                        will appear in the report.
+                    </div>
+                </div>
+
+
+                <div class="alert alert-light border small mb-0">
+                    <strong>Report includes:</strong>
+                    Opening Balance, Production IN,
+                    Adjustment IN, Stock OUT,
+                    Adjustment OUT, Closing Balance,
+                    and Transaction History.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnGenerateDailyInventory">
+                    <i class="bi bi-printer me-1"></i>
+                    Generate Report
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 @section Scripts {
     <script src="~/js/stock-overview.js"

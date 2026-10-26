@@ -1335,17 +1335,25 @@
         }
 
 
-        function formatDateTime(
-            value
-        ) {
+               function formatDateTime(value) {
 
             if (!value)
                 return "-";
 
+            let raw = String(value).trim();
+
+            // Database/API timestamps are treated as UTC.
+            // If the API sends no timezone suffix,
+            // explicitly mark it as UTC before parsing.
+            if (
+                !raw.endsWith("Z") &&
+                !/[+-]\d{2}:\d{2}$/.test(raw)
+            ) {
+                raw += "Z";
+            }
 
             const date =
-                new Date(value);
-
+                new Date(raw);
 
             if (
                 Number.isNaN(
@@ -1355,15 +1363,16 @@
                 return "-";
             }
 
-
             return date.toLocaleString(
-                undefined,
+                "en-PH",
                 {
+                    timeZone: "Asia/Manila",
                     year: "numeric",
                     month: "short",
                     day: "2-digit",
                     hour: "2-digit",
-                    minute: "2-digit"
+                    minute: "2-digit",
+                    hour12: true
                 }
             );
         }

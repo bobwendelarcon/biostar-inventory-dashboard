@@ -464,3 +464,201 @@ function escapeHtml(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const fromInput =
+        document.getElementById("dailyInventoryFromDate");
+
+    const toInput =
+        document.getElementById("dailyInventoryToDate");
+
+    const generateButton =
+        document.getElementById("btnGenerateDailyInventory");
+
+    if (!fromInput || !toInput || !generateButton)
+        return;
+
+
+    const dailyModal =
+        document.getElementById("dailyInventoryPrintModal");
+
+    const dailyCategoryList =
+        document.getElementById("dailyInventoryCategoryList");
+
+    const dailySelectAll =
+        document.getElementById("dailySelectAllCategories");
+
+    function getDailyCategoryCheckboxes() {
+        return Array.from(
+            dailyCategoryList.querySelectorAll(
+                ".daily-category-checkbox"
+            )
+        );
+    }
+
+    function updateDailySelectAll() {
+        const checkboxes = getDailyCategoryCheckboxes();
+
+        dailySelectAll.checked =
+            checkboxes.length > 0 &&
+            checkboxes.every(x => x.checked);
+
+        dailySelectAll.indeterminate =
+            checkboxes.some(x => x.checked) &&
+            !dailySelectAll.checked;
+    }
+
+    function populateDailyCategories() {
+        const sourceSelect =
+            document.getElementById("stockOverviewCategory");
+
+        if (!sourceSelect || !dailyCategoryList)
+            return;
+
+        dailyCategoryList.innerHTML = "";
+
+        const options = Array.from(sourceSelect.options)
+            .filter(x => x.value.trim() !== "");
+
+        if (!options.length) {
+            dailyCategoryList.innerHTML =
+                '<div class="text-danger small">' +
+                'No categories available. Please try again.' +
+                '</div>';
+
+            return;
+        }
+
+        options.forEach((option, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "form-check mb-2";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className =
+                "form-check-input daily-category-checkbox";
+            checkbox.id = `dailyCategory_${index}`;
+            checkbox.value = option.value;
+            checkbox.checked = true;
+
+            const label = document.createElement("label");
+            label.className = "form-check-label";
+            label.htmlFor = checkbox.id;
+            label.textContent = option.textContent.trim();
+
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(label);
+            dailyCategoryList.appendChild(wrapper);
+
+            checkbox.addEventListener(
+                "change",
+                updateDailySelectAll
+            );
+        });
+
+        updateDailySelectAll();
+    }
+
+    dailySelectAll?.addEventListener("change", function () {
+        getDailyCategoryCheckboxes().forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+
+        updateDailySelectAll();
+    });
+
+    // Populate after the modal is opened.
+    // The main category dropdown has already been
+    // loaded asynchronously on page initialization.
+    dailyModal?.addEventListener("show.bs.modal", function () {
+        populateDailyCategories();
+    });
+
+
+    // Philippine calendar date.
+    function phToday() {
+        return new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Manila",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(new Date());
+    }
+
+    const today = phToday();
+
+    fromInput.value = today;
+    toInput.value = today;
+
+    fromInput.max = today;
+    toInput.max = today;
+
+    generateButton.addEventListener("click", function () {
+
+        const fromDate = fromInput.value;
+        const toDate = toInput.value;
+
+        if (!fromDate || !toDate) {
+            alert("Please select both dates.");
+            return;
+        }
+
+        if (fromDate > toDate) {
+            alert("From Date cannot be later than To Date.");
+            return;
+        }
+
+        if (toDate > phToday()) {
+            alert("Future dates are not allowed.");
+            return;
+        }
+
+
+
+        const categoryCheckboxes = getDailyCategoryCheckboxes();
+
+        const selectedCategories = categoryCheckboxes
+            .filter(x => x.checked)
+            .map(x => x.value);
+
+        if (!categoryCheckboxes.length) {
+            alert("Categories are not loaded. Please try again.");
+            return;
+        }
+
+        if (!selectedCategories.length) {
+            alert("Please select at least one category.");
+            return;
+        }
+
+        const params = new URLSearchParams({
+            fromDate,
+            toDate,
+            warehouse:
+                document.getElementById("stockOverviewWarehouse")
+                    ?.value || ""
+        });
+
+        // Apply category filtering when not all are selected.
+        if (selectedCategories.length < categoryCheckboxes.length) {
+            params.set(
+                "categories",
+                selectedCategories.join("|")
+            );
+        }
+
+
+
+
+        window.open(
+            `/Inventory/StockOverview/DailyPrint?${params.toString()}`,
+            "_blank",
+            "noopener,noreferrer"
+        );
+
+    });
+
+});
