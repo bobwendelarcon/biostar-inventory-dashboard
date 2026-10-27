@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\models\\dailyinventoryprintresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\models\\dailyinventoryprintresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\stockoverview\\dailyprint.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\stockoverview\\dailyprint.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\models\\dailyinventoryprintresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\models\\dailyinventoryprintresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\wwwroot\\js\\stock-overview.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -17,10 +21,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\stockoverview\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\stockoverview\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\views\\stockoverview\\dailyprint.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|solutionrelative:biostar_inventory_dashboard\\views\\stockoverview\\dailyprint.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C6056F08-83A8-448F-A7A1-C1B25E9844D6}|biostar_inventory_dashboard\\biostar_inventory_dashboard.csproj|c:\\users\\user\\desktop\\bnpi server\\source_code\\dashboard\\biostar_inventory_dashboard\\controllers\\inventory\\stockoverviewcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -485,23 +485,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ApiService.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Services\\ApiService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-01T06:18:05.54Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\appsettings.json",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\appsettings.json",
@@ -526,7 +514,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\StockOverview\\Index.cshtml",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\StockOverview\\Index.cshtml",
@@ -538,7 +526,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "stock-overview.js",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\wwwroot\\js\\stock-overview.js",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\wwwroot\\js\\stock-overview.js",
@@ -550,16 +538,41 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "DailyInventoryPrintResponse.cs",
               "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Models\\DailyInventoryPrintResponse.cs",
               "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Models\\DailyInventoryPrintResponse.cs",
               "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Models\\DailyInventoryPrintResponse.cs",
               "RelativeToolTip": "biostar_inventory_dashboard\\Models\\DailyInventoryPrintResponse.cs",
-              "ViewState": "AgIAABoAAAAAAAAAAAA2wCkAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAAAywDYAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-10-26T00:50:09.855Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DailyPrint.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-10-26T00:53:27.659Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ApiService.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "RelativeToolTip": "biostar_inventory_dashboard\\Services\\ApiService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-01T06:18:05.54Z"
             },
             {
               "$type": "Document",
@@ -584,18 +597,6 @@
               "ViewState": "AgIAAEsAAAAAAAAAAAAmwGgAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-20T05:08:34.164Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "DailyPrint.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
-              "RelativeDocumentMoniker": "biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\BNPI SERVER\\source_code\\DASHBOARD\\biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
-              "RelativeToolTip": "biostar_inventory_dashboard\\Views\\StockOverview\\DailyPrint.cshtml",
-              "ViewState": "AgIAADkCAAAAAAAAAAAuwGYCAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-10-26T00:53:27.659Z"
             },
             {
               "$type": "Document",

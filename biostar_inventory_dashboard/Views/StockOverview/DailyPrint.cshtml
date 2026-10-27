@@ -4,10 +4,10 @@
     Layout = null;
 
     var rows = Model.Data
-        .OrderBy(x => x.BranchName)
-        .ThenBy(x => x.CategoryName)
-        .ThenBy(x => x.ProductName)
-        .ToList();
+     .OrderBy(x => x.CategoryName)
+     .ThenBy(x => x.ProductName)
+     .ThenBy(x => x.BranchName)
+     .ToList();
 
     var totalOpening = rows.Sum(x => x.Opening);
     var totalProductionIn = rows.Sum(x => x.ProductionIn);
