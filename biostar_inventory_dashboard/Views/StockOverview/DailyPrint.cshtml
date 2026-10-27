@@ -220,6 +220,72 @@
             color: #7a8795;
         }
 
+        .movement-filters {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #d5dfeb;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+            .movement-filters select {
+                padding: 7px 10px;
+                border: 1px solid #bdcad8;
+                border-radius: 4px;
+                background: white;
+            }
+
+        .movement-badge {
+            display: inline-block;
+            font-size: 8px;
+            font-weight: bold;
+            padding: 3px 5px;
+            margin: 1px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .badge-in {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-dispatch {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-adjustment {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-transfer {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-other {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .zero-movement {
+            color: #b2bac5 !important;
+        }
+
+        .movement-active {
+            background: #f1f8ff !important;
+        }
+
+        .movement-amount {
+            font-weight: 700;
+        }
+
         .report-footer {
             margin-top: 25px;
             display: flex;
@@ -339,12 +405,29 @@
             INVENTORY MOVEMENT SUMMARY
         </div>
 
+        <div class="movement-filters no-print">
+            <label for="movementFilter"><strong>Show products:</strong></label>
+            <select id="movementFilter" onchange="applyMovementFilter()">
+                <option value="all">All Products</option>
+                <option value="movement">With Movements Only</option>
+                <option value="in">Stock IN Only</option>
+                <option value="dispatch">Dispatch OUT Only</option>
+                <option value="adjustment">Adjustments Only</option>
+                <option value="transfer">Transfers Only</option>
+                <option value="other">Other Movements Only</option>
+                <option value="none">No Movements Only</option>
+            </select>
+            <span id="movementFilterCount" style="color:#596b7d;"></span>
+        </div>
+        <div id="activeFilterPrintLabel" class="note" style="display:none; margin:0 0 8px;"></div>
+
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
                         <th rowspan="2">No.</th>
                         <th rowspan="2">Product / Description</th>
+                        <th rowspan="2">Movement</th>
                         <th rowspan="2">Category</th>
                         <th rowspan="2">Warehouse</th>
                         <th rowspan="2">UOM</th>
@@ -373,7 +456,7 @@
                     @if (!rows.Any())
                     {
                         <tr>
-                            <td colspan="15" class="empty-state">
+                            <td colspan="16" class="empty-state">
                                 No inventory records found for the selected period.
                             </td>
                         </tr>
@@ -385,8 +468,21 @@
                         foreach (var item in rows)
                         {
                             rowNumber++;
+                            var inQty = item.ProductionIn + item.AdjustmentIn + item.TransferIn + item.OtherIn;
+                            var dispatchQty = item.StockOut;
+                            var adjustmentQty = item.AdjustmentIn + item.AdjustmentOut;
+                            var transferQty = item.TransferIn + item.TransferOut;
+                            var otherQty = item.OtherIn + item.OtherOut;
+                            var totalMovement = inQty + item.StockOut + item.AdjustmentOut + item.TransferOut + item.OtherOut;
 
-                            <tr>
+                            <tr class="summary-product-row @(totalMovement > 0 ? "movement-active" : "")"
+                                data-in="@(inQty.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-dispatch="@(dispatchQty.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-adjustment="@(adjustmentQty.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-transfer="@(transferQty.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-other="@(otherQty.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-movement="@(totalMovement.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-product-index="@rowNumber">
                                 <td class="number">@rowNumber</td>
 
                                 <td class="text">
@@ -399,6 +495,32 @@
                                     </div>
                                 </td>
 
+                                <td class="text">
+                                    @if (item.ProductionIn > 0 || item.OtherIn > 0)
+                                    {
+                                        <span class="movement-badge badge-in">STOCK IN</span>
+                                    }
+                                    @if (item.StockOut > 0)
+                                    {
+                                        <span class="movement-badge badge-dispatch">DISPATCH</span>
+                                    }
+                                    @if (adjustmentQty > 0)
+                                    {
+                                        <span class="movement-badge badge-adjustment">ADJUSTMENT</span>
+                                    }
+                                    @if (transferQty > 0)
+                                    {
+                                        <span class="movement-badge badge-transfer">TRANSFER</span>
+                                    }
+                                    @if (otherQty > 0 && item.OtherIn == 0)
+                                    {
+                                        <span class="movement-badge badge-other">OTHER OUT</span>
+                                    }
+                                    @if (totalMovement == 0)
+                                    {
+                                        <span class="zero-movement">—</span>
+                                    }
+                                </td>
                                 <td>@item.CategoryName</td>
                                 <td>@item.BranchName</td>
                                 <td>@item.Uom</td>
@@ -408,35 +530,35 @@
                                 </td>
 
                                 <td class="number positive">
-                                    @item.ProductionIn.ToString("N2")
+                                    @(item.ProductionIn == 0 ? "—" : item.ProductionIn.ToString("N2"))
                                 </td>
 
                                 <td class="number positive">
-                                    @item.AdjustmentIn.ToString("N2")
+                                    @(item.AdjustmentIn == 0 ? "—" : item.AdjustmentIn.ToString("N2"))
                                 </td>
 
                                 <td class="number positive">
-                                    @item.TransferIn.ToString("N2")
+                                    @(item.TransferIn == 0 ? "—" : item.TransferIn.ToString("N2"))
                                 </td>
 
                                 <td class="number positive">
-                                    @item.OtherIn.ToString("N2")
+                                    @(item.OtherIn == 0 ? "—" : item.OtherIn.ToString("N2"))
                                 </td>
 
                                 <td class="number negative">
-                                    @item.StockOut.ToString("N2")
+                                    @(item.StockOut == 0 ? "—" : item.StockOut.ToString("N2"))
                                 </td>
 
                                 <td class="number negative">
-                                    @item.AdjustmentOut.ToString("N2")
+                                    @(item.AdjustmentOut == 0 ? "—" : item.AdjustmentOut.ToString("N2"))
                                 </td>
 
                                 <td class="number negative">
-                                    @item.TransferOut.ToString("N2")
+                                    @(item.TransferOut == 0 ? "—" : item.TransferOut.ToString("N2"))
                                 </td>
 
                                 <td class="number negative">
-                                    @item.OtherOut.ToString("N2")
+                                    @(item.OtherOut == 0 ? "—" : item.OtherOut.ToString("N2"))
                                 </td>
 
                                 <td class="number closing">
@@ -447,8 +569,8 @@
 
                         @if (!hasMixedUom)
                         {
-                            <tr class="total-row">
-                                <td colspan="5">GRAND TOTAL</td>
+                            <tr class="total-row" id="summaryGrandTotal">
+                                <td colspan="6">GRAND TOTAL</td>
 
                                 <td class="number">
                                     @totalOpening.ToString("N2")
@@ -498,7 +620,7 @@
 
         @if (hasMixedUom)
         {
-            <div class="note">
+            <div class="note" id="mixedUomNote">
                 Grand totals are not displayed because the report
                 contains different units of measurement.
                 Quantities in KG, PCS, BOX, or other units should
@@ -534,81 +656,84 @@
         {
             foreach (var item in productsWithTransactions)
             {
-                <div class="transaction-heading">
-                    @item.ProductName
-                    —
-                    @item.BranchName
+                var productIndex = rows.FindIndex(x => object.ReferenceEquals(x, item)) + 1;
+                <div class="transaction-group" data-product-index="@productIndex">
+                    <div class="transaction-heading">
+                        @item.ProductName
+                        —
+                        @item.BranchName
 
-                    <small>
-                        (@item.ProductId | @item.Uom)
-                    </small>
-                </div>
+                        <small>
+                            (@item.ProductId | @item.Uom)
+                        </small>
+                    </div>
 
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date / Time</th>
-                                <th>Type</th>
-                                <th>Movement</th>
-                                <th>Lot No.</th>
-                                <th>Reference No.</th>
-                                <th>IN</th>
-                                <th>OUT</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @foreach (var tx in item.Transactions
-                                                .OrderBy(x => x.Date))
-                            {
-                                var referenceNumbers = new[]
-                                {
-                                        tx.TransmittalNo,
-                                        tx.DeliveryReceiptNo,
-                                        tx.InvoiceNo,
-                                        tx.PurchaseOrderNo,
-                                        tx.ChecklistNo,
-                                        tx.OrderNo
-                                        }
-                                .Where(x => !string.IsNullOrWhiteSpace(x))
-                                .Distinct();
-
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>
-                                        @tx.Date.ToString("yyyy-MM-dd HH:mm")
-                                    </td>
-
-                                    <td>@tx.Type</td>
-
-                                    <td>
-                                        @tx.Category.Replace("_", " ")
-                                    </td>
-
-                                    <td>@tx.LotNo</td>
-
-                                    <td>
-                                        @string.Join(" / ", referenceNumbers)
-                                    </td>
-
-                                    <td class="number positive">
-                                        @(tx.Type == "IN"
-                                                                    ? tx.Quantity.ToString("N2")
-                                                                    : "")
-                                                                     </td>
-
-                                    <td class="number negative">
-                                        @(tx.Type == "OUT"
-                                                                    ? tx.Quantity.ToString("N2")
-                                                                    : "")
-                        </td>
-
-                                    <td>@tx.Remarks</td>
+                                    <th>Date / Time</th>
+                                    <th>Type</th>
+                                    <th>Movement</th>
+                                    <th>Lot No.</th>
+                                    <th>Reference No.</th>
+                                    <th>IN</th>
+                                    <th>OUT</th>
+                                    <th>Remarks</th>
                                 </tr>
-                                        }
-                        </tbody>
-                    </table>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var tx in item.Transactions
+                                                        .OrderBy(x => x.Date))
+                                {
+                                    var referenceNumbers = new[]
+                                    {
+                                                tx.TransmittalNo,
+                                                tx.DeliveryReceiptNo,
+                                                tx.InvoiceNo,
+                                                tx.PurchaseOrderNo,
+                                                tx.ChecklistNo,
+                                                tx.OrderNo
+                                                }
+                                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                                    .Distinct();
+
+                                    <tr>
+                                        <td>
+                                            @tx.Date.ToString("yyyy-MM-dd HH:mm")
+                                        </td>
+
+                                        <td>@tx.Type</td>
+
+                                        <td>
+                                            @tx.Category.Replace("_", " ")
+                                        </td>
+
+                                        <td>@tx.LotNo</td>
+
+                                        <td>
+                                            @string.Join(" / ", referenceNumbers)
+                                        </td>
+
+                                        <td class="number positive">
+                                            @(tx.Type == "IN"
+                                                                            ? tx.Quantity.ToString("N2")
+                                                                            : "")
+                                                                             </td>
+
+                                        <td class="number negative">
+                                            @(tx.Type == "OUT"
+                                                                            ? tx.Quantity.ToString("N2")
+                                                                            : "")
+                            </td>
+
+                                        <td>@tx.Remarks</td>
+                                    </tr>
+                                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             }
         }
@@ -624,5 +749,53 @@
         </div>
 
     </div>
+
+    <script>
+        function applyMovementFilter() {
+            const select = document.getElementById('movementFilter');
+            const filter = select.value;
+            const rows = [...document.querySelectorAll('.summary-product-row')];
+            const groups = [...document.querySelectorAll('.transaction-group')];
+            const visibleIndexes = new Set();
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const amount = key => Number(row.dataset[key] || 0);
+                let show = filter === 'all'
+                    || (filter === 'movement' && amount('movement') > 0)
+                    || (filter === 'none' && amount('movement') === 0)
+                    || (filter === 'in' && amount('in') > 0)
+                    || (filter === 'dispatch' && amount('dispatch') > 0)
+                    || (filter === 'adjustment' && amount('adjustment') > 0)
+                    || (filter === 'transfer' && amount('transfer') > 0)
+                    || (filter === 'other' && amount('other') > 0);
+                row.style.display = show ? '' : 'none';
+                if (show) {
+                    visibleCount++;
+                    visibleIndexes.add(row.dataset.productIndex);
+                    const firstCell = row.querySelector('td');
+                    if (firstCell) firstCell.textContent = visibleCount;
+                }
+            });
+
+            groups.forEach(group => {
+                group.style.display = visibleIndexes.has(group.dataset.productIndex) ? '' : 'none';
+            });
+
+            const grandTotal = document.getElementById('summaryGrandTotal');
+            // Grand totals are precomputed server-side for ALL rows.
+            // Hide when filtered to avoid showing misleading totals.
+            if (grandTotal) grandTotal.style.display = filter === 'all' ? '' : 'none';
+            const mixedUomNote = document.getElementById('mixedUomNote');
+            if (mixedUomNote) mixedUomNote.style.display = filter === 'all' ? '' : 'none';
+
+            document.getElementById('movementFilterCount').textContent =
+                `${visibleCount} of ${rows.length} product / warehouse rows`;
+            const label = document.getElementById('activeFilterPrintLabel');
+            label.style.display = filter === 'all' ? 'none' : '';
+            label.textContent = `Movement filter: ${select.options[select.selectedIndex].text}`;
+        }
+        document.addEventListener('DOMContentLoaded', applyMovementFilter);
+    </script>
 </body>
 </html>
