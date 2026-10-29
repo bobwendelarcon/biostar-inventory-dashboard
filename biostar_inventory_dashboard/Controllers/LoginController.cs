@@ -25,7 +25,10 @@ namespace biostar_inventory_dashboard.Controllers
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var role = User.FindFirst(ClaimTypes.Role)?.Value?.Trim().ToUpper() ?? "";
-
+                if (role == "PROBIOTICS_STAFF")
+                {
+                    return RedirectToAction("Index", "LaboratoryInventory");
+                }
                 if (role == "PRODUCTION")
                 {
                     return RedirectToAction("Index", "ProductToProduce");
@@ -144,6 +147,12 @@ namespace biostar_inventory_dashboard.Controllers
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
+
+            // PROBIOTICS STAFF - Laboratory Inventory landing page
+            if (role == "PROBIOTICS_STAFF")
+            {
+                return RedirectToAction("Index", "LaboratoryInventory");
+            }
 
             if (role == "PRODUCTION")
             {

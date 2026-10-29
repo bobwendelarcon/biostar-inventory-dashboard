@@ -1,0 +1,805 @@
+﻿@{
+    ViewData["Title"] = "Laboratory Inventory";
+}
+
+<div class="container-fluid py-3">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-1">Laboratory Inventory</h3>
+            <small class="text-muted">
+                Laboratory equipment, supplies, chemicals and materials
+            </small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="/LaboratoryInventory/Items">
+                <i class="bi bi-box-seam me-1"></i> Item Management
+            </a>
+            <a href="/LaboratoryInventory/Transactions" class="btn btn-outline-primary">Transaction History</a>
+        </div>
+    </div>
+    <!-- FILTERS -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+
+            <div class="row g-2">
+
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text"
+                           id="search"
+                           class="form-control"
+                           placeholder="Item, description, serial/lot...">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Category</label>
+                    <select id="categoryId" class="form-select">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Brand</label>
+                    <select id="brandId" class="form-select">
+                        <option value="">All Brands</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Location</label>
+                    <select id="locationId" class="form-select">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary"
+                            onclick="loadInventory()">
+                        Search
+                    </button>
+
+                    <button class="btn btn-outline-secondary"
+                            onclick="clearFilters()">
+                        Clear
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- INVENTORY TABLE -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="mb-0">Inventory List</h5>
+                <span id="recordCount" class="text-muted">
+                    0 records
+                </span>
+            </div>
+
+            <div class="table-responsive" id="laboratoryTableWrapper">
+                <table class="table table-bordered table-hover align-middle"
+                       id="inventoryTable">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Brand / Model</th>
+                            <th>Serial / Lot No.</th>
+                            <th>Location</th>
+                            <th>Qty</th>
+                            <th>UOM</th>
+                            <th>Min Stock</th>
+                            <th>Status</th>
+                            <th>Expiry Date</th>
+                            <th class="text-center" style="min-width:110px">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="inventoryBody">
+                        <tr>
+                            <td colspan="12" class="text-center">
+                                Loading inventory...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+            <div id="laboratoryActionsMenu"
+                 class="lab-floating-menu shadow-sm"
+                 style="display:none;">
+
+                <button type="button"
+                        onclick="runLaboratoryAction('IN')">
+                    <i class="bi bi-box-arrow-in-down text-success me-2"></i>
+                    Stock In
+                </button>
+
+                <button type="button"
+                        class="text-danger"
+                        onclick="runLaboratoryAction('OUT')">
+                    <i class="bi bi-box-arrow-up me-2"></i>
+                    Stock Out
+                </button>
+
+                <button type="button"
+                        onclick="runLaboratoryAction('ADJUST')">
+                    <i class="bi bi-sliders me-2"></i>
+                    Adjust
+                </button>
+
+                <hr class="dropdown-divider">
+
+                <a href="/LaboratoryInventory/Transactions">
+                    <i class="bi bi-clock-history me-2"></i>
+                    History
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MOVEMENT MODAL -->
+<div class="modal fade" id="movementModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="movementTitle">
+                    Stock Movement
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="movementInventoryId">
+                <input type="hidden" id="movementMode">
+
+                <div class="mb-3">
+                    <label class="form-label">Item</label>
+                    <input id="movementItem"
+                           class="form-control"
+                           readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Current Quantity</label>
+                    <input id="currentQuantity"
+                           class="form-control"
+                           readonly>
+                </div>
+
+                <div class="mb-3" id="adjustmentTypeGroup"
+                     style="display:none">
+                    <label class="form-label">Adjustment Type</label>
+                    <select id="adjustmentType" class="form-select">
+                        <option value="ADD">ADD</option>
+                        <option value="DEDUCT">DEDUCT</option>
+                        <option value="SET">SET</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" id="quantityLabel">
+                        Quantity
+                    </label>
+
+                    <input type="number"
+                           id="movementQuantity"
+                           class="form-control"
+                           min="0"
+                           step="any">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Reference No.</label>
+                    <input type="text"
+                           id="referenceNo"
+                           class="form-control"
+                           placeholder="Enter reference number">
+                </div>
+
+                <div class="mb-3" id="reasonGroup">
+                    <label class="form-label">Reason</label>
+                    <input type="text"
+                           id="movementReason"
+                           class="form-control"
+                           placeholder="Reason for adjustment">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Remarks</label>
+                    <textarea id="movementRemarks"
+                              class="form-control"
+                              rows="2"></textarea>
+                </div>
+
+                <div id="movementError"
+                     class="alert alert-danger d-none"></div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="saveMovementBtn"
+                        onclick="saveMovement()">
+                    Save Transaction
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .lab-floating-menu {
+        position: fixed;
+        z-index: 1080;
+        min-width: 170px;
+        padding: 6px 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+        .lab-floating-menu button,
+        .lab-floating-menu a {
+            display: block;
+            width: 100%;
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            color: #212529;
+            text-align: left;
+            text-decoration: none;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+            .lab-floating-menu button:hover,
+            .lab-floating-menu a:hover {
+                background: #f1f3f5;
+            }
+
+        .lab-floating-menu .text-danger {
+            color: #dc3545 !important;
+        }
+</style>
+@section Scripts {
+
+    <script>
+        const baseUrl = '/LaboratoryInventory';
+        let inventoryRows = [];
+        let movementModal;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+
+            movementModal = new bootstrap.Modal(
+                document.getElementById('movementModal')
+            );
+
+            await loadMasterData();
+            await loadInventory();
+
+            document.getElementById('search')
+                .addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        loadInventory();
+                    }
+                });
+
+            document.getElementById('adjustmentType')
+                .addEventListener('change', updateQuantityLabel);
+        });
+
+        // =====================================================
+        // HELPERS
+        // =====================================================
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+              async function fetchJson(url, options = {}) {
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                ...options
+            });
+
+            const text = await response.text();
+
+            let json;
+
+            try {
+                json = JSON.parse(text);
+            } catch {
+                throw new Error(
+                    `Server returned HTTP ${response.status}. ` +
+                    'Expected JSON. Check authentication or server logs.'
+                );
+            }
+
+            if (!response.ok || json.success === false) {
+                throw new Error(
+                    json.message ||
+                    json.title ||
+                    `Request failed (HTTP ${response.status}).`
+                );
+            }
+
+            return json.data ?? json;
+        }
+
+        function fillDropdown(id, rows, valueKey, textKey) {
+            const select = document.getElementById(id);
+
+            select.replaceChildren(select.options[0]);
+
+            rows.forEach(row => {
+                const option = document.createElement('option');
+                option.value = row[valueKey];
+                option.textContent = row[textKey] ?? '';
+                select.appendChild(option);
+            });
+        }
+
+        // =====================================================
+        // MASTER DATA
+        // =====================================================
+
+        async function loadMasterData() {
+            try {
+                const [categories, brands, locations] =
+                    await Promise.all([
+                        fetchJson(baseUrl + '/GetCategories'),
+                        fetchJson(baseUrl + '/GetBrands'),
+                        fetchJson(baseUrl + '/GetLocations')
+                    ]);
+
+                fillDropdown(
+                    'categoryId',
+                    categories,
+                    'category_id',
+                    'category_name'
+                );
+
+                fillDropdown(
+                    'brandId',
+                    brands,
+                    'brand_id',
+                    'brand_name'
+                );
+
+                fillDropdown(
+                    'locationId',
+                    locations,
+                    'location_id',
+                    'location_name'
+                );
+
+            } catch (error) {
+                console.error(error);
+                alert('Unable to load laboratory filters: ' +
+                    error.message);
+            }
+        }
+
+        // =====================================================
+        // INVENTORY
+        // =====================================================
+
+        async function loadInventory() {
+            const body = document.getElementById('inventoryBody');
+
+            body.innerHTML = `
+                <tr>
+                    <td colspan="12" class="text-center">
+                        Loading inventory...
+                    </td>
+                </tr>`;
+
+            const params = new URLSearchParams();
+
+            const filters = {
+                search: document.getElementById('search').value,
+                categoryId: document.getElementById('categoryId').value,
+                brandId: document.getElementById('brandId').value,
+                locationId: document.getElementById('locationId').value
+            };
+
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value) params.set(key, value);
+            });
+
+            try {
+                const result = await fetchJson(
+                    baseUrl + '/GetInventory?' + params.toString()
+                );
+
+                inventoryRows = Array.isArray(result) ? result : [];
+                renderInventory();
+
+            } catch (error) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="12" class="text-center text-danger">
+                            ${escapeHtml(error.message)}
+                        </td>
+                    </tr>`;
+            }
+        }
+
+
+        let selectedLaboratoryIndex = -1;
+
+        function closeLaboratoryActions() {
+            document.getElementById('laboratoryActionsMenu').style.display = 'none';
+        }
+
+        function toggleLaboratoryActions(event, index) {
+            event.stopPropagation();
+
+            const menu = document.getElementById('laboratoryActionsMenu');
+            const button = event.currentTarget;
+
+            if (menu.style.display === 'block' &&
+                selectedLaboratoryIndex === index) {
+                closeLaboratoryActions();
+                return;
+            }
+
+            selectedLaboratoryIndex = index;
+
+            const rect = button.getBoundingClientRect();
+
+            menu.style.visibility = 'hidden';
+            menu.style.display = 'block';
+
+            const menuWidth = menu.offsetWidth;
+            const menuHeight = menu.offsetHeight;
+
+            const left = Math.max(
+                8,
+                Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8)
+            );
+
+            const top = rect.bottom + menuHeight + 5 <= window.innerHeight
+                ? rect.bottom + 4
+                : Math.max(8, rect.top - menuHeight - 4);
+
+            menu.style.left = left + 'px';
+            menu.style.top = top + 'px';
+            menu.style.visibility = 'visible';
+        }
+
+        function runLaboratoryAction(mode) {
+            closeLaboratoryActions();
+
+            if (selectedLaboratoryIndex < 0) return;
+
+            openMovement(selectedLaboratoryIndex, mode);
+        }
+
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('laboratoryActionsMenu');
+
+            if (!menu.contains(event.target)) {
+                closeLaboratoryActions();
+            }
+        });
+
+        document.getElementById('laboratoryTableWrapper')
+            .addEventListener('scroll', closeLaboratoryActions);
+
+        window.addEventListener('scroll', closeLaboratoryActions, true);
+        window.addEventListener('resize', closeLaboratoryActions);
+
+
+        function renderInventory() {
+            const body = document.getElementById('inventoryBody');
+
+            document.getElementById('recordCount').textContent =
+                inventoryRows.length + ' records';
+
+            if (!inventoryRows.length) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="12" class="text-center text-muted py-4">
+                            No laboratory inventory records found.
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            body.innerHTML = inventoryRows.map((row, index) => {
+                const qty = Number(row.quantity ?? 0);
+                const min = Number(row.minimum_stock ?? 0);
+                const status = row.item_status ?? 'N/A';
+
+                const qtyClass = qty <= min
+                    ? 'text-danger fw-bold'
+                    : 'text-success fw-bold';
+
+                const expiry = row.expiry_date
+                    ? String(row.expiry_date).substring(0, 10)
+                    : '-';
+
+                return `
+                    <tr>
+                        <td>${escapeHtml(row.item_code)}</td>
+                        <td>${escapeHtml(row.item_description)}</td>
+                        <td>${escapeHtml(row.category_name)}</td>
+                        <td>${escapeHtml(row.brand_name)}</td>
+                        <td>${escapeHtml(row.serial_lot_no || '-')}</td>
+                        <td>${escapeHtml(row.location_name)}</td>
+                        <td class="${qtyClass}">${qty}</td>
+                        <td>${escapeHtml(row.uom)}</td>
+                        <td>${min}</td>
+                        <td>${escapeHtml(status)}</td>
+                        <td>${escapeHtml(expiry)}</td>
+
+                      <td class="text-center">
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    onclick="toggleLaboratoryActions(event, ${index})">
+                Actions
+            </button>
+        </td>
+        </tr>`;
+        }).join('');
+        }
+
+        function clearFilters() {
+            ['search', 'categoryId', 'brandId', 'locationId']
+                .forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+
+            loadInventory();
+        }
+
+        // =====================================================
+        // MOVEMENT MODAL
+        // =====================================================
+
+        function openMovement(index, mode) {
+            const row = inventoryRows[index];
+            if (!row) return;
+
+            document.getElementById('movementInventoryId').value =
+                row.inventory_id;
+
+            document.getElementById('movementMode').value = mode;
+
+            document.getElementById('movementItem').value =
+                `${row.item_code} - ${row.item_description}`;
+
+            document.getElementById('currentQuantity').value =
+                row.quantity;
+
+            document.getElementById('movementQuantity').value = '';
+            document.getElementById('referenceNo').value = '';
+            document.getElementById('movementReason').value = '';
+            document.getElementById('movementRemarks').value = '';
+
+            document.getElementById('movementError')
+                .classList.add('d-none');
+
+            document.getElementById('adjustmentTypeGroup')
+                .style.display = mode === 'ADJUST' ? '' : 'none';
+
+            document.getElementById('reasonGroup')
+                .style.display = mode === 'ADJUST' ? '' : 'none';
+
+            document.getElementById('adjustmentType').value = 'ADD';
+
+            const title = mode === 'IN'
+                ? 'Laboratory Stock IN'
+                : mode === 'OUT'
+                    ? 'Laboratory Stock OUT'
+                    : 'Laboratory Inventory Adjustment';
+
+            document.getElementById('movementTitle')
+                .textContent = title;
+
+            updateQuantityLabel();
+            movementModal.show();
+        }
+
+        function updateQuantityLabel() {
+            const mode = document.getElementById('movementMode').value;
+            const type = document.getElementById('adjustmentType').value;
+
+            document.getElementById('quantityLabel').textContent =
+                mode === 'ADJUST' && type === 'SET'
+                    ? 'New Total Quantity'
+                    : 'Movement Quantity';
+        }
+
+        // =====================================================
+        // SAVE STOCK IN / OUT / ADJUSTMENT
+        // =====================================================
+
+
+        async function saveMovement() {
+            const mode = document.getElementById('movementMode').value;
+
+            const inventoryId = Number(
+                document.getElementById('movementInventoryId').value
+            );
+
+            const quantityText = document.getElementById('movementQuantity').value.trim();
+            const quantity = Number(quantityText);
+
+            const referenceNo = document.getElementById('referenceNo').value.trim();
+            const reason = document.getElementById('movementReason').value.trim();
+            const remarks = document.getElementById('movementRemarks').value.trim();
+            const adjustmentType = document.getElementById('adjustmentType').value;
+
+            const errorBox = document.getElementById('movementError');
+            errorBox.classList.add('d-none');
+            errorBox.textContent = '';
+
+            // =====================================================
+            // VALIDATION
+            // =====================================================
+
+            if (!Number.isInteger(inventoryId) || inventoryId <= 0) {
+                errorBox.textContent = 'Invalid inventory record.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            if (!['IN', 'OUT', 'ADJUST'].includes(mode)) {
+                errorBox.textContent = 'Invalid stock movement type.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            if (!quantityText || !Number.isFinite(quantity) ||
+                quantity < 0 ||
+                (quantity === 0 &&
+                 !(mode === 'ADJUST' && adjustmentType === 'SET'))) {
+
+                errorBox.textContent = 'Enter a valid quantity.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            if (!referenceNo) {
+                errorBox.textContent = 'Reference number is required.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            if (mode === 'ADJUST' && !reason) {
+                errorBox.textContent = 'Adjustment reason is required.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            // =====================================================
+            // SERIAL TRACKING VALIDATION
+            // =====================================================
+
+            const selectedInventory = inventoryRows.find(
+                row => Number(row.inventory_id) === inventoryId
+            );
+
+            if (selectedInventory?.tracking_type?.toUpperCase() === 'SERIAL') {
+
+                const currentQty = Number(selectedInventory.quantity ?? 0);
+
+                let newQty = currentQty;
+
+                if (mode === 'IN') {
+                    newQty += quantity;
+                } else if (mode === 'OUT') {
+                    newQty -= quantity;
+                } else if (adjustmentType === 'ADD') {
+                    newQty += quantity;
+                } else if (adjustmentType === 'DEDUCT') {
+                    newQty -= quantity;
+                } else if (adjustmentType === 'SET') {
+                    newQty = quantity;
+                }
+
+                if (!Number.isInteger(newQty) || newQty < 0 || newQty > 1) {
+                    errorBox.textContent =
+                        'Serial-tracked inventory quantity must be 0 or 1. ' +
+                        'Each serial number represents one individual item.';
+
+                    errorBox.classList.remove('d-none');
+                    return;
+                }
+            }
+
+            // =====================================================
+            // API ENDPOINT
+            // =====================================================
+
+            const endpoint = mode === 'IN'
+                ? '/StockIn'
+                : mode === 'OUT'
+                    ? '/StockOut'
+                    : '/Adjust';
+
+            // =====================================================
+            // REQUEST PAYLOAD
+            // =====================================================
+
+            const payload = {
+                inventory_id: inventoryId,
+                quantity: quantity,
+                reference_no: referenceNo,
+                remarks: remarks,
+                performed_by: '@(User.FindFirst("username")?.Value ?? User.Identity?.Name ?? "")'
+            };
+
+            if (mode === 'ADJUST') {
+                payload.adjustment_type = adjustmentType;
+                payload.reason = reason;
+            }
+
+            // =====================================================
+            // SAVE TRANSACTION
+            // =====================================================
+
+            const button = document.getElementById('saveMovementBtn');
+            button.disabled = true;
+
+            try {
+                await fetchJson(baseUrl + endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                movementModal.hide();
+
+                await loadInventory();
+
+                alert('Laboratory transaction saved successfully.');
+
+            } catch (error) {
+                errorBox.textContent = error.message;
+                errorBox.classList.remove('d-none');
+
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+
+    </script>
+}

@@ -93,6 +93,19 @@
      HasAccess("QC_RECEIVING_INSPECTION") ||
      HasAccess("QC_INSPECTIONS");
 
+
+    // =========================================================
+    // LABORATORY INVENTORY ACCESS
+    // =========================================================
+
+    var canLaboratoryInventory =
+        HasAccess("LAB_INVENTORY_LIST") ||
+        HasAccess("LAB_INVENTORY_TRANSACTIONS");
+
+    var isLaboratoryInventoryOpen =
+        currentController == "LaboratoryInventory" ||
+        currentPath.StartsWith("/laboratoryinventory");
+
     var isReceivingOpen = currentController == "ManualStockIn";
     var isPlanningOpen = currentController == "DailyOrder";
     var isDispatchOpen = currentController == "DeliveryChecklist";
@@ -657,6 +670,94 @@
                 </div>
             </li>
         }
+
+
+
+        @* =========================================================
+   LABORATORY INVENTORY
+   ========================================================= *@
+
+        @if (canLaboratoryInventory)
+        {
+            <li class="nav-item mb-2">
+
+                <a class="nav-link d-flex justify-content-between align-items-center"
+                   data-bs-toggle="collapse"
+                   href="#laboratoryInventoryMenu"
+                   aria-expanded="@(isLaboratoryInventoryOpen ? "true" : "false")">
+
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-eyedropper me-2"></i>
+                        <span>Laboratory Inventory</span>
+                    </div>
+
+                    <span class="menu-arrow">▾</span>
+                </a>
+
+                <div class="collapse @(isLaboratoryInventoryOpen ? "show" : "")"
+                     id="laboratoryInventoryMenu">
+
+                    <ul class="nav flex-column ms-3 mt-1">
+
+                        @* INVENTORY LIST *@
+                        @if (HasAccess("LAB_INVENTORY_LIST"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath == "/laboratoryinventory" || currentPath == "/laboratoryinventory/index" ? "active fw-bold" : "")"
+                                   href="/LaboratoryInventory">
+
+                                    <i class="bi bi-box-seam me-2"></i>
+                                    <span>Inventory</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* ITEM MANAGEMENT *@
+                        @if (HasAccess("LAB_INVENTORY_LIST"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath == "/laboratoryinventory/items" ? "active fw-bold" : "")"
+                                   href="/LaboratoryInventory/Items">
+
+                                    <i class="bi bi-clipboard-data me-2"></i>
+                                    <span>Item Management</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* MASTER DATA - ENABLE AFTER PAGE IS CREATED *@
+                        @* 
+                @if (HasAccess("LAB_INVENTORY_LIST"))
+                {
+                    <li>
+                        <a class="nav-link @(currentPath == "/laboratoryinventory/masterdata" ? "active fw-bold" : "")"
+                           href="/LaboratoryInventory/MasterData">
+
+                            <i class="bi bi-gear me-2"></i>
+                            <span>Master Data</span>
+                        </a>
+                    </li>
+                }
+                *@
+
+                        @* TRANSACTION HISTORY *@
+                        @if (HasAccess("LAB_INVENTORY_TRANSACTIONS"))
+                        {
+                            <li>
+                                <a class="nav-link @(currentPath == "/laboratoryinventory/transactions" ? "active fw-bold" : "")"
+                                   href="/LaboratoryInventory/Transactions">
+
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    <span>Transaction History</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+                </div>
+            </li>
+        }
+
 
         @if (canRawMaterialInventory)
         {

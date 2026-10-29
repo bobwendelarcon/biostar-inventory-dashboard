@@ -1,0 +1,436 @@
+﻿@{
+    ViewData["Title"] = "Laboratory Inventory Transactions";
+}
+
+<div class="container-fluid py-3">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-1">Laboratory Inventory Transactions</h3>
+            <small class="text-muted">
+                Stock movements, adjustments and laboratory inventory history
+            </small>
+        </div>
+
+        <a href="/LaboratoryInventory"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Inventory
+        </a>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Total Transactions</small>
+                    <h3 id="totalTransactions" class="mb-0">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">IN Transactions</small>
+                    <h3 id="inTransactions"
+                        class="mb-0 text-success">
+                        0
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">OUT Transactions</small>
+                    <h3 id="outTransactions"
+                        class="mb-0 text-danger">
+                        0
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Today's Transactions</small>
+                    <h3 id="todayTransactions"
+                        class="mb-0 text-primary">
+                        0
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+
+            <div class="row g-2">
+
+                <div class="col-md-3">
+                    <label class="form-label">Search</label>
+                    <input id="search"
+                           class="form-control"
+                           placeholder="Item, serial, reference, user...">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Location</label>
+                    <select id="locationId" class="form-select">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Movement</label>
+                    <select id="movement" class="form-select">
+                        <option value="">All Movements</option>
+                        <option value="IN">IN</option>
+                        <option value="OUT">OUT</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Transaction Type</label>
+                    <select id="referenceType" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="STOCK_IN">Manual Stock IN</option>
+                        <option value="STOCK_OUT">Manual Stock OUT</option>
+                        <option value="MANUAL_ADJUSTMENT">
+                            Manual Adjustment
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Date From</label>
+                    <input id="fromDate"
+                           type="date"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Date To</label>
+                    <input id="toDate"
+                           type="date"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary"
+                            onclick="loadTransactions()">
+                        <i class="fas fa-search me-1"></i>
+                        Search
+                    </button>
+
+                    <button class="btn btn-outline-secondary"
+                            onclick="clearFilters()">
+                        Clear
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TRANSACTION TABLE -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="mb-0">Transaction History</h5>
+                <span id="recordCount" class="text-muted">
+                    0 records
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date / Time</th>
+                            <th>Item Code</th>
+                            <th>Item Description</th>
+                            <th>Serial / Lot No.</th>
+                            <th>Location</th>
+                            <th>Movement</th>
+                            <th>Transaction Type</th>
+                            <th>Quantity</th>
+                            <th>Previous</th>
+                            <th>New Qty</th>
+                            <th>Performed By</th>
+                            <th>Reference No.</th>
+                            <th>Reason / Remarks</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="transactionBody">
+                        <tr>
+                            <td colspan="13" class="text-center">
+                                Loading transactions...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        const baseUrl = '/LaboratoryInventory';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await Promise.all([
+                loadLocations(),
+                loadSummary(),
+                loadTransactions()
+            ]);
+
+            document.getElementById('search')
+                .addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') loadTransactions();
+                });
+        });
+
+        // =====================================================
+        // HELPERS
+        // =====================================================
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function fetchJson(url) {
+            const response = await fetch(url, {
+                credentials: 'same-origin'
+            });
+
+            const json = await response.json();
+
+            if (!response.ok || json.success === false) {
+                throw new Error(json.message || 'Request failed.');
+            }
+
+            return json.data ?? json;
+        }
+
+        function formatQuantity(value) {
+            return Number(value ?? 0).toLocaleString(undefined, {
+                maximumFractionDigits: 3
+            });
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+
+            // API timestamps are UTC; show in Philippine time.
+            const normalized = String(value);
+            const utcValue = /(?:Z|[+-]\d\d:\d\d)$/.test(normalized)
+                ? normalized
+                : normalized + 'Z';
+
+            const date = new Date(utcValue);
+
+            if (Number.isNaN(date.getTime()))
+                return escapeHtml(value);
+
+            return date.toLocaleString('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // =====================================================
+        // SUMMARY
+        // =====================================================
+
+        async function loadSummary() {
+            try {
+                const summary = await fetchJson(
+                    baseUrl + '/GetTransactionSummary'
+                );
+
+                document.getElementById('totalTransactions')
+                    .textContent = summary.totalTransactions ?? 0;
+
+                document.getElementById('inTransactions')
+                    .textContent = summary.inTransactions ?? 0;
+
+                document.getElementById('outTransactions')
+                    .textContent = summary.outTransactions ?? 0;
+
+                document.getElementById('todayTransactions')
+                    .textContent = summary.todayTransactions ?? 0;
+
+            } catch (error) {
+                console.error('Summary error:', error);
+            }
+        }
+
+        // =====================================================
+        // LOCATIONS
+        // =====================================================
+
+        async function loadLocations() {
+            try {
+                const locations = await fetchJson(
+                    baseUrl + '/GetLocations'
+                );
+
+                const select = document.getElementById('locationId');
+
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location.location_id;
+                    option.textContent = location.location_name;
+                    select.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Location error:', error);
+            }
+        }
+
+        // =====================================================
+        // TRANSACTION HISTORY
+        // =====================================================
+
+        async function loadTransactions() {
+            const body = document.getElementById('transactionBody');
+
+            body.innerHTML = `
+                <tr>
+                    <td colspan="13" class="text-center">
+                        Loading transactions...
+                    </td>
+                </tr>`;
+
+            const params = new URLSearchParams();
+
+            const filters = {
+                search: document.getElementById('search').value,
+                locationId: document.getElementById('locationId').value,
+                movement: document.getElementById('movement').value,
+                referenceType: document.getElementById('referenceType').value,
+                fromDate: document.getElementById('fromDate').value,
+                toDate: document.getElementById('toDate').value
+            };
+
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value) params.set(key, value);
+            });
+
+            try {
+                const transactions = await fetchJson(
+                    baseUrl + '/GetTransactions?' + params.toString()
+                );
+
+                const rows = Array.isArray(transactions)
+                    ? transactions
+                    : [];
+
+                document.getElementById('recordCount')
+                    .textContent = rows.length + ' records';
+
+                if (!rows.length) {
+                    body.innerHTML = `
+                        <tr>
+                            <td colspan="13"
+                                class="text-center text-muted py-4">
+                                No transactions found.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                body.innerHTML = rows.map(row => {
+                    const isIn = row.transaction_type === 'IN';
+
+                    const movementBadge = isIn
+                        ? '<span class="badge bg-success">IN</span>'
+                        : '<span class="badge bg-danger">OUT</span>';
+
+                    const typeLabel = row.reference_type ===
+                        'MANUAL_ADJUSTMENT'
+                        ? 'Manual Adjustment'
+                        : row.reference_type === 'STOCK_IN'
+                            ? 'Manual Stock IN'
+                            : row.reference_type === 'STOCK_OUT'
+                                ? 'Manual Stock OUT'
+                                : row.reference_type || '-';
+
+                    return `
+                        <tr>
+                            <td>${formatDate(row.created_at)}</td>
+                            <td>${escapeHtml(row.item_code)}</td>
+                            <td>${escapeHtml(row.item_description)}</td>
+                            <td>${escapeHtml(row.serial_lot_no || '-')}</td>
+                            <td>${escapeHtml(row.location_name)}</td>
+                            <td>${movementBadge}</td>
+                            <td>${escapeHtml(typeLabel)}</td>
+                            <td class="fw-bold">
+                                ${formatQuantity(row.quantity)}
+                                ${escapeHtml(row.uom)}
+                            </td>
+                            <td>${formatQuantity(row.previous_quantity)}</td>
+                            <td>${formatQuantity(row.new_quantity)}</td>
+                            <td>${escapeHtml(row.performed_by)}</td>
+                            <td>${escapeHtml(row.reference_no || '-')}</td>
+                            <td>
+                                ${escapeHtml(row.reason || '')}
+                                ${row.reason && row.remarks ? ' / ' : ''}
+                                ${escapeHtml(row.remarks || '')}
+                            </td>
+                        </tr>`;
+                }).join('');
+
+            } catch (error) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="13"
+                            class="text-center text-danger">
+                            ${escapeHtml(error.message)}
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        function clearFilters() {
+            [
+                'search',
+                'locationId',
+                'movement',
+                'referenceType',
+                'fromDate',
+                'toDate'
+            ].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+
+            loadTransactions();
+        }
+    </script>
+}

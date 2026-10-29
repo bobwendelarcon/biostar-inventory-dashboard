@@ -1,0 +1,393 @@
+﻿@{
+    ViewData["Title"] = "Laboratory Item Management";
+}
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div><h3 class="mb-1">Laboratory Item Management</h3><small class="text-muted">Register laboratory items and assign serial/lot inventory records</small></div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-primary" onclick="openAddLaboratoryItem()"><i class="bi bi-plus-circle me-1"></i>Register Item</button>
+            <button type="button" class="btn btn-success" onclick="openAddInventoryRecord()"><i class="bi bi-plus-square me-1"></i>Add Inventory Record</button>
+            <a href="/LaboratoryInventory" class="btn btn-outline-secondary">Back to Inventory</a>
+        </div>
+    </div>
+    <div id="pageError" class="alert alert-danger d-none"></div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"><h5 class="mb-0">Item Master List</h5><span id="itemCount" class="text-muted">0 items</span></div>
+            <input id="itemSearch" class="form-control mb-3" placeholder="Search item code or description..." aria-label="Search laboratory items" />
+            <div class="table-responsive"><table class="table table-bordered table-hover align-middle"><thead class="table-light"><tr><th>Item Code</th><th>Description</th><th>Category</th><th>Brand</th><th>Tracking</th><th>UOM</th><th>Action</th></tr></thead><tbody id="itemBody"><tr><td colspan="7" class="text-center">Loading items...</td></tr></tbody></table></div>
+        </div>
+    </div>
+</div>
+<!-- Floating actions menu: outside .table-responsive to avoid clipping -->
+<div id="itemActionsMenu" class="dropdown-menu shadow" style="position:fixed;z-index:1100;display:none;">
+    <button class="dropdown-item" type="button" data-item-action="inventory"><i class="bi bi-plus-square me-2 text-success"></i>Add Inventory Record</button>
+    <button class="dropdown-item" type="button" data-item-action="edit"><i class="bi bi-pencil-square me-2"></i>Edit Item</button>
+    <div class="dropdown-divider"></div>
+    <button class="dropdown-item text-danger" type="button" data-item-action="delete"><i class="bi bi-trash me-2"></i>Delete Item</button>
+</div>
+<!-- ADD LABORATORY ITEM MODAL -->
+<div class="modal fade" id="addLaboratoryItemModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemModalTitle">Add Laboratory Item</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="addLaboratoryItemForm">
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Item Code *</label>
+                            <input id="newItemCode"
+                                   class="form-control"
+                                   maxlength="100"
+                                   required>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="form-label">Item Description *</label>
+                            <input id="newItemDescription"
+                                   class="form-control"
+                                   required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Category *</label>
+                            <select id="newItemCategory"
+                                    class="form-select"
+                                    required>
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Brand / Model</label>
+                            <select id="newItemBrand"
+                                    class="form-select">
+                                <option value="">Select Brand</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">UOM *</label>
+                            <input id="newItemUom"
+                                   class="form-control"
+                                   placeholder="Unit, Bottle, Box..."
+                                   required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Minimum Stock</label>
+                            <input type="number"
+                                   id="newItemMinimumStock"
+                                   class="form-control"
+                                   min="0"
+                                   step="any"
+                                   value="0">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Tracking Type *</label>
+                            <select id="newItemTrackingType"
+                                    class="form-select"
+                                    required>
+                                <option value="SERIAL">SERIAL</option>
+                                <option value="LOT">LOT</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3 mb-0">
+                        <strong>SERIAL:</strong> Individual equipment with
+                        a unique serial number. Maximum quantity is 1
+                        per inventory record.
+                        <br>
+                        <strong>LOT:</strong> Supplies, chemicals, and
+                        consumables that can have multiple quantities.
+                    </div>
+
+                    <div id="addItemError"
+                         class="alert alert-danger d-none mt-3"></div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        id="saveLaboratoryItemBtn"
+                        class="btn btn-primary"
+                        onclick="saveLaboratoryItem()">
+                    Save Item
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ADD INVENTORY RECORD MODAL -->
+<div class="modal fade" id="addInventoryRecordModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Laboratory Inventory Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addInventoryRecordForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Laboratory Item *</label>
+                            <select id="inventoryItemId" class="form-select" required>
+                                <option value="">Select Item</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Location *</label>
+                            <select id="inventoryLocationId" class="form-select" required>
+                                <option value="">Select Location</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Serial / Lot No. *</label>
+                            <input id="inventorySerialLot" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Initial Quantity *</label>
+                            <input type="number" id="inventoryQuantity" class="form-control"
+                                   min="0" step="any" value="0" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Status *</label>
+                            <select id="inventoryStatus" class="form-select" required>
+                                <option value="Functional">Functional</option>
+                                <option value="Defective">Defective</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date Acquired</label>
+                            <input type="date" id="inventoryDateAcquired" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="date" id="inventoryExpiryDate" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Supplier</label>
+                            <input id="inventorySupplier" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="inventoryRemarks" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0">
+                        Start with quantity 0, then record opening stock using Stock IN
+                        to maintain transaction history.
+                    </div>
+                    <div id="addInventoryError" class="alert alert-danger d-none mt-3"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="saveInventoryRecordBtn" class="btn btn-primary"
+                        onclick="saveInventoryRecord()">
+                    Save Inventory Record
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const baseUrl = '/LaboratoryInventory';
+        let items = [], categories = [], brands = [], locations = [];
+        let addLaboratoryItemModal, addInventoryRecordModal;
+        let editingItemId = null, actionItemId = null;
+        const el = id => document.getElementById(id);
+        function esc(v) { return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+        async function fetchJson(url, options={}) {
+            const r = await fetch(url, {credentials:'same-origin', ...options});
+            const raw = await r.text(); let j;
+            try { j = JSON.parse(raw); } catch { throw new Error(`HTTP ${r.status}: Expected JSON. Check login or server logs.`); }
+            if (!r.ok || j.success === false) throw new Error(j.message || j.title || `HTTP ${r.status}`);
+            return j.data ?? j;
+        }
+        function fillSelect(id, rows, key, name, placeholder) {
+            const s = el(id); s.replaceChildren(new Option(placeholder,''));
+            rows.filter(x => x.is_active !== false && x.is_active !== 0).forEach(x => s.add(new Option(String(x[name] ?? ''),String(x[key]))));
+        }
+        async function loadItems() {
+            try {
+                const result = await fetchJson(baseUrl+'/GetItems');
+                if (!Array.isArray(result)) throw new Error('GetItems did not return an array.');
+                items = result; renderItems();
+            } catch(e) { el('itemBody').innerHTML = `<tr><td colspan="7" class="text-danger text-center">${esc(e.message)}</td></tr>`; }
+        }
+        async function loadMasters() {
+            const result = await Promise.all([fetchJson(baseUrl+'/GetCategories'),fetchJson(baseUrl+'/GetBrands'),fetchJson(baseUrl+'/GetLocations')]);
+            [categories,brands,locations] = result;
+            if (![categories,brands,locations].every(Array.isArray)) throw new Error('Invalid master-data response.');
+            fillSelect('newItemCategory',categories,'category_id','category_name','Select Category');
+            fillSelect('newItemBrand',brands,'brand_id','brand_name','Select Brand');
+            fillSelect('inventoryLocationId',locations,'location_id','location_name','Select Location');
+        }
+        function renderItems() {
+            const term = el('itemSearch').value.toLowerCase().trim();
+            const filtered = items.filter(x => [x.item_code,x.item_description].some(v=>String(v??'').toLowerCase().includes(term)));
+            el('itemCount').textContent = filtered.length+' items';
+            el('itemBody').innerHTML = filtered.length ? filtered.map(x=>`<tr>
+                <td>${esc(x.item_code)}</td><td>${esc(x.item_description)}</td>
+                <td>${esc(categories.find(c=>Number(c.category_id)===Number(x.category_id))?.category_name ?? x.category_name ?? '-')}</td>
+                <td>${esc(brands.find(b=>Number(b.brand_id)===Number(x.brand_id))?.brand_name ?? x.brand_name ?? '-')}</td>
+                <td>${esc(x.tracking_type)}</td><td>${esc(x.uom)}</td>
+                <td><button type="button" class="btn btn-sm btn-outline-primary item-actions-trigger" data-item-id="${Number(x.item_id)}" aria-label="Actions for ${esc(x.item_code)}">Actions <i class="bi bi-chevron-down ms-1"></i></button></td>
+            </tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted py-4">No laboratory items found.</td></tr>';
+        }
+        function openAddLaboratoryItem() {
+            editingItemId = null;
+            el('itemModalTitle').textContent = 'Add Laboratory Item';
+            el('saveLaboratoryItemBtn').textContent = 'Save Item';
+            el('newItemCode').readOnly = false;
+            el('addLaboratoryItemForm').reset(); el('addItemError').classList.add('d-none');
+            addLaboratoryItemModal=bootstrap.Modal.getOrCreateInstance(el('addLaboratoryItemModal'));
+            addLaboratoryItemModal.show();
+        }
+        async function saveLaboratoryItem() {
+            const form=el('addLaboratoryItemForm'), err=el('addItemError');
+            err.classList.add('d-none'); if(!form.reportValidity())return;
+            const payload={item_id:editingItemId ?? 0,item_code:el('newItemCode').value.trim(),item_description:el('newItemDescription').value.trim(),category_id:Number(el('newItemCategory').value),brand_id:el('newItemBrand').value?Number(el('newItemBrand').value):null,uom:el('newItemUom').value.trim(),minimum_stock:Number(el('newItemMinimumStock').value),tracking_type:el('newItemTrackingType').value,is_active:true};
+            if(!payload.item_code || !payload.item_description || !payload.category_id || !payload.uom || !Number.isFinite(payload.minimum_stock) || payload.minimum_stock<0) {err.textContent='Complete all required fields correctly.';err.classList.remove('d-none');return;}
+            const btn=el('saveLaboratoryItemBtn');btn.disabled=true;
+            try {await fetchJson(baseUrl+'/SaveItem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+                addLaboratoryItemModal.hide(); await loadItems();
+                if (editingItemId !== null) {
+                    alert('Laboratory item updated successfully.');
+                } else {
+                    const created=items.find(x=>String(x.item_code).toLowerCase()===payload.item_code.toLowerCase());
+                    if(created && confirm('Item saved. Create its inventory record now?')) await openAddInventoryRecord(created.item_id);
+                    else if(!created) alert('Item saved. Select Add Inventory Record to assign a location.');
+                }
+            }catch(e){err.textContent=e.message;err.classList.remove('d-none');}finally{btn.disabled=false;}
+        }
+        async function openAddInventoryRecord(itemId=null) {
+            el('addInventoryRecordForm').reset();el('addInventoryError').classList.add('d-none');
+            try {
+                await loadItems();
+                fillSelect('inventoryItemId',items,'item_id','item_description','Select Item');
+                [...el('inventoryItemId').options].slice(1).forEach(o=>{const x=items.find(i=>String(i.item_id)===o.value);if(x)o.textContent=`${x.item_code} - ${x.item_description}`;});
+                if(itemId!==null)el('inventoryItemId').value=String(itemId);
+                addInventoryRecordModal=bootstrap.Modal.getOrCreateInstance(el('addInventoryRecordModal'));
+                addInventoryRecordModal.show();
+            }catch(e){alert('Unable to open inventory form: '+e.message);}
+        }
+        async function saveInventoryRecord() {
+            const form=el('addInventoryRecordForm'),err=el('addInventoryError');err.classList.add('d-none');
+            if(!form.reportValidity())return;
+            const itemId=Number(el('inventoryItemId').value),locationId=Number(el('inventoryLocationId').value);
+            const selected=items.find(x=>Number(x.item_id)===itemId),qty=Number(el('inventoryQuantity').value),serial=el('inventorySerialLot').value.trim();
+            const show=m=>{err.textContent=m;err.classList.remove('d-none');};
+            if(!selected||!locationId||!serial||!Number.isFinite(qty)||qty<0){show('Select an item, location, serial/lot number and valid quantity.');return;}
+            if(String(selected.tracking_type).toUpperCase()==='SERIAL' && (!Number.isInteger(qty)||qty>1)){show('Serial-tracked items require quantity 0 or 1.');return;}
+            const acquired=el('inventoryDateAcquired').value,expiry=el('inventoryExpiryDate').value;
+            if(acquired&&expiry&&expiry<acquired){show('Expiry date cannot precede acquisition date.');return;}
+            const payload={item_id:itemId,location_id:locationId,serial_lot_no:serial,quantity:qty,item_status:el('inventoryStatus').value,date_acquired:acquired||null,expiry_date:expiry||null,supplier_name:el('inventorySupplier').value.trim(),remarks:el('inventoryRemarks').value.trim()};
+            const btn=el('saveInventoryRecordBtn');btn.disabled=true;
+            try{await fetchJson(baseUrl+'/CreateInventory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+                addInventoryRecordModal.hide();alert('Inventory record created. Use Stock IN from Laboratory Inventory to record opening stock.');
+            }catch(e){show(e.message);}finally{btn.disabled=false;}
+        }
+        // Floating menu is positioned relative to the viewport, not the table.
+        function closeItemActions() {
+            el('itemActionsMenu').style.display = 'none';
+            actionItemId = null;
+        }
+        function toggleItemActions(button) {
+            const id = Number(button.dataset.itemId);
+            const menu = el('itemActionsMenu');
+            if (menu.style.display === 'block' && actionItemId === id) {
+                closeItemActions(); return;
+            }
+            actionItemId = id;
+            menu.style.display = 'block';
+            menu.style.visibility = 'hidden';
+            const r = button.getBoundingClientRect();
+            const width = menu.offsetWidth;
+            const height = menu.offsetHeight;
+            const left = Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8));
+            const top = r.bottom + height + 8 <= window.innerHeight
+                ? r.bottom + 3
+                : Math.max(8, r.top - height - 3);
+            menu.style.left = left + 'px';
+            menu.style.top = top + 'px';
+            menu.style.visibility = 'visible';
+        }
+        function openEditLaboratoryItem(itemId) {
+            const item = items.find(x => Number(x.item_id) === Number(itemId));
+            if (!item) { alert('Item not found. Refresh the page.'); return; }
+            editingItemId = Number(item.item_id);
+            el('addLaboratoryItemForm').reset();
+            el('addItemError').classList.add('d-none');
+            el('itemModalTitle').textContent = 'Edit Laboratory Item';
+            el('saveLaboratoryItemBtn').textContent = 'Save Changes';
+            el('newItemCode').value = item.item_code ?? '';
+            el('newItemDescription').value = item.item_description ?? '';
+            el('newItemCategory').value = String(item.category_id ?? '');
+            el('newItemBrand').value = item.brand_id == null ? '' : String(item.brand_id);
+            el('newItemUom').value = item.uom ?? '';
+            el('newItemMinimumStock').value = item.minimum_stock ?? 0;
+            el('newItemTrackingType').value = item.tracking_type ?? 'LOT';
+            addLaboratoryItemModal = bootstrap.Modal.getOrCreateInstance(el('addLaboratoryItemModal'));
+            addLaboratoryItemModal.show();
+        }
+        async function deleteLaboratoryItem(itemId) {
+            const item = items.find(x => Number(x.item_id) === Number(itemId));
+            if (!item) return;
+            if (!confirm(`Deactivate ${item.item_code} - ${item.item_description}?\n\nOnly items without inventory records can be deleted.`)) return;
+            try {
+                await fetchJson(baseUrl + '/DeleteItem/' + Number(itemId), { method: 'POST' });
+                await loadItems();
+                alert('Item deactivated successfully.');
+            } catch (e) {
+                alert('Unable to delete item: ' + e.message);
+            }
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.item-actions-trigger') && !e.target.closest('#itemActionsMenu')) closeItemActions();
+        });
+        window.addEventListener('resize', closeItemActions);
+        window.addEventListener('scroll', closeItemActions, true);
+        document.addEventListener('DOMContentLoaded',async()=>{
+            el('itemSearch').addEventListener('input',renderItems);
+            el('itemBody').addEventListener('click', e => {
+                const btn = e.target.closest('.item-actions-trigger');
+                if (btn) toggleItemActions(btn);
+            });
+            el('itemActionsMenu').addEventListener('click', async e => {
+                const action = e.target.closest('[data-item-action]')?.dataset.itemAction;
+                if (!action || actionItemId == null) return;
+                const id = actionItemId;
+                closeItemActions();
+                if (action === 'inventory') await openAddInventoryRecord(id);
+                else if (action === 'edit') openEditLaboratoryItem(id);
+                else if (action === 'delete') await deleteLaboratoryItem(id);
+            });
+            try{await loadMasters();await loadItems();}catch(e){el('pageError').textContent=e.message;el('pageError').classList.remove('d-none');}
+        });
+    </script>
+}

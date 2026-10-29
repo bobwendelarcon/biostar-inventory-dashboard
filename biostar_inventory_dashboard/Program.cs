@@ -42,6 +42,35 @@ builder.Services.AddAuthorization(options =>
             "access_point",
             "QC_INSPECTIONS");
     });
+
+    options.AddPolicy("LAB_INVENTORY_LIST", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("ADMIN") ||
+            context.User.HasClaim(
+                "access_point",
+                "LAB_INVENTORY_LIST"));
+    });
+
+    options.AddPolicy("LAB_INVENTORY_TRANSACTIONS", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("ADMIN") ||
+            context.User.HasClaim(
+                "access_point",
+                "LAB_INVENTORY_TRANSACTIONS"));
+    });
+
+    options.AddPolicy("LAB_INVENTORY_ANY", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("ADMIN") ||
+            context.User.HasClaim("access_point", "LAB_INVENTORY_LIST") ||
+            context.User.HasClaim("access_point", "LAB_INVENTORY_TRANSACTIONS"));
+    });
 });
 
 builder.Services.AddHttpClient<ApiService>(client =>

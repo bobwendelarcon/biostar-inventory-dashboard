@@ -2682,6 +2682,227 @@ GetInventoryPrintSummaryAsync(
             return await GetAsync<DailyInventoryPrintResponse>(url);
         }
 
+        public async Task<string> DeactivateLaboratoryItemAsync(long itemId)
+        {
+            var response = await _httpClient.PostAsync(
+                $"api/laboratory/items/{itemId}/deactivate",
+                null);
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Preserve the API's validation error response.
+                return json;
+            }
+
+            return json;
+        }
+
+
+        // =====================================================
+        // LABORATORY INVENTORY
+        // =====================================================
+
+
+        private async Task<string> LaboratoryGetAsync(string url)
+        {
+            try
+            {
+                using var response = await _httpClient.GetAsync(url);
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception(
+                        $"Laboratory API Error: {(int)response.StatusCode} " +
+                        $"{response.ReasonPhrase}\n" +
+                        $"URL: {response.RequestMessage?.RequestUri}\n" +
+                        $"Response: {result}"
+                    );
+                }
+
+                return result;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception(
+                    $"Laboratory API connection failed.\n" +
+                    $"BaseAddress: {_httpClient.BaseAddress}\n" +
+                    $"Endpoint: {url}\n" +
+                    $"Details: {ex}",
+                    ex
+                );
+            }
+        }
+
+
+        private async Task<string> LaboratoryPostAsync(
+            string url, string jsonData)
+        {
+            using var content = new StringContent(
+                jsonData, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        private async Task<string> LaboratoryPutAsync(
+            string url, string jsonData)
+        {
+            using var content = new StringContent(
+                jsonData, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(url, content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(result);
+
+            return result;
+        }
+
+        // MASTER DATA
+
+        public Task<string> GetLaboratoryCategoriesAsync() =>
+            LaboratoryGetAsync("api/laboratory/categories");
+
+        public Task<string> SaveLaboratoryCategoryAsync(string json) =>
+            LaboratoryPostAsync("api/laboratory/categories", json);
+
+        public Task<string> GetLaboratoryBrandsAsync() =>
+            LaboratoryGetAsync("api/laboratory/brands");
+
+        public Task<string> SaveLaboratoryBrandAsync(string json) =>
+            LaboratoryPostAsync("api/laboratory/brands", json);
+
+        public Task<string> GetLaboratoryLocationsAsync() =>
+            LaboratoryGetAsync("api/laboratory/locations");
+
+        public Task<string> SaveLaboratoryLocationAsync(string json) =>
+            LaboratoryPostAsync("api/laboratory/locations", json);
+
+        // ITEMS
+
+        public Task<string> GetLaboratoryItemsAsync(
+            string search = "") =>
+            LaboratoryGetAsync(
+                "api/laboratory/items?search=" +
+                Uri.EscapeDataString(search ?? ""));
+
+        public Task<string> SaveLaboratoryItemAsync(string json) =>
+            LaboratoryPostAsync("api/laboratory/items", json);
+
+        // INVENTORY LIST
+
+        public async Task<string> GetLaboratoryInventoryAsync(
+            string search = "",
+            long? categoryId = null,
+            long? brandId = null,
+            long? locationId = null,
+            string stockStatus = "")
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add("search=" + Uri.EscapeDataString(search));
+
+            if (categoryId.HasValue)
+                query.Add($"categoryId={categoryId.Value}");
+
+            if (brandId.HasValue)
+                query.Add($"brandId={brandId.Value}");
+
+            if (locationId.HasValue)
+                query.Add($"locationId={locationId.Value}");
+
+            if (!string.IsNullOrWhiteSpace(stockStatus))
+                query.Add("stockStatus=" +
+                    Uri.EscapeDataString(stockStatus));
+
+            var url = "api/laboratory/inventory";
+
+            if (query.Count > 0)
+                url += "?" + string.Join("&", query);
+
+            return await LaboratoryGetAsync(url);
+        }
+
+        public Task<string> CreateLaboratoryInventoryAsync(
+            string json) =>
+            LaboratoryPostAsync("api/laboratory/inventory", json);
+
+        public Task<string> UpdateLaboratoryInventoryDetailsAsync(
+            long inventoryId, string json) =>
+            LaboratoryPutAsync(
+                $"api/laboratory/inventory/{inventoryId}/details",
+                json);
+
+        // STOCK MOVEMENTS
+
+        public Task<string> LaboratoryStockInAsync(string json) =>
+            LaboratoryPostAsync(
+                "api/laboratory/inventory/stock-in", json);
+
+        public Task<string> LaboratoryStockOutAsync(string json) =>
+            LaboratoryPostAsync(
+                "api/laboratory/inventory/stock-out", json);
+
+        public Task<string> LaboratoryAdjustAsync(string json) =>
+            LaboratoryPostAsync(
+                "api/laboratory/inventory/adjust", json);
+
+        // TRANSACTION HISTORY
+
+        public async Task<string> GetLaboratoryTransactionsAsync(
+            string search = "",
+            long? locationId = null,
+            string movement = "",
+            string referenceType = "",
+            DateTime? fromDate = null,
+            DateTime? toDate = null)
+        {
+            var query = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query.Add("search=" + Uri.EscapeDataString(search));
+
+            if (locationId.HasValue)
+                query.Add($"locationId={locationId.Value}");
+
+            if (!string.IsNullOrWhiteSpace(movement))
+                query.Add("movement=" +
+                    Uri.EscapeDataString(movement));
+
+            if (!string.IsNullOrWhiteSpace(referenceType))
+                query.Add("referenceType=" +
+                    Uri.EscapeDataString(referenceType));
+
+            if (fromDate.HasValue)
+                query.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+
+            if (toDate.HasValue)
+                query.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+
+            var url = "api/laboratory/transactions";
+
+            if (query.Count > 0)
+                url += "?" + string.Join("&", query);
+
+            return await LaboratoryGetAsync(url);
+        }
+
+        public Task<string> GetLaboratoryTransactionSummaryAsync() =>
+            LaboratoryGetAsync(
+                "api/laboratory/transactions/summary");
+
+
 
 
 
