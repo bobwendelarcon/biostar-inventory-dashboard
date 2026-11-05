@@ -334,6 +334,26 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> GetOverdueCount()
+        {
+            try
+            {
+                var result = await _apiService
+                    .GetDailyOrdersOverdueCountAsync();
+
+                return Content(result, "application/json");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    message = "Unable to load overdue orders."
+                });
+            }
+        }
+
+
 
     }
 }

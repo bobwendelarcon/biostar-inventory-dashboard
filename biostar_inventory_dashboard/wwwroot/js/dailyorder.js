@@ -64,6 +64,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
     setDailyOrderDefaultFilters();
 
+    // Apply filter from sidebar notification link
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusFromUrl = urlParams.get("status")?.toUpperCase();
+
+    if (statusFromUrl === "OVERDUE") {
+
+        const statusFilter = document.getElementById("statusFilter");
+        const yearFilter = document.getElementById("yearFilter");
+        const monthFilter = document.getElementById("monthFilter");
+
+        // Show overdue orders
+        if (statusFilter) {
+            statusFilter.value = "OVERDUE";
+        }
+
+        // Include overdue orders from all years and months
+        if (yearFilter) {
+            yearFilter.value = "";
+        }
+
+        if (monthFilter) {
+            monthFilter.value = "";
+        }
+
+        // Show oldest overdue orders first
+        document.getElementById("sortByFilter").value = "deliveryDate";
+        document.getElementById("sortDirFilter").value = "asc";
+    }
+
     loadDailyOrders(true);
     startDailyOrderAutoRefresh();
     initTableDragScroll();
@@ -709,7 +738,10 @@ function resetDailyOrderFilters() {
     if (searchInput) {
         searchInput.value = "";
     }
-
+    // Remove the sidebar notification filter from the URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("status");
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
     setDailyOrderDefaultFilters();
 
     dailyOrderCurrentPage = 1;

@@ -1019,6 +1019,13 @@ namespace biostar_inventory_dashboard.Services
             return await _httpClient.GetStringAsync(url);
         }
 
+
+        public async Task<string> GetDailyOrdersOverdueCountAsync()
+        {
+            return await _httpClient.GetStringAsync(
+                "api/DailyOrders/overdue-count");
+        }
+
         public async Task<string> GetDailyOrderDetailsAsync(long orderId)
         {
             return await _httpClient.GetStringAsync($"api/DailyOrders/{orderId}");

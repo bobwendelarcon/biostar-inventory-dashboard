@@ -218,6 +218,10 @@
                     <div>
                         <i class="bi bi-calendar-check me-2"></i>
                         <span>Planning</span>
+                        <span id="planningOverdueBadge"
+                              class="badge bg-danger rounded-pill ms-2"
+                              style="display:none;">
+                        </span>
                     </div>
 
                     <span class="menu-arrow">▾</span>
@@ -231,10 +235,16 @@
                         @if (HasAccess("PLN_DAILY_ORDERS"))
                         {
                             <li>
-                                <a class="nav-link @(currentController == "DailyOrder" ? "active fw-bold" : "")"
-                                   href="/DailyOrder">
+                                <a class="nav-link d-flex align-items-center
+           @(currentController == "DailyOrder" ? "active fw-bold" : "")"
+                                   href="/DailyOrder?status=OVERDUE">
 
                                     <span>Daily Orders</span>
+
+                                    <span id="dailyOrdersOverdueBadge"
+                                          class="badge bg-danger rounded-pill ms-auto"
+                                          style="display:none;">
+                                    </span>
                                 </a>
                             </li>
                         }
@@ -1148,3 +1158,52 @@
 
     });
 </script>
+@if (canPlanning)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            async function loadPlanningOverdueCount() {
+                const badges = [
+                    document.getElementById("planningOverdueBadge"),
+                    document.getElementById("dailyOrdersOverdueBadge")
+                ].filter(Boolean);
+
+                try {
+                    const response = await fetch(
+                        "/DailyOrder/GetOverdueCount",
+                        { cache: "no-store" }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("Unable to load overdue count.");
+                    }
+
+                    const data = await response.json();
+                    const count = Number(data.overdue);
+
+                    if (!Number.isFinite(count) || count < 0) {
+                        throw new Error("Invalid overdue count.");
+                    }
+
+                    badges.forEach(badge => {
+                       badge.textContent = count.toLocaleString();
+                        badge.title = `${count} overdue orders`;
+                        badge.style.display =
+                            count > 0 ? "inline-block" : "none";
+                    });
+
+                } catch (error) {
+                    console.error("Planning notification:", error);
+                    badges.forEach(badge => {
+                        badge.style.display = "none";
+                    });
+                }
+            }
+
+            loadPlanningOverdueCount();
+
+            setInterval(loadPlanningOverdueCount, 60000);
+        });
+    </script>
+}
