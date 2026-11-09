@@ -398,18 +398,29 @@
         let materialChart = null;
 
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
+        document.addEventListener("DOMContentLoaded", function () {
+            setDatePreset(
+                "LAST_7",
+                document.querySelector(".date-preset-btn")
+            );
 
-                setDatePreset(
-                    "LAST_30",
-                    document.querySelector(
-                        ".date-preset-btn"
-                    )
+
+        document.getElementById("fromDate")
+            .addEventListener("change", function () {
+                setActivePresetButton(
+                    document.querySelectorAll(".date-preset-btn")[4]
                 );
-            }
-        );
+            });
+
+        document.getElementById("toDate")
+            .addEventListener("change", function () {
+                setActivePresetButton(
+                    document.querySelectorAll(".date-preset-btn")[4]
+                );
+            });
+
+        });
+
 
 
         async function loadReport() {
@@ -659,7 +670,7 @@
                                     }
                                 ),
 
-                            tension: 0.25,
+                            tension: 0,
 
                             fill: false
                         };

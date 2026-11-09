@@ -228,6 +228,13 @@
             </div>
         </div>
 
+        <div class="col">
+            <div class="forecast-kpi">
+                <div class="kpi-label">No Usage History</div>
+                <div id="noUsageHistory" class="kpi-value text-secondary">0</div>
+                <div class="kpi-description">No releases in selected history</div>
+            </div>
+        </div>
     </div>
 
 
@@ -317,6 +324,23 @@
 
                 </table>
 
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="pageSize" class="small text-muted mb-0">Rows per page</label>
+                    <select id="pageSize" class="form-select form-select-sm" style="width:85px" onchange="changePageSize()">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="pageInfo" class="small text-muted"></span>
+                    <button type="button" id="prevPage" class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">Previous</button>
+                    <button type="button" id="nextPage" class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">Next</button>
+                </div>
             </div>
 
             <div id="recordCount"
@@ -432,6 +456,8 @@
 
         let coverageChart = null;
         let statusChart = null;
+        let allForecastItems = [];
+        let currentPage = 1;
 
 
         document.addEventListener(
@@ -510,9 +536,9 @@
                     data.summary || {}
                 );
 
-                renderTable(
-                    data.items || []
-                );
+                allForecastItems = data.items || [];
+                currentPage = 1;
+                renderTable();
 
                 renderCoverageChart(
                     data.items || []
@@ -568,10 +594,35 @@
                 "critical"
             ).textContent =
                 summary.critical ?? 0;
+
+            document.getElementById("noUsageHistory").textContent =
+                summary.noUsageHistory ?? 0;
         }
 
 
-        function renderTable(items) {
+        function changePageSize() {
+            currentPage = 1;
+            renderTable();
+        }
+
+        function changePage(delta) {
+            const pageSize = Number(document.getElementById("pageSize").value);
+            const maxPage = Math.max(1, Math.ceil(allForecastItems.length / pageSize));
+            currentPage = Math.min(maxPage, Math.max(1, currentPage + delta));
+            renderTable();
+        }
+
+        function renderTable() {
+            const total = allForecastItems.length;
+            const pageSize = Number(document.getElementById("pageSize").value);
+            const maxPage = Math.max(1, Math.ceil(total / pageSize));
+            currentPage = Math.min(currentPage, maxPage);
+            const start = (currentPage - 1) * pageSize;
+            const items = allForecastItems.slice(start, start + pageSize);
+            document.getElementById("pageInfo").textContent = total
+                ? `Page ${currentPage} of ${maxPage}` : "No pages";
+            document.getElementById("prevPage").disabled = currentPage <= 1;
+            document.getElementById("nextPage").disabled = currentPage >= maxPage;
 
             const tbody =
                 document.getElementById(
@@ -723,10 +774,7 @@
             document.getElementById(
                 "recordCount"
             ).textContent =
-                items.length +
-                (items.length === 1
-                    ? " record"
-                    : " records");
+                `${start + 1}–${start + items.length} of ${total} records`;
         }
 
 
@@ -759,7 +807,9 @@
                         data: {
                             labels:
                                 chartItems.map(
-                                    x => x.materialName
+                                    x => x.status === "CRITICAL"
+                                        ? `${x.materialName} (CRITICAL: 0 days)`
+                                        : x.materialName
                                 ),
 
                             datasets: [
@@ -770,7 +820,13 @@
                                     data:
                                         chartItems.map(
                                             x => x.daysCover
-                                        )
+                                        ),
+                                    backgroundColor: chartItems.map(x =>
+                                        x.status === "CRITICAL" ? "#dc3545" :
+                                        x.status === "REORDER" ? "#fd7e14" :
+                                        x.status === "WATCH" ? "#ffc107" : "#8fc8ee"
+                                    ),
+                                    minBarLength: 4
                                 }
                             ]
                         },
@@ -843,8 +899,7 @@
                                 "Healthy",
                                 "Watch",
                                 "Reorder",
-                                "Critical",
-                                "No Usage History"
+                                "Critical"
                             ],
 
                             datasets: [
@@ -853,8 +908,7 @@
                                         summary.healthy ?? 0,
                                         summary.watch ?? 0,
                                         summary.reorder ?? 0,
-                                        summary.critical ?? 0,
-                                        summary.noUsageHistory ?? 0
+                                        summary.critical ?? 0
                                     ]
                                 }
                             ]
@@ -862,7 +916,12 @@
 
                         options: {
                             responsive: true,
-                            maintainAspectRatio: false
+                            maintainAspectRatio: false,
+                            plugins: {
+                                tooltip: { callbacks: {
+                                    label: context => `${context.label}: ${context.raw} materials`
+                                }}
+                            }
                         }
                     }
                 );
