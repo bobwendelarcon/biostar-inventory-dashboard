@@ -62,38 +62,32 @@ function setDailyOrderDefaultFilters() {
 
 document.addEventListener("DOMContentLoaded", function () {
 
+
     setDailyOrderDefaultFilters();
 
-    // Apply filter from sidebar notification link
-    const urlParams = new URLSearchParams(window.location.search);
-    const statusFromUrl = urlParams.get("status")?.toUpperCase();
+    // Always open Daily Orders with All Status
+    const statusFilter = document.getElementById("statusFilter");
 
-    if (statusFromUrl === "OVERDUE") {
-
-        const statusFilter = document.getElementById("statusFilter");
-        const yearFilter = document.getElementById("yearFilter");
-        const monthFilter = document.getElementById("monthFilter");
-
-        // Show overdue orders
-        if (statusFilter) {
-            statusFilter.value = "OVERDUE";
-        }
-
-        // Include overdue orders from all years and months
-        if (yearFilter) {
-            yearFilter.value = "";
-        }
-
-        if (monthFilter) {
-            monthFilter.value = "";
-        }
-
-        // Show oldest overdue orders first
-        document.getElementById("sortByFilter").value = "deliveryDate";
-        document.getElementById("sortDirFilter").value = "asc";
+    if (statusFilter) {
+        statusFilter.value = "ALL";
     }
 
+    // Remove old status parameter from URL
+    const url = new URL(window.location.href);
+
+    url.searchParams.delete("status");
+
+    window.history.replaceState(
+        {},
+        "",
+        url.pathname + url.search + url.hash
+    );
+
+    // Load orders using default filters
     loadDailyOrders(true);
+
+
+
     startDailyOrderAutoRefresh();
     initTableDragScroll();
    
