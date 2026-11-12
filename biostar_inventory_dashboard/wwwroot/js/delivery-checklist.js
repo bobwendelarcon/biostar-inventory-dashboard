@@ -632,15 +632,22 @@ function initializeCreateChecklistModal() {
             const dd = String(today.getDate()).padStart(2, "0");
             const todayStr = `${yyyy}-${mm}-${dd}`;
 
-            const minDate = new Date(today);
-            minDate.setDate(today.getDate() - 5);
+            //const minDate = new Date(today);
+            //minDate.setDate(today.getDate() - 5);
 
-            const minYyyy = minDate.getFullYear();
-            const minMm = String(minDate.getMonth() + 1).padStart(2, "0");
-            const minDd = String(minDate.getDate()).padStart(2, "0");
-            const minDateStr = `${minYyyy}-${minMm}-${minDd}`;
+            //const minYyyy = minDate.getFullYear();
+            //const minMm = String(minDate.getMonth() + 1).padStart(2, "0");
+            //const minDd = String(minDate.getDate()).padStart(2, "0");
+            //const minDateStr = `${minYyyy}-${minMm}-${minDd}`;
 
-            deliveryInput.min = minDateStr;
+            //deliveryInput.min = minDateStr;
+            //deliveryInput.value = todayStr;
+
+            // Allow all previous and future delivery dates
+            deliveryInput.removeAttribute("min");
+            deliveryInput.removeAttribute("max");
+
+            // Default delivery date = today
             deliveryInput.value = todayStr;
         }
     });
