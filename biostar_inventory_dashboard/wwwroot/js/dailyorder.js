@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     startDailyOrderAutoRefresh();
     initTableDragScroll();
-   
+
 
     //document.getElementById("searchInput")?.addEventListener("input", function () {
     //    isTypingFilter = true;
@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
             loadPreviousDailyOrders();
         }
     });
-   
+
 
     document.getElementById("btnAddProductLine")?.addEventListener("click", async function () {
         if (!window.currentOrderId) {
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const todayStr = `${yyyy}-${mm}-${dd}`;
 
-           // dateOrderedInput.min = todayStr;     // ❌ disable yesterday
+            // dateOrderedInput.min = todayStr;     // ❌ disable yesterday
             dateOrderedInput.value = todayStr;   // ✔ default today (optional but recommended)
 
         }
@@ -318,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const todayStr = `${yyyy}-${mm}-${dd}`;
 
-             editDeliveryDateInput.min = todayStr;     // ❌ disable yesterday
+            editDeliveryDateInput.min = todayStr;     // ❌ disable yesterday
             editDeliveryDateInput.value = todayStr;   // ✔ default today (optional but recommended)
 
         }
@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
- 
+
 
 
     document.addEventListener("contextmenu", function (e) {
@@ -1492,110 +1492,68 @@ function toInputDate(dateStr) {
 
 async function loadDailyOrders(scrollToBottom = false) {
 
-    if (isLoadingDailyOrders)
-        return;
-
+    if (isLoadingDailyOrders) return;
     isLoadingDailyOrders = true;
 
     try {
+        // First request supplies the matching record count and summary.
+        const firstResult = await fetchDailyOrderPage(1);
+        const totalRecords = Number(firstResult.totalRecords || 0);
 
-        // -----------------------------------------
-        // FIRST REQUEST:
-        // Find total number of records
-        // -----------------------------------------
+        dailyOrderTotalPages = Math.max(
+            1,
+            Math.ceil(totalRecords / dailyOrderPageSize)
+        );
 
-        const firstResult =
-            await fetchDailyOrderPage(1);
+        const lastPage = dailyOrderTotalPages;
+        const startPage = Math.max(1, lastPage - 1);
+        let rows = [];
 
-        const totalRecords =
-            Number(firstResult.totalRecords || 0);
-
-        dailyOrderTotalPages =
-            Math.max(
-                1,
-                Math.ceil(
-                    totalRecords / dailyOrderPageSize
-                )
-            );
-
-        // -----------------------------------------
-        // GO DIRECTLY TO LAST PAGE
-        // -----------------------------------------
-
-        dailyOrderCurrentPage =
-            dailyOrderTotalPages;
-
-        let result = firstResult;
-
-        // If there is more than one page,
-        // request ONLY the last page.
-        if (dailyOrderTotalPages > 1) {
-
-            result =
-                await fetchDailyOrderPage(
-                    dailyOrderCurrentPage
-                );
+        if (lastPage === 1) {
+            rows = firstResult.data || [];
+        } else if (lastPage === 2) {
+            const lastResult = await fetchDailyOrderPage(2);
+            rows = [
+                ...(firstResult.data || []),
+                ...(lastResult.data || [])
+            ];
+        } else {
+            // Load the last two pages before changing the visible table.
+            const [previousResult, lastResult] = await Promise.all([
+                fetchDailyOrderPage(startPage),
+                fetchDailyOrderPage(lastPage)
+            ]);
+            rows = [
+                ...(previousResult.data || []),
+                ...(lastResult.data || [])
+            ];
         }
 
-        // -----------------------------------------
-        // RENDER
-        // -----------------------------------------
+        // Tracks the oldest page currently displayed; upward scroll
+        // will request the page immediately before this one.
+        dailyOrderCurrentPage = startPage;
 
-        renderDailyOrderSummary(
-            result.summary
-        );
+        renderDailyOrderSummary(firstResult.summary);
+        renderDailyOrderTable(rows, "replace");
 
-        renderDailyOrderTable(
-            result.data || [],
-            "replace"
-        );
-
-        // -----------------------------------------
-        // START AT BOTTOM OF LAST PAGE
-        // -----------------------------------------
-
-        const wrapper =
-            document.querySelector(
-                ".dailyorder-table-wrapper"
-            );
-
+        const wrapper = document.querySelector(".dailyorder-table-wrapper");
         if (wrapper && scrollToBottom) {
-
             requestAnimationFrame(() => {
-
-                wrapper.scrollTop =
-                    wrapper.scrollHeight;
-
+                wrapper.scrollTop = wrapper.scrollHeight;
             });
         }
 
-        document.getElementById(
-            "lastUpdatedText"
-        ).textContent =
-            "Last updated: " +
-            new Date().toLocaleTimeString();
-
-    }
-    catch (err) {
-
-        console.error(
-            "loadDailyOrders error:",
-            err
-        );
-
-        document.getElementById(
-            "dailyOrderTableBody"
-        ).innerHTML = `
-            <tr>
-                <td colspan="13"
-                    class="text-center text-danger py-4">
-                    Failed to load orders.
-                </td>
-            </tr>
-        `;
-    }
-    finally {
-
+        const lastUpdated = document.getElementById("lastUpdatedText");
+        if (lastUpdated) {
+            lastUpdated.textContent = "Last updated: " + new Date().toLocaleTimeString();
+        }
+    } catch (err) {
+        console.error("loadDailyOrders error:", err);
+        document.getElementById("dailyOrderTableBody").innerHTML = `
+            <tr><td colspan="13" class="text-center text-danger py-4">
+                Failed to load orders.
+            </td></tr>`;
+    } finally {
         isLoadingDailyOrders = false;
     }
 }
@@ -1670,6 +1628,45 @@ async function fetchDailyOrderPage(page) {
     return await response.json();
 }
 
+let dailyOrderFillingInitialView = false;
+
+async function fillDailyOrderInitialView() {
+
+    if (dailyOrderFillingInitialView) return;
+
+    const wrapper =
+        document.querySelector(".dailyorder-table-wrapper");
+
+    if (!wrapper) return;
+
+    dailyOrderFillingInitialView = true;
+
+    try {
+        let loadedPages = 0;
+
+        // Load previous pages until scrolling is possible.
+        while (
+            dailyOrderCurrentPage > 1 &&
+            wrapper.scrollHeight <= wrapper.clientHeight + 5 &&
+            loadedPages < 5
+        ) {
+            await loadPreviousDailyOrders();
+            loadedPages++;
+
+            // Wait for the new rows to be rendered.
+            await new Promise(resolve =>
+                requestAnimationFrame(resolve)
+            );
+        }
+
+        // Start at the newest records (bottom).
+        wrapper.scrollTop = wrapper.scrollHeight;
+
+    } finally {
+        dailyOrderFillingInitialView = false;
+    }
+}
+
 async function loadPreviousDailyOrders() {
 
     if (dailyOrderIsLoadingPrevious)
@@ -1715,17 +1712,17 @@ async function loadPreviousDailyOrders() {
         // KEEP USER AT SAME VISUAL POSITION
         // -----------------------------------------
 
+        const oldScrollTop = wrapper.scrollTop;
+
         requestAnimationFrame(() => {
 
-            const newScrollHeight =
-                wrapper.scrollHeight;
+            const newScrollHeight = wrapper.scrollHeight;
 
             const addedHeight =
-                newScrollHeight -
-                oldScrollHeight;
+                newScrollHeight - oldScrollHeight;
 
             wrapper.scrollTop =
-                addedHeight + 20;
+                oldScrollTop + addedHeight;
 
         });
 
@@ -2230,7 +2227,7 @@ async function openViewModal(orderId) {
 
     try {
         const response = await fetch(`/DailyOrder/GetOrderDetails?orderId=${orderId}`);
-       
+
 
         if (!response.ok) throw new Error(await response.text());
 
@@ -2351,29 +2348,29 @@ function renderModalLineSummary(lines) {
 
                 <td>
                     ${formatQtyWithPack(
-            line.requiredQty,
-            line.uom,
-            line.packQty,
-            line.packUom
-        )}
+                    line.requiredQty,
+                    line.uom,
+                    line.packQty,
+                    line.packUom
+                )}
                 </td>
 
                 <td>
                     ${formatQtyWithPack(
-            line.allocatedQty,
-            line.uom,
-            line.packQty,
-            line.packUom
-        )}
+                    line.allocatedQty,
+                    line.uom,
+                    line.packQty,
+                    line.packUom
+                )}
                 </td>
 
                 <td>
                     ${formatQtyWithPack(
-            line.remainingQty,
-            line.uom,
-            line.packQty,
-            line.packUom
-        )}
+                    line.remainingQty,
+                    line.uom,
+                    line.packQty,
+                    line.packUom
+                )}
                 </td>
 
                 <td style="min-width:140px;">
@@ -2785,8 +2782,8 @@ async function allocateOrder(orderId, lines = null) {
             lines: lines
         };
 
-       // console.log("FEFO PAYLOAD:", JSON.stringify(payload));
-       // alert("Sending allocate qty: " + lines.map(x => x.allocateQty).join(", "));
+        // console.log("FEFO PAYLOAD:", JSON.stringify(payload));
+        // alert("Sending allocate qty: " + lines.map(x => x.allocateQty).join(", "));
 
         const response = await fetch(`/DailyOrder/AllocateOrder?orderId=${orderId}`, {
             method: "POST",
@@ -2809,7 +2806,7 @@ async function allocateOrder(orderId, lines = null) {
             throw new Error(result?.message || resultText || "Failed to allocate order.");
         }
 
-       // alert(result.message || "Allocation completed.");
+        // alert(result.message || "Allocation completed.");
 
         await refreshLoadedDailyOrders();
 
