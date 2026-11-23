@@ -295,22 +295,47 @@
                     </button>
 
 
-                    <!-- FOR APPROVAL -->
+
+                    <!-- WAREHOUSE ALLOCATION CONFIRMATION -->
+                    <button type="button"
+                            id="btnConfirmAllocation"
+                            class="btn btn-outline-primary d-none">
+                        <i class="bi bi-clipboard-check me-1"></i>
+                        Confirm Allocation
+                    </button>
+
+                    <!-- WAREHOUSE STAFF APPROVAL -->
+                    <button type="button"
+                            id="btnStaffApprove"
+                            class="btn btn-primary d-none">
+                        <i class="bi bi-person-check me-1"></i>
+                        Staff Approve
+                    </button>
+
+                    <!-- WAREHOUSE HEAD APPROVAL -->
+                    <button type="button"
+                            id="btnHeadApprove"
+                            class="btn btn-success d-none">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Head Approve
+                    </button>
+
+                    <!-- WAREHOUSE PHYSICAL PREPARATION -->
+                    <button type="button"
+                            id="btnPrepare"
+                            class="btn btn-warning d-none">
+                        <i class="bi bi-box-seam me-1"></i>
+                        Prepare Materials
+                    </button>
+
+                    <!-- REJECTION -->
                     <button type="button"
                             id="btnReject"
                             class="btn btn-danger d-none">
-
                         <i class="bi bi-x-circle me-1"></i>
                         Reject
                     </button>
 
-                    <button type="button"
-                            id="btnApprove"
-                            class="btn btn-success d-none">
-
-                        <i class="bi bi-check-circle me-1"></i>
-                        Approve
-                    </button>
 
 
                     <!-- APPROVED -->
@@ -338,14 +363,83 @@
 </div>
 
 
+
+<!-- WAREHOUSE ALLOCATION MODAL -->
+<div class="modal fade"
+     id="warehouseAllocationModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="allocationModalTitle">
+                    Warehouse Allocation
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="allocationModalAlert"
+                     class="alert alert-danger d-none">
+                </div>
+
+                <div id="allocationModalLoading"
+                     class="text-center py-4 d-none">
+                    <div class="spinner-border text-primary"></div>
+                    <div class="mt-2">Loading available lots...</div>
+                </div>
+
+                <div id="allocationEditor"></div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        id="btnSaveWarehouseAllocation">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Save Allocation
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
 @section Scripts {
 
     <script>
-
+        let allocationSaving = false;
         const requisitionId =
             @requisitionId;
 
         let requisition = null;
+        
+
+        let allocationModal = null;
+        let allocationMode = null;
+        let allocationLines = [];
+        let allocationLotsByMaterial = {};
+
+                function hasPermission(permission) {
+            return (window.currentUserPermissions ?? [])
+                .includes(permission.trim().toUpperCase());
+        }
 
 
         document.addEventListener(
@@ -364,12 +458,7 @@
             submitForApproval
         );
 
-        document.getElementById(
-            "btnApprove"
-        ).addEventListener(
-            "click",
-            approveRequisition
-        );
+       
 
         document.getElementById(
             "btnReject"
@@ -384,6 +473,45 @@
             "click",
             releaseRequisition
         );
+
+
+
+        document.getElementById("btnStaffApprove")
+            .addEventListener("click", function () {
+                approveMrsWorkflow("staff-approve", "Warehouse Staff");
+            });
+
+        document.getElementById("btnHeadApprove")
+            .addEventListener("click", function () {
+                approveMrsWorkflow("head-approve", "Warehouse Head");
+            });
+
+
+
+        allocationModal = new bootstrap.Modal(
+            document.getElementById("warehouseAllocationModal")
+        );
+
+        document.getElementById("btnConfirmAllocation")
+            .addEventListener("click", () => {
+                openWarehouseAllocation("confirm");
+            });
+
+        document.getElementById("btnPrepare")
+            .addEventListener("click", () => {
+                openWarehouseAllocation("prepare");
+            });
+
+        document.getElementById("btnSaveWarehouseAllocation")
+            .addEventListener("click", saveWarehouseAllocation);
+
+        document.getElementById("allocationEditor")
+            .addEventListener("click", handleAllocationClick);
+
+        document.getElementById("allocationEditor")
+            .addEventListener("input", updateAllocationTotals);
+
+
 
                 setDefaultTimeServed();
 
@@ -433,280 +561,918 @@
         }
 
 
+
+
         function renderDetails() {
 
-            document.getElementById(
-                "requisitionNo"
-            ).value =
+            // ==========================================
+            // REQUISITION INFORMATION
+            // ==========================================
+            document.getElementById("requisitionNo").value =
                 requisition.requisitionNo ?? "";
 
-            document.getElementById(
-                "requisitionDate"
-            ).value =
-                formatDate(
-                    requisition.requisitionDate
-                );
+            document.getElementById("requisitionDate").value =
+                formatDate(requisition.requisitionDate);
 
-            document.getElementById(
-                "branchName"
-            ).value =
+            document.getElementById("branchName").value =
                 requisition.branchName ??
-                requisition.branchId ??
-                "";
+                requisition.branchId ?? "";
 
-            document.getElementById(
-                "status"
-            ).value =
+            document.getElementById("status").value =
                 requisition.status ?? "";
 
-            document.getElementById(
-                "requestedBy"
-            ).value =
+            document.getElementById("requestedBy").value =
                 requisition.requestedBy ?? "";
 
-            document.getElementById(
-                "timeRequested"
-            ).value =
-                formatTime(
-                    requisition.timeRequested
-                );
+            document.getElementById("timeRequested").value =
+                formatTime(requisition.timeRequested);
 
-            document.getElementById(
-                "remarks"
-            ).value =
+            document.getElementById("remarks").value =
                 requisition.remarks ?? "";
 
-            document.getElementById(
-                "releasedBy"
-            ).value =
+            // ==========================================
+            // RELEASE INFORMATION
+            // ==========================================
+            document.getElementById("releasedBy").value =
                 requisition.releasedBy ?? "";
 
-            document.getElementById(
-                "receivedBy"
-            ).value =
+            document.getElementById("receivedBy").value =
                 requisition.receivedBy ?? "";
 
-            document.getElementById(
-                "verifiedBy"
-            ).value =
+            document.getElementById("verifiedBy").value =
                 requisition.verifiedBy ?? "";
 
             if (requisition.timeServed) {
-
-                document.getElementById(
-                    "timeServed"
-                ).value =
-                    toTimeInput(
-                        requisition.timeServed
-                    );
+                document.getElementById("timeServed").value =
+                    toTimeInput(requisition.timeServed);
             }
 
+            // ==========================================
+            // MATERIAL LINES
+            // ==========================================
+            const lines = requisition.lines ?? [];
 
-            renderLines(
-                requisition.lines ?? []
-            );
+            renderLines(lines);
 
-
-                 const status =
-            String(
+            // ==========================================
+            // WORKFLOW STATUS
+            // ==========================================
+            const status = String(
                 requisition.status ?? ""
             ).toUpperCase();
 
+            const confirmed =
+                Boolean(requisition.warehouseConfirmedAt);
 
-        document.getElementById(
-            "btnSubmit"
-        ).classList.toggle(
-            "d-none",
-            status !== "DRAFT"
-        );
+            // ==========================================
+            // CHECK PHYSICAL PREPARATION
+            // ==========================================
+            const prepared =
+                lines.length > 0 &&
+                lines.every(line => {
 
-        document.getElementById(
-            "btnApprove"
-        ).classList.toggle(
-            "d-none",
-            status !== "FOR_APPROVAL"
-        );
+                    const preparedAllocations =
+                        (line.allocations ?? []).filter(
+                            allocation =>
+                                allocation.allocationStage ===
+                                "WAREHOUSE_PREPARED"
+                        );
 
-        document.getElementById(
-            "btnReject"
-        ).classList.toggle(
-            "d-none",
-            status !== "FOR_APPROVAL"
-        );
+                    const preparedQty =
+                        preparedAllocations.reduce(
+                            (total, allocation) =>
+                                total +
+                                Number(allocation.allocatedQuantity ?? 0),
+                            0
+                        );
 
-        document.getElementById(
-            "btnRelease"
-        ).classList.toggle(
-            "d-none",
-            status !== "APPROVED"
-        );
+                    const requestedQty =
+                        Number(line.requestedQuantity ?? 0);
+
+                    return preparedAllocations.length > 0 &&
+                        Math.abs(preparedQty - requestedQty) < 0.00001;
+                });
+
+            // ==========================================
+            // BUTTON VISIBILITY
+            // ==========================================
+                   const visibility = {
+
+            btnSubmit:
+                status === "DRAFT" &&
+                hasPermission("MRS_CREATE"),
+
+            btnConfirmAllocation:
+                status === "FOR_STAFF_APPROVAL" &&
+                hasPermission("MRS_ALLOCATE"),
+
+            btnStaffApprove:
+                status === "FOR_STAFF_APPROVAL" &&
+                confirmed &&
+                hasPermission("MRS_STAFF_APPROVE"),
+
+            btnHeadApprove:
+                status === "FOR_HEAD_APPROVAL" &&
+                hasPermission("MRS_HEAD_APPROVE"),
+
+            btnPrepare:
+                status === "APPROVED" &&
+                !prepared &&
+                hasPermission("MRS_RELEASE"),
+
+            btnReject:
+                (
+                    status === "FOR_STAFF_APPROVAL" &&
+                    hasPermission("MRS_STAFF_APPROVE")
+                ) ||
+                (
+                    status === "FOR_HEAD_APPROVAL" &&
+                    hasPermission("MRS_HEAD_APPROVE")
+                ),
+
+            btnRelease:
+                status === "APPROVED" &&
+                confirmed &&
+                prepared &&
+                hasPermission("MRS_RELEASE")
+        };
+
+            Object.entries(visibility).forEach(
+                ([buttonId, visible]) => {
+
+                    const button =
+                        document.getElementById(buttonId);
+
+                    if (button) {
+                        button.classList.toggle(
+                            "d-none",
+                            !visible
+                        );
+                    }
+                }
+            );
+
+                    const confirmButton =
+            document.getElementById("btnConfirmAllocation");
+
+        confirmButton.innerHTML = confirmed
+            ? `<i class="bi bi-pencil-square me-1"></i>
+               Edit Allocation`
+            : `<i class="bi bi-clipboard-check me-1"></i>
+               Confirm Allocation`;
 
 
-        // Warehouse release fields are editable ONLY after approval.
-        const canRelease =
-            status === "APPROVED";
 
-        document.getElementById(
-            "releasedBy"
-        ).disabled =
-            !canRelease;
+            // ==========================================
+            // RELEASE FIELD PERMISSIONS
+            // ==========================================
+            const canRelease = visibility.btnRelease;
 
-        document.getElementById(
-            "receivedBy"
-        ).disabled =
-            !canRelease;
+            [
+                "releasedBy",
+                "receivedBy",
+                "verifiedBy",
+                "timeServed"
+            ].forEach(id => {
 
-        document.getElementById(
-            "verifiedBy"
-        ).disabled =
-            !canRelease;
+                document.getElementById(id).disabled =
+                    !canRelease;
+            });
 
-        document.getElementById(
-            "timeServed"
-        ).disabled =
-            !canRelease;
-
-
-           
         }
+
+
+
 
 
         function renderLines(lines) {
 
-            const tbody =
-                document.getElementById(
-                    "linesBody"
-                );
-
+            const tbody = document.getElementById("linesBody");
             tbody.innerHTML = "";
 
+            const status = String(
+                requisition.status ?? ""
+            ).toUpperCase();
 
-            lines.forEach(
-                function (line) {
+            lines.forEach(line => {
 
-                    const tr =
-                        document.createElement(
-                            "tr"
+                const tr = document.createElement("tr");
+
+                // Get final physical preparation allocations
+                const preparedAllocations = (line.allocations ?? [])
+                    .filter(a =>
+                        a.allocationStage === "WAREHOUSE_PREPARED"
+                    );
+
+                const preparedQty = preparedAllocations.reduce(
+                    (total, allocation) =>
+                        total + Number(allocation.allocatedQuantity ?? 0),
+                    0
+                );
+
+                const requestedQty = Number(line.requestedQuantity ?? 0);
+
+                const fullyPrepared =
+                    preparedAllocations.length > 0 &&
+                    Math.abs(preparedQty - requestedQty) < 0.00001;
+
+                        const allLinesPrepared =
+            lines.length > 0 &&
+            lines.every(item => {
+
+                const prepared = (item.allocations ?? [])
+                    .filter(a =>
+                        a.allocationStage === "WAREHOUSE_PREPARED"
+                    );
+
+                const total = prepared.reduce(
+                    (sum, a) =>
+                        sum + Number(a.allocatedQuantity ?? 0),
+                    0
+                );
+
+                return prepared.length > 0 &&
+                    Math.abs(
+                        total - Number(item.requestedQuantity ?? 0)
+                    ) < 0.00001;
+            });
+
+            const canRelease =
+        status === "APPROVED" &&
+        Boolean(requisition.warehouseConfirmedAt) &&
+        allLinesPrepared &&
+        hasPermission("MRS_RELEASE");
+
+                // Display actual prepared lots
+                const lotDisplay = preparedAllocations.length > 0
+                    ? preparedAllocations.map(a =>
+                        `${a.lotNo ?? "Non-Lot Stock"} (${formatQuantity(a.allocatedQuantity)})`
+                      ).join(", ")
+                    : line.lotDisplay ?? "No lot allocated";
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="fw-semibold">
+                            ${escapeHtml(line.materialName ?? "")}
+                        </div>
+                        <div class="small text-muted">
+                            ${escapeHtml(line.materialCode ?? "")}
+                        </div>
+                    </td>
+
+                    <td>
+                        ${formatQuantity(requestedQty)}
+                        ${escapeHtml(line.uom ?? "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(lotDisplay)}
+                    </td>
+
+                    <td>
+                        ${formatDate(line.expirationDate)}
+                    </td>
+
+                    <td>
+                        ${formatQuantity(line.availableQuantity ?? 0)}
+                        ${escapeHtml(line.uom ?? "")}
+
+                        ${preparedAllocations.length > 0 ? `
+                            <div class="small text-success mt-1">
+                                Prepared:
+                                ${formatQuantity(preparedQty)}
+                                ${escapeHtml(line.uom ?? "")}
+                            </div>
+                        ` : ""}
+                    </td>
+
+                    <td>
+                        <div class="input-group input-group-sm">
+
+                            <input type="number"
+                                   class="form-control actual-qty"
+                                   data-line-id="${line.requisitionLineId}"
+                                   data-prepared="${preparedQty}"
+                                   min="0"
+                                   step="0.0001"
+                                   value="${line.actualQuantity ?? (canRelease ? preparedQty : "")}"
+                                   ${canRelease ? "" : "disabled"}>
+
+                            <span class="input-group-text">
+                                ${escapeHtml(line.uom ?? "")}
+                            </span>
+
+                        </div>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(line.remarks ?? "—")}
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+
+
+        async function openWarehouseAllocation(mode) {
+
+            if (!requisition || !["confirm", "prepare"].includes(mode)) {
+                return;
+            }
+
+            allocationMode = mode;
+            allocationLines = [];
+            allocationLotsByMaterial = {};
+            let lotsLoaded = false;
+
+            const title = mode === "confirm"
+                ? "Confirm Warehouse Allocation"
+                : "Prepare Materials for Release";
+
+            document.getElementById("allocationModalTitle").textContent =
+                title;
+
+            document.getElementById("allocationModalAlert")
+                .classList.add("d-none");
+
+            document.getElementById("allocationEditor").innerHTML = "";
+
+            document.getElementById("allocationModalLoading")
+                .classList.remove("d-none");
+
+            document.getElementById("btnSaveWarehouseAllocation").disabled = true;
+
+            allocationModal.show();
+
+            try {
+
+                const lines = requisition.lines ?? [];
+
+                if (!lines.length) {
+                    throw new Error("No requisition lines found.");
+                }
+
+                const materialIds = [
+                    ...new Set(lines.map(x => Number(x.materialId)))
+                ];
+
+                for (const materialId of materialIds) {
+
+                    const url =
+                        `/inventory/material-requisitions/available-lots` +
+                        `?materialId=${encodeURIComponent(materialId)}` +
+                        `&branchId=${encodeURIComponent(requisition.branchId)}`;
+
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `Unable to load available lots for material ${materialId}.`
                         );
+                    }
 
-                       const canRelease =
-        String(
-            requisition.status ?? ""
-        ).toUpperCase() ===
-        "APPROVED";
+                    const lots = await response.json();
 
+                    if (!Array.isArray(lots)) {
+                        throw new Error("Invalid available lots response.");
+                    }
 
-                    tr.innerHTML = `
+                    allocationLotsByMaterial[materialId] = lots;
+                }
 
-                        <td>
+                allocationLines = lines.map(line => {
 
+                        const stage = mode === "prepare"
+        ? "WAREHOUSE_CONFIRMED"
+        : (
+            requisition.warehouseConfirmedAt
+                ? "WAREHOUSE_CONFIRMED"
+                : "PRODUCTION_PROPOSAL"
+          );
+
+                    const existing = (line.allocations ?? [])
+                        .filter(x => x.allocationStage === stage);
+
+                    return {
+                        requisitionLineId: Number(line.requisitionLineId),
+                        materialId: Number(line.materialId),
+                        materialName: line.materialName ?? "",
+                        materialCode: line.materialCode ?? "",
+                        requestedQuantity: Number(line.requestedQuantity ?? 0),
+                        uom: line.uom ?? "",
+                        isLotTracked: Boolean(line.isLotTracked),
+                           allocations: existing.length > 0
+        ? existing.map(x => ({
+            materialLotId: line.isLotTracked
+                ? x.materialLotId
+                : null,
+            quantity: Number(x.allocatedQuantity ?? 0),
+            remarks: ""
+        }))
+        : [{
+            materialLotId: null,
+            quantity: 0,
+            remarks: ""
+        }]
+                    };
+                });
+
+                renderWarehouseAllocationEditor();
+                lotsLoaded = true;
+
+            } catch (error) {
+
+                showAllocationModalError(error.message);
+
+            } finally {
+
+                document.getElementById("allocationModalLoading")
+                    .classList.add("d-none");
+
+                  document.getElementById("btnSaveWarehouseAllocation").disabled =
+        !lotsLoaded || allocationLines.length === 0;
+            }
+        }
+
+        function renderWarehouseAllocationEditor() {
+
+            const container = document.getElementById("allocationEditor");
+
+            container.innerHTML = allocationLines.map((line, lineIndex) => {
+
+                const rows = line.allocations.map((allocation, allocationIndex) =>
+                    renderAllocationRow(line, lineIndex, allocation, allocationIndex)
+                ).join("");
+
+                return `
+                    <div class="card border mb-3 allocation-material"
+                         data-line-index="${lineIndex}">
+
+                        <div class="card-header bg-light">
                             <div class="fw-semibold">
-                                ${escapeHtml(
-                                    line.materialName ??
-                                    ""
-                                )}
+                                ${escapeHtml(line.materialName)}
                             </div>
 
                             <div class="small text-muted">
-                                ${escapeHtml(
-                                    line.materialCode ??
-                                    ""
-                                )}
+                                ${escapeHtml(line.materialCode)}
                             </div>
 
-                        </td>
+                            <div class="mt-2">
+                                Requested:
+                                <strong>${formatQuantity(line.requestedQuantity)}
+                                ${escapeHtml(line.uom)}</strong>
+                            </div>
+                        </div>
 
+                        <div class="card-body">
 
-                        <td>
+                            <div class="allocation-rows">
+                                ${rows}
+                            </div>
 
-                            ${formatQuantity(
-                                line.requestedQuantity
-                            )}
+                                 <button type="button"
+                class="btn btn-sm btn-outline-primary mt-2 add-allocation"
+                data-line-index="${lineIndex}"
+                ${!line.isLotTracked ? "disabled" : ""}>
 
-                            ${escapeHtml(
-                                line.uom ?? ""
-                            )}
+            <i class="bi bi-plus-circle me-1"></i>
+            Add Lot
 
-                        </td>
+        </button>
 
+                            <div class="mt-3 small">
+                                Allocated:
+                                <strong class="allocated-total">0</strong>
 
-                        <td>
-
-                            ${escapeHtml(
-                                line.lotDisplay ??
-                                line.lotNo ??
-                                "Not Lot Tracked"
-                            )}
-
-                        </td>
-
-
-                        <td>
-
-                            ${formatDate(
-                                line.expirationDate
-                            )}
-
-                        </td>
-
-
-                        <td>
-
-                            ${formatQuantity(
-                                line.availableQuantity ??
-                                0
-                            )}
-
-                            ${escapeHtml(
-                                line.uom ?? ""
-                            )}
-
-                        </td>
-
-
-                        <td>
-
-                            <div class="input-group input-group-sm">
-
-                                <input type="number"
-                                       class="form-control actual-qty"
-                                       data-line-id="${line.requisitionLineId}"
-                                       data-available="${line.availableQuantity ?? 0}"
-                                       min="0"
-                                       step="0.0001"
-                                       value="${line.actualQuantity ?? ""}"
-                                       ${canRelease ? "" : "disabled"}>
-
-                                <span class="input-group-text">
-
-                                    ${escapeHtml(
-                                        line.uom ?? ""
-                                    )}
-
+                                <span class="ms-3">
+                                    Remaining:
+                                    <strong class="allocation-remaining">0</strong>
                                 </span>
-
                             </div>
 
-                        </td>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            updateAllocationTotals();
+        }
 
 
-                        <td>
 
-                            ${escapeHtml(
-                                line.remarks ??
-                                "—"
-                            )}
+        function renderAllocationRow(line, lineIndex, allocation, allocationIndex) {
 
-                        </td>
+            const lots = allocationLotsByMaterial[line.materialId] ?? [];
 
-                    `;
+            const selectedLotId = allocation.materialLotId == null
+                ? ""
+                : String(allocation.materialLotId);
+
+            const options = lots.map(lot => {
+
+                const selected =
+                    String(lot.materialLotId) === selectedLotId
+                        ? "selected"
+                        : "";
+
+                const label = lot.isLotTracked
+                    ? lot.lotNo
+                    : "Non-Lot Stock";
+
+                return `
+                    <option value="${lot.materialLotId}" ${selected}>
+                        ${escapeHtml(label)}
+                        (Available: ${formatQuantity(lot.quantity)})
+                    </option>
+                `;
+            }).join("");
+
+            return `
+                <div class="row g-2 align-items-end mb-2 allocation-row"
+                     data-line-index="${lineIndex}"
+                     data-allocation-index="${allocationIndex}">
+
+                    <div class="col-md-5">
+                        <label class="form-label small">Lot / Stock Record</label>
+
+                               <select class="form-select form-select-sm allocation-lot"
+                ${!line.isLotTracked ? "disabled" : ""}>
+
+            ${line.isLotTracked
+                ? `<option value="">Select Lot</option>${options}`
+                : `<option value="">Non-Lot Stock</option>`}
+
+        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label small">Quantity</label>
+
+                        <input type="number"
+                               class="form-control form-control-sm allocation-qty"
+                               min="0.0001"
+                               step="0.0001"
+                               value="${allocation.quantity}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small">
+                            ${allocationMode === "prepare"
+                                ? "Remarks / Override Reason"
+                                : "Remarks"}
+                        </label>
+
+                        <input type="text"
+                               class="form-control form-control-sm allocation-remarks"
+                               value="${escapeHtml(allocation.remarks ?? "")}">
+                    </div>
+
+                    <div class="col-md-1">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger remove-allocation"
+                                title="Remove allocation">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+
+                </div>
+            `;
+        }
 
 
-                    tbody.appendChild(tr);
+        function syncAllocationEditor() {
+
+            document.querySelectorAll(".allocation-row").forEach(row => {
+
+                const lineIndex = Number(row.dataset.lineIndex);
+                const allocationIndex = Number(row.dataset.allocationIndex);
+
+                const allocation =
+                    allocationLines[lineIndex]?.allocations[allocationIndex];
+
+                if (!allocation) return;
+
+                const selectedValue =
+                    row.querySelector(".allocation-lot").value;
+
+                   allocation.materialLotId =
+        allocationLines[lineIndex].isLotTracked
+            ? (selectedValue ? Number(selectedValue) : null)
+            : null;
+
+                allocation.quantity =
+                    Number(row.querySelector(".allocation-qty").value);
+
+                allocation.remarks =
+                    row.querySelector(".allocation-remarks").value.trim();
+            });
+        }
+
+        function handleAllocationClick(event) {
+
+            const addButton = event.target.closest(".add-allocation");
+            const removeButton = event.target.closest(".remove-allocation");
+
+            if (!addButton && !removeButton) return;
+
+            syncAllocationEditor();
+
+            if (addButton) {
+
+                const lineIndex = Number(addButton.dataset.lineIndex);
+
+                allocationLines[lineIndex].allocations.push({
+                    materialLotId: null,
+                    quantity: 0,
+                    remarks: ""
+                });
+            }
+
+            if (removeButton) {
+
+                const row = removeButton.closest(".allocation-row");
+
+                const lineIndex = Number(row.dataset.lineIndex);
+                const allocationIndex = Number(row.dataset.allocationIndex);
+
+                allocationLines[lineIndex].allocations.splice(
+                    allocationIndex, 1
+                );
+            }
+
+            renderWarehouseAllocationEditor();
+        }
+
+        function updateAllocationTotals() {
+
+            document.querySelectorAll(".allocation-material").forEach(card => {
+
+                const lineIndex = Number(card.dataset.lineIndex);
+                const line = allocationLines[lineIndex];
+
+                let total = 0;
+
+                card.querySelectorAll(".allocation-qty").forEach(input => {
+                    total += Number(input.value || 0);
+                });
+
+                const remaining = line.requestedQuantity - total;
+
+                card.querySelector(".allocated-total").textContent =
+                    `${formatQuantity(total)} ${line.uom}`;
+
+                card.querySelector(".allocation-remaining").textContent =
+                    `${formatQuantity(remaining)} ${line.uom}`;
+
+                card.querySelector(".allocation-remaining")
+                    .classList.toggle("text-danger", remaining < 0);
+            });
+        }
+
+        function showAllocationModalError(message) {
+
+            const alert = document.getElementById("allocationModalAlert");
+
+            alert.textContent = message;
+            alert.classList.remove("d-none");
+        }
+
+
+        async function saveWarehouseAllocation() {
+
+            if (allocationSaving) return;
+
+            syncAllocationEditor();
+
+            const payloadLines = [];
+            const totalByLot = new Map();
+
+            for (const line of allocationLines) {
+
+                const allocations = line.allocations;
+                const selectedLots = new Set();
+
+                              if (allocationMode === "prepare" && allocations.length === 0) {
+            showAllocationModalError(
+                `Please allocate stock for ${line.materialName} before preparation.`
+            );
+            return;
+        }
+
+                let total = 0;
+
+                for (const allocation of allocations) {
+
+                    const quantity = Number(allocation.quantity);
+
+                    if (!Number.isFinite(quantity) || quantity <= 0) {
+                        showAllocationModalError(
+                            `Enter a positive quantity for ${line.materialName}.`
+                        );
+                        return;
+                    }
+
+                    const lots =
+                        allocationLotsByMaterial[line.materialId] ?? [];
+
+
+        const lot = line.isLotTracked
+            ? lots.find(x =>
+                Number(x.materialLotId) === allocation.materialLotId
+            )
+            : lots.find(x => x.isLotTracked === false);
+
+        if (!lot) {
+            showAllocationModalError(
+                `No valid inventory stock record found for ${line.materialName}.`
+            );
+            return;
+        }
+
+        const lotId = Number(lot.materialLotId);
+
+        if (selectedLots.has(lotId)) {
+            showAllocationModalError(
+                `Duplicate stock allocation for ${line.materialName}.`
+            );
+            return;
+        }
+
+        selectedLots.add(lotId);
+
+        const used = (totalByLot.get(lotId) ?? 0) + quantity;
+
+        if (used > Number(lot.quantity) + 0.000001) {
+            showAllocationModalError(
+                `Insufficient stock for ${line.materialName}.`
+            );
+            return;
+        }
+
+        totalByLot.set(lotId, used);
+        total += quantity;
 
                 }
+
+                if (total > line.requestedQuantity + 0.000001) {
+                    showAllocationModalError(
+                        `Allocation exceeds requested quantity for ${line.materialName}.`
+                    );
+                    return;
+                }
+
+                if (allocationMode === "prepare" &&
+                    Math.abs(total - line.requestedQuantity) > 0.000001) {
+
+                    showAllocationModalError(
+                        `Full preparation is required for ${line.materialName}.`
+                    );
+                    return;
+                }
+
+                if (!line.isLotTracked && allocations.length !== 1 &&
+                    (allocationMode === "prepare" || allocations.length > 0)) {
+
+                    showAllocationModalError(
+                        `${line.materialName} requires one stock allocation.`
+                    );
+                    return;
+                }
+
+                if (allocationMode === "prepare") {
+
+                    const originalLine = (requisition.lines ?? []).find(x =>
+                        Number(x.requisitionLineId) === line.requisitionLineId
+                    );
+
+                    const confirmed = (originalLine?.allocations ?? [])
+                        .filter(x => x.allocationStage === "WAREHOUSE_CONFIRMED");
+
+                           const originalMap = new Map();
+
+        confirmed.forEach(x => {
+            const key = line.isLotTracked
+                ? Number(x.materialLotId)
+                : "NON_LOT";
+
+            originalMap.set(
+                key,
+                (originalMap.get(key) ?? 0) +
+                Number(x.allocatedQuantity ?? 0)
             );
+        });
+
+        const preparedMap = new Map();
+
+        allocations.forEach(x => {
+            const key = line.isLotTracked
+                ? Number(x.materialLotId)
+                : "NON_LOT";
+
+            preparedMap.set(
+                key,
+                (preparedMap.get(key) ?? 0) +
+                Number(x.quantity ?? 0)
+            );
+        });
+
+        const changed =
+            originalMap.size !== preparedMap.size ||
+            [...originalMap].some(([key, quantity]) =>
+                Math.abs(
+                    quantity - (preparedMap.get(key) ?? 0)
+                ) > 0.000001
+            );
+
+                    if (changed &&
+                        !allocations.some(x => x.remarks?.trim())) {
+
+                        showAllocationModalError(
+                            `Enter an override reason for ${line.materialName}.`
+                        );
+                        return;
+                    }
+                }
+
+                payloadLines.push({
+                    requisitionLineId: line.requisitionLineId,
+                    allocations: allocations.map(x => ({
+                        materialLotId: x.materialLotId,
+                        quantity: x.quantity,
+                        remarks: x.remarks || null
+                    }))
+                });
+            }
+
+            const action = allocationMode === "prepare"
+                ? "prepare"
+                : "confirm-warehouse-allocation";
+
+            if (!confirm(
+                allocationMode === "prepare"
+                    ? "Save final physical preparation? This cannot be edited afterward."
+                    : "Confirm warehouse allocation?"
+            )) {
+                return;
+            }
+
+            allocationSaving = true;
+
+            const saveButton =
+                document.getElementById("btnSaveWarehouseAllocation");
+
+            saveButton.disabled = true;
+
+            try {
+
+                const response = await fetch(
+                    `/inventory/material-requisitions/${requisitionId}/${action}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            lines: payloadLines
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.message ?? "Unable to save allocation."
+                    );
+                }
+
+                allocationModal.hide();
+
+                showAlert(
+                    "success",
+                    allocationMode === "prepare"
+                        ? "Materials prepared successfully."
+                        : "Warehouse allocation confirmed successfully."
+                );
+
+                await loadDetails();
+
+            } catch (error) {
+
+                showAllocationModalError(error.message);
+
+            } finally {
+
+                allocationSaving = false;
+                saveButton.disabled = false;
+            }
         }
+
+
+
+
 
 
                 async function submitForApproval() {
@@ -779,65 +1545,70 @@
             );
         }
 
-                async function approveRequisition() {
 
-            const remarks =
-                prompt(
-                    "Approval remarks (optional):"
-                );
+
+
+
+
+        async function approveMrsWorkflow(action, approverLabel) {
+            hideAlert();
+
+            const remarks = prompt(
+                `${approverLabel} approval remarks (optional):`,
+                ""
+            );
 
             if (remarks === null) {
                 return;
             }
 
+            const buttonId = action === "staff-approve"
+                ? "btnStaffApprove"
+                : "btnHeadApprove";
+
+            const button = document.getElementById(buttonId);
+            button.disabled = true;
+
             try {
+                const response = await fetch(
+                    `/inventory/material-requisitions/${requisitionId}/${action}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            remarks: remarks.trim()
+                        })
+                    }
+                );
 
-                const response =
-                    await fetch(
-                        `/inventory/material-requisitions/${requisitionId}/approve`,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    remarks: remarks
-                                })
-                        }
-                    );
-
-                const result =
-                    await response.json();
+                const result = await response.json();
 
                 if (!response.ok) {
-
                     throw new Error(
-                        result.message ??
-                        "Unable to approve requisition."
+                        result.message || "Unable to approve requisition."
                     );
                 }
 
                 showAlert(
                     "success",
-                    "Material requisition approved."
+                    `${approverLabel} approval completed successfully.`
                 );
 
                 await loadDetails();
             }
             catch (error) {
-
                 console.error(error);
-
-                showAlert(
-                    "danger",
-                    error.message
-                );
+                showAlert("danger", error.message);
+            }
+            finally {
+                button.disabled = false;
             }
         }
+
+
+
 
                 async function rejectRequisition() {
 
@@ -996,11 +1767,8 @@
                         input.value
                     );
 
-                const available =
-                    Number(
-                        input.dataset.available ??
-                        0
-                    );
+                   const preparedQty =
+        Number(input.dataset.prepared ?? 0);
 
 
                 if (!actualQty ||
@@ -1017,17 +1785,20 @@
                 }
 
 
-                if (actualQty > available) {
 
-                    showAlert(
-                        "danger",
-                        `Actual quantity cannot exceed available stock of ${formatQuantity(available)}.`
-                    );
+        if (
+            !Number.isFinite(actualQty) ||
+            Math.abs(actualQty - preparedQty) > 0.00001
+        ) {
 
-                    input.focus();
+            showAlert(
+                "danger",
+                `Actual released quantity must match the prepared quantity of ${formatQuantity(preparedQty)}.`
+            );
 
-                    return;
-                }
+            input.focus();
+            return;
+        }
 
 
                 lines.push({

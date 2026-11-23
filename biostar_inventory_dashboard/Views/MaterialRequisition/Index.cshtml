@@ -146,10 +146,10 @@
                 <div class="card-body text-center">
 
                     <div class="summary-label">
-                        Posted
+                        Released
                     </div>
 
-                    <div id="postedRequisitions"
+                    <div id="releasedRequisitions"
                          class="summary-value">
                         0
                     </div>
@@ -221,8 +221,20 @@
                         Status
                     </label>
 
-                    <select id="filterStatus"
-                            class="form-select">
+
+
+                    <select id="filterStatus" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="SUBMITTED">Submitted</option>
+                        <option value="FOR_STAFF_APPROVAL">For Staff Approval</option>
+                        <option value="FOR_HEAD_APPROVAL">For Head Approval</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="RELEASED">Released</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+
 
                         <option value="">
                             All Statuses
@@ -431,12 +443,12 @@
                 loadRequisitions
             );
 
-            document.getElementById(
-                "btnSearch"
-            ).addEventListener(
-                "click",
-                loadRequisitions
-            );
+                   document.getElementById(
+            "btnSearch"
+        ).addEventListener(
+            "click",
+            renderTable
+        );
 
             document.getElementById(
                 "btnClear"
@@ -511,6 +523,36 @@
             }
         }
 
+        function getFilteredRequisitions() {
+            const search = document.getElementById("filterSearch").value.trim().toLowerCase();
+            const branch = document.getElementById("filterBranch").value;
+            const status = document.getElementById("filterStatus").value.toUpperCase();
+            const fromDate = document.getElementById("filterFromDate").value;
+            const toDate = document.getElementById("filterToDate").value;
+
+            return requisitions.filter(item => {
+                const searchableText = [
+                    item.requisitionNo,
+                    item.requestedBy,
+                    item.requestedByName,
+                    item.createdBy,
+                    item.createdByName,
+                    item.branchName,
+                    ...(Array.isArray(item.lines)
+                        ? item.lines.map(x => x.materialName)
+                        : [])
+                ].filter(Boolean).join(" ").toLowerCase();
+
+                const date = String(item.requisitionDate || "").substring(0, 10);
+
+                return (!search || searchableText.includes(search))
+                    && (!branch || String(item.branchId || "") === branch)
+                    && (!status || String(item.status || "").toUpperCase() === status)
+                    && (!fromDate || (date && date >= fromDate))
+                    && (!toDate || (date && date <= toDate));
+            });
+        }
+
 
         function renderTable() {
 
@@ -530,13 +572,12 @@
                 );
 
             tbody.innerHTML = "";
+            const filteredRequisitions = getFilteredRequisitions();
 
-            document.getElementById(
-                "tableCount"
-            ).textContent =
-                `${requisitions.length} record${requisitions.length === 1 ? "" : "s"}`;
+                document.getElementById("tableCount").textContent =
+        `${filteredRequisitions.length} record${filteredRequisitions.length === 1 ? "" : "s"}`;
 
-            if (requisitions.length === 0) {
+        if (filteredRequisitions.length === 0) {
 
                 tableContainer.classList.add(
                     "d-none"
@@ -558,8 +599,8 @@
             );
 
 
-            requisitions.forEach(
-                function (item) {
+                filteredRequisitions.forEach(
+        function (item) {
 
                     const row =
                         document.createElement(
@@ -633,49 +674,39 @@
         }
 
 
+
         function updateSummary() {
 
             document.getElementById(
                 "totalRequisitions"
-            ).textContent =
-                requisitions.length;
+            ).textContent = requisitions.length;
 
             document.getElementById(
                 "draftRequisitions"
-            ).textContent =
-                requisitions.filter(
-                    x =>
-                        String(x.status)
-                            .toUpperCase() ===
-                        "DRAFT"
-                ).length;
+            ).textContent = requisitions.filter(
+                x => String(x.status || "").toUpperCase() === "DRAFT"
+            ).length;
 
             document.getElementById(
-                "postedRequisitions"
-            ).textContent =
-                requisitions.filter(
-                    x =>
-                        String(x.status)
-                            .toUpperCase() ===
-                        "POSTED"
-                ).length;
+                "releasedRequisitions"
+            ).textContent = requisitions.filter(
+                x => String(x.status || "").toUpperCase() === "RELEASED"
+            ).length;
 
-            const today =
-                new Date()
-                    .toISOString()
-                    .substring(0, 10);
+            const today = new Date().toLocaleDateString("en-CA", {
+                timeZone: "Asia/Manila",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            });
 
             document.getElementById(
                 "todayRequisitions"
-            ).textContent =
-                requisitions.filter(
-                    x =>
-                        String(
-                            x.requisitionDate ?? ""
-                        ).substring(0, 10) ===
-                        today
-                ).length;
+            ).textContent = requisitions.filter(
+                x => String(x.requisitionDate || "").substring(0, 10) === today
+            ).length;
         }
+
 
 
         async function loadBranches() {
@@ -790,30 +821,33 @@
         }
 
 
+
         function getStatusBadge(status) {
 
-            const value =
-                String(status || "")
-                    .toUpperCase();
+            const value = String(status || "DRAFT").toUpperCase();
 
-            let css =
-                "status-draft";
+            const statusStyles = {
+                DRAFT: "bg-secondary",
+                SUBMITTED: "bg-info text-dark",
+                FOR_STAFF_APPROVAL: "bg-warning text-dark",
+                FOR_HEAD_APPROVAL: "bg-warning text-dark",
+                APPROVED: "bg-primary",
+                RELEASED: "bg-success",
+                REJECTED: "bg-danger",
+                CANCELLED: "bg-dark"
+            };
 
-            if (value === "POSTED") {
-                css = "status-posted";
-            }
-            else if (
-                value === "CANCELLED"
-            ) {
-                css = "status-cancelled";
-            }
+            const css = statusStyles[value] || "bg-secondary";
+
+            const label = value.replaceAll("_", " ");
 
             return `
-                <span class="status-badge ${css}">
-                    ${escapeHtml(value || "DRAFT")}
+                <span class="badge rounded-pill ${css} px-3 py-2">
+                    ${escapeHtml(label)}
                 </span>
             `;
         }
+
 
 
         function formatDate(value) {

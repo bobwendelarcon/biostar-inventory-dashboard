@@ -929,6 +929,22 @@ namespace biostar_inventory_dashboard.Services
             return JsonSerializer.Deserialize<UserAccountDto>(json, _jsonOptions);
         }
 
+
+        public async Task<UserAccountDto?> GetMyAccountAsync()
+        {
+            var response = await _httpClient.GetAsync("api/User/me");
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<UserAccountDto>(
+                json,
+                _jsonOptions);
+        }
+
+
         public async Task<bool> UpdateMyAccountAsync(string userId, UpdateMyAccountDto dto)
         {
             var json = JsonSerializer.Serialize(dto);
@@ -2263,21 +2279,114 @@ GetInventoryPrintSummaryAsync(
         }
 
         public async Task<string> GetAvailableRawMaterialLotsAsync(
-            int materialId,
-            string branchId)
+    int materialId,
+    string branchId)
         {
-            var response = await _httpClient.GetAsync(
-                $"api/inventory/material-requisitions/available-lots" +
+            var url =
+                "api/inventory/material-requisitions/available-lots" +
                 $"?materialId={materialId}" +
-                $"&branchId={Uri.EscapeDataString(branchId)}");
+                $"&branchId={Uri.EscapeDataString(branchId)}";
+
+            using var response = await _httpClient.GetAsync(url);
 
             var result = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
-                throw new Exception(result);
+            {
+                throw new HttpRequestException(
+                    $"MRS API returned {(int)response.StatusCode} " +
+                    $"({response.ReasonPhrase}). Response: {result}",
+                    null,
+                    response.StatusCode);
+            }
 
             return result;
         }
+
+
+        // =====================================================
+        // MRS - WAREHOUSE ALLOCATION CONFIRMATION
+        // =====================================================
+        public async Task<string> ConfirmMrsWarehouseAllocationAsync(
+            int id,
+            string jsonData)
+        {
+            return await PostMrsWorkflowAsync(
+                id,
+                "confirm-warehouse-allocation",
+                jsonData);
+        }
+
+        // =====================================================
+        // MRS - WAREHOUSE STAFF APPROVAL
+        // =====================================================
+        public async Task<string> StaffApproveMrsAsync(
+            int id,
+            string jsonData)
+        {
+            return await PostMrsWorkflowAsync(
+                id,
+                "staff-approve",
+                jsonData);
+        }
+
+        // =====================================================
+        // MRS - WAREHOUSE HEAD APPROVAL
+        // =====================================================
+        public async Task<string> HeadApproveMrsAsync(
+            int id,
+            string jsonData)
+        {
+            return await PostMrsWorkflowAsync(
+                id,
+                "head-approve",
+                jsonData);
+        }
+
+        // =====================================================
+        // MRS - WAREHOUSE PHYSICAL PREPARATION
+        // =====================================================
+        public async Task<string> PrepareMrsWarehouseAllocationAsync(
+            int id,
+            string jsonData)
+        {
+            return await PostMrsWorkflowAsync(
+                id,
+                "prepare",
+                jsonData);
+        }
+
+        // =====================================================
+        // SHARED MRS WORKFLOW HTTP HELPER
+        // =====================================================
+        private async Task<string> PostMrsWorkflowAsync(
+            int id,
+            string action,
+            string jsonData)
+        {
+            using var content = new StringContent(
+                jsonData,
+                Encoding.UTF8,
+                "application/json");
+
+            using var response = await _httpClient.PostAsync(
+                $"api/inventory/material-requisitions/{id}/{action}",
+                content);
+
+            var result =
+                await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(
+                    $"MRS {action} failed ({(int)response.StatusCode}): {result}",
+                    null,
+                    response.StatusCode);
+            }
+
+            return result;
+        }
+
 
 
         public async Task<string>

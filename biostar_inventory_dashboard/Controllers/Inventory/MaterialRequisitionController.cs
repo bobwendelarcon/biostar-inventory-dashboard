@@ -233,15 +233,24 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
                     result,
                     "application/json");
             }
+            catch (HttpRequestException ex)
+    when (ex.StatusCode.HasValue)
+            {
+                return StatusCode(
+                    (int)ex.StatusCode.Value,
+                    new
+                    {
+                        success = false,
+                        message = ex.Message
+                    });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerMessage = ex.InnerException?.Message,
-                    exceptionType = ex.GetType().FullName,
-                    detail = ex.ToString()
+                    message = "Unexpected error loading available lots.",
+                    detail = ex.Message
                 });
             }
         }
@@ -408,6 +417,121 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
                 });
             }
         }
+
+
+
+        // =====================================================
+        // WAREHOUSE ALLOCATION CONFIRMATION
+        // =====================================================
+        [HttpPost("{id:int}/confirm-warehouse-allocation")]
+        public async Task<IActionResult> ConfirmWarehouseAllocation(
+            int id,
+            [FromBody] JsonElement request)
+        {
+            return await ExecuteMrsWorkflowAsync(
+                id,
+                request,
+                _apiService.ConfirmMrsWarehouseAllocationAsync);
+        }
+
+        // =====================================================
+        // WAREHOUSE STAFF APPROVAL
+        // =====================================================
+        [HttpPost("{id:int}/staff-approve")]
+        public async Task<IActionResult> StaffApprove(
+            int id,
+            [FromBody] JsonElement request)
+        {
+            return await ExecuteMrsWorkflowAsync(
+                id,
+                request,
+                _apiService.StaffApproveMrsAsync);
+        }
+
+        // =====================================================
+        // WAREHOUSE HEAD APPROVAL
+        // =====================================================
+        [HttpPost("{id:int}/head-approve")]
+        public async Task<IActionResult> HeadApprove(
+            int id,
+            [FromBody] JsonElement request)
+        {
+            return await ExecuteMrsWorkflowAsync(
+                id,
+                request,
+                _apiService.HeadApproveMrsAsync);
+        }
+
+        // =====================================================
+        // WAREHOUSE PHYSICAL PREPARATION
+        // =====================================================
+        [HttpPost("{id:int}/prepare")]
+        public async Task<IActionResult> PrepareMaterials(
+            int id,
+            [FromBody] JsonElement request)
+        {
+            return await ExecuteMrsWorkflowAsync(
+                id,
+                request,
+                _apiService.PrepareMrsWarehouseAllocationAsync);
+        }
+
+        // =====================================================
+        // SHARED MRS WORKFLOW EXECUTION
+        // =====================================================
+        private async Task<IActionResult> ExecuteMrsWorkflowAsync(
+            int id,
+            JsonElement request,
+            Func<int, string, Task<string>> apiAction)
+        {
+            try
+            {
+                if (User.Identity?.IsAuthenticated != true)
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Please log in to continue."
+                    });
+                }
+
+                if (id <= 0 ||
+                    request.ValueKind != JsonValueKind.Object)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid MRS request."
+                    });
+                }
+
+                var json = request.GetRawText();
+
+                var result = await apiAction(id, json);
+
+                return Content(result, "application/json");
+            }
+            catch (HttpRequestException ex)
+                when (ex.StatusCode.HasValue)
+            {
+                return StatusCode(
+                    (int)ex.StatusCode.Value,
+                    new
+                    {
+                        success = false,
+                        message = ex.Message
+                    });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to process the MRS request."
+                });
+            }
+        }
+
 
 
         // =====================================================

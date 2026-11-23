@@ -31,7 +31,7 @@ namespace biostar_inventory_dashboard.Controllers
                 return RedirectToAction("Index", "Login");
             }
 
-            var user = await _apiService.GetUserByIdAsync(userId);
+            var user = await _apiService.GetMyAccountAsync();
 
             if (user == null)
             {
@@ -75,12 +75,26 @@ namespace biostar_inventory_dashboard.Controllers
                     return RedirectToAction("MyAccount");
                 }
 
+
                 var success = await _apiService.UpdateMyAccountAsync(userId, dto);
 
+                if (success)
+                {
+                    var updatedUser = await _apiService.GetMyAccountAsync();
+
+                    if (updatedUser != null)
+                    {
+                        await RefreshUserClaimsAsync(updatedUser);
+                    }
+                }
+
                 TempData[success ? "Success" : "Error"] =
-                    success ? "Account updated successfully." : "Failed to update account.";
+                    success
+                        ? "Account updated successfully."
+                        : "Failed to update account.";
 
                 return RedirectToAction("MyAccount");
+
             }
             catch (Exception ex)
             {
@@ -129,12 +143,15 @@ namespace biostar_inventory_dashboard.Controllers
                 }
 
                 // 🔥 Get updated user from API
-                var updatedUser = await _apiService.GetUserByIdAsync(userId);
+
+                // Get updated account details using the logged-in user's JWT.
+                var updatedUser = await _apiService.GetMyAccountAsync();
 
                 if (updatedUser != null)
                 {
                     await RefreshUserClaimsAsync(updatedUser);
                 }
+
 
                 TempData["Success"] = "Profile image uploaded successfully.";
                 return RedirectToAction("MyAccount");
@@ -147,28 +164,61 @@ namespace biostar_inventory_dashboard.Controllers
         }
 
 
+
         private async Task RefreshUserClaimsAsync(UserAccountDto user)
         {
-            var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.username ?? ""),
-        new Claim("user_id", user.user_id ?? ""),
-        new Claim("full_name", user.full_name ?? ""),
-        new Claim("role_name", user.role_name ?? ""),
-        new Claim(ClaimTypes.Role, user.role_name ?? "")
-    };
+            // Read the existing authenticated session.
+            var authResult = await HttpContext.AuthenticateAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
 
-            if (!string.IsNullOrWhiteSpace(user.profile_image))
+            if (!authResult.Succeeded ||
+                authResult.Principal == null)
             {
-                claims.Add(new Claim("profile_image", user.profile_image));
+                throw new InvalidOperationException(
+                    "Your login session has expired. Please log in again.");
             }
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            // Preserve existing claims, including access points.
+            var claims = authResult.Principal.Claims.ToList();
+
+            // Update only the claims that may have changed.
+            claims.RemoveAll(c =>
+                c.Type == ClaimTypes.Name ||
+                c.Type == "full_name" ||
+                c.Type == "username" ||
+                c.Type == "profile_image");
+
+            claims.Add(new Claim(
+                ClaimTypes.Name,
+                user.full_name ?? ""));
+
+            claims.Add(new Claim(
+                "full_name",
+                user.full_name ?? ""));
+
+            claims.Add(new Claim(
+                "username",
+                user.username ?? ""));
+
+            claims.Add(new Claim(
+                "profile_image",
+                user.profile_image ?? ""));
+
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
             var principal = new ClaimsPrincipal(identity);
 
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            // Preserve the JWT and existing ticket expiration.
+            var properties = authResult.Properties;
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                properties);
         }
+
 
         [HttpGet]
         public IActionResult ChangePassword()

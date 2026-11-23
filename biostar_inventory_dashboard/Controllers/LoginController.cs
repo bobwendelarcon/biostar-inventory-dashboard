@@ -90,30 +90,11 @@ namespace biostar_inventory_dashboard.Controllers
 
             var fullName = string.IsNullOrWhiteSpace(user.full_name) ? username : user.full_name;
 
-            // Load access points assigned to this account
-            var accessCodes = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(user.user_id?.ToString()))
-            {
-                try
-                {
-                    var accessJson = await _apiService.GetUserAccessCodesAsync(
-                        user.user_id.ToString());
+            // Access points are already returned by the login API.
+            // No additional protected API request is needed.
+            var accessCodes = user.access_points ?? new List<string>();
 
-                    accessCodes =
-                        System.Text.Json.JsonSerializer.Deserialize<List<string>>(
-                            accessJson,
-                            new System.Text.Json.JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true
-                            })
-                        ?? new List<string>();
-                }
-                catch
-                {
-                    accessCodes = new List<string>();
-                }
-            }
 
             var claims = new List<Claim>
             {
@@ -144,9 +125,34 @@ namespace biostar_inventory_dashboard.Controllers
 
             var principal = new ClaimsPrincipal(identity);
 
+
+            if (string.IsNullOrWhiteSpace(user.token))
+            {
+                ViewBag.Error = "Login failed: API authentication token is missing.";
+                return View();
+            }
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = false,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+            };
+
+            // Store the JWT in the protected authentication ticket.
+            // It will be available for authenticated API requests.
+            authProperties.StoreTokens(new[]
+            {
+    new AuthenticationToken
+    {
+        Name = "access_token",
+        Value = user.token
+    }
+});
+
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                principal);
+                principal,
+                authProperties);
 
             // PROBIOTICS STAFF - Laboratory Inventory landing page
             if (role == "PROBIOTICS_STAFF")

@@ -13,9 +13,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Login/Index";
         options.AccessDeniedPath = "/Login/AccessDenied";
+
         options.Cookie.Name = "BiostarAuth";
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = false;
+
     });
 
 
@@ -73,11 +75,19 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddTransient<JwtAuthHandler>();
+
 builder.Services.AddHttpClient<ApiService>(client =>
 {
     var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
     client.BaseAddress = new Uri(baseUrl!);
-});
+})
+.AddHttpMessageHandler<JwtAuthHandler>();
+
+
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {
