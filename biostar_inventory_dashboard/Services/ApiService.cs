@@ -2120,6 +2120,17 @@ GetInventoryPrintSummaryAsync(
         // MATERIAL REQUISITION SLIP (RAW MATERIAL OUT)
         // =====================================================
 
+        public async Task<string>
+            GetMaterialRequisitionNotificationCountsAsync()
+        {
+            using var response = await _httpClient.GetAsync(
+                "api/inventory/material-requisitions/notification-counts");
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         public async Task<string> GetMaterialRequisitionsAsync()
         {
             var response = await _httpClient.GetAsync(

@@ -46,6 +46,68 @@
         color: #198754;
         margin-top: 3px;
     }
+
+    /* ==========================================
+       DIRECT MATERIAL SEARCH
+       ========================================== */
+
+    .material-search-wrapper {
+        position: relative;
+        margin-bottom: 5px;
+    }
+
+    .material-search-input {
+        font-size: .78rem;
+    }
+
+
+    .material-search-results {
+        position: fixed;
+        width: 320px;
+        max-height: 260px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, .12);
+        z-index: 1050;
+    }
+
+
+    .material-search-result {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        border: 0;
+        border-bottom: 1px solid #f1f3f5;
+        background: #fff;
+        text-align: left;
+        cursor: pointer;
+    }
+
+        .material-search-result:hover,
+        .material-search-result:focus {
+            background: #eaf3ff;
+        }
+
+    .material-search-name {
+        font-size: .82rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .material-search-code {
+        font-size: .72rem;
+        color: #6c757d;
+    }
+
+    .material-search-empty {
+        padding: 10px;
+        font-size: .78rem;
+        color: #6c757d;
+    }
+
+
 </style>
 
 <div class="container-fluid mrs-form-page">
@@ -177,7 +239,7 @@
                                 Subcategory
                             </th>
 
-                            <th style="min-width:220px;">
+                            <th style="min-width:300px;">
                                 Item
                             </th>
 
@@ -356,6 +418,9 @@
         let subCategories = [];
         let lineCounter = 0;
 
+        const lotRequestVersions = new Map();
+
+
 
         document.addEventListener(
             "DOMContentLoaded",
@@ -365,14 +430,17 @@
 
                 bindEvents();
 
-                       await loadBranches();
-        await loadCategories();
-        await loadSubCategories();
-        await loadMaterials();
+                bindMaterialSearchEvents();
 
-        addMaterialLine();
+                await loadBranches();
+                await loadCategories();
+                await loadSubCategories();
+                await loadMaterials();
+
+                addMaterialLine();
             }
         );
+
 
 
                 function bindEvents() {
@@ -703,26 +771,67 @@
 
                 <td>
 
-                    <select class="form-select form-select-sm"
-                            id="material_${id}"
-                            disabled
-                            onchange="handleMaterialChange(${id})">
 
-                        <option value="">
-                            Select Subcategory First
-                        </option>
+       
 
-                    </select>
+            <!-- DIRECT MATERIAL SEARCH -->
 
-                    <div id="materialInfo_${id}"
-                         class="material-info">
-                    </div>
+            <div class="material-search-wrapper">
 
-                    <div id="availableStock_${id}"
-                         class="available-stock">
-                    </div>
+                <div class="input-group input-group-sm">
 
-                </td>
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input type="text"
+                           id="materialSearch_${id}"
+                           class="form-control material-search-input"
+                           placeholder="Search ID, code or name"
+                           autocomplete="off"
+                           oninput="searchMaterials(${id})"
+                           onfocus="searchMaterials(${id})">
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            title="Clear search"
+                            onclick="clearMaterialSearch(${id})">
+
+                        <i class="bi bi-x-lg"></i>
+
+                    </button>
+
+                </div>
+
+                <div id="materialSearchResults_${id}"
+                     class="material-search-results d-none">
+                </div>
+
+            </div>
+
+            <!-- EXISTING MATERIAL DROPDOWN -->
+
+            <select class="form-select form-select-sm"
+                    id="material_${id}"
+                    disabled
+                    onchange="handleMaterialChange(${id})">
+
+                <option value="">
+                    Select Subcategory First
+                </option>
+
+            </select>
+
+            <div id="materialInfo_${id}"
+                 class="material-info">
+            </div>
+
+            <div id="availableStock_${id}"
+                 class="available-stock">
+            </div>
+
+        </td>
+
 
 
                 <td>
@@ -809,6 +918,567 @@
 
             tbody.appendChild(row);
         }
+
+
+        function closeMaterialSearchResults(lineId) {
+
+            const results =
+                document.getElementById(
+                    `materialSearchResults_${lineId}`
+                );
+
+            if (!results) {
+                return;
+            }
+
+            results.classList.add("d-none");
+        }
+
+
+        function closeAllMaterialSearchResults(
+            exceptLineId = null
+        ) {
+
+            document.querySelectorAll(
+                ".material-search-results"
+            ).forEach(results => {
+
+                if (
+                    exceptLineId !== null &&
+                    results.id ===
+                        `materialSearchResults_${exceptLineId}`
+                ) {
+                    return;
+                }
+
+                results.classList.add("d-none");
+            });
+        }
+
+        function bindMaterialSearchEvents() {
+
+            // ==========================================
+            // CLOSE WHEN CLICKING OUTSIDE
+            // ==========================================
+
+            document.addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        !event.target.closest(
+                            ".material-search-wrapper"
+                        )
+                    ) {
+
+                        closeAllMaterialSearchResults();
+                    }
+                }
+            );
+
+
+            // ==========================================
+            // CLOSE WHEN PRESSING ESCAPE
+            // ==========================================
+
+            document.addEventListener(
+                "keydown",
+                function (event) {
+
+                    if (event.key === "Escape") {
+
+                        closeAllMaterialSearchResults();
+                    }
+                }
+            );
+
+
+            // ==========================================
+            // CLOSE WHEN SCROLLING
+            // ==========================================
+
+            window.addEventListener(
+                "scroll",
+                function (event) {
+
+                    // Allow scrolling inside search results.
+
+                    if (
+                        event.target instanceof Element &&
+                        event.target.closest(
+                            ".material-search-results"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    closeAllMaterialSearchResults();
+                },
+                {
+                    capture: true,
+                    passive: true
+                }
+            );
+
+
+            // ==========================================
+            // CLOSE WHEN RESIZING WINDOW
+            // ==========================================
+
+            window.addEventListener(
+                "resize",
+                function () {
+
+                    closeAllMaterialSearchResults();
+                }
+            );
+        }
+
+
+        function positionMaterialSearchResults(lineId) {
+
+            const input =
+                document.getElementById(
+                    `materialSearch_${lineId}`
+                );
+
+            const results =
+                document.getElementById(
+                    `materialSearchResults_${lineId}`
+                );
+
+            if (!input || !results) {
+                return;
+            }
+
+            const wrapper =
+                input.closest(".material-search-wrapper");
+
+            const rect =
+                wrapper.getBoundingClientRect();
+
+            const viewportWidth =
+                window.innerWidth;
+
+            const viewportHeight =
+                window.innerHeight;
+
+            const width = Math.min(
+                Math.max(rect.width, 320),
+                viewportWidth - 16
+            );
+
+            const left = Math.max(
+                8,
+                Math.min(
+                    rect.left,
+                    viewportWidth - width - 8
+                )
+            );
+
+            const spaceBelow =
+                viewportHeight - rect.bottom - 8;
+
+            const spaceAbove =
+                rect.top - 8;
+
+            results.style.width =
+                `${width}px`;
+
+            results.style.left =
+                `${left}px`;
+
+            if (spaceBelow < 260 &&
+                spaceAbove > spaceBelow) {
+
+                // OPEN ABOVE THE SEARCH FIELD
+
+                results.style.top = "auto";
+
+                results.style.bottom =
+                    `${viewportHeight - rect.top + 4}px`;
+
+                results.style.maxHeight =
+                    `${Math.max(0, Math.min(260, spaceAbove - 4))}px`;
+
+            } else {
+
+                // OPEN BELOW THE SEARCH FIELD
+
+                results.style.bottom = "auto";
+
+                results.style.top =
+                    `${rect.bottom + 4}px`;
+
+                results.style.maxHeight =
+                    `${Math.max(0, Math.min(260, spaceBelow - 4))}px`;
+            }
+        }
+
+
+        function searchMaterials(lineId) {
+            closeAllMaterialSearchResults(lineId);
+            const input =
+                document.getElementById(
+                    `materialSearch_${lineId}`
+                );
+
+            const results =
+                document.getElementById(
+                    `materialSearchResults_${lineId}`
+                );
+
+            const keyword =
+                input.value.trim().toLowerCase();
+
+            results.innerHTML = "";
+
+            // ==========================================
+            // EMPTY SEARCH
+            // ==========================================
+
+            if (!keyword) {
+
+                results.classList.add("d-none");
+
+                return;
+            }
+
+            // ==========================================
+            // SEARCH MATERIAL MASTER FILE
+            // ==========================================
+
+            const matchingMaterials =
+                materials.filter(material => {
+
+                    const id = String(
+                        material.material_id ??
+                        material.materialId ??
+                        ""
+                    );
+
+                    const code = String(
+                        material.material_code ??
+                        material.materialCode ??
+                        ""
+                    ).toLowerCase();
+
+                    const name = String(
+                        material.material_name ??
+                        material.materialName ??
+                        ""
+                    ).toLowerCase();
+
+                    return (
+                        id.includes(keyword) ||
+                        code.includes(keyword) ||
+                        name.includes(keyword)
+                    );
+                });
+
+            // ==========================================
+            // SORT SEARCH RESULTS
+            // ==========================================
+
+            matchingMaterials.sort((a, b) => {
+
+                const nameA =
+                    a.material_name ??
+                    a.materialName ??
+                    "";
+
+                const nameB =
+                    b.material_name ??
+                    b.materialName ??
+                    "";
+
+                return String(nameA)
+                    .localeCompare(String(nameB));
+            });
+
+            // ==========================================
+            // NO MATCHING MATERIALS
+            // ==========================================
+
+            if (matchingMaterials.length === 0) {
+
+                results.innerHTML = `
+                    <div class="material-search-empty">
+                        No matching materials found.
+                    </div>
+                `;
+
+                      positionMaterialSearchResults(lineId);
+
+        results.classList.remove("d-none");
+
+                return;
+            }
+
+            // ==========================================
+            // DISPLAY SEARCH RESULTS
+            // ==========================================
+
+            matchingMaterials
+                .slice(0, 30)
+                .forEach(material => {
+
+                    const materialId = Number(
+                        material.material_id ??
+                        material.materialId
+                    );
+
+                    if (!Number.isSafeInteger(materialId)
+                            || materialId <= 0) {
+                        return;
+                    }
+
+                    const code =
+                        material.material_code ??
+                        material.materialCode ??
+                        "";
+
+                    const name =
+                        material.material_name ??
+                        material.materialName ??
+                        "";
+
+                    const uom =
+                        material.uom ?? "";
+
+                    results.insertAdjacentHTML(
+                        "beforeend",
+                        `
+                        <button type="button"
+                                class="material-search-result"
+                                onclick="selectSearchMaterial(
+                                    ${lineId},
+                                    ${materialId}
+                                )">
+
+                            <div class="material-search-name">
+                                ${escapeHtml(name)}
+                            </div>
+
+                            <div class="material-search-code">
+                                ${escapeHtml(code)}
+                                | ID: ${materialId}
+                                | ${escapeHtml(uom)}
+                            </div>
+
+                        </button>
+                        `
+                    );
+                });
+
+            // ==========================================
+            // LIMIT DISPLAYED RESULTS
+            // ==========================================
+
+            if (matchingMaterials.length > 30) {
+
+                results.insertAdjacentHTML(
+                    "beforeend",
+                    `
+                    <div class="material-search-empty">
+                        Showing 30 of ${matchingMaterials.length}
+                        results. Refine your search.
+                    </div>
+                    `
+                );
+            }
+
+                 positionMaterialSearchResults(lineId);
+
+        results.classList.remove("d-none");
+        }
+
+
+        async function selectSearchMaterial(lineId, materialId) {
+
+            // ==========================================
+            // FIND SELECTED MATERIAL
+            // ==========================================
+
+            const material = materials.find(x =>
+                Number(
+                    x.material_id ??
+                    x.materialId
+                ) === Number(materialId)
+            );
+
+            if (!material) {
+                return;
+            }
+
+            // ==========================================
+            // GET MATERIAL INFORMATION
+            // ==========================================
+
+            const categoryId = String(
+                material.material_category_id ??
+                material.materialCategoryId ??
+                ""
+            );
+
+            const rawSubCategoryId =
+                material.material_subcategory_id ??
+                material.materialSubcategoryId;
+
+            const subCategoryId =
+                rawSubCategoryId
+                    ? String(rawSubCategoryId)
+                    : "NONE";
+
+            const materialName =
+                material.material_name ??
+                material.materialName ??
+                "";
+
+            const materialCode =
+                material.material_code ??
+                material.materialCode ??
+                "";
+
+            // ==========================================
+            // GET ROW CONTROLS
+            // ==========================================
+
+            const categorySelect =
+                document.getElementById(
+                    `category_${lineId}`
+                );
+
+            const subCategorySelect =
+                document.getElementById(
+                    `subcategory_${lineId}`
+                );
+
+            const materialSelect =
+                document.getElementById(
+                    `material_${lineId}`
+                );
+
+            const searchInput =
+                document.getElementById(
+                    `materialSearch_${lineId}`
+                );
+
+            const searchResults =
+                document.getElementById(
+                    `materialSearchResults_${lineId}`
+                );
+
+            // ==========================================
+            // VALIDATE CATEGORY
+            // ==========================================
+
+            if (!categoryId ||
+                !Array.from(categorySelect.options)
+                    .some(x => x.value === categoryId)) {
+
+                showAlert(
+                    "danger",
+                    "The selected material has an invalid category."
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // SELECT CATEGORY
+            // ==========================================
+
+            categorySelect.value = categoryId;
+
+            handleCategoryChange(lineId);
+
+            // ==========================================
+            // SELECT SUBCATEGORY
+            // ==========================================
+
+            subCategorySelect.value = subCategoryId;
+
+            if (subCategorySelect.value !== subCategoryId) {
+
+                showAlert(
+                    "danger",
+                    "Unable to select the material subcategory."
+                );
+
+                return;
+            }
+
+            handleSubCategoryChange(lineId);
+
+            // ==========================================
+            // SELECT MATERIAL
+            // ==========================================
+
+            materialSelect.value = String(materialId);
+
+            if (materialSelect.value !== String(materialId)) {
+
+                showAlert(
+                    "danger",
+                    "Unable to select the material."
+                );
+
+                return;
+            }
+
+            // ==========================================
+            // UPDATE SEARCH FIELD
+            // ==========================================
+
+            searchInput.value =
+                `${materialCode} - ${materialName}`;
+
+            searchResults.innerHTML = "";
+
+            searchResults.classList.add("d-none");
+
+            // ==========================================
+            // RESET PREVIOUS REQUESTED QUANTITY
+            // ==========================================
+
+            const quantityInput =
+                document.getElementById(
+                    `requestedQty_${lineId}`
+                );
+
+            quantityInput.value = "";
+
+            quantityInput.dataset.available = "";
+
+            // ==========================================
+            // LOAD MATERIAL INFORMATION AND LOTS
+            // ==========================================
+
+            await handleMaterialChange(lineId);
+        }
+
+        function clearMaterialSearch(lineId) {
+
+            const input =
+                document.getElementById(
+                    `materialSearch_${lineId}`
+                );
+
+            const results =
+                document.getElementById(
+                    `materialSearchResults_${lineId}`
+                );
+
+            input.value = "";
+
+            results.innerHTML = "";
+
+            results.classList.add("d-none");
+
+            input.focus();
+        }
+
 
 
                function getCategoryOptions() {
@@ -1125,10 +1795,42 @@
             materialSelect.disabled = false;
         }
 
+        function resetMaterialSearch(lineId) {
 
-        function resetMaterialSelection(
-            lineId,
-            resetMaterialDropdown = true) {
+            const input =
+                document.getElementById(
+                    `materialSearch_${lineId}`
+                );
+
+            const results =
+                document.getElementById(
+                    `materialSearchResults_${lineId}`
+                );
+
+            if (input) {
+                input.value = "";
+            }
+
+            if (results) {
+
+                results.innerHTML = "";
+
+                results.classList.add("d-none");
+            }
+        }
+
+
+           function resetMaterialSelection(
+        lineId,
+        resetMaterialDropdown = true) {
+
+        invalidateLotRequest(lineId);
+
+        resetMaterialSearch(lineId);
+
+        // Continue existing code...
+
+                resetMaterialSearch(lineId);
 
             const materialSelect =
                 document.getElementById(
@@ -1188,7 +1890,53 @@
 
             qtyInput.dataset.available = "";
         }
+
+        function syncMaterialSearch(lineId, material) {
+
+            const input =
+                document.getElementById(
+                    `materialSearch_${lineId}`
+                );
+
+            if (!input) {
+                return;
+            }
+
+            if (!material) {
+
+                resetMaterialSearch(lineId);
+
+                return;
+            }
+
+            const code =
+                material.material_code ??
+                material.materialCode ??
+                "";
+
+            const name =
+                material.material_name ??
+                material.materialName ??
+                "";
+
+            input.value = code
+                ? `${code} - ${name}`
+                : name;
+
+            closeMaterialSearchResults(lineId);
+        }
+
+
+
         async function handleMaterialChange(lineId) {
+
+
+        invalidateLotRequest(lineId);
+
+        document.getElementById(
+            `requestedQty_${lineId}`
+        ).dataset.available = "";
+
 
             const materialId =
                 Number(
@@ -1205,8 +1953,9 @@
                             x.materialId
                         ) === materialId
                 );
-
-            const lotSelect =
+                syncMaterialSearch(lineId, material);
+           
+                const lotSelect =
                 document.getElementById(
                     `lot_${lineId}`
                 );
@@ -1292,12 +2041,60 @@
 
         }
 
+        function invalidateLotRequest(lineId) {
+
+            const key = String(lineId);
+
+            const version =
+                (lotRequestVersions.get(key) ?? 0) + 1;
+
+            lotRequestVersions.set(key, version);
+
+            return version;
+        }
+
+
+        function isCurrentLotRequest(
+            lineId,
+            version,
+            materialId,
+            branchId
+        ) {
+
+            const key = String(lineId);
+
+            const materialSelect =
+                document.getElementById(
+                    `material_${lineId}`
+                );
+
+            const branchSelect =
+                document.getElementById("branchId");
+
+            if (!materialSelect || !branchSelect) {
+                return false;
+            }
+
+            return (
+                lotRequestVersions.get(key) === version &&
+
+                String(materialSelect.value) ===
+                    String(materialId) &&
+
+                String(branchSelect.value) ===
+                    String(branchId)
+            );
+        }
+
 
         async function loadAvailableLots(
             lineId,
             materialId,
             branchId,
             isLotTracked) {
+
+                    const requestVersion =
+        invalidateLotRequest(lineId);
 
             const select =
                 document.getElementById(
@@ -1332,6 +2129,19 @@
 
                 const lots =
                     await response.json();
+
+
+        // IGNORE OUTDATED API RESPONSES
+
+        if (!isCurrentLotRequest(
+            lineId,
+            requestVersion,
+            materialId,
+            branchId
+        )) {
+            return;
+        }
+
 
 
                 if (!Array.isArray(lots) ||
@@ -1512,6 +2322,8 @@
             document.getElementById(
                 `mrsLine_${lineId}`
             )?.remove();
+
+            lotRequestVersions.delete(String(lineId));
 
         }
 

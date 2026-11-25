@@ -773,7 +773,25 @@
         {
             <li class="nav-item mb-2">
                 <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#rawMaterialInventoryMenu">
-                    <div><i class="bi bi-box-seam me-2"></i><span>Raw Material Inventory</span></div><span class="menu-arrow">▾</span>
+
+                    <div>
+                        <i class="bi bi-box-seam me-2"></i>
+                        <span>Raw Material Inventory</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        @if (HasAccess("INV_MATERIAL_REQUISITION"))
+                        {
+                            <span id="rawMaterialMrsBadge"
+                                  class="badge bg-danger rounded-pill"
+                                  style="display:none;">
+                                0
+                            </span>
+                        }
+
+                        <span class="menu-arrow">▾</span>
+                    </div>
+
                 </a>
                 <div class="collapse @(isRawMaterialInventoryOpen ? "show" : "")" id="rawMaterialInventoryMenu">
                     <ul class="nav flex-column ms-3 mt-1">
@@ -789,10 +807,25 @@
                         {
                             <li><a class="nav-link @(currentController == "RawMaterialProcessing" ? "active fw-bold" : "")" href="/inventory/raw-material-processing"><span>Raw Material Processing</span></a></li>
                         }
+
                         @if (HasAccess("INV_MATERIAL_REQUISITION"))
                         {
-                            <li><a class="nav-link @(currentController == "MaterialRequisition" ? "active fw-bold" : "")" href="/inventory/material-requisitions"><span>Material Requisition (Stock Out)</span></a></li>
+                            <li>
+                                <a class="nav-link d-flex justify-content-between align-items-center @(currentController == "MaterialRequisition" ? "active fw-bold" : "")"
+                                   href="/inventory/material-requisitions">
+
+                                    <span>Material Requisition (Stock Out)</span>
+
+                                    <span id="materialRequisitionBadge"
+                                          class="badge bg-danger rounded-pill ms-2"
+                                          style="display:none;">
+                                        0
+                                    </span>
+
+                                </a>
+                            </li>
                         }
+
                         @if (HasAccess("INV_TRANSACTIONS"))
                         {
                             <li><a class="nav-link @(currentController == "RawMaterialTransactions" ? "active fw-bold" : "")" href="/inventory/raw-material-transactions"><span>Inventory Transactions</span></a></li>

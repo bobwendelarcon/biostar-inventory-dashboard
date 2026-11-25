@@ -21,6 +21,7 @@ wwwroot\js\manual-stock-in.js
 wwwroot\js\manufacturing\materials\material-categories.js
 wwwroot\js\manufacturing\materials\materials.js
 wwwroot\js\manufacturing\materials\raw-material-transactions.js
+wwwroot\js\mrs-notifications.js
 wwwroot\js\partner.js
 wwwroot\js\products.js
 wwwroot\js\producttoproduce.js

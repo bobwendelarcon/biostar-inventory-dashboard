@@ -107,9 +107,9 @@
 
 
     <!-- Summary -->
-    <div class="row g-3 mb-4">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-5 g-3 mb-4">
 
-        <div class="col-lg-3 col-md-6">
+        <div class="col">
             <div class="card summary-card shadow-sm">
                 <div class="card-body text-center">
                     <div class="summary-label">
@@ -124,7 +124,32 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
+        <div class="col">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body text-center">
+
+                    <div class="summary-label">
+                        Pending My Action
+                    </div>
+
+                    <div id="pendingMyActionRequisitions"
+                         class="summary-value text-danger">
+                        0
+                    </div>
+
+                    <button type="button"
+                            id="btnPendingMyAction"
+                            class="btn btn-sm btn-outline-danger mt-2">
+                        View Pending
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="col">
             <div class="card summary-card shadow-sm">
                 <div class="card-body text-center">
 
@@ -140,8 +165,7 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6">
+        <div class="col">
             <div class="card summary-card shadow-sm">
                 <div class="card-body text-center">
 
@@ -158,7 +182,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
+        <div class="col">
             <div class="card summary-card shadow-sm">
                 <div class="card-body text-center">
 
@@ -215,37 +239,51 @@
 
                 </div>
 
+
                 <div class="col-lg-2 col-md-6">
 
                     <label class="form-label">
                         Status
                     </label>
 
-
-
                     <select id="filterStatus" class="form-select">
+
                         <option value="">All Statuses</option>
-                        <option value="DRAFT">Draft</option>
-                        <option value="SUBMITTED">Submitted</option>
-                        <option value="FOR_STAFF_APPROVAL">For Staff Approval</option>
-                        <option value="FOR_HEAD_APPROVAL">For Head Approval</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="RELEASED">Released</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="CANCELLED">Cancelled</option>
-                    </select>
 
-
-                        <option value="">
-                            All Statuses
+                        <option value="PENDING_MY_ACTION">
+                            Pending My Action
                         </option>
 
                         <option value="DRAFT">
                             Draft
                         </option>
 
-                        <option value="POSTED">
-                            Posted
+                        <option value="SUBMITTED">
+                            Submitted
+                        </option>
+
+                        <option value="PENDING_ALLOCATION">
+                            For Warehouse Allocation
+                        </option>
+
+                        <option value="FOR_STAFF_APPROVAL">
+                            For Staff Approval
+                        </option>
+
+                        <option value="FOR_HEAD_APPROVAL">
+                            For Head Approval
+                        </option>
+
+                        <option value="APPROVED">
+                            Approved
+                        </option>
+
+                        <option value="RELEASED">
+                            Released
+                        </option>
+
+                        <option value="REJECTED">
+                            Rejected
                         </option>
 
                         <option value="CANCELLED">
@@ -255,6 +293,7 @@
                     </select>
 
                 </div>
+
 
                 <div class="col-lg-2 col-md-6">
 
@@ -421,20 +460,59 @@
 
         let requisitions = [];
 
+
         document.addEventListener(
             "DOMContentLoaded",
             async function () {
 
                 bindEvents();
 
+                applyUrlFilters();
+
                 await loadBranches();
 
                 await loadRequisitions();
-
             });
 
 
+        function applyUrlFilters() {
+
+            const params = new URLSearchParams(
+                window.location.search
+            );
+
+            const filter = String(
+                params.get("filter") || ""
+            ).toUpperCase();
+
+            if (filter === "PENDING_MY_ACTION") {
+
+                document.getElementById(
+                    "filterStatus"
+                ).value = "PENDING_MY_ACTION";
+            }
+        }
+
+
         function bindEvents() {
+
+
+
+        document.getElementById(
+            "btnPendingMyAction"
+        ).addEventListener("click", function () {
+
+            document.getElementById("filterSearch").value = "";
+            document.getElementById("filterBranch").value = "";
+            document.getElementById("filterFromDate").value = "";
+            document.getElementById("filterToDate").value = "";
+
+            document.getElementById("filterStatus").value =
+                "PENDING_MY_ACTION";
+
+            renderTable();
+        });
+
 
             document.getElementById(
                 "btnRefresh"
@@ -524,6 +602,7 @@
         }
 
         function getFilteredRequisitions() {
+
             const search = document.getElementById("filterSearch").value.trim().toLowerCase();
             const branch = document.getElementById("filterBranch").value;
             const status = document.getElementById("filterStatus").value.toUpperCase();
@@ -547,11 +626,42 @@
 
                 return (!search || searchableText.includes(search))
                     && (!branch || String(item.branchId || "") === branch)
-                    && (!status || String(item.status || "").toUpperCase() === status)
+                    && matchesStatusFilter(item, status) 
                     && (!fromDate || (date && date >= fromDate))
                     && (!toDate || (date && date <= toDate));
             });
         }
+
+        function matchesStatusFilter(item, selectedStatus) {
+
+            const status =
+                String(item.status || "").toUpperCase();
+
+            const pendingAction =
+                String(item.pendingAction || "").toUpperCase();
+
+            switch (selectedStatus) {
+
+                case "":
+                    return true;
+
+                case "PENDING_MY_ACTION":
+                    return item.canAct === true;
+
+                case "PENDING_ALLOCATION":
+                    return pendingAction === "ALLOCATION";
+
+                case "FOR_STAFF_APPROVAL":
+                    return pendingAction === "STAFF_APPROVAL";
+
+                case "FOR_HEAD_APPROVAL":
+                    return pendingAction === "HEAD_APPROVAL";
+
+                default:
+                    return status === selectedStatus;
+            }
+        }
+
 
 
         function renderTable() {
@@ -644,9 +754,7 @@
                         </td>
 
                         <td>
-                            ${getStatusBadge(
-                                item.status
-                            )}
+                           ${getStatusBadge(item)}
                         </td>
         <td>
             ${escapeHtml(
@@ -680,6 +788,14 @@
             document.getElementById(
                 "totalRequisitions"
             ).textContent = requisitions.length;
+
+
+        document.getElementById(
+            "pendingMyActionRequisitions"
+        ).textContent = requisitions.filter(
+            x => x.canAct === true
+        ).length;
+
 
             document.getElementById(
                 "draftRequisitions"
@@ -822,31 +938,94 @@
 
 
 
-        function getStatusBadge(status) {
 
-            const value = String(status || "DRAFT").toUpperCase();
+        function getStatusBadge(item) {
 
-            const statusStyles = {
-                DRAFT: "bg-secondary",
-                SUBMITTED: "bg-info text-dark",
-                FOR_STAFF_APPROVAL: "bg-warning text-dark",
-                FOR_HEAD_APPROVAL: "bg-warning text-dark",
-                APPROVED: "bg-primary",
-                RELEASED: "bg-success",
-                REJECTED: "bg-danger",
-                CANCELLED: "bg-dark"
-            };
+            const status =
+                String(item.status || "DRAFT").toUpperCase();
 
-            const css = statusStyles[value] || "bg-secondary";
+            const pendingAction =
+                String(item.pendingAction || "").toUpperCase();
 
-            const label = value.replaceAll("_", " ");
+            let label = status.replaceAll("_", " ");
+            let css = "bg-secondary";
+            let customStyle = "";
+
+            switch (status) {
+
+                case "DRAFT":
+                    css = "bg-secondary";
+                    break;
+
+                case "SUBMITTED":
+                    css = "bg-info text-dark";
+                    break;
+
+                case "FOR_STAFF_APPROVAL":
+
+                    if (pendingAction === "ALLOCATION") {
+
+                        label = "FOR WAREHOUSE ALLOCATION";
+                        css = "bg-info text-dark";
+
+                    } else {
+
+                        label = "FOR STAFF APPROVAL";
+                        css = "bg-warning text-dark";
+                    }
+
+                    break;
+
+                case "FOR_HEAD_APPROVAL":
+
+                    label = "FOR HEAD APPROVAL";
+                    css = "text-white";
+                    customStyle = "background-color: #6f42c1;";
+
+                    break;
+
+                case "APPROVED":
+
+                    if (item.isWarehousePrepared === true) {
+
+                        label = "FOR RELEASE";
+                        css = "bg-primary";
+
+                    } else if (item.isWarehousePrepared === false) {
+
+                        label = "FOR PREPARATION";
+                        css = "text-white";
+                        customStyle = "background-color: #fd7e14;";
+
+                    } else {
+
+                        label = "APPROVED";
+                        css = "bg-primary";
+                    }
+
+                    break;
+
+                case "RELEASED":
+                    css = "bg-success";
+                    break;
+
+                case "REJECTED":
+                    css = "bg-danger";
+                    break;
+
+                case "CANCELLED":
+                    css = "bg-dark";
+                    break;
+            }
 
             return `
-                <span class="badge rounded-pill ${css} px-3 py-2">
+                <span class="badge rounded-pill ${css} px-3 py-2"
+                      style="${customStyle}">
                     ${escapeHtml(label)}
                 </span>
             `;
         }
+
 
 
 

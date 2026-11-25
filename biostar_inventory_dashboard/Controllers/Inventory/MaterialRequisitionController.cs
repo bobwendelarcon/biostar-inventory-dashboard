@@ -97,6 +97,58 @@ namespace biostar_inventory_dashboard.Controllers.Inventory
             }
         }
 
+
+
+
+        // =====================================================
+        // MRS NOTIFICATION COUNTS
+        // =====================================================
+        [HttpGet("notification-counts")]
+        [ResponseCache(
+            NoStore = true,
+            Location = ResponseCacheLocation.None)]
+        public async Task<IActionResult> GetNotificationCounts()
+        {
+            try
+            {
+                if (User.Identity?.IsAuthenticated != true)
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Please log in to continue."
+                    });
+                }
+
+                var result = await _apiService
+                    .GetMaterialRequisitionNotificationCountsAsync();
+
+                return Content(
+                    result,
+                    "application/json");
+            }
+            catch (HttpRequestException ex)
+                when (ex.StatusCode.HasValue)
+            {
+                return StatusCode(
+                    (int)ex.StatusCode.Value,
+                    new
+                    {
+                        success = false,
+                        message = "Unable to load MRS notifications."
+                    });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to load MRS notifications."
+                });
+            }
+        }
+
+
         // =====================================================
         // DETAILS
         // =====================================================
