@@ -1,25 +1,51 @@
 using biostar_inventory_dashboard.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+// ==========================================
+// PERSISTENT DATA PROTECTION KEYS
+// ==========================================
+
+var keysPath = builder.Environment.IsDevelopment()
+    ? Path.Combine(
+        Environment.GetFolderPath(
+            Environment.SpecialFolder.LocalApplicationData),
+        "BiostarDashboard",
+        "DataProtectionKeys")
+    : "/var/lib/biostar-dashboard/keys";
+
+Directory.CreateDirectory(keysPath);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(
+        new DirectoryInfo(keysPath))
+    .SetApplicationName("BiostarInventoryDashboard");
 
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter());
 });
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(
+    CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Login/Index";
         options.AccessDeniedPath = "/Login/AccessDenied";
 
         options.Cookie.Name = "BiostarAuth";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+
+        // Cookie security
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.IsEssential = true;
+
+        // Match the configured API token lifetime
+        options.ExpireTimeSpan = TimeSpan.FromDays(365);
         options.SlidingExpiration = false;
-
     });
-
 
 
 builder.Services.AddAuthorization(options =>

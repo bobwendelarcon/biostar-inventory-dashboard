@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Headers;
+using System.Net;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace biostar_inventory_dashboard.Services
 {
@@ -44,9 +46,21 @@ namespace biostar_inventory_dashboard.Services
                 }
             }
 
-            return await base.SendAsync(
-                request,
-                cancellationToken);
+            var response = await base.SendAsync(
+     request,
+     cancellationToken);
+
+            // Clear invalid authentication sessions.
+            if (!isLoginRequest &&
+                response.StatusCode == HttpStatusCode.Unauthorized &&
+                context?.User?.Identity?.IsAuthenticated == true &&
+                !context.Response.HasStarted)
+            {
+                await context.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+
+            return response;
         }
     }
 }

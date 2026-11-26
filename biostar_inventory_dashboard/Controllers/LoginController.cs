@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Claims;
-
+using System.IdentityModel.Tokens.Jwt;
 namespace biostar_inventory_dashboard.Controllers
 {
     [AllowAnonymous]
@@ -132,12 +132,35 @@ namespace biostar_inventory_dashboard.Controllers
                 return View();
             }
 
+            // Read the actual expiration of the JWT issued by our API.
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            if (!tokenHandler.CanReadToken(user.token))
+            {
+                ViewBag.Error = "Login failed: Invalid authentication token.";
+                return View();
+            }
+
+            var jwtToken = tokenHandler.ReadJwtToken(user.token);
+
+            var tokenExpiration = new DateTimeOffset(
+                jwtToken.ValidTo,
+                TimeSpan.Zero);
+
+            if (tokenExpiration <= DateTimeOffset.UtcNow)
+            {
+                ViewBag.Error = "Login failed: Authentication token has expired.";
+                return View();
+            }
+
+            // Keep the browser authenticated until the API token expires.
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = false,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+                IsPersistent = true,
+                IssuedUtc = DateTimeOffset.UtcNow,
+                ExpiresUtc = tokenExpiration,
+                AllowRefresh = false
             };
-
             // Store the JWT in the protected authentication ticket.
             // It will be available for authenticated API requests.
             authProperties.StoreTokens(new[]
