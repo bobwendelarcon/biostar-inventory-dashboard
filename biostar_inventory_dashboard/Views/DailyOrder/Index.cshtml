@@ -105,6 +105,7 @@
                         <option value="READY FOR DISPATCH">Ready for Dispatch</option>
                         <option value="PARTIALLY DELIVERED">Partially Delivered</option>
                         <option value="COMPLETED">Completed</option>
+                        <option value="DUE TODAY">Due Today</option>
                         <option value="OVERDUE">Overdue</option>
                         <option value="CANCELLED">Cancelled</option>
                     </select>
@@ -158,19 +159,24 @@
     </div>
 
     <!-- SUMMARY CARDS -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4" id="dailyOrderSummaryCards">
 
         <div class="col">
-            <div class="card summary-card h-100">
+            <div class="card summary-card h-100"
+                 data-status="ALL">
                 <div class="card-body">
                     <div class="summary-label">Total Orders</div>
-                    <div class="summary-value" id="summaryTotalOrders">0</div>
+                    <div class="summary-value"
+                         id="summaryTotalOrders">
+                        0
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col">
-            <div class="card summary-card h-100">
+            <div class="card summary-card h-100"
+                 data-status="FOR ALLOCATION">
                 <div class="card-body">
                     <div class="summary-label">For Allocation</div>
                     <div class="summary-value text-warning" id="summaryForAllocation">0</div>
@@ -179,16 +185,18 @@
         </div>
 
         <div class="col">
-            <div class="card summary-card h-100">
-                <div class="card-body">
+        <div class="card summary-card h-100"
+             data-status="ALLOCATED">
+            <div class="card-body">
                     <div class="summary-label">Allocated</div>
                     <div class="summary-value text-success" id="summaryAllocated">0</div>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card summary-card h-100">
+<div class="col">
+<div class="card summary-card h-100"
+     data-status="PARTIALLY ALLOCATED">
                 <div class="card-body">
                     <div class="summary-label">Partially Allocated</div>
                     <div class="summary-value text-info" id="summaryPartial">0</div>
@@ -197,8 +205,9 @@
         </div>
 
         <div class="col">
-            <div class="card summary-card h-100">
-                <div class="card-body">
+    <div class="card summary-card h-100"
+         data-status="READY FOR DISPATCH">
+            <div class="card-body">
                     <div class="summary-label">Ready Dispatch</div>
                     <div class="summary-value text-primary" id="summaryReadyDispatch">0</div>
                 </div>
@@ -206,8 +215,9 @@
         </div>
 
         <div class="col">
-            <div class="card border-0 shadow-sm rounded-4 summary-card h-100">
-                <div class="card-body">
+        <div class="card summary-card h-100"
+             data-status="PARTIALLY DELIVERED">
+            <div class="card-body">
                     <div class="summary-label">Partially Delivered</div>
                     <div class="summary-value text-warning" id="summaryPartiallyDelivered">0</div>
                 </div>
@@ -215,8 +225,9 @@
         </div>
 
         <div class="col">
-            <div class="card summary-card h-100">
-                <div class="card-body">
+        <div class="card summary-card h-100"
+             data-status="COMPLETED">
+            <div class="card-body">
                     <div class="summary-label">Completed</div>
                     <div class="summary-value text-success" id="summaryCompleted">0</div>
                 </div>
@@ -224,8 +235,22 @@
         </div>
 
         <div class="col">
-            <div class="card summary-card h-100">
-                <div class="card-body">
+        <div class="card summary-card h-100"
+             data-status="DUE TODAY">
+            <div class="card-body">
+                    <div class="summary-label">Due Today</div>
+                    <div class="summary-value text-warning"
+                         id="summaryDueToday">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+        <div class="card summary-card h-100"
+             data-status="OVERDUE">
+            <div class="card-body">
                     <div class="summary-label">Overdue</div>
                     <div class="summary-value text-danger" id="summaryOverdue">0</div>
                 </div>

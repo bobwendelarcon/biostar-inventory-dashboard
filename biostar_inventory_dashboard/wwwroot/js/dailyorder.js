@@ -8,7 +8,7 @@ let dailyOrderCurrentPage = 1;
 let dailyOrderTotalPages = 1;
 
 let dailyOrderIsLoadingPrevious = false;
-
+let pendingDailyOrderReload = false;
 
 function setDailyOrderDefaultFilters() {
 
@@ -82,6 +82,9 @@ document.addEventListener("DOMContentLoaded", function () {
         "",
         url.pathname + url.search + url.hash
     );
+
+    // Initialize clickable summary cards
+    initializeSummaryCards();
 
     // Load orders using default filters
     loadDailyOrders(true);
@@ -242,7 +245,12 @@ document.addEventListener("DOMContentLoaded", function () {
         ?.addEventListener("change", () => loadDailyOrders(true));
 
     document.getElementById("statusFilter")
-        ?.addEventListener("change", () => loadDailyOrders(true));
+        ?.addEventListener("change", function () {
+
+            updateActiveSummaryCard();
+
+            loadDailyOrders(true);
+        });
 
     document.getElementById("sortByFilter")
         ?.addEventListener("change", () => loadDailyOrders(true));
@@ -732,14 +740,41 @@ function resetDailyOrderFilters() {
     if (searchInput) {
         searchInput.value = "";
     }
-    // Remove the sidebar notification filter from the URL
+
+    clearTimeout(window.dailyOrderTypingTimeout);
+    isTypingFilter = false;
+
     const url = new URL(window.location.href);
+
     url.searchParams.delete("status");
-    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+
+    window.history.replaceState(
+        {},
+        "",
+        url.pathname + url.search + url.hash
+    );
+
     setDailyOrderDefaultFilters();
+
+    updateActiveSummaryCard();
 
     dailyOrderCurrentPage = 1;
     dailyOrderTotalPages = 1;
+
+    loadDailyOrders(true);
+}
+function processPendingDailyOrderReload() {
+
+    if (isLoadingDailyOrders ||
+        dailyOrderIsLoadingPrevious) {
+        return;
+    }
+
+    if (!pendingDailyOrderReload) {
+        return;
+    }
+
+    pendingDailyOrderReload = false;
 
     loadDailyOrders(true);
 }
@@ -1492,7 +1527,13 @@ function toInputDate(dateStr) {
 
 async function loadDailyOrders(scrollToBottom = false) {
 
-    if (isLoadingDailyOrders) return;
+    if (isLoadingDailyOrders ||
+        dailyOrderIsLoadingPrevious) {
+
+        pendingDailyOrderReload = true;
+        return;
+    }
+
     isLoadingDailyOrders = true;
 
     try {
@@ -1554,7 +1595,10 @@ async function loadDailyOrders(scrollToBottom = false) {
                 Failed to load orders.
             </td></tr>`;
     } finally {
+
         isLoadingDailyOrders = false;
+
+        processPendingDailyOrderReload();
     }
 }
 
@@ -1669,9 +1713,12 @@ async function fillDailyOrderInitialView() {
 
 async function loadPreviousDailyOrders() {
 
-    if (dailyOrderIsLoadingPrevious)
-        return;
+    if (dailyOrderIsLoadingPrevious ||
+        isLoadingDailyOrders ||
+        pendingDailyOrderReload) {
 
+        return;
+    }
     if (dailyOrderCurrentPage <= 1)
         return;
 
@@ -1737,15 +1784,19 @@ async function loadPreviousDailyOrders() {
     }
     finally {
 
-        dailyOrderIsLoadingPrevious =
-            false;
+        dailyOrderIsLoadingPrevious = false;
+
+        processPendingDailyOrderReload();
     }
 }
 
 async function refreshLoadedDailyOrders() {
+    if (isLoadingDailyOrders ||
+        dailyOrderIsLoadingPrevious) {
 
-    if (isLoadingDailyOrders)
+        pendingDailyOrderReload = true;
         return;
+    }
 
     const wrapper =
         document.querySelector(".dailyorder-table-wrapper");
@@ -1966,19 +2017,105 @@ async function refreshLoadedDailyOrders() {
     finally {
 
         isLoadingDailyOrders = false;
+
+        processPendingDailyOrderReload();
     }
 }
 
 function renderDailyOrderSummary(summary) {
-    document.getElementById("summaryTotalOrders").textContent = summary?.totalOrders ?? 0;
-    document.getElementById("summaryForAllocation").textContent = summary?.forAllocation ?? 0;
-    document.getElementById("summaryAllocated").textContent = summary?.allocated ?? 0;
-    document.getElementById("summaryPartial").textContent = summary?.partial ?? 0;
-    document.getElementById("summaryReadyDispatch").textContent = summary?.readyDispatch ?? 0;
-    document.getElementById("summaryPartiallyDelivered").textContent = summary?.partiallyDelivered ?? 0;
-    document.getElementById("summaryOverdue").textContent = summary?.overdue ?? 0;
-    document.getElementById("summaryCompleted").textContent = summary?.completed ?? 0;
+
+    document.getElementById("summaryTotalOrders").textContent =
+        summary?.totalOrders ?? 0;
+
+    document.getElementById("summaryForAllocation").textContent =
+        summary?.forAllocation ?? 0;
+
+    document.getElementById("summaryAllocated").textContent =
+        summary?.allocated ?? 0;
+
+    document.getElementById("summaryPartial").textContent =
+        summary?.partial ?? 0;
+
+    document.getElementById("summaryReadyDispatch").textContent =
+        summary?.readyDispatch ?? 0;
+
+    document.getElementById("summaryPartiallyDelivered").textContent =
+        summary?.partiallyDelivered ?? 0;
+
+    document.getElementById("summaryOverdue").textContent =
+        summary?.overdue ?? 0;
+
+    document.getElementById("summaryCompleted").textContent =
+        summary?.completed ?? 0;
+
+    document.getElementById("summaryDueToday").textContent =
+        summary?.dueToday ?? 0;
+
+    updateActiveSummaryCard();
 }
+function initializeSummaryCards() {
+
+    const cards = document.querySelectorAll(
+        "#dailyOrderSummaryCards .summary-card[data-status]"
+    );
+
+    cards.forEach(card => {
+
+        card.setAttribute("role", "button");
+        card.setAttribute("tabindex", "0");
+
+        const selectCard = () => {
+
+            const statusFilter =
+                document.getElementById("statusFilter");
+
+            if (!statusFilter) return;
+
+            statusFilter.value = card.dataset.status;
+
+            statusFilter.dispatchEvent(
+                new Event("change", { bubbles: true })
+            );
+        };
+
+        card.addEventListener("click", selectCard);
+
+        card.addEventListener("keydown", function (e) {
+
+            if (e.key === "Enter" || e.key === " ") {
+
+                e.preventDefault();
+
+                selectCard();
+            }
+        });
+    });
+
+    updateActiveSummaryCard();
+}
+
+function updateActiveSummaryCard() {
+
+    const selectedStatus =
+        document.getElementById("statusFilter")?.value || "ALL";
+
+    document.querySelectorAll(
+        "#dailyOrderSummaryCards .summary-card[data-status]"
+    ).forEach(card => {
+
+        const isActive =
+            card.dataset.status === selectedStatus;
+
+        card.classList.toggle("active", isActive);
+
+        card.setAttribute(
+            "aria-pressed",
+            String(isActive)
+        );
+    });
+}
+
+
 function renderDailyOrderTable(data, mode = "replace") {
     const tbody = document.getElementById("dailyOrderTableBody");
 
